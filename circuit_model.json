@@ -201,12 +201,15 @@
         "C1",
         "C11",
         "C2",
+        "C20",
         "C3",
         "C4",
         "D1",
         "D2",
         "D4",
+        "D5",
         "J1",
+        "L1",
         "U6",
         "U7",
         "U8"
@@ -531,6 +534,15 @@
       "virtual": false,
       "description": "керамика по питанию 12В"
     },
+    "C20": {
+      "value": "1uF 25В",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "type": "Power_Protection",
+      "virtual": false,
+      "description": "керамика по входу +12В (ВЧ-фильтр"
+    },
     "C3": {
       "value": "10uF 35В",
       "library": "Device",
@@ -747,6 +759,15 @@
       "virtual": false,
       "description": "диодная развязка от обратного +12В на линии датчиков"
     },
+    "D5": {
+      "value": "SMBJ5.0A / 5,6В",
+      "library": "Device",
+      "sym_name": "D_Zener",
+      "footprint": "Diode_SMD:D_SMB",
+      "type": "Power_Protection",
+      "virtual": false,
+      "description": "защита линии +5В датчиков"
+    },
     "FAN_KNOB": {
       "value": "Галлетник AUTO,0..4 резисторный код (внешний, 2п)",
       "library": "Virtual",
@@ -809,6 +830,15 @@
       "type": "Connector_UI",
       "virtual": false,
       "description": "Внутр. коннектор галлетника (2п, XH)"
+    },
+    "L1": {
+      "value": "Феррит/дроссель по входу +12В (помехи)",
+      "library": "Device",
+      "sym_name": "L",
+      "footprint": "Inductor_SMD:L_1210_3225Metric",
+      "type": "Power_Protection",
+      "virtual": false,
+      "description": "Феррит/дроссель по входу +12В (помехи)"
     },
     "LED1": {
       "value": "Индикатор зелёный 1206",
@@ -1477,11 +1507,24 @@
         ]
       ]
     },
-    "VCC_12V": {
-      "description": "Силовая шина +12В после защиты от переполюсовки (D1), с фильтрацией и защитой от выбросов",
+    "VBAT_PROT": {
+      "description": "После защиты от переполюсовки (D1), перед входным фильтром L1",
       "nodes": [
         [
           "D1",
+          "2"
+        ],
+        [
+          "L1",
+          "1"
+        ]
+      ]
+    },
+    "VCC_12V": {
+      "description": "Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами",
+      "nodes": [
+        [
+          "L1",
           "2"
         ],
         [
@@ -1494,6 +1537,10 @@
         ],
         [
           "C2",
+          "1"
+        ],
+        [
+          "C20",
           "1"
         ],
         [
@@ -1596,6 +1643,10 @@
       "nodes": [
         [
           "D4",
+          "2"
+        ],
+        [
+          "D5",
           "2"
         ],
         [
@@ -1828,6 +1879,14 @@
         [
           "U8",
           "8"
+        ],
+        [
+          "C20",
+          "2"
+        ],
+        [
+          "D5",
+          "1"
         ],
         [
           "D2",
