@@ -1,0 +1,20 @@
+# Таблица соответствия элементов и посадочных мест (Footprints) для блока климата
+# Формат: Имя_Элемента = Имя_Библиотеки:Имя_Футпринта
+# Если напротив элемента пусто — корпус настраивается вручную в редакторе
+
+U1_MCU = Package_QFP:LQFP-64_10x10mm_P0.5mm
+U4_DRIVE = Package_SO:SOIC-14_3.9x8.7mm_P1.27mm
+U5_CAN = Package_SO:SOIC-8_3.9x4.9mm_P1.27mm
+Q_DRV_PWM = Package_TO_SOT_SMD:SOT-23-5
+Q_FAN_MOS = Package_TO_SOT_SMD:SOT-23
+D_FAN_DIODE = Diode_SMD:D_SOD-123
+RT1_NTC = Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal
+
+# Неизвестные корпуса (будут помечены как "NOT_ASSIGNED" для ручной настройки)
+BUTTONS_FACE =
+LEDS_1206 =
+J1_AMP_MAIN =
+J_POT_TEMP =
+J_SW_SPEED =
+J_SENS_FAN =
+

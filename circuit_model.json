@@ -1,0 +1,3272 @@
+{
+  "metadata": {
+    "project": "Climate Control Niva Travel",
+    "version": "2.2",
+    "specification": "Модель электрической схемы: перечень компонентов и цепей для генерации схемы KiCad",
+    "mcu": "STM32F103C8T6 (LQFP-48), тактирование от внутреннего HSI 8МГц (PD0/PD1 свободны)",
+    "architecture": {
+      "mcu": "U1 STM32F103C8T6",
+      "motor_drivers": "4 x DRV8871 (H-мост, токоограничение, SOIC-8) - по одному на заслонку",
+      "power": "12В -> защита от переполюсовки (D1/SS54) + TVS (D2) -> 5В (MC78M05) -> 3,3В (AMS1117)",
+      "fan_main": "ШИМ-команда на внешний силовой модуль вентилятора через J1:30",
+      "fan_sensor": "мини-вентилятор продувки датчика через внутренний коннектор J_SENS_FAN (AO3400)",
+      "protection": {
+        "scope": "Защита от ошибок подключения предусмотрена ТОЛЬКО на внешних линиях разъёма J1 (32-пин). Внутренние линии (кнопки, светодиоды, вентилятор продувки, ручки J_POT/J_SW) не защищаются. Предохранители не применяются.",
+        "power_in": "D1 (переполюсовка) + D2 (TVS выбросы) + C1/C11 - защита входа и силовой шины",
+        "sens_5v": "линии +5В датчиков и опор ОС (J1:7/12/17/22/26): диод D4 (SS14) исключает подачу обратного +12В снаружи",
+        "ozh": "NTC ОЖ (J1:25): последовательный R_OZH_PROT 10k ограничивает ток при КЗ линии на +12В",
+        "fb_pots": "сигналы потенциометров ОС (J1:8/13/18/23): делитель R_FB_A 10k ограничивает ток в АЦП",
+        "solar_cond": "солнце (J1:27)/конденсат (J1:28): R_SOL_A / R_CND_A 10k ограничивают ток в АЦП",
+        "illum": "подсветка (J1:32): R_ILL_A 47k (рассчитан на приход +12В штатно)",
+        "fan_pwm": "ШИМ вентилятора (J1:30): R_FAN_SER 1k ограничивает ток при КЗ линии",
+        "ac": "запрос кондиционера (J1:31): R_AC_SER 1k ограничивает ток при КЗ на GND",
+        "motors": "выходы моторов (J1:5-24): внутреннее токоограничение DRV8871 (R_ILIM)",
+        "ground": "ВНИМАНИЕ: силовые/датчиковые земли (J1:3/4/9/14/19/24/29) перепутывать с +12В нельзя - это КЗ кузова через плату; контролировать косой."
+      },
+      "sensors": {
+        "cabin_air": "NTC на плате, длинные ножки в трубе продувки (RT1)",
+        "heat_pipe": "NTC на выходном патрубке радиатора печки, J1:25",
+        "solar": "датчик солнечной радиации 0..5В, J1:26/27/29",
+        "condensate": "датчик конденсата на стекле 0..5В, J1:26/28/29",
+        "illumination": "вход подсветки прибора J1:32"
+      },
+      "controls": {
+        "buttons": "6 кнопок без фиксации (стекло/лицо/ноги/сушка стекла/кондиционер/рециркуляция), каждая со светодиодом-индикатором",
+        "temp_knob": "потенциометр задания температуры, подключается внутренним 2-пин коннектором J_POT (реостатное включение)",
+        "fan_switch": "галетник AUTO,0,1,2,3,4, подключается внутренним 2-пин коннектором J_SW (резисторный код)"
+      },
+      "actuators_mapping": {
+        "M1 (U2)": "заслонка ТЕПЛО/ХОЛОД (смеситель/клапан отопителя)",
+        "M2 (U3)": "заслонка режима: СТЕКЛО или (ЛИЦО+НОГИ)",
+        "M3 (U4)": "заслонка режима: ЛИЦО или НОГИ",
+        "M4 (U5)": "заслонка РЕЦИРКУЛЯЦИИ",
+        "note": "Комбинация M2/M3 формирует режимы подачи воздуха; M1 управляется заданием температуры с потенциометра."
+      }
+    },
+    "j1_pinout": {
+      "1": "+12В_БАТ вход питания",
+      "2": "+12В_БАТ вход питания (дубль, снижение нагрузки)",
+      "3": "GND_PWR",
+      "4": "GND_PWR (дубль)",
+      "5": "M1_A",
+      "6": "M1_B",
+      "7": "M1_FB (выход потенциометра ОС)",
+      "8": "M2_A",
+      "9": "M2_B",
+      "10": "M2_FB",
+      "11": "M3_A",
+      "12": "M3_B",
+      "13": "M3_FB",
+      "14": "M4_A",
+      "15": "M4_B",
+      "16": "M4_FB",
+      "17": "+5В_SENS/REF (края потенциометров заслонок и питание датчиков)",
+      "18": "DGND (общая цифровая земля датчиков/потенциометров)",
+      "19": "NTC_HEAT (датчик на патрубке радиатора печки)",
+      "20": "SOLAR_OUT (0..5В)",
+      "21": "COND_OUT (0..5В)",
+      "22": "ILLUM_IN (подсветка прибора)",
+      "23": "FAN_PWM_OUT (ШИМ на внешний силовой модуль)",
+      "24": "AC_REQ_OUT (+12В запрос кондиционера на вход ЭБУ)",
+      "25": "CANH",
+      "26": "CANL",
+      "27": "резерв",
+      "28": "резерв",
+      "29": "резерв",
+      "30": "резерв",
+      "31": "резерв",
+      "32": "резерв"
+    },
+    "symbol_pin_map": {
+      "MCU_ST_STM32F1:STM32F103C8Tx": "номера выводов = физические номера LQFP-48 (см. mcu_pin_map)",
+      "Driver_Motor:DRV8871DDA": {
+        "1": "GND",
+        "2": "IN2",
+        "3": "IN1",
+        "4": "ILIM",
+        "5": "VM",
+        "6": "OUT1",
+        "7": "PGND",
+        "8": "OUT2"
+      },
+      "Regulator_Linear:L78M05": {
+        "1": "IN",
+        "2": "GND",
+        "3": "OUT"
+      },
+      "Regulator_Linear:AMS1117-3.3": {
+        "1": "IN",
+        "2": "GND",
+        "3": "OUT"
+      },
+      "Device:Q_NMOS_GSD": {
+        "1": "G",
+        "2": "D",
+        "3": "S"
+      },
+      "Device:Q_NPN_ECB": {
+        "1": "B",
+        "2": "C",
+        "3": "E"
+      },
+      "Device:Q_PNP_ECB": {
+        "1": "B",
+        "2": "C",
+        "3": "E"
+      },
+      "Device:LED": {
+        "1": "A(анод)",
+        "2": "K(катод)"
+      },
+      "Device:D": {
+        "1": "A(анод)",
+        "2": "K(катод)"
+      },
+      "Device:D_Zener": {
+        "1": "A(анод)",
+        "2": "K(катод)"
+      },
+      "Device:D_Schottky": {
+        "1": "A(анод)",
+        "2": "K(катод)"
+      }
+    },
+    "mcu_pin_map": {
+      "1": "VBAT -> VCC_3V3",
+      "2": "PC13 -> M4_IN2 (драйвер U5)",
+      "3": "PC14 -> LED4_DRV",
+      "4": "PC15 -> LED5_DRV",
+      "5": "PD0 -> ILLUM_SENSE",
+      "7": "NRST",
+      "8": "VSSA -> GND",
+      "9": "VDDA -> VDDA_3V3",
+      "10": "PA0 -> TEMP_SET_ADC",
+      "11": "PA1 -> FAN_SEL_ADC",
+      "12": "PA2 -> NTC_CABIN",
+      "13": "PA3 -> NTC_OZH",
+      "14": "PA4 -> SOLAR_ADC",
+      "15": "PA5 -> COND_ADC",
+      "16": "PA6 -> FB_M1",
+      "17": "PA7 -> FB_M2",
+      "18": "PB0 -> FB_M3",
+      "19": "PB1 -> FB_M4",
+      "20": "PB2 -> AC_CTL (запрос кондиционера)",
+      "21": "PB10 -> BTN_DEFROST_GLASS",
+      "22": "PB11 -> BTN_FACE",
+      "23": "VSS_1",
+      "24": "VDD_1",
+      "25": "PB12 -> BTN_FEET",
+      "26": "PB13 -> BTN_DRY_GLASS",
+      "27": "PB14 -> BTN_AC",
+      "28": "PB15 -> BTN_RECIRC",
+      "29": "PA8 -> FAN_PWM_CTL (TIM1_CH1)",
+      "30": "PA9 -> M1_IN1",
+      "31": "PA10 -> M1_IN2",
+      "32": "PA11 -> M2_IN1",
+      "33": "PA12 -> M2_IN2",
+      "34": "PA13/SWDIO",
+      "35": "VSS_2",
+      "36": "VDD_2",
+      "37": "PA14/SWCLK",
+      "38": "PA15 -> LED1_DRV",
+      "39": "PB3 -> LED2_DRV",
+      "40": "PB4 -> LED3_DRV",
+      "41": "PB5 -> M3_IN1",
+      "42": "PB6 -> M3_IN2",
+      "43": "PB7 -> M4_IN1",
+      "44": "BOOT0 (через 10k к GND)",
+      "45": "PB8 -> LED6_DRV",
+      "46": "PB9 -> M_FAN_CTL",
+      "47": "VSS_3",
+      "48": "VDD_3"
+    },
+    "notes": [
+      "MCU выбран STM32F103C8T6 как бюджетный; при необходимости заменяется без изменения топологии цепей (сменить символ и номера выводов в mcu_pin_map).",
+      "Светодиоды-индикаторы включаются АКТИВНЫМ НУЛЁМ (МК притягивает катод к GND).",
+      "Потенциометр температуры и галлетник подключены 2-проводными линиями; на фронт-модуле они образуют сопротивление на GND, плата опрашивает делитель с подтяжкой к 3,3В.",
+      "Выход ШИМ основного вентилятора - открытый сток, активный низкий уровень (ШИМ инвертируется в ПО).",
+      "Питание мини-вентилятора продувки +12В снимается с VCC_12V через J_SENS_FAN.",
+      "Полярность проводов моторов к драйверам задаётся при настройке (направление 'открыть/закрыть' настраивается в ПО или перестановкой Mx_A/Mx_B).",
+      "Потенциометры ОС заслонок питаются от +5В; сигнал масштабируется делителем 10k/20k до диапазона АЦП 0..3,3В.",
+      "Подтяжки кнопок - внутренние у МК; на плату выведены только кнопка+индикатор.",
+      "Разъём J1 на 32 контакта описан в j1_pinout; фактический тип (автомобильный герметичный) уточняется под косу."
+    ]
+  },
+  "sheets": [
+    {
+      "order": 1,
+      "name": "MAIN",
+      "file": "climate_control_niva_travel.kicad_sch",
+      "components": [
+        "C1",
+        "C11",
+        "C2",
+        "C3",
+        "C4",
+        "D1",
+        "D2",
+        "D4",
+        "J1",
+        "U6",
+        "U7",
+        "U8"
+      ]
+    },
+    {
+      "order": 2,
+      "name": "MCU",
+      "file": "cc_02_mcu.kicad_sch",
+      "components": [
+        "C10",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "C9",
+        "C_NRST",
+        "FB1",
+        "J_DBG",
+        "R_BOOT",
+        "R_NRST",
+        "U1"
+      ]
+    },
+    {
+      "order": 3,
+      "name": "UI",
+      "file": "cc_03_ui.kicad_sch",
+      "components": [
+        "C_CABIN",
+        "C_FAN",
+        "C_ILL",
+        "C_TEMP",
+        "J_POT",
+        "J_SW",
+        "LED1",
+        "LED2",
+        "LED3",
+        "LED4",
+        "LED5",
+        "LED6",
+        "R_CABIN_UP",
+        "R_FAN_UP",
+        "R_ILL_A",
+        "R_ILL_B",
+        "R_LED1",
+        "R_LED2",
+        "R_LED3",
+        "R_LED4",
+        "R_LED5",
+        "R_LED6",
+        "R_TEMP_UP",
+        "SW1",
+        "SW2",
+        "SW3",
+        "SW4",
+        "SW5",
+        "SW6"
+      ]
+    },
+    {
+      "order": 4,
+      "name": "SEN_CABIN",
+      "file": "cc_04_sen_cabin.kicad_sch",
+      "components": [
+        "D3",
+        "J_SENS_FAN",
+        "Q_MFAN",
+        "RT1",
+        "R_MFAN_G",
+        "R_MFAN_GD"
+      ]
+    },
+    {
+      "order": 5,
+      "name": "SEN_HEAT",
+      "file": "cc_05_sen_heat.kicad_sch",
+      "components": [
+        "C_OZH",
+        "R_OZH_PROT",
+        "R_OZH_UP"
+      ]
+    },
+    {
+      "order": 6,
+      "name": "SEN_SOLAR",
+      "file": "cc_06_sen_solar.kicad_sch",
+      "components": [
+        "C_SOL",
+        "R_SOL_A",
+        "R_SOL_B"
+      ]
+    },
+    {
+      "order": 7,
+      "name": "SEN_COND",
+      "file": "cc_07_sen_cond.kicad_sch",
+      "components": [
+        "C_CND",
+        "R_CND_A",
+        "R_CND_B"
+      ]
+    },
+    {
+      "order": 8,
+      "name": "OUT",
+      "file": "cc_08_out.kicad_sch",
+      "components": [
+        "Q_AC_N",
+        "Q_AC_P",
+        "Q_FAN",
+        "R_AC_1",
+        "R_AC_GD",
+        "R_AC_PU",
+        "R_AC_SER",
+        "R_FAN_GATE",
+        "R_FAN_PU",
+        "R_FAN_SER"
+      ]
+    },
+    {
+      "order": 9,
+      "name": "ACT",
+      "file": "cc_09_act.kicad_sch",
+      "components": [
+        "C12",
+        "C13",
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C18",
+        "C19",
+        "C_FB1",
+        "C_FB2",
+        "C_FB3",
+        "C_FB4",
+        "R_FB1_A",
+        "R_FB1_B",
+        "R_FB2_A",
+        "R_FB2_B",
+        "R_FB3_A",
+        "R_FB3_B",
+        "R_FB4_A",
+        "R_FB4_B",
+        "R_ILIM1",
+        "R_ILIM2",
+        "R_ILIM3",
+        "R_ILIM4",
+        "U2",
+        "U3",
+        "U4",
+        "U5"
+      ]
+    }
+  ],
+  "lib_symbols": {
+    "MCU_ST_STM32F1:STM32F103C8Tx": [
+      "(rectangle (start -17.78 17.78) (end 17.78 -17.78) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Driver_Motor:DRV8871DDA": [
+      "(rectangle (start -8.0 8.0) (end 8.0 -8.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Regulator_Linear:L78M05": [
+      "(rectangle (start -5.0 6.0) (end 5.0 -6.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Regulator_Linear:AMS1117-3.3": [
+      "(rectangle (start -5.0 6.0) (end 5.0 -6.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:LED": [
+      "(rectangle (start -2.54 2.54) (end 2.54 -2.54) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Switch:SW_Push": [
+      "(rectangle (start -2.54 1.27) (end 2.54 -1.27) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:R": [
+      "(rectangle (start -3.0 1.2) (end 3.0 -1.2) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:C": [
+      "(rectangle (start -3.0 1.5) (end 3.0 -1.5) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:R_NTC": [
+      "(rectangle (start -3.0 1.2) (end 3.0 -1.2) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:L": [
+      "(rectangle (start -3.0 2.0) (end 3.0 -2.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:Q_NMOS_GSD": [
+      "(rectangle (start -5.0 5.0) (end 5.0 -5.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:Q_NPN_ECB": [
+      "(rectangle (start -5.0 5.0) (end 5.0 -5.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:Q_PNP_ECB": [
+      "(rectangle (start -5.0 5.0) (end 5.0 -5.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:D": [
+      "(rectangle (start -3.0 2.0) (end 3.0 -2.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:D_Zener": [
+      "(rectangle (start -3.0 2.0) (end 3.0 -2.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Device:D_Schottky": [
+      "(rectangle (start -3.0 2.0) (end 3.0 -2.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Connector_Generic:Conn_02x16_Odd_Even": [
+      "(rectangle (start -5.0 20.0) (end 5.0 -20.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Connector_Generic:Conn_01x02": [
+      "(rectangle (start -3.0 2.0) (end 3.0 -2.0) (stroke (width 0.254)) (fill (type background)))"
+    ],
+    "Connector_Generic:Conn_01x04": [
+      "(rectangle (start -3.0 4.0) (end 3.0 -4.0) (stroke (width 0.254)) (fill (type background)))"
+    ]
+  },
+  "components": {
+    "C1": {
+      "value": "470uF 25В",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:CP_Elec_10x10.5",
+      "type": "Filter_Power",
+      "virtual": false,
+      "description": "электролит по питанию"
+    },
+    "C10": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "фильтр VDDA"
+    },
+    "C11": {
+      "value": "100uF 25В",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:CP_Elec_8x10.5",
+      "type": "Filter_Power",
+      "virtual": false,
+      "description": "силовая шина моторов"
+    },
+    "C12": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "питание драйвера U2"
+    },
+    "C13": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "питание драйвера U3"
+    },
+    "C14": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "питание драйвера U4"
+    },
+    "C15": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "питание драйвера U5"
+    },
+    "C16": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Analog",
+      "virtual": false,
+      "description": "фильтр опоры потенциометра M1"
+    },
+    "C17": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Analog",
+      "virtual": false,
+      "description": "фильтр опоры потенциометра M2"
+    },
+    "C18": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Analog",
+      "virtual": false,
+      "description": "фильтр опоры потенциометра M3"
+    },
+    "C19": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Analog",
+      "virtual": false,
+      "description": "фильтр опоры потенциометра M4"
+    },
+    "C2": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Power",
+      "virtual": false,
+      "description": "керамика по питанию 12В"
+    },
+    "C3": {
+      "value": "10uF 35В",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "type": "Filter_Power",
+      "virtual": false,
+      "description": "вход стабилизатора 5В"
+    },
+    "C4": {
+      "value": "10uF 10В",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "type": "Filter_Power",
+      "virtual": false,
+      "description": "выход стабилизатора 5В"
+    },
+    "C5": {
+      "value": "10uF 6,3В",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "type": "Filter_Power",
+      "virtual": false,
+      "description": "выход стабилизатора 3,3В"
+    },
+    "C6": {
+      "value": "10uF 6,3В",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "type": "Filter_Power",
+      "virtual": false,
+      "description": "шина 3,3В (общий накопитель"
+    },
+    "C7": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "развязка VDD_1"
+    },
+    "C8": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "развязка VDD_2"
+    },
+    "C9": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Filter_Decoupling",
+      "virtual": false,
+      "description": "развязка VDD_3"
+    },
+    "COND_SNS": {
+      "value": "Датчик конденсата на стекле 0..5В (внешний)",
+      "library": "Virtual",
+      "sym_name": "EXT_COND",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Sensor",
+      "virtual": true,
+      "description": "Датчик конденсата на стекле 0..5В (внешний)"
+    },
+    "C_CABIN": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП салона"
+    },
+    "C_CND": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП конденсата"
+    },
+    "C_FAN": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП галлетника"
+    },
+    "C_FB1": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП ОС заслонки 1"
+    },
+    "C_FB2": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП ОС заслонки 2"
+    },
+    "C_FB3": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП ОС заслонки 3"
+    },
+    "C_FB4": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП ОС заслонки 4"
+    },
+    "C_ILL": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр входа подсветки"
+    },
+    "C_NRST": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "RC_Reset",
+      "virtual": false,
+      "description": "сброс МК"
+    },
+    "C_OZH": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП ОЖ"
+    },
+    "C_SOL": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП солнечной радиации"
+    },
+    "C_TEMP": {
+      "value": "100nF",
+      "library": "Device",
+      "sym_name": "C",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "фильтр АЦП температуры"
+    },
+    "D1": {
+      "value": "SS54",
+      "library": "Device",
+      "sym_name": "D_Schottky",
+      "footprint": "Diode_SMD:D_SMA",
+      "type": "Power_Protection",
+      "virtual": false,
+      "description": "5A, 40В) защита от переполюсовки"
+    },
+    "D2": {
+      "value": "SMBJ15A TVS",
+      "library": "Device",
+      "sym_name": "D_Zener",
+      "footprint": "Diode_SMD:D_SMB",
+      "type": "Power_Protection",
+      "virtual": false,
+      "description": "защита от выбросов"
+    },
+    "D3": {
+      "value": "1N4148W",
+      "library": "Device",
+      "sym_name": "D",
+      "footprint": "Diode_SMD:D_SOD-123",
+      "type": "Switch_Load",
+      "virtual": false,
+      "description": "обратный диод вентилятора"
+    },
+    "D4": {
+      "value": "SS14",
+      "library": "Device",
+      "sym_name": "D_Schottky",
+      "footprint": "Diode_SMD:D_SMA",
+      "type": "Power_Protection",
+      "virtual": false,
+      "description": "диодная развязка от обратного +12В на линии датчиков"
+    },
+    "FAN_KNOB": {
+      "value": "Галлетник AUTO,0..4 резисторный код (внешний, 2п)",
+      "library": "Virtual",
+      "sym_name": "EXT_KNOB_FAN",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Control",
+      "virtual": true,
+      "description": "Галлетник AUTO,0..4 резисторный код (внешний, 2п)"
+    },
+    "FB1": {
+      "value": "Феррит 600Ом@100МГц по питанию VDDA",
+      "library": "Device",
+      "sym_name": "L",
+      "footprint": "Inductor_SMD:L_0805_2012Metric",
+      "type": "Filter_Analog",
+      "virtual": false,
+      "description": "Феррит 600Ом@100МГц по питанию VDDA"
+    },
+    "J1": {
+      "value": "Разъём к автомобилю 2x16 (32 конт.)",
+      "library": "Connector_Generic",
+      "sym_name": "Conn_02x16_Odd_Even",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_2x16_P2.54mm_Horizontal",
+      "type": "Connector_Main",
+      "virtual": false,
+      "description": "Разъём к автомобилю 2x16 (32 конт.)"
+    },
+    "J_DBG": {
+      "value": "SWD-отладка 1x04",
+      "library": "Connector_Generic",
+      "sym_name": "Conn_01x04",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+      "type": "Debug_Connector",
+      "virtual": false,
+      "description": "SWD-отладка 1x04"
+    },
+    "J_POT": {
+      "value": "Внутр. коннектор потенциометра (2п, XH)",
+      "library": "Connector_Generic",
+      "sym_name": "Conn_01x02",
+      "footprint": "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",
+      "type": "Connector_UI",
+      "virtual": false,
+      "description": "Внутр. коннектор потенциометра (2п, XH)"
+    },
+    "J_SENS_FAN": {
+      "value": "Внутр. коннектор вентилятора продувки (2п, XH)",
+      "library": "Connector_Generic",
+      "sym_name": "Conn_01x02",
+      "footprint": "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",
+      "type": "Connector_UI",
+      "virtual": false,
+      "description": "Внутр. коннектор вентилятора продувки (2п, XH)"
+    },
+    "J_SW": {
+      "value": "Внутр. коннектор галлетника (2п, XH)",
+      "library": "Connector_Generic",
+      "sym_name": "Conn_01x02",
+      "footprint": "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",
+      "type": "Connector_UI",
+      "virtual": false,
+      "description": "Внутр. коннектор галлетника (2п, XH)"
+    },
+    "LED1": {
+      "value": "Индикатор зелёный 1206",
+      "library": "Device",
+      "sym_name": "LED",
+      "footprint": "LED_SMD:LED_1206_3216Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "Индикатор зелёный 1206"
+    },
+    "LED2": {
+      "value": "Индикатор зелёный 1206",
+      "library": "Device",
+      "sym_name": "LED",
+      "footprint": "LED_SMD:LED_1206_3216Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "Индикатор зелёный 1206"
+    },
+    "LED3": {
+      "value": "Индикатор зелёный 1206",
+      "library": "Device",
+      "sym_name": "LED",
+      "footprint": "LED_SMD:LED_1206_3216Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "Индикатор зелёный 1206"
+    },
+    "LED4": {
+      "value": "Индикатор янтарный 1206",
+      "library": "Device",
+      "sym_name": "LED",
+      "footprint": "LED_SMD:LED_1206_3216Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "Индикатор янтарный 1206"
+    },
+    "LED5": {
+      "value": "Индикатор зелёный 1206",
+      "library": "Device",
+      "sym_name": "LED",
+      "footprint": "LED_SMD:LED_1206_3216Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "Индикатор зелёный 1206"
+    },
+    "LED6": {
+      "value": "Индикатор зелёный 1206",
+      "library": "Device",
+      "sym_name": "LED",
+      "footprint": "LED_SMD:LED_1206_3216Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "Индикатор зелёный 1206"
+    },
+    "Q_AC_N": {
+      "value": "MMBT3904",
+      "library": "Device",
+      "sym_name": "Q_NPN",
+      "footprint": "Package_TO_SOT_SMD:SOT-23",
+      "type": "Switch_12V",
+      "virtual": false,
+      "description": "драйвер запроса кондиционера"
+    },
+    "Q_AC_P": {
+      "value": "MMBT3906",
+      "library": "Device",
+      "sym_name": "Q_PNP",
+      "footprint": "Package_TO_SOT_SMD:SOT-23",
+      "type": "Switch_12V",
+      "virtual": false,
+      "description": "высокосторонний ключ 12В"
+    },
+    "Q_FAN": {
+      "value": "BSS138",
+      "library": "Device",
+      "sym_name": "Q_NMOS",
+      "footprint": "Package_TO_SOT_SMD:SOT-23",
+      "type": "Switch_OpenDrain",
+      "virtual": false,
+      "description": "буфер ШИМ вентилятора"
+    },
+    "Q_MFAN": {
+      "value": "AO3400",
+      "library": "Device",
+      "sym_name": "Q_NMOS",
+      "footprint": "Package_TO_SOT_SMD:SOT-23",
+      "type": "Switch_Load",
+      "virtual": false,
+      "description": "ключ мини-вентилятора (логич. уровень, 5,7А"
+    },
+    "RT1": {
+      "value": "NTC 10k B3435,",
+      "library": "Device",
+      "sym_name": "Thermistor_NTC",
+      "footprint": "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal",
+      "type": "Sensor_Cabin",
+      "virtual": false,
+      "description": "длинные ножки, в трубе продувки"
+    },
+    "RT_OZH": {
+      "value": "NTC 10k B3435",
+      "library": "Virtual",
+      "sym_name": "EXT_NTC",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Sensor",
+      "virtual": true,
+      "description": "на выходном патрубке отопителя (внешний"
+    },
+    "R_AC_1": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_12V",
+      "virtual": false,
+      "description": "база Q_AC_N"
+    },
+    "R_AC_GD": {
+      "value": "100k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_12V",
+      "virtual": false,
+      "description": "подтяжка базы Q_AC_N к GND"
+    },
+    "R_AC_PU": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_12V",
+      "virtual": false,
+      "description": "подтяжка базы PNP к +12В"
+    },
+    "R_AC_SER": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_12V",
+      "virtual": false,
+      "description": "защитный резистор линии запроса кондиционера (к J1:31"
+    },
+    "R_BOOT": {
+      "value": "10k BOOT0",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "RC_Reset",
+      "virtual": false,
+      "description": "к GND"
+    },
+    "R_CABIN_UP": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "подтяжка NTC салона"
+    },
+    "R_CND_A": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель сигнала конденсата (верх"
+    },
+    "R_CND_B": {
+      "value": "20k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель сигнала конденсата (низ"
+    },
+    "R_FAN_GATE": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_OpenDrain",
+      "virtual": false,
+      "description": "затвор Q_FAN"
+    },
+    "R_FAN_PU": {
+      "value": "4.7k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_OpenDrain",
+      "virtual": false,
+      "description": "подтяжка выхода ШИМ к 12В"
+    },
+    "R_FAN_SER": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_OpenDrain",
+      "virtual": false,
+      "description": "защитный резистор в линии ШИМ вентилятора (к J1:30"
+    },
+    "R_FAN_UP": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "подтяжка галлетника"
+    },
+    "R_FB1_A": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 1 (верх"
+    },
+    "R_FB1_B": {
+      "value": "20k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 1 (низ"
+    },
+    "R_FB2_A": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 2 (верх"
+    },
+    "R_FB2_B": {
+      "value": "20k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 2 (низ"
+    },
+    "R_FB3_A": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 3 (верх"
+    },
+    "R_FB3_B": {
+      "value": "20k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 3 (низ"
+    },
+    "R_FB4_A": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 4 (верх"
+    },
+    "R_FB4_B": {
+      "value": "20k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель ОС заслонки 4 (низ"
+    },
+    "R_ILIM1": {
+      "value": "33k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "токоограничение драйвера (подобрать"
+    },
+    "R_ILIM2": {
+      "value": "33k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "токоограничение драйвера (подобрать"
+    },
+    "R_ILIM3": {
+      "value": "33k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "токоограничение драйвера (подобрать"
+    },
+    "R_ILIM4": {
+      "value": "33k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "токоограничение драйвера (подобрать"
+    },
+    "R_ILL_A": {
+      "value": "47k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель входа подсветки (верх"
+    },
+    "R_ILL_B": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель входа подсветки (низ"
+    },
+    "R_LED1": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "токоограничение индикатора"
+    },
+    "R_LED2": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "токоограничение индикатора"
+    },
+    "R_LED3": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "токоограничение индикатора"
+    },
+    "R_LED4": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "токоограничение индикатора"
+    },
+    "R_LED5": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "токоограничение индикатора"
+    },
+    "R_LED6": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "UI_LED",
+      "virtual": false,
+      "description": "токоограничение индикатора"
+    },
+    "R_MFAN_G": {
+      "value": "1k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_Load",
+      "virtual": false,
+      "description": "затвор Q_MFAN"
+    },
+    "R_MFAN_GD": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Switch_Load",
+      "virtual": false,
+      "description": "подтяжка затвора Q_MFAN к GND"
+    },
+    "R_NRST": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "RC_Reset",
+      "virtual": false,
+      "description": "сброс МК"
+    },
+    "R_OZH_PROT": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "защитный резистор линии NTC патрубка перед АЦП (J1:25"
+    },
+    "R_OZH_UP": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "подтяжка NTC патрубка отопителя"
+    },
+    "R_SOL_A": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель сигнала солнечной радиации (верх"
+    },
+    "R_SOL_B": {
+      "value": "20k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "делитель сигнала солнечной радиации (низ"
+    },
+    "R_TEMP_UP": {
+      "value": "10k",
+      "library": "Device",
+      "sym_name": "R",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "type": "Analog_Condition",
+      "virtual": false,
+      "description": "подтяжка потенциометра температуры"
+    },
+    "SOLAR_SNS": {
+      "value": "Датчик солнечной радиации 0..5В (внешний)",
+      "library": "Virtual",
+      "sym_name": "EXT_SOLAR",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Sensor",
+      "virtual": true,
+      "description": "Датчик солнечной радиации 0..5В (внешний)"
+    },
+    "SW1": {
+      "value": "Кнопка тактовая 6x6 без фиксации",
+      "library": "Switch",
+      "sym_name": "SW_Push",
+      "footprint": "Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm",
+      "type": "UI_Button",
+      "virtual": false,
+      "description": "Кнопка тактовая 6x6 без фиксации"
+    },
+    "SW2": {
+      "value": "Кнопка тактовая 6x6 без фиксации",
+      "library": "Switch",
+      "sym_name": "SW_Push",
+      "footprint": "Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm",
+      "type": "UI_Button",
+      "virtual": false,
+      "description": "Кнопка тактовая 6x6 без фиксации"
+    },
+    "SW3": {
+      "value": "Кнопка тактовая 6x6 без фиксации",
+      "library": "Switch",
+      "sym_name": "SW_Push",
+      "footprint": "Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm",
+      "type": "UI_Button",
+      "virtual": false,
+      "description": "Кнопка тактовая 6x6 без фиксации"
+    },
+    "SW4": {
+      "value": "Кнопка тактовая 6x6 без фиксации",
+      "library": "Switch",
+      "sym_name": "SW_Push",
+      "footprint": "Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm",
+      "type": "UI_Button",
+      "virtual": false,
+      "description": "Кнопка тактовая 6x6 без фиксации"
+    },
+    "SW5": {
+      "value": "Кнопка тактовая 6x6 без фиксации",
+      "library": "Switch",
+      "sym_name": "SW_Push",
+      "footprint": "Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm",
+      "type": "UI_Button",
+      "virtual": false,
+      "description": "Кнопка тактовая 6x6 без фиксации"
+    },
+    "SW6": {
+      "value": "Кнопка тактовая 6x6 без фиксации",
+      "library": "Switch",
+      "sym_name": "SW_Push",
+      "footprint": "Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm",
+      "type": "UI_Button",
+      "virtual": false,
+      "description": "Кнопка тактовая 6x6 без фиксации"
+    },
+    "TEMP_KNOB": {
+      "value": "Потенциометр задания температуры (внешний, 2п)",
+      "library": "Virtual",
+      "sym_name": "EXT_KNOB_TEMP",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Control",
+      "virtual": true,
+      "description": "Потенциометр задания температуры (внешний, 2п)"
+    },
+    "U1": {
+      "value": "STM32F103RCT6",
+      "library": "MCU_ST_STM32F1",
+      "sym_name": "STM32F103R_C-D-E_Tx",
+      "footprint": "Package_QFP:LQFP-64_10x10mm_P0.5mm",
+      "type": "MCU",
+      "virtual": false,
+      "description": "LQFP-64"
+    },
+    "U2": {
+      "value": "DRV8871 H-мост",
+      "library": "Driver_Motor",
+      "sym_name": "DRV8871DDA",
+      "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "заслонки 1"
+    },
+    "U3": {
+      "value": "DRV8871 H-мост",
+      "library": "Driver_Motor",
+      "sym_name": "DRV8871DDA",
+      "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "заслонки 2"
+    },
+    "U4": {
+      "value": "DRV8871 H-мост",
+      "library": "Driver_Motor",
+      "sym_name": "DRV8871DDA",
+      "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "заслонки 3"
+    },
+    "U5": {
+      "value": "DRV8871 H-мост",
+      "library": "Driver_Motor",
+      "sym_name": "DRV8871DDA",
+      "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+      "type": "Motor_Driver",
+      "virtual": false,
+      "description": "заслонки 4"
+    },
+    "U6": {
+      "value": "MC78M05CDTG",
+      "library": "Regulator_Linear",
+      "sym_name": "LM78M05_TO252",
+      "footprint": "Package_TO_SOT_SMD:TO-252-3_TabPin2",
+      "type": "Regulator_5V",
+      "virtual": false,
+      "description": "5В, 500мА, TO-252"
+    },
+    "U7": {
+      "value": "AMS1117-3.3",
+      "library": "Regulator_Linear",
+      "sym_name": "AP1117-15",
+      "footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+      "type": "Regulator_3V3",
+      "virtual": false,
+      "description": "3,3В, SOT-223"
+    },
+    "U8": {
+      "value": "MCP2562-E-SN",
+      "library": "Interface_CAN_LIN",
+      "sym_name": "MCP2562-E-SN",
+      "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+      "type": "CAN_Transceiver",
+      "virtual": false,
+      "description": "CAN transceiver, SOIC-8"
+    },
+    "V_MOTOR_1": {
+      "value": "Моторедуктор заслонки с потенциометром (внешний)",
+      "library": "Virtual",
+      "sym_name": "EXT_MOTOR_FB",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Actuator",
+      "virtual": true,
+      "description": "Моторедуктор заслонки с потенциометром (внешний)"
+    },
+    "V_MOTOR_2": {
+      "value": "Моторедуктор заслонки с потенциометром (внешний)",
+      "library": "Virtual",
+      "sym_name": "EXT_MOTOR_FB",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Actuator",
+      "virtual": true,
+      "description": "Моторедуктор заслонки с потенциометром (внешний)"
+    },
+    "V_MOTOR_3": {
+      "value": "Моторедуктор заслонки с потенциометром (внешний)",
+      "library": "Virtual",
+      "sym_name": "EXT_MOTOR_FB",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Actuator",
+      "virtual": true,
+      "description": "Моторедуктор заслонки с потенциометром (внешний)"
+    },
+    "V_MOTOR_4": {
+      "value": "Моторедуктор заслонки с потенциометром (внешний)",
+      "library": "Virtual",
+      "sym_name": "EXT_MOTOR_FB",
+      "footprint": "VIRTUAL_NO_PCB",
+      "type": "External_Actuator",
+      "virtual": true,
+      "description": "Моторедуктор заслонки с потенциометром (внешний)"
+    }
+  },
+  "nets": {
+    "VBAT_IN": {
+      "description": "Входное бортовое питание +12В, выводы 1-2 разъёма J1",
+      "nodes": [
+        [
+          "J1",
+          "1"
+        ],
+        [
+          "J1",
+          "2"
+        ],
+        [
+          "D1",
+          "1"
+        ]
+      ]
+    },
+    "VCC_12V": {
+      "description": "Силовая шина +12В после защиты от переполюсовки (D1), с фильтрацией и защитой от выбросов",
+      "nodes": [
+        [
+          "D1",
+          "2"
+        ],
+        [
+          "D2",
+          "2"
+        ],
+        [
+          "C1",
+          "1"
+        ],
+        [
+          "C2",
+          "1"
+        ],
+        [
+          "C3",
+          "1"
+        ],
+        [
+          "U6",
+          "1"
+        ],
+        [
+          "U2",
+          "5"
+        ],
+        [
+          "U3",
+          "5"
+        ],
+        [
+          "U4",
+          "5"
+        ],
+        [
+          "U5",
+          "5"
+        ],
+        [
+          "C11",
+          "1"
+        ],
+        [
+          "C12",
+          "1"
+        ],
+        [
+          "C13",
+          "1"
+        ],
+        [
+          "C14",
+          "1"
+        ],
+        [
+          "C15",
+          "1"
+        ],
+        [
+          "J_SENS_FAN",
+          "1"
+        ],
+        [
+          "D3",
+          "2"
+        ],
+        [
+          "Q_AC_P",
+          "3"
+        ],
+        [
+          "R_AC_PU",
+          "2"
+        ],
+        [
+          "R_FAN_PU",
+          "2"
+        ]
+      ]
+    },
+    "VCC_5V": {
+      "description": "Внутреннее стабилизированное питание +5В (логика/питание стабилизатора 3,3В)",
+      "nodes": [
+        [
+          "U6",
+          "3"
+        ],
+        [
+          "C4",
+          "1"
+        ],
+        [
+          "U7",
+          "1"
+        ],
+        [
+          "D4",
+          "1"
+        ],
+        [
+          "U8",
+          "3"
+        ],
+        [
+          "U8",
+          "5"
+        ]
+      ]
+    },
+    "V5_SENS": {
+      "description": "Общий выход +5В/опора на датчики и края потенциометров ОС (J1:17). Диод D4 исключает обратную подачу +12В снаружи",
+      "nodes": [
+        [
+          "D4",
+          "2"
+        ],
+        [
+          "C16",
+          "1"
+        ],
+        [
+          "C17",
+          "1"
+        ],
+        [
+          "C18",
+          "1"
+        ],
+        [
+          "C19",
+          "1"
+        ],
+        [
+          "J1",
+          "17"
+        ],
+        [
+          "SOLAR_SNS",
+          "1"
+        ],
+        [
+          "COND_SNS",
+          "1"
+        ]
+      ]
+    },
+    "VCC_3V3": {
+      "description": "Логическое питание +3,3В микроконтроллера и фронт-панели",
+      "nodes": [
+        [
+          "U7",
+          "3"
+        ],
+        [
+          "C5",
+          "1"
+        ],
+        [
+          "C6",
+          "1"
+        ],
+        [
+          "C7",
+          "1"
+        ],
+        [
+          "C8",
+          "1"
+        ],
+        [
+          "C9",
+          "1"
+        ],
+        [
+          "U1",
+          "19"
+        ],
+        [
+          "U1",
+          "32"
+        ],
+        [
+          "U1",
+          "48"
+        ],
+        [
+          "U1",
+          "64"
+        ],
+        [
+          "U1",
+          "1"
+        ],
+        [
+          "FB1",
+          "1"
+        ],
+        [
+          "R_NRST",
+          "1"
+        ],
+        [
+          "J_DBG",
+          "1"
+        ],
+        [
+          "R_TEMP_UP",
+          "1"
+        ],
+        [
+          "R_FAN_UP",
+          "1"
+        ],
+        [
+          "R_CABIN_UP",
+          "1"
+        ],
+        [
+          "R_OZH_UP",
+          "1"
+        ],
+        [
+          "R_LED1",
+          "1"
+        ],
+        [
+          "R_LED2",
+          "1"
+        ],
+        [
+          "R_LED3",
+          "1"
+        ],
+        [
+          "R_LED4",
+          "1"
+        ],
+        [
+          "R_LED5",
+          "1"
+        ],
+        [
+          "R_LED6",
+          "1"
+        ]
+      ]
+    },
+    "VDDA_3V3": {
+      "description": "Аналоговое питание АЦП (через феррит FB1 от VCC_3V3)",
+      "nodes": [
+        [
+          "FB1",
+          "2"
+        ],
+        [
+          "C10",
+          "1"
+        ],
+        [
+          "U1",
+          "13"
+        ]
+      ]
+    },
+    "GND": {
+      "description": "Общий провод (кузов автомобиля)",
+      "nodes": [
+        [
+          "J1",
+          "3"
+        ],
+        [
+          "J1",
+          "4"
+        ],
+        [
+          "J1",
+          "18"
+        ],
+        [
+          "U1",
+          "18"
+        ],
+        [
+          "U1",
+          "31"
+        ],
+        [
+          "U1",
+          "47"
+        ],
+        [
+          "U1",
+          "63"
+        ],
+        [
+          "U1",
+          "12"
+        ],
+        [
+          "U2",
+          "1"
+        ],
+        [
+          "U2",
+          "7"
+        ],
+        [
+          "U3",
+          "1"
+        ],
+        [
+          "U3",
+          "7"
+        ],
+        [
+          "U4",
+          "1"
+        ],
+        [
+          "U4",
+          "7"
+        ],
+        [
+          "U5",
+          "1"
+        ],
+        [
+          "U5",
+          "7"
+        ],
+        [
+          "U6",
+          "2"
+        ],
+        [
+          "U7",
+          "2"
+        ],
+        [
+          "U8",
+          "2"
+        ],
+        [
+          "U8",
+          "8"
+        ],
+        [
+          "D2",
+          "1"
+        ],
+        [
+          "C1",
+          "2"
+        ],
+        [
+          "C2",
+          "2"
+        ],
+        [
+          "C3",
+          "2"
+        ],
+        [
+          "C4",
+          "2"
+        ],
+        [
+          "C5",
+          "2"
+        ],
+        [
+          "C6",
+          "2"
+        ],
+        [
+          "C7",
+          "2"
+        ],
+        [
+          "C8",
+          "2"
+        ],
+        [
+          "C9",
+          "2"
+        ],
+        [
+          "C10",
+          "2"
+        ],
+        [
+          "C11",
+          "2"
+        ],
+        [
+          "C12",
+          "2"
+        ],
+        [
+          "C13",
+          "2"
+        ],
+        [
+          "C14",
+          "2"
+        ],
+        [
+          "C15",
+          "2"
+        ],
+        [
+          "C16",
+          "2"
+        ],
+        [
+          "C17",
+          "2"
+        ],
+        [
+          "C18",
+          "2"
+        ],
+        [
+          "C19",
+          "2"
+        ],
+        [
+          "R_ILIM1",
+          "2"
+        ],
+        [
+          "R_ILIM2",
+          "2"
+        ],
+        [
+          "R_ILIM3",
+          "2"
+        ],
+        [
+          "R_ILIM4",
+          "2"
+        ],
+        [
+          "C_NRST",
+          "2"
+        ],
+        [
+          "R_BOOT",
+          "2"
+        ],
+        [
+          "J_DBG",
+          "4"
+        ],
+        [
+          "Q_FAN",
+          "3"
+        ],
+        [
+          "Q_MFAN",
+          "3"
+        ],
+        [
+          "Q_AC_N",
+          "3"
+        ],
+        [
+          "SW1",
+          "2"
+        ],
+        [
+          "SW2",
+          "2"
+        ],
+        [
+          "SW3",
+          "2"
+        ],
+        [
+          "SW4",
+          "2"
+        ],
+        [
+          "SW5",
+          "2"
+        ],
+        [
+          "SW6",
+          "2"
+        ],
+        [
+          "J_POT",
+          "2"
+        ],
+        [
+          "J_SW",
+          "2"
+        ],
+        [
+          "RT1",
+          "2"
+        ],
+        [
+          "C_TEMP",
+          "2"
+        ],
+        [
+          "C_FAN",
+          "2"
+        ],
+        [
+          "C_CABIN",
+          "2"
+        ],
+        [
+          "C_OZH",
+          "2"
+        ],
+        [
+          "R_FB1_B",
+          "2"
+        ],
+        [
+          "R_FB2_B",
+          "2"
+        ],
+        [
+          "R_FB3_B",
+          "2"
+        ],
+        [
+          "R_FB4_B",
+          "2"
+        ],
+        [
+          "C_FB1",
+          "2"
+        ],
+        [
+          "C_FB2",
+          "2"
+        ],
+        [
+          "C_FB3",
+          "2"
+        ],
+        [
+          "C_FB4",
+          "2"
+        ],
+        [
+          "R_SOL_B",
+          "2"
+        ],
+        [
+          "C_SOL",
+          "2"
+        ],
+        [
+          "R_CND_B",
+          "2"
+        ],
+        [
+          "C_CND",
+          "2"
+        ],
+        [
+          "R_ILL_B",
+          "2"
+        ],
+        [
+          "C_ILL",
+          "2"
+        ],
+        [
+          "R_MFAN_GD",
+          "2"
+        ],
+        [
+          "R_AC_GD",
+          "2"
+        ],
+        [
+          "RT_OZH",
+          "2"
+        ],
+        [
+          "SOLAR_SNS",
+          "3"
+        ],
+        [
+          "COND_SNS",
+          "3"
+        ],
+        [
+          "TEMP_KNOB",
+          "2"
+        ],
+        [
+          "FAN_KNOB",
+          "2"
+        ]
+      ]
+    },
+    "NRST": {
+      "description": "Сброс МК (RC-цепь)",
+      "nodes": [
+        [
+          "U1",
+          "7"
+        ],
+        [
+          "R_NRST",
+          "2"
+        ],
+        [
+          "C_NRST",
+          "1"
+        ]
+      ]
+    },
+    "BOOT0": {
+      "description": "Выбор режима загрузки: подтяжка к GND (загрузка из основной Flash)",
+      "nodes": [
+        [
+          "U1",
+          "60"
+        ],
+        [
+          "R_BOOT",
+          "1"
+        ]
+      ]
+    },
+    "SWDIO": {
+      "description": "Отладочный интерфейс SWD: данные",
+      "nodes": [
+        [
+          "U1",
+          "46"
+        ],
+        [
+          "J_DBG",
+          "2"
+        ]
+      ]
+    },
+    "SWCLK": {
+      "description": "Отладочный интерфейс SWD: тактирование",
+      "nodes": [
+        [
+          "U1",
+          "49"
+        ],
+        [
+          "J_DBG",
+          "3"
+        ]
+      ]
+    },
+    "BTN_DEFROST_GLASS": {
+      "description": "Кнопка: воздух на стекло",
+      "nodes": [
+        [
+          "SW1",
+          "1"
+        ],
+        [
+          "U1",
+          "33"
+        ]
+      ]
+    },
+    "BTN_FACE": {
+      "description": "Кнопка: воздух в лицо",
+      "nodes": [
+        [
+          "SW2",
+          "1"
+        ],
+        [
+          "U1",
+          "34"
+        ]
+      ]
+    },
+    "BTN_FEET": {
+      "description": "Кнопка: воздух в ноги",
+      "nodes": [
+        [
+          "SW3",
+          "1"
+        ],
+        [
+          "U1",
+          "35"
+        ]
+      ]
+    },
+    "BTN_DRY_GLASS": {
+      "description": "Кнопка: сушка стекла",
+      "nodes": [
+        [
+          "SW4",
+          "1"
+        ],
+        [
+          "U1",
+          "36"
+        ]
+      ]
+    },
+    "BTN_AC": {
+      "description": "Кнопка: кондиционер",
+      "nodes": [
+        [
+          "SW5",
+          "1"
+        ],
+        [
+          "U1",
+          "51"
+        ]
+      ]
+    },
+    "BTN_RECIRC": {
+      "description": "Кнопка: рециркуляция",
+      "nodes": [
+        [
+          "SW6",
+          "1"
+        ],
+        [
+          "U1",
+          "52"
+        ]
+      ]
+    },
+    "LED_DEFROST_GLASS_A": {
+      "description": "Индикатор кнопки: воздух на стекло (анодная шина)",
+      "nodes": [
+        [
+          "R_LED1",
+          "2"
+        ],
+        [
+          "LED1",
+          "1"
+        ]
+      ]
+    },
+    "LED_DEFROST_GLASS_DRV": {
+      "description": "Индикатор кнопки: воздух на стекло (управление, активный низкий уровень)",
+      "nodes": [
+        [
+          "LED1",
+          "2"
+        ],
+        [
+          "U1",
+          "37"
+        ]
+      ]
+    },
+    "LED_FACE_A": {
+      "description": "Индикатор кнопки: воздух в лицо (анодная шина)",
+      "nodes": [
+        [
+          "R_LED2",
+          "2"
+        ],
+        [
+          "LED2",
+          "1"
+        ]
+      ]
+    },
+    "LED_FACE_DRV": {
+      "description": "Индикатор кнопки: воздух в лицо (управление, активный низкий уровень)",
+      "nodes": [
+        [
+          "LED2",
+          "2"
+        ],
+        [
+          "U1",
+          "38"
+        ]
+      ]
+    },
+    "LED_FEET_A": {
+      "description": "Индикатор кнопки: воздух в ноги (анодная шина)",
+      "nodes": [
+        [
+          "R_LED3",
+          "2"
+        ],
+        [
+          "LED3",
+          "1"
+        ]
+      ]
+    },
+    "LED_FEET_DRV": {
+      "description": "Индикатор кнопки: воздух в ноги (управление, активный низкий уровень)",
+      "nodes": [
+        [
+          "LED3",
+          "2"
+        ],
+        [
+          "U1",
+          "39"
+        ]
+      ]
+    },
+    "LED_DRY_GLASS_A": {
+      "description": "Индикатор кнопки: сушка стекла (анодная шина)",
+      "nodes": [
+        [
+          "R_LED4",
+          "2"
+        ],
+        [
+          "LED4",
+          "1"
+        ]
+      ]
+    },
+    "LED_DRY_GLASS_DRV": {
+      "description": "Индикатор кнопки: сушка стекла (управление, активный низкий уровень)",
+      "nodes": [
+        [
+          "LED4",
+          "2"
+        ],
+        [
+          "U1",
+          "40"
+        ]
+      ]
+    },
+    "LED_AC_A": {
+      "description": "Индикатор кнопки: кондиционер (анодная шина)",
+      "nodes": [
+        [
+          "R_LED5",
+          "2"
+        ],
+        [
+          "LED5",
+          "1"
+        ]
+      ]
+    },
+    "LED_AC_DRV": {
+      "description": "Индикатор кнопки: кондиционер (управление, активный низкий уровень)",
+      "nodes": [
+        [
+          "LED5",
+          "2"
+        ],
+        [
+          "U1",
+          "53"
+        ]
+      ]
+    },
+    "LED_RECIRC_A": {
+      "description": "Индикатор кнопки: рециркуляция (анодная шина)",
+      "nodes": [
+        [
+          "R_LED6",
+          "2"
+        ],
+        [
+          "LED6",
+          "1"
+        ]
+      ]
+    },
+    "LED_RECIRC_DRV": {
+      "description": "Индикатор кнопки: рециркуляция (управление, активный низкий уровень)",
+      "nodes": [
+        [
+          "LED6",
+          "2"
+        ],
+        [
+          "U1",
+          "54"
+        ]
+      ]
+    },
+    "TEMP_SET_ADC": {
+      "description": "АЦП задания температуры (потенциометр, 2-проводное включение, внутренний коннектор J_POT)",
+      "nodes": [
+        [
+          "J_POT",
+          "1"
+        ],
+        [
+          "R_TEMP_UP",
+          "2"
+        ],
+        [
+          "C_TEMP",
+          "1"
+        ],
+        [
+          "TEMP_KNOB",
+          "1"
+        ],
+        [
+          "U1",
+          "14"
+        ]
+      ]
+    },
+    "FAN_SEL_ADC": {
+      "description": "АЦП выбора режима/скорости вентилятора (галлетник AUTO,0..4, резисторный код)",
+      "nodes": [
+        [
+          "J_SW",
+          "1"
+        ],
+        [
+          "R_FAN_UP",
+          "2"
+        ],
+        [
+          "C_FAN",
+          "1"
+        ],
+        [
+          "FAN_KNOB",
+          "1"
+        ],
+        [
+          "U1",
+          "15"
+        ]
+      ]
+    },
+    "NTC_CABIN": {
+      "description": "Температура воздуха в салоне (NTC на плате в трубе продувки)",
+      "nodes": [
+        [
+          "RT1",
+          "1"
+        ],
+        [
+          "R_CABIN_UP",
+          "2"
+        ],
+        [
+          "C_CABIN",
+          "1"
+        ],
+        [
+          "U1",
+          "16"
+        ]
+      ]
+    },
+    "NTC_HEAT_W": {
+      "description": "Датчик патрубка отопителя: узел линии на разъёме",
+      "nodes": [
+        [
+          "J1",
+          "19"
+        ],
+        [
+          "RT_OZH",
+          "1"
+        ],
+        [
+          "R_OZH_UP",
+          "2"
+        ],
+        [
+          "C_OZH",
+          "1"
+        ],
+        [
+          "R_OZH_PROT",
+          "1"
+        ]
+      ]
+    },
+    "NTC_HEAT": {
+      "description": "Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора)",
+      "nodes": [
+        [
+          "R_OZH_PROT",
+          "2"
+        ],
+        [
+          "U1",
+          "17"
+        ]
+      ]
+    },
+    "SOLAR_RAW": {
+      "description": "Выход датчика солнечной радиации (0..5В)",
+      "nodes": [
+        [
+          "J1",
+          "20"
+        ],
+        [
+          "SOLAR_SNS",
+          "2"
+        ],
+        [
+          "R_SOL_A",
+          "1"
+        ]
+      ]
+    },
+    "SOLAR_ADC": {
+      "description": "Сигнал солнечной радиации после делителя 5В->3,3В на АЦП",
+      "nodes": [
+        [
+          "R_SOL_A",
+          "2"
+        ],
+        [
+          "R_SOL_B",
+          "1"
+        ],
+        [
+          "C_SOL",
+          "1"
+        ],
+        [
+          "U1",
+          "20"
+        ]
+      ]
+    },
+    "COND_RAW": {
+      "description": "Выход датчика конденсата на стекле (0..5В)",
+      "nodes": [
+        [
+          "J1",
+          "21"
+        ],
+        [
+          "COND_SNS",
+          "2"
+        ],
+        [
+          "R_CND_A",
+          "1"
+        ]
+      ]
+    },
+    "COND_ADC": {
+      "description": "Сигнал конденсата после делителя 5В->3,3В на АЦП",
+      "nodes": [
+        [
+          "R_CND_A",
+          "2"
+        ],
+        [
+          "R_CND_B",
+          "1"
+        ],
+        [
+          "C_CND",
+          "1"
+        ],
+        [
+          "U1",
+          "21"
+        ]
+      ]
+    },
+    "MOTOR_1_A": {
+      "description": "Заслонка 1: выход А мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U2",
+          "6"
+        ],
+        [
+          "J1",
+          "5"
+        ],
+        [
+          "V_MOTOR_1",
+          "1"
+        ]
+      ]
+    },
+    "MOTOR_1_B": {
+      "description": "Заслонка 1: выход B мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U2",
+          "8"
+        ],
+        [
+          "J1",
+          "6"
+        ],
+        [
+          "V_MOTOR_1",
+          "2"
+        ]
+      ]
+    },
+    "FB_M1_RAW": {
+      "description": "Заслонка 1: выход потенциометра положения (0..5В)",
+      "nodes": [
+        [
+          "J1",
+          "7"
+        ],
+        [
+          "V_MOTOR_1",
+          "3"
+        ],
+        [
+          "R_FB1_A",
+          "1"
+        ]
+      ]
+    },
+    "FB_M1": {
+      "description": "Заслонка 1: сигнал ОС после делителя 5В->3,3В на АЦП",
+      "nodes": [
+        [
+          "R_FB1_A",
+          "2"
+        ],
+        [
+          "R_FB1_B",
+          "1"
+        ],
+        [
+          "C_FB1",
+          "1"
+        ],
+        [
+          "U1",
+          "22"
+        ]
+      ]
+    },
+    "M1_IN1": {
+      "description": "Заслонка 1: вход IN1 драйвера",
+      "nodes": [
+        [
+          "U2",
+          "3"
+        ],
+        [
+          "U1",
+          "57"
+        ]
+      ]
+    },
+    "M1_IN2": {
+      "description": "Заслонка 1: вход IN2 драйвера",
+      "nodes": [
+        [
+          "U2",
+          "2"
+        ],
+        [
+          "U1",
+          "58"
+        ]
+      ]
+    },
+    "ILIM_1": {
+      "description": "Заслонка 1: установка токоограничения драйвера",
+      "nodes": [
+        [
+          "U2",
+          "4"
+        ],
+        [
+          "R_ILIM1",
+          "1"
+        ]
+      ]
+    },
+    "MOTOR_2_A": {
+      "description": "Заслонка 2: выход А мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U3",
+          "6"
+        ],
+        [
+          "J1",
+          "8"
+        ],
+        [
+          "V_MOTOR_2",
+          "1"
+        ]
+      ]
+    },
+    "MOTOR_2_B": {
+      "description": "Заслонка 2: выход B мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U3",
+          "8"
+        ],
+        [
+          "J1",
+          "9"
+        ],
+        [
+          "V_MOTOR_2",
+          "2"
+        ]
+      ]
+    },
+    "FB_M2_RAW": {
+      "description": "Заслонка 2: выход потенциометра положения (0..5В)",
+      "nodes": [
+        [
+          "J1",
+          "10"
+        ],
+        [
+          "V_MOTOR_2",
+          "3"
+        ],
+        [
+          "R_FB2_A",
+          "1"
+        ]
+      ]
+    },
+    "FB_M2": {
+      "description": "Заслонка 2: сигнал ОС после делителя 5В->3,3В на АЦП",
+      "nodes": [
+        [
+          "R_FB2_A",
+          "2"
+        ],
+        [
+          "R_FB2_B",
+          "1"
+        ],
+        [
+          "C_FB2",
+          "1"
+        ],
+        [
+          "U1",
+          "23"
+        ]
+      ]
+    },
+    "M2_IN1": {
+      "description": "Заслонка 2: вход IN1 драйвера",
+      "nodes": [
+        [
+          "U3",
+          "3"
+        ],
+        [
+          "U1",
+          "42"
+        ]
+      ]
+    },
+    "M2_IN2": {
+      "description": "Заслонка 2: вход IN2 драйвера",
+      "nodes": [
+        [
+          "U3",
+          "2"
+        ],
+        [
+          "U1",
+          "43"
+        ]
+      ]
+    },
+    "ILIM_2": {
+      "description": "Заслонка 2: установка токоограничения драйвера",
+      "nodes": [
+        [
+          "U3",
+          "4"
+        ],
+        [
+          "R_ILIM2",
+          "1"
+        ]
+      ]
+    },
+    "MOTOR_3_A": {
+      "description": "Заслонка 3: выход А мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U4",
+          "6"
+        ],
+        [
+          "J1",
+          "11"
+        ],
+        [
+          "V_MOTOR_3",
+          "1"
+        ]
+      ]
+    },
+    "MOTOR_3_B": {
+      "description": "Заслонка 3: выход B мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U4",
+          "8"
+        ],
+        [
+          "J1",
+          "12"
+        ],
+        [
+          "V_MOTOR_3",
+          "2"
+        ]
+      ]
+    },
+    "FB_M3_RAW": {
+      "description": "Заслонка 3: выход потенциометра положения (0..5В)",
+      "nodes": [
+        [
+          "J1",
+          "13"
+        ],
+        [
+          "V_MOTOR_3",
+          "3"
+        ],
+        [
+          "R_FB3_A",
+          "1"
+        ]
+      ]
+    },
+    "FB_M3": {
+      "description": "Заслонка 3: сигнал ОС после делителя 5В->3,3В на АЦП",
+      "nodes": [
+        [
+          "R_FB3_A",
+          "2"
+        ],
+        [
+          "R_FB3_B",
+          "1"
+        ],
+        [
+          "C_FB3",
+          "1"
+        ],
+        [
+          "U1",
+          "26"
+        ]
+      ]
+    },
+    "M3_IN1": {
+      "description": "Заслонка 3: вход IN1 драйвера",
+      "nodes": [
+        [
+          "U4",
+          "3"
+        ],
+        [
+          "U1",
+          "44"
+        ]
+      ]
+    },
+    "M3_IN2": {
+      "description": "Заслонка 3: вход IN2 драйвера",
+      "nodes": [
+        [
+          "U4",
+          "2"
+        ],
+        [
+          "U1",
+          "45"
+        ]
+      ]
+    },
+    "ILIM_3": {
+      "description": "Заслонка 3: установка токоограничения драйвера",
+      "nodes": [
+        [
+          "U4",
+          "4"
+        ],
+        [
+          "R_ILIM3",
+          "1"
+        ]
+      ]
+    },
+    "MOTOR_4_A": {
+      "description": "Заслонка 4: выход А мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U5",
+          "6"
+        ],
+        [
+          "J1",
+          "14"
+        ],
+        [
+          "V_MOTOR_4",
+          "1"
+        ]
+      ]
+    },
+    "MOTOR_4_B": {
+      "description": "Заслонка 4: выход B мостового драйвера к моторедуктору",
+      "nodes": [
+        [
+          "U5",
+          "8"
+        ],
+        [
+          "J1",
+          "15"
+        ],
+        [
+          "V_MOTOR_4",
+          "2"
+        ]
+      ]
+    },
+    "FB_M4_RAW": {
+      "description": "Заслонка 4: выход потенциометра положения (0..5В)",
+      "nodes": [
+        [
+          "J1",
+          "16"
+        ],
+        [
+          "V_MOTOR_4",
+          "3"
+        ],
+        [
+          "R_FB4_A",
+          "1"
+        ]
+      ]
+    },
+    "FB_M4": {
+      "description": "Заслонка 4: сигнал ОС после делителя 5В->3,3В на АЦП",
+      "nodes": [
+        [
+          "R_FB4_A",
+          "2"
+        ],
+        [
+          "R_FB4_B",
+          "1"
+        ],
+        [
+          "C_FB4",
+          "1"
+        ],
+        [
+          "U1",
+          "27"
+        ]
+      ]
+    },
+    "M4_IN1": {
+      "description": "Заслонка 4: вход IN1 драйвера",
+      "nodes": [
+        [
+          "U5",
+          "3"
+        ],
+        [
+          "U1",
+          "59"
+        ]
+      ]
+    },
+    "M4_IN2": {
+      "description": "Заслонка 4: вход IN2 драйвера",
+      "nodes": [
+        [
+          "U5",
+          "2"
+        ],
+        [
+          "U1",
+          "2"
+        ]
+      ]
+    },
+    "ILIM_4": {
+      "description": "Заслонка 4: установка токоограничения драйвера",
+      "nodes": [
+        [
+          "U5",
+          "4"
+        ],
+        [
+          "R_ILIM4",
+          "1"
+        ]
+      ]
+    },
+    "FAN_PWM_CTL": {
+      "description": "ШИМ управления основным вентилятором (TIM1_CH1)",
+      "nodes": [
+        [
+          "U1",
+          "41"
+        ],
+        [
+          "R_FAN_GATE",
+          "1"
+        ]
+      ]
+    },
+    "FAN_GATE": {
+      "description": "Затвор буферного MOSFET",
+      "nodes": [
+        [
+          "R_FAN_GATE",
+          "2"
+        ],
+        [
+          "Q_FAN",
+          "1"
+        ]
+      ]
+    },
+    "FAN_PWM_NODE": {
+      "description": "Выход ШИМ 12В на внешний силовой модуль вентилятора (открытый сток, инверсный)",
+      "nodes": [
+        [
+          "Q_FAN",
+          "2"
+        ],
+        [
+          "R_FAN_PU",
+          "1"
+        ],
+        [
+          "R_FAN_SER",
+          "1"
+        ]
+      ]
+    },
+    "FAN_PWM_OUT": {
+      "description": "ШИМ-линия к разъёму J1:30 (через защитный резистор R_FAN_SER)",
+      "nodes": [
+        [
+          "R_FAN_SER",
+          "2"
+        ],
+        [
+          "J1",
+          "23"
+        ]
+      ]
+    },
+    "M_FAN_CTL": {
+      "description": "Управление мини-вентилятором продувки датчика",
+      "nodes": [
+        [
+          "U1",
+          "50"
+        ],
+        [
+          "R_MFAN_G",
+          "1"
+        ]
+      ]
+    },
+    "M_FAN_GATE": {
+      "description": "Затвор MOSFET мини-вентилятора",
+      "nodes": [
+        [
+          "R_MFAN_G",
+          "2"
+        ],
+        [
+          "Q_MFAN",
+          "1"
+        ],
+        [
+          "R_MFAN_GD",
+          "1"
+        ]
+      ]
+    },
+    "SENS_FAN_SW": {
+      "description": "Коммутируемая линия питания мини-вентилятора",
+      "nodes": [
+        [
+          "Q_MFAN",
+          "2"
+        ],
+        [
+          "J_SENS_FAN",
+          "2"
+        ],
+        [
+          "D3",
+          "1"
+        ]
+      ]
+    },
+    "AC_CTL": {
+      "description": "Управление транзистором запроса кондиционера",
+      "nodes": [
+        [
+          "U1",
+          "28"
+        ],
+        [
+          "R_AC_1",
+          "1"
+        ]
+      ]
+    },
+    "AC_BASE": {
+      "description": "База NPN-драйвера запроса кондиционера",
+      "nodes": [
+        [
+          "R_AC_1",
+          "2"
+        ],
+        [
+          "Q_AC_N",
+          "1"
+        ],
+        [
+          "R_AC_GD",
+          "1"
+        ]
+      ]
+    },
+    "AC_PNP_BASE": {
+      "description": "База высокостороннего PNP-ключа 12В",
+      "nodes": [
+        [
+          "Q_AC_N",
+          "2"
+        ],
+        [
+          "Q_AC_P",
+          "1"
+        ],
+        [
+          "R_AC_PU",
+          "1"
+        ]
+      ]
+    },
+    "AC_REQ": {
+      "description": "Выход запроса кондиционера (через защитный резистор R_AC_SER)",
+      "nodes": [
+        [
+          "Q_AC_P",
+          "2"
+        ],
+        [
+          "R_AC_SER",
+          "1"
+        ]
+      ]
+    },
+    "AC_REQ_OUT": {
+      "description": "Линия запроса кондиционера +12В к J1:31 (вход ЭБУ двигателя)",
+      "nodes": [
+        [
+          "R_AC_SER",
+          "2"
+        ],
+        [
+          "J1",
+          "24"
+        ]
+      ]
+    },
+    "ILLUM_IN_RAW": {
+      "description": "Вход внешней подсветки прибора (+12В габаритов)",
+      "nodes": [
+        [
+          "J1",
+          "22"
+        ],
+        [
+          "R_ILL_A",
+          "1"
+        ]
+      ]
+    },
+    "ILLUM_SENSE": {
+      "description": "Сигнал подсветки после делителя на вход МК",
+      "nodes": [
+        [
+          "R_ILL_A",
+          "2"
+        ],
+        [
+          "R_ILL_B",
+          "1"
+        ],
+        [
+          "C_ILL",
+          "1"
+        ],
+        [
+          "U1",
+          "5"
+        ]
+      ]
+    },
+    "CAN_TX": {
+      "description": "CAN: передача от МК к трансиверу",
+      "nodes": [
+        [
+          "U1",
+          "62"
+        ],
+        [
+          "U8",
+          "1"
+        ]
+      ]
+    },
+    "CAN_RX": {
+      "description": "CAN: приём от трансивера к МК",
+      "nodes": [
+        [
+          "U1",
+          "61"
+        ],
+        [
+          "U8",
+          "4"
+        ]
+      ]
+    },
+    "CANH": {
+      "description": "CAN: шина High (J1:25)",
+      "nodes": [
+        [
+          "U8",
+          "7"
+        ],
+        [
+          "J1",
+          "25"
+        ]
+      ]
+    },
+    "CANL": {
+      "description": "CAN: шина Low (J1:26)",
+      "nodes": [
+        [
+          "U8",
+          "6"
+        ],
+        [
+          "J1",
+          "26"
+        ]
+      ]
+    }
+  }
+}
