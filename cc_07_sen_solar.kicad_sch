@@ -1,0 +1,465 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "de28acf7-25cc-4788-99e6-b4c326d1b01a")
+	(paper "A4")
+	(title_block
+		(title "SEN_SOLAR")
+	)
+	(lib_symbols
+		(symbol "Device:C"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "C_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762) (xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)	(wire (pts (xy 59.69 35.56) (xy 59.69 33.02)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "615b2712-e981-4993-8c40-f9dfc1a1185f"))
+	(hierarchical_label "SOLAR_ADC" (shape input) (at 59.69 33.02 0) (effects (font (size 1.27 1.27))) (uuid "10bf83fa-7336-4519-8555-f4c4375eb1cb"))
+	(wire (pts (xy 59.69 43.18) (xy 59.69 45.72)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "99f30eda-7787-42df-be70-a4daca01966c"))
+	(hierarchical_label "GND" (shape input) (at 59.69 45.72 0) (effects (font (size 1.27 1.27))) (uuid "74c19852-f1ac-4325-842c-63ae19e4e03d"))
+	(wire (pts (xy 149.86 35.56) (xy 149.86 33.02)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "3356c47d-79c8-4c57-ab29-dc765e013e8f"))
+	(hierarchical_label "SOLAR_RAW" (shape input) (at 149.86 33.02 0) (effects (font (size 1.27 1.27))) (uuid "50fb1632-21ac-4578-a0fe-2504ab1e8519"))
+	(wire (pts (xy 149.86 43.18) (xy 149.86 45.72)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "70636d88-ce3f-461e-aed0-2b0f2be8dc67"))
+	(hierarchical_label "SOLAR_ADC" (shape input) (at 149.86 45.72 0) (effects (font (size 1.27 1.27))) (uuid "47a6cf26-ec81-4c4e-8b8e-7cdb85a822cf"))
+	(wire (pts (xy 240.03 35.56) (xy 240.03 33.02)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "84b34feb-bb8a-41a9-a59b-28e3cf642705"))
+	(hierarchical_label "SOLAR_ADC" (shape input) (at 240.03 33.02 0) (effects (font (size 1.27 1.27))) (uuid "a1f5d69e-a0e5-4e8f-bfff-0c5c748a9459"))
+	(wire (pts (xy 240.03 43.18) (xy 240.03 45.72)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "8eca8726-b650-4005-ade6-7de4c87ee01a"))
+	(hierarchical_label "GND" (shape input) (at 240.03 45.72 0) (effects (font (size 1.27 1.27))) (uuid "0f2074f5-efbb-42cb-af74-8bfdd618e4b0"))
+
+
+
+
+
+
+
+
+
+
+
+
+	(symbol
+		(lib_id "Device:C")
+		(at 59.69 39.37 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "5b75c74c-dfb4-4ed2-90ae-88790bc6e391")
+		(property "Reference" "C26"
+			(at 60.325 41.91 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 60.325 36.83 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "a5aa6048-7ce1-428e-a397-23382ffa9f69")
+		)
+		(pin "2"
+			(uuid "c1a2d97b-0da4-4b6d-8e76-788b0b021d7a")
+		)
+		(instances
+			(project "SEN_SOLAR"
+				(path "/de28acf7-25cc-4788-99e6-b4c326d1b01a"
+					(reference "C26")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 149.86 39.37 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "69ba7bc3-f17a-44de-9cda-22eddc1291a0")
+		(property "Reference" "R27"
+			(at 151.892 39.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 149.86 39.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "460ff674-259f-4de5-9715-defcdbbdb7db")
+		)
+		(pin "2"
+			(uuid "a29164c4-4e6f-4429-9831-b3181c5d03d2")
+		)
+		(instances
+			(project "SEN_SOLAR"
+				(path "/de28acf7-25cc-4788-99e6-b4c326d1b01a"
+					(reference "R27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 240.03 39.37 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "7bc16e9d-6f64-4cc2-b3bd-a8f146bedd34")
+		(property "Reference" "R28"
+			(at 242.062 39.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "20k"
+			(at 240.03 39.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "ab3bb1f7-06b4-457b-adb8-e3ce9d8992e6")
+		)
+		(pin "2"
+			(uuid "f8a7f4fa-0f82-4c0e-8fbf-b70a31fa6a6b")
+		)
+		(instances
+			(project "SEN_SOLAR"
+				(path "/de28acf7-25cc-4788-99e6-b4c326d1b01a"
+					(reference "R28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

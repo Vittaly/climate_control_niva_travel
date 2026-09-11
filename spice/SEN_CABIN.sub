@@ -1,0 +1,9 @@
+* SEN_CABIN (субсхема из нетлиста KiCad)
+.subckt SEN_CABIN GND M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V
+  D3 SENS_FAN_SW VCC_12V MyD
+  * J5: Connector_Generic:Conn_01x02 (не моделируется)
+  SQ2 SENS_FAN_SW GND M_FAN_GATE 0 SW_GP
+  R16 M_FAN_CTL M_FAN_GATE 1k
+  R17 M_FAN_GATE GND 10k
+  * RT1: NTC (R задаётся в сценарии)
+.ends SEN_CABIN

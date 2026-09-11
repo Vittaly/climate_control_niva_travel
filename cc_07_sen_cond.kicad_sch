@@ -1,0 +1,341 @@
+(kicad_sch (version 20231120) (generator eeschema)
+  (uuid "1e7c02a2-bef8-4eba-afb8-626c9ba82187")
+  (paper "A0")
+  (title_block
+    (title "SEN_COND")
+    (company "DIY / Climate Control Niva Travel")
+    (rev "2.2")
+  )
+  (lib_symbols
+    (symbol "Device:C"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0.254)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "C"
+			(at 0.635 2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C"
+			(at 0.635 -2.54 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 0.9652 -3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "cap capacitor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "C_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "C_0_1"
+			(polyline
+				(pts
+					(xy -2.032 0.762) (xy 2.032 0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -2.032 -0.762) (xy 2.032 -0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "C_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.794)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+    (symbol "Device:R"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "R"
+			(at 2.032 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "R"
+			(at 0 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at -1.778 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "R res resistor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "R_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "R_0_1"
+			(rectangle
+				(start -1.016 -2.54)
+				(end 1.016 2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "R_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+  )
+  (symbol (lib_id "Device:C") (at 60 64.81 0) (unit 1)
+    (in_bom yes) (on_board yes) (uuid "96af1590-d97c-4432-a4da-d6cc499dd584")
+    (property "Reference" "C_CND" (at 60 76.62 0) (id 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "100nF" (at 60 53 0) (id 1) (effects (font (size 1.27 1.27))))
+    (pin "1" (uuid "aa22a3f9-7021-4011-ba9e-8020bbb434f0"))
+    (pin "2" (uuid "b23e736b-db03-4dc6-95d6-9dfe3e7ef647"))
+  )
+  (symbol (lib_id "Device:R") (at 60 98.43 0) (unit 1)
+    (in_bom yes) (on_board yes) (uuid "5e64c73f-1d98-488c-917b-47614782653c")
+    (property "Reference" "R_CND_A" (at 60 110.24 0) (id 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "10k" (at 60 86.62 0) (id 1) (effects (font (size 1.27 1.27))))
+    (pin "1" (uuid "cadfa44b-205c-428f-8401-1c0411d81ba5"))
+    (pin "2" (uuid "91f0022b-dd4b-465b-9663-7dff46b9c4bf"))
+  )
+  (symbol (lib_id "Device:R") (at 60 132.05 0) (unit 1)
+    (in_bom yes) (on_board yes) (uuid "9420793d-9886-4778-a54f-875d69bacb66")
+    (property "Reference" "R_CND_B" (at 60 143.86 0) (id 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "20k" (at 60 120.24 0) (id 1) (effects (font (size 1.27 1.27))))
+    (pin "1" (uuid "430ac062-f75a-4ffe-94f3-63b3f28d730f"))
+    (pin "2" (uuid "2ae9a1b4-dc4c-4897-93dc-6bc813b6a006"))
+  )
+  (polyline (pts (xy 60 25) (xy 120 25) (xy 120 165.86) (xy 60 165.86) (xy 60 25)) (stroke (width 0.3) (type dash)) (uuid "f18e8f59-fa05-4eb8-998b-7d1a5790813e"))
+  (text "SCHEME" (at 65 17 0) (effects (font (size 5 5))) (uuid "f702d35b-efad-42b4-a420-ca4f84d308ff"))
+  (wire (pts (xy 60 135.86) (xy 60 138.86)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "40c9a685-3845-467e-8a28-4777e18e588e"))
+  (hierarchical_label "GND" (at 60 138.86 0) (effects (font (size 1.27 1.27))) (uuid "9241c4c2-6b82-4959-891c-d357a17bf6f3"))
+  (wire (pts (xy 60 68.62) (xy 60 71.62)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "8efd78e6-e515-4e3b-868e-abfc8ec97785"))
+  (hierarchical_label "GND" (at 60 71.62 0) (effects (font (size 1.27 1.27))) (uuid "5568ed3d-eb63-40ab-9bcf-8e38f529376c"))
+  (wire (pts (xy 60 94.62) (xy 60 91.62)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "0c813dde-e8d1-42be-bebe-8217ca2f6142"))
+  (hierarchical_label "COND_RAW" (at 60 91.62 0) (effects (font (size 1.27 1.27))) (uuid "ddff82ff-4d4f-4d09-902c-65dba70be42f"))
+  (wire (pts (xy 60 102.24) (xy 60 105.24)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "5c324af8-95a1-470f-a676-bc2e6bc21ecf"))
+  (hierarchical_label "COND_ADC" (at 60 105.24 0) (effects (font (size 1.27 1.27))) (uuid "25f3410a-2c67-4f11-9d3f-9548073fbf40"))
+  (wire (pts (xy 60 128.24) (xy 60 125.24)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "07de6fdb-9115-4ea8-921a-4f6f689a6c1f"))
+  (hierarchical_label "COND_ADC" (at 60 125.24 0) (effects (font (size 1.27 1.27))) (uuid "16711b0f-c829-4601-bafa-754475a7aa62"))
+  (wire (pts (xy 60 61) (xy 60 58)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "188218c8-225b-4234-9316-1562c89ca40c"))
+  (hierarchical_label "COND_ADC" (at 60 58 0) (effects (font (size 1.27 1.27))) (uuid "f7411a89-2124-458e-80c2-5a1e61c994f0"))
+)

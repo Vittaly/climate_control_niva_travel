@@ -240,7 +240,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": "4.0"
+      "sch_revision": "2.2"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -655,6 +655,38 @@
     [
       "a01b02c3-04d5-4ebd-8db7-000000000000",
       "climate_control_niva_travel"
+    ],
+    [
+      "040cc0f0-0320-4b80-946a-9af0666896c3",
+      "PWR"
+    ],
+    [
+      "45fe1c05-ee7c-4ec1-af90-6960070ad180",
+      "OUT"
+    ],
+    [
+      "e8c1b6f0-a9d6-4a2d-95aa-f8b1dc456fca",
+      "UI"
+    ],
+    [
+      "1032d922-b869-4197-a328-a087df99daaa",
+      "ACT"
+    ],
+    [
+      "4a5bb840-be47-486f-9bdc-0c5520587458",
+      "SEN_CABIN"
+    ],
+    [
+      "b812210f-c90a-4dbf-89ab-66f20a07dc4c",
+      "SEN_HEAT"
+    ],
+    [
+      "4b030346-a637-4417-a5fe-b017a659af66",
+      "SEN_SOLAR"
+    ],
+    [
+      "873eb8ef-f47b-4e3c-bf7b-edf4b03b0158",
+      "SEN_COND"
     ]
   ],
   "text_variables": {},

@@ -1,0 +1,7 @@
+* Файл библиотеки: my_library.sub
+* Здесь хранятся только субсхемы
+
+.subckt test_div in out gnd r1=1k r2=1k
+    r1 in out {r1}
+    r2 out gnd {r2}
+.ends

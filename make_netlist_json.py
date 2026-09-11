@@ -685,14 +685,13 @@ rect_for("Connector_Generic:Conn_02x16_Odd_Even", "5.0", "20.0")
 rect_for("Connector_Generic:Conn_01x02", "3.0", "2.0")
 rect_for("Connector_Generic:Conn_01x04", "3.0", "4.0")
 
-# ============================================================================
 #  ПЛОСКИЙ СПИСОК СТРАНИЦ (все одного уровня; 1-я MAIN - разъём J1 + питание)
 # ============================================================================
 _default_sheet = {
-    "Power_Protection": "MAIN", "Regulator_5V": "MAIN", "Regulator_3V3": "MAIN",
-    "Filter_Power": "MAIN", "Connector_Main": "MAIN",
-    "Filter_Decoupling": "MCU", "Filter_Analog": "ACT", "RC_Reset": "MCU", "MCU": "MCU",
-    "Debug_Connector": "MCU",
+    "Power_Protection": "PWR", "Regulator_5V": "PWR", "Regulator_3V3": "PWR",
+    "Filter_Power": "PWR", "Connector_Main": "PWR",
+    "Filter_Decoupling": "CONTROLLER", "Filter_Analog": "PWR", "RC_Reset": "CONTROLLER", "MCU": "CONTROLLER",
+    "Debug_Connector": "CONTROLLER", "CAN_Transceiver": "CAN",
     "Motor_Driver": "ACT",
     "Switch_OpenDrain": "OUT", "Switch_12V": "OUT",
     "Switch_Load": "SEN_CABIN", "Sensor_Cabin": "SEN_CABIN",
@@ -700,9 +699,10 @@ _default_sheet = {
     "Analog_Condition": "UI",
 }
 _overrides = {
-    "C5": "MCU", "C6": "MCU", "C10": "MCU", "FB1": "MCU", "C7": "MCU", "C8": "MCU", "C9": "MCU",
+    "C5": "CONTROLLER", "C6": "CONTROLLER", "C10": "CONTROLLER", "FB1": "CONTROLLER",
+    "C7": "CONTROLLER", "C8": "CONTROLLER", "C9": "CONTROLLER",
     "C12": "ACT", "C13": "ACT", "C14": "ACT", "C15": "ACT",
-    "C16": "ACT", "C17": "ACT", "C18": "ACT", "C19": "ACT",
+    "C16": "PWR", "C17": "PWR", "C18": "PWR", "C19": "PWR",
     "J_SENS_FAN": "SEN_CABIN", "D3": "SEN_CABIN",
     "R_OZH_UP": "SEN_HEAT", "R_OZH_PROT": "SEN_HEAT", "C_OZH": "SEN_HEAT",
     "R_SOL_A": "SEN_SOLAR", "R_SOL_B": "SEN_SOLAR", "C_SOL": "SEN_SOLAR",
@@ -714,7 +714,7 @@ _overrides = {
     "R_ILL_A": "UI", "R_ILL_B": "UI", "C_ILL": "UI",
     "R_TEMP_UP": "UI", "C_TEMP": "UI", "R_FAN_UP": "UI", "C_FAN": "UI",
 }
-_sheet_order = ["MAIN", "MCU", "UI", "SEN_CABIN", "SEN_HEAT", "SEN_SOLAR", "SEN_COND", "OUT", "ACT"]
+_sheet_order = ["CONTROLLER", "CAN", "PWR", "UI", "SEN_CABIN", "SEN_HEAT", "SEN_SOLAR", "SEN_COND", "OUT", "ACT"]
 _by_sheet = {name: [] for name in _sheet_order}
 for _ref, _info in C.items():
     if _info.get("virtual"):
@@ -734,6 +734,37 @@ if _flat != _covered:
 # ============================================================================
 #  СБОРКА И ЗАПИСЬ
 # ============================================================================
+# --- канонизация ссылок KiCad: [префикс][номер], без подчёркиваний ---
+import re as _re
+def _canonicalize_refs():
+    mapping = {}
+    used = {}
+    # проход 1: корректные имена оставляем как есть
+    for old in C:
+        m = _re.match(r'^([A-Za-z]+)(\d+)$', old)
+        if m and '_' not in old:
+            mapping[old] = old
+            used.setdefault(m.group(1), set()).add(int(m.group(2)))
+    # проход 2: ссылки с подчёркиванием -> prefix + следующий номер
+    for old in C:
+        if old in mapping:
+            continue
+        prefix = old.split('_')[0]
+        n = max(used.get(prefix, [0])) + 1
+        used.setdefault(prefix, set()).add(n)
+        mapping[old] = prefix + str(n)
+    newC = {}
+    for old, info in C.items():
+        info["ref_canon"] = mapping[old]
+        newC[mapping[old]] = info
+    return mapping, newC
+
+_refmap, C = _canonicalize_refs()
+for sh in _sheets:
+    sh["components"] = [_refmap[r] for r in sh["components"]]
+for _nm in NETS:
+    NETS[_nm]["nodes"] = [[_refmap[r], p] for (r, p) in NETS[_nm]["nodes"]]
+
 model = {
     "metadata": metadata,
     "sheets": _sheets,

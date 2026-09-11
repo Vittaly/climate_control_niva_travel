@@ -1,0 +1,23 @@
+* Ngspice тест: SEN_COND (порт-интерфейс из KiCad)
+
+
+
+
+.INCLUDE spice/SEN_COND.sub
+.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
+.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
+.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
+.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
+
+* Порты: COND_ADC COND_RAW GND
+XSEN_COND COND_ADC COND_RAW 0 SEN_COND
+
+VS COND_RAW 0 DC 2.5
+.op
+* PASS: COND_ADC ~1.6В (делитель 5->3,3)
+.control
+op
+print V(COND_ADC)
+run
+.endc
+.end

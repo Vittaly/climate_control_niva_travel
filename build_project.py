@@ -123,6 +123,14 @@ def nominal_of(value):
 # ============================================================================
 #  ЗАГОЛОВОК ФАЙЛА ЛИСТА
 # ============================================================================
+
+SIM_MAP = {
+    ("Device", "D"): "D", ("Device", "D_Schottky"): "D", ("Device", "D_Zener"): "D",
+    ("Device", "Q_NMOS"): "NMOS", ("Device", "Q_NPN"): "NPN", ("Device", "Q_PNP"): "PNP",
+    ("Driver_Motor", "DRV8871DDA"): ("DRV8871", "DRV8871_ngspice"),
+    ("Interface_CAN_LIN", "MCP2562-E-SN"): ("MCP2562", "MCP2562_ngspice"),
+}
+
 def file_header(title, rev="4.0", spec="Climate Control Niva Travel"):
     md = spec
     return [
@@ -278,8 +286,16 @@ def write_page(model, page, page_path, is_root, other_pages):
                  % (r, cx, cy + h/2 + 2.0))
         L.append('    (property "Value" "%s" (at %g %g 0) (id 1) (effects (font (size 1.27 1.27))))'
                  % (nominal_of(info.get("value", "")), cx, cy - h/2 - 2.0))
-        L.append('    (property "Footprint" "%s" (at %g %g 0) (id 2) (effects (font (size 1.27 1.27)) hide))'
-                 % (info.get("footprint", "~"), cx, cy))
+        _sim = SIM_MAP.get((lib, sym))
+        if _sim:
+            if isinstance(_sim, tuple):
+                _dev, _lib = _sim
+                _fields = (("Sim.Device", _dev), ("Sim.Library", _lib), ("Sim.Name", _dev))
+            else:
+                _fields = (("Sim.Device", _sim), ("Sim.Library", "Simulation_SPICE"), ("Sim.Name", _sim))
+            for _k, _v in _fields:
+                L.append('    (property "%s" "%s" (at %g %g 0) (effects (font (size 1.27 1.27)) hide))'
+                         % (_k, _v, cx, cy))
         for pnum, *_ in pinlist[(lib, sym)]:
             L.append('    (pin "%s" (uuid "%s"))' % (pnum, uu()))
         L.append('  )')
@@ -349,25 +365,52 @@ def write_page(model, page, page_path, is_root, other_pages):
         for it in items:
             L.append('  (wire (pts (xy %g %g) (xy %g %g)) (stroke (width 0) (type solid) (color 0 0 0 0)) (uuid "%s"))'
                      % (it[2], it[3], it[4], it[5], uu()))
-            L.append('  (label "%s" (at %g %g 0) (effects (font (size 1.27 1.27))) (uuid "%s"))'
-                     % (nm, it[4], it[5], uu()))
+            if model.get("_single"):
+                L.append('  (label "%s" (at %g %g 0) (effects (font (size 1.27 1.27))) (uuid "%s"))'
+                         % (nm, it[4], it[5], uu()))
+            else:
+                L.append('  (hierarchical_label "%s" (at %g %g 0) (effects (font (size 1.27 1.27))) (uuid "%s"))'
+                         % (nm, it[4], it[5], uu()))
 
-    # ---- листы-ссылки (только в корневом листе)
-    if is_root:
-        sx, sy = 60.0, 30.0
+    # ---- листы-ссылки: НЕ ГЕНЕРИРУЕМ (формат не читается этой сборкой),
+    #      страницы добавляются вручную в KiCad (Place -> Hierarchical Sheet)
+    if False and is_root:
+        SIZES = {"CAN":30,"PWR":85,"UI":80,"SEN_CABIN":30,"SEN_HEAT":25,
+                 "SEN_SOLAR":22,"SEN_COND":22,"OUT":45,"ACT":92}
         for i, sh in enumerate(other_pages):
-            page_no = sh["order"]
-            L.append('  (sheet (at %g %g 0) (size 60 35)' % (sx, sy))
-            L.append('    (stroke (width 0.1524) (type solid) (color 0 0 0 0))')
-            L.append('    (fill (color 0 0 0 0.0))')
+            h = SIZES.get(sh["name"], 40)
+            bx = 90 + (i % 3) * 150
+            by = 30 + (i // 3) * (h + 60)
+            W = 80.0
+            L.append('  (sheet')
+            L.append('    (at %g %g 0)' % (bx, by))
+            L.append('    (size %g %g)' % (W, h))
+            L.append('    (fields_autoplaced yes)')
+            L.append('    (stroke')
+            L.append('      (width 0.1524)')
+            L.append('      (type solid)')
+            L.append('      (color 0 0 0 0)')
+            L.append('    )')
+            L.append('    (fill')
+            L.append('      (color 0 0 0 0.0)')
+            L.append('    )')
             L.append('    (uuid "%s")' % uu())
-            L.append('    (property "Sheetname" "%s" (at %g %g 0)'
-                     ' (effects (font (size 1.27 1.27)) (justify left bottom)))' % (sh["name"], sx, sy))
-            L.append('    (property "Sheetfile" "%s" (at %g %g 0)'
-                     ' (effects (font (size 1.27 1.27)) (justify left top)))' % (sh["file"], sx, sy))
-            L.append('    (instances (project "" (path "/" (page "%d"))))' % page_no)
+            L.append('    (property "Sheetname" "%s"' % sh["name"])
+            L.append('      (at %g %g 0)' % (bx, by))
+            L.append('      (effects (font (size 1.27 1.27)) (justify left bottom))')
+            L.append('    )')
+            L.append('    (property "Sheetfile" "%s"' % sh["file"])
+            L.append('      (at %g %g 0)' % (bx, by))
+            L.append('      (effects (font (size 1.27 1.27)) (justify left top))')
+            L.append('    )')
+            L.append('    (instances')
+            L.append('      (project ""')
+            L.append('        (path "/"')
+            L.append('          (page "%d")' % sh["order"])
+            L.append('        )')
+            L.append('      )')
+            L.append('    )')
             L.append('  )')
-            sy += 45.0
 
     L.append(')')
     with open(page_path, "w", encoding="utf-8") as f:

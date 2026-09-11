@@ -1,0 +1,32 @@
+* UI (субсхема из нетлиста KiCad)
+.subckt UI BTN_AC BTN_DEFROST_GLASS BTN_DRY_GLASS BTN_FACE BTN_FEET BTN_RECIRC FAN_SEL_ADC GND ILLUM_IN_RAW ILLUM_SENSE LED_AC_A LED_AC_DRV LED_DEFROST_GLASS_A LED_DEFROST_GLASS_DRV LED_DRY_GLASS_A LED_DRY_GLASS_DRV LED_FACE_A LED_FACE_DRV LED_FEET_A LED_FEET_DRV LED_RECIRC_A LED_RECIRC_DRV NTC_CABIN TEMP_SET_ADC VCC_3V3
+  C22 TEMP_SET_ADC GND 100n
+  C23 FAN_SEL_ADC GND 100n
+  C24 NTC_CABIN GND 100n
+  C32 ILLUM_SENSE GND 100n
+  * J3: Connector_Generic:Conn_01x02 (не моделируется)
+  * J4: Connector_Generic:Conn_01x02 (не моделируется)
+  * LED1: Device:LED (не моделируется)
+  * LED2: Device:LED (не моделируется)
+  * LED3: Device:LED (не моделируется)
+  * LED4: Device:LED (не моделируется)
+  * LED5: Device:LED (не моделируется)
+  * LED6: Device:LED (не моделируется)
+  R10 VCC_3V3 LED_DRY_GLASS_A 1k
+  R11 VCC_3V3 LED_AC_A 1k
+  R12 VCC_3V3 LED_RECIRC_A 1k
+  R22 VCC_3V3 TEMP_SET_ADC 10k
+  R23 VCC_3V3 FAN_SEL_ADC 10k
+  R24 VCC_3V3 NTC_CABIN 10k
+  R39 ILLUM_IN_RAW ILLUM_SENSE 47k
+  R40 ILLUM_SENSE GND 10k
+  R7 VCC_3V3 LED_DEFROST_GLASS_A 1k
+  R8 VCC_3V3 LED_FACE_A 1k
+  R9 VCC_3V3 LED_FEET_A 1k
+  * SW1: Switch:SW_Push (не моделируется)
+  * SW2: Switch:SW_Push (не моделируется)
+  * SW3: Switch:SW_Push (не моделируется)
+  * SW4: Switch:SW_Push (не моделируется)
+  * SW5: Switch:SW_Push (не моделируется)
+  * SW6: Switch:SW_Push (не моделируется)
+.ends UI

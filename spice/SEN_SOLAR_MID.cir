@@ -1,0 +1,23 @@
+* Ngspice тест: SEN_SOLAR (порт-интерфейс из KiCad)
+
+
+
+
+.INCLUDE spice/SEN_SOLAR.sub
+.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
+.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
+.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
+.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
+
+* Порты: GND SOLAR_ADC SOLAR_RAW
+XSEN_SOLAR 0 SOLAR_ADC SOLAR_RAW SEN_SOLAR
+
+VS SOLAR_RAW 0 DC 2.5
+.op
+* PASS: SOLAR_ADC ~1.6В (делитель 5->3,3)
+.control
+op
+print V(SOLAR_ADC)
+run
+.endc
+.end

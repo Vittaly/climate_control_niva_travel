@@ -1,0 +1,24 @@
+* Ngspice тест: OUT (порт-интерфейс из KiCad)
+
+
+
+
+.INCLUDE spice/OUT.sub
+.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
+.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
+.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
+.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
+
+* Порты: AC_BASE AC_CTL AC_PNP_BASE AC_REQ AC_REQ_OUT FAN_GATE FAN_PWM_CTL FAN_PWM_NODE FAN_PWM_OUT GND VCC_12V
+XOUT AC_BASE AC_CTL AC_PNP_BASE AC_REQ AC_REQ_OUT FAN_GATE FAN_PWM_CTL FAN_PWM_NODE FAN_PWM_OUT 0 VCC_12V OUT
+
+VS VCC_12V 0 DC 14.4
+V1 FAN_PWM_CTL 0 DC 0
+.op
+* PASS: FAN_PWM_OUT ~12В (ключ закрыт)
+.control
+op
+print V(FAN_PWM_OUT)
+run
+.endc
+.end
