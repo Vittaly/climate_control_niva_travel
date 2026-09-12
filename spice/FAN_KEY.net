@@ -1,7 +1,7 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_05_sen_cabin.kicad_sch")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_11_fan_key.kicad_sch")
 		(date "2026-09-12T14:22:01")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
@@ -9,11 +9,11 @@
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title "SEN_CABIN")
+				(title)
 				(company)
 				(rev)
 				(date)
-				(source "cc_05_sen_cabin.kicad_sch")
+				(source "cc_11_fan_key.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -55,8 +55,9 @@
 	)
 	(components
 		(comp
-			(ref "D3")
-			(value "1N4148W")
+			(ref "C_GATE")
+			(value "1n")
+			(description "Unpolarized capacitor")
 			(fields
 				(field
 					(name "Footprint")
@@ -65,8 +66,115 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description")
+					(name "Description") "Unpolarized capacitor")
+			)
+			(libsource
+				(lib "Device")
+				(part "C")
+				(description "Unpolarized capacitor")
+			)
+			(property
+				(name "Sheetname")
+				(value "Root")
+			)
+			(property
+				(name "Sheetfile")
+				(value "cc_11_fan_key.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "cap capacitor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "C_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "bf89ad3b-6fdc-40f5-93a8-6f039cbf1c67")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
 				)
+			)
+		)
+		(comp
+			(ref "C_OUT")
+			(value "100n")
+			(description "Unpolarized capacitor")
+			(fields
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description") "Unpolarized capacitor")
+			)
+			(libsource
+				(lib "Device")
+				(part "C")
+				(description "Unpolarized capacitor")
+			)
+			(property
+				(name "Sheetname")
+				(value "Root")
+			)
+			(property
+				(name "Sheetfile")
+				(value "cc_11_fan_key.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "cap capacitor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "C_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "ee6c8088-c1bd-41e4-9edc-3ad089975062")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D6")
+			(value "SS54")
+			(description "Diode")
+			(fields
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description") "Diode")
 			)
 			(libsource
 				(lib "Device")
@@ -79,7 +187,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_05_sen_cabin.kicad_sch")
+				(value "cc_11_fan_key.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -93,7 +201,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e235d44a-46ee-4c3e-84c9-60aa23682edf")
+			(tstamps "baa99825-b82f-42b5-9b3d-24040776ab1b")
 			(units
 				(unit
 					(name "A")
@@ -109,8 +217,9 @@
 			)
 		)
 		(comp
-			(ref "J5")
-			(value "Внутр. коннектор вентилятора продувки (2п, XH)")
+			(ref "L_OUT")
+			(value "2u")
+			(description "Inductor")
 			(fields
 				(field
 					(name "Footprint")
@@ -119,13 +228,12 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description")
-				)
+					(name "Description") "Inductor")
 			)
 			(libsource
-				(lib "Connector_Generic")
-				(part "Conn_01x02")
-				(description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
+				(lib "Device")
+				(part "L")
+				(description "Inductor")
 			)
 			(property
 				(name "Sheetname")
@@ -133,21 +241,21 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_05_sen_cabin.kicad_sch")
+				(value "cc_11_fan_key.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
-				(value "connector")
+				(value "inductor choke coil reactor magnetic")
 			)
 			(property
 				(name "ki_fp_filters")
-				(value "Connector*:*_1x??_*")
+				(value "Choke_* *Coil* Inductor_* L_*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4f7585c1-256c-43fd-9bc5-49791c1a5c40")
+			(tstamps "e1da5b16-d115-4163-9fb0-314028304343")
 			(units
 				(unit
 					(name "A")
@@ -163,8 +271,9 @@
 			)
 		)
 		(comp
-			(ref "Q2")
-			(value "AO3400")
+			(ref "Q5")
+			(value "HYG012N03")
+			(description "N-MOSFET transistor")
 			(fields
 				(field
 					(name "Footprint")
@@ -173,8 +282,7 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description")
-				)
+					(name "Description") "N-MOSFET transistor")
 			)
 			(libsource
 				(lib "Device")
@@ -187,7 +295,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_05_sen_cabin.kicad_sch")
+				(value "cc_11_fan_key.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -197,7 +305,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "b75ffb63-3cdc-4103-ae43-110e180a92bb")
+			(tstamps "d8d812e3-d23a-4f7d-ae5f-0ce3dcb1e57a")
 			(units
 				(unit
 					(name "A")
@@ -216,8 +324,9 @@
 			)
 		)
 		(comp
-			(ref "R16")
-			(value "1k")
+			(ref "R31")
+			(value "100R")
+			(description "Resistor")
 			(fields
 				(field
 					(name "Footprint")
@@ -226,8 +335,7 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description")
-				)
+					(name "Description") "Resistor")
 			)
 			(libsource
 				(lib "Device")
@@ -240,7 +348,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_05_sen_cabin.kicad_sch")
+				(value "cc_11_fan_key.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -254,115 +362,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "124b0d87-9b20-448a-b7f0-662e736f47a9")
-			(units
-				(unit
-					(name "A")
-					(pins
-						(pin
-							(num "1")
-						)
-						(pin
-							(num "2")
-						)
-					)
-				)
-			)
-		)
-		(comp
-			(ref "R17")
-			(value "10k")
-			(fields
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description")
-				)
-			)
-			(libsource
-				(lib "Device")
-				(part "R")
-				(description "Resistor")
-			)
-			(property
-				(name "Sheetname")
-				(value "Root")
-			)
-			(property
-				(name "Sheetfile")
-				(value "cc_05_sen_cabin.kicad_sch")
-			)
-			(property
-				(name "ki_keywords")
-				(value "R res resistor")
-			)
-			(property
-				(name "ki_fp_filters")
-				(value "R_*")
-			)
-			(sheetpath
-				(names "/")
-				(tstamps "/")
-			)
-			(tstamps "dbc2a74b-3e1b-4123-b85a-6a93db96dac5")
-			(units
-				(unit
-					(name "A")
-					(pins
-						(pin
-							(num "1")
-						)
-						(pin
-							(num "2")
-						)
-					)
-				)
-			)
-		)
-		(comp
-			(ref "RT1")
-			(value "NTC 10k B3435,")
-			(fields
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description")
-				)
-			)
-			(libsource
-				(lib "Device")
-				(part "Thermistor_NTC")
-				(description "Temperature dependent resistor, negative temperature coefficient")
-			)
-			(property
-				(name "Sheetname")
-				(value "Root")
-			)
-			(property
-				(name "Sheetfile")
-				(value "cc_05_sen_cabin.kicad_sch")
-			)
-			(property
-				(name "ki_keywords")
-				(value "thermistor NTC resistor sensor RTD")
-			)
-			(property
-				(name "ki_fp_filters")
-				(value "R_* RV_*")
-			)
-			(sheetpath
-				(names "/")
-				(tstamps "/")
-			)
-			(tstamps "488db86a-b9e7-4eec-81f5-7dd580f25340")
+			(tstamps "da515e40-091b-4479-b80d-3c591af62689")
 			(units
 				(unit
 					(name "A")
@@ -382,17 +382,17 @@
 	(variants)
 	(libparts
 		(libpart
-			(lib "Connector_Generic")
-			(part "Conn_01x02")
-			(description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
+			(lib "Device")
+			(part "C")
+			(description "Unpolarized capacitor")
 			(footprints
-				(fp "Connector*:*_1x??_*")
+				(fp "C_*")
 			)
 			(fields
 				(field
-					(name "Reference") "J")
+					(name "Reference") "C")
 				(field
-					(name "Value") "Conn_01x02")
+					(name "Value") "C")
 				(field
 					(name "Footprint")
 				)
@@ -400,17 +400,17 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
+					(name "Description") "Unpolarized capacitor")
 			)
 			(pins
 				(pin
 					(num "1")
-					(name "Pin_1")
+					(name "")
 					(type "passive")
 				)
 				(pin
 					(num "2")
-					(name "Pin_2")
+					(name "")
 					(type "passive")
 				)
 			)
@@ -452,6 +452,43 @@
 				(pin
 					(num "2")
 					(name "A")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "Device")
+			(part "L")
+			(description "Inductor")
+			(footprints
+				(fp "Choke_*")
+				(fp "*Coil*")
+				(fp "Inductor_*")
+				(fp "L_*")
+			)
+			(fields
+				(field
+					(name "Reference") "L")
+				(field
+					(name "Value") "L")
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description") "Inductor")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "2")
 					(type "passive")
 				)
 			)
@@ -526,47 +563,8 @@
 				)
 			)
 		)
-		(libpart
-			(lib "Device")
-			(part "Thermistor_NTC")
-			(description "Temperature dependent resistor, negative temperature coefficient")
-			(footprints
-				(fp "R_*")
-				(fp "RV_*")
-			)
-			(fields
-				(field
-					(name "Reference") "TH")
-				(field
-					(name "Value") "Thermistor_NTC")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description") "Temperature dependent resistor, negative temperature coefficient")
-			)
-			(pins
-				(pin
-					(num "1")
-					(name "")
-					(type "passive")
-				)
-				(pin
-					(num "2")
-					(name "")
-					(type "passive")
-				)
-			)
-		)
 	)
 	(libraries
-		(library
-			(logical "Connector_Generic")
-			(uri "${KICAD10_SYMBOL_DIR}/Connector_Generic.kicad_sym")
-		)
 		(library
 			(logical "Device")
 			(uri "${KICAD10_SYMBOL_DIR}/Device.kicad_sym")
@@ -575,103 +573,103 @@
 	(nets
 		(net
 			(code "1")
-			(name "/GND")
+			(name "/FAN_GATE_EXT")
 			(class "Default")
 			(node
-				(ref "Q2")
-				(pin "S")
-				(pinfunction "S_S")
+				(ref "C_GATE")
+				(pin "1")
 				(pintype "passive")
 			)
 			(node
-				(ref "R17")
-				(pin "2")
-				(pintype "passive")
+				(ref "Q5")
+				(pin "G")
+				(pinfunction "G_G")
+				(pintype "input")
 			)
 			(node
-				(ref "RT1")
+				(ref "R31")
 				(pin "2")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "2")
-			(name "/M_FAN_CTL")
+			(name "/FAN_LOAD_LO")
 			(class "Default")
 			(node
-				(ref "R16")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "3")
-			(name "/M_FAN_GATE")
-			(class "Default")
-			(node
-				(ref "Q2")
-				(pin "G")
-				(pinfunction "G_G")
-				(pintype "input")
-			)
-			(node
-				(ref "R16")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R17")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "4")
-			(name "/NTC_CABIN")
-			(class "Default")
-			(node
-				(ref "RT1")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "5")
-			(name "/SENS_FAN_SW")
-			(class "Default")
-			(node
-				(ref "D3")
+				(ref "D6")
 				(pin "2")
 				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
-				(pin "2")
-				(pinfunction "Pin_2_2")
+				(ref "L_OUT")
+				(pin "1")
+				(pinfunction "1_1")
 				(pintype "passive")
 			)
 			(node
-				(ref "Q2")
+				(ref "Q5")
 				(pin "D")
 				(pinfunction "D_D")
 				(pintype "passive")
 			)
 		)
 		(net
-			(code "6")
-			(name "/VCC_12V")
+			(code "3")
+			(name "/FAN_PWM_OUT")
 			(class "Default")
 			(node
-				(ref "D3")
+				(ref "R31")
 				(pin "1")
-				(pinfunction "K_1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "4")
+			(name "/GND")
+			(class "Default")
+			(node
+				(ref "C_GATE")
+				(pin "2")
 				(pintype "passive")
 			)
 			(node
-				(ref "J5")
+				(ref "C_OUT")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q5")
+				(pin "S")
+				(pinfunction "S_S")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "5")
+			(name "/MOTOR_TERM")
+			(class "Default")
+			(node
+				(ref "C_OUT")
 				(pin "1")
-				(pinfunction "Pin_1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "L_OUT")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "6")
+			(name "/VBAT_FAN")
+			(class "Default")
+			(node
+				(ref "D6")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 		)

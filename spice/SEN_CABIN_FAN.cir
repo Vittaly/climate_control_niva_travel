@@ -3,6 +3,8 @@
 
 
 
+
+
 .INCLUDE spice/SEN_CABIN.sub
 .model MyD D(IS=4.35e-9 RS=0.64 BV=110)
 .model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)

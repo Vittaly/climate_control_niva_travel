@@ -3,6 +3,8 @@
 
 .INCLUDE mc78m05_ngspice.lib
 .INCLUDE ams1117_33_ngspice.lib
+
+
 .INCLUDE spice/PWR.sub
 .model MyD D(IS=4.35e-9 RS=0.64 BV=110)
 .model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)

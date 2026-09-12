@@ -80,6 +80,8 @@ def spice_el(ref, comp, nets):
         g = node.get("g", node.get("b", "GND"))
         d = node.get("d", node.get("c", "GND"))
         s_ = node.get("s", node.get("e", "GND"))
+        if part == "Q_NMOS" and comp["value"].strip().upper().startswith("HYG"):
+            return f'X{ref} {d} {g} {s_} HYG012N03'
         return f'S{ref} {d} {s_} {g} 0 SW_GP'
     if part == "DRV8871DDA":
         order = ["IN1", "IN2", "OUT1", "OUT2", "VM", "GND"]
@@ -145,9 +147,40 @@ def scenarios_for(sheet):
         ],
         "OUT": [
             {"name": "OUT_FAN_ON", "deck": ["VS VCC_12V 0 DC 14.4", "V1 FAN_PWM_CTL 0 DC 3.3", ".op",
-              "* PASS: FAN_PWM_OUT низкий (ключ открыт)"], "print": "V(FAN_PWM_OUT)"},
+              "* PASS: FAN_PWM_OUT низкий (буфер Q1 открыт)"],
+             "print": "V(FAN_PWM_OUT)"},
             {"name": "OUT_FAN_OFF", "deck": ["VS VCC_12V 0 DC 14.4", "V1 FAN_PWM_CTL 0 DC 0", ".op",
-              "* PASS: FAN_PWM_OUT ~12В (ключ закрыт)"], "print": "V(FAN_PWM_OUT)"},
+              "* PASS: FAN_PWM_OUT ~12В (буфер закрыт)"],
+             "print": "V(FAN_PWM_OUT)"},
+        ],
+        "FAN_KEY": [
+            {"name": "FAN_KEY_STEADY", "deck": ["VB VBAT_SRC 0 DC 13.5",
+              "VPWM FAN_PWM_OUT 0 DC 12", ".op",
+              "* PASS: I(VB)~15А (мотор на скорости, ключ открыт)"],
+             "analysis": "op",
+             "control": "let ifan = -i(VB)\nprint ifan"},
+            {"name": "FAN_KEY_STARTUP", "deck": ["VPWM FAN_PWM_OUT 0 DC 12",
+              "VB VBAT_SRC 0 DC 0 PULSE(0 13.5 0.5u 0.1u 0.1u 1 1)",
+              ".measure TRAN isurge MIN i(VB)",
+              "* PASS: пусковой бросок ~30А (ротор заторможен)"],
+             "analysis": "tran 0.1m 0.5",
+             "control": "* startup tran"},
+            {"name": "FAN_KEY_PWM", "deck": [
+              "VB VBAT_SRC 0 DC 13.5",
+              "* Источник ШИМ с импедансом выхода модуля контроля (R14 4.7k + R15 1k):",
+              "* слабая подтяжка -> медленный фронт затвора (завал) на 4кГц",
+              "RSRC FAN_PWM_OUT FAN_PWM_SRC 5.7k",
+              "VDRV FAN_PWM_SRC 0 PULSE(12 0 0 0.5u 0.5u 125u 250u)",
+              ".measure TRAN vdmax MAX v(FAN_LOAD_LO)",
+              "* PASS: 4кГц ШИМ: завал фронтов затвора, сток на freewheel-диоде ~14В"],
+             "analysis": "tran 2u 1m",
+             "control": "set maxstep=5u\n"
+                        "let vg = v(FAN_GATE_EXT)\n"
+                        "let n = length(vg)\n"
+                        "let vgsmax = vg[n-1]\n"
+                        "let ig = v(FAN_PWM_SRC,FAN_GATE_EXT)/5.7k\n"
+                        "let igavg = mean(ig)\n"
+                        "print vgsmax igavg"},
         ],
         "CAN": [
             {"name": "CAN_RECESSIVE", "deck": ["VS VCC_5V 0 DC 5", "V1 CAN_TX 0 DC 5", ".op",
@@ -199,20 +232,39 @@ def main():
     has_mcp = any(c["part"] == "MCP2562-E-SN" for c in comps.values())
     has_mc78 = any(c["part"] == "LM78M05_TO252" for c in comps.values())
     has_ams = any(c["part"] == "AP1117-15" for c in comps.values())
+    has_hyg = any(c["part"] == "Q_NMOS" and c["value"].strip().upper().startswith("HYG")
+                  for c in comps.values())
     base = ["* Ngspice тест: %s (порт-интерфейс из KiCad)" % sheet,
             ".INCLUDE drv8871_ngspice.lib" if has_drv else "",
             ".INCLUDE mcp2562_ngspice.lib" if has_mcp else "",
             ".INCLUDE mc78m05_ngspice.lib" if has_mc78 else "",
             ".INCLUDE ams1117_33_ngspice.lib" if has_ams else "",
+            ".INCLUDE hyg012n03_ngspice.lib" if has_hyg else "",
+            ".INCLUDE motor_model.lab" if sheet == "FAN_KEY" else "",
             ".INCLUDE spice/%s.sub" % sheet,
+            ".model MyD D(IS=1e-6 RS=0.01 CJ=2n BV=60)" if sheet == "FAN_KEY" else
             ".model MyD D(IS=4.35e-9 RS=0.64 BV=110)",
             ".model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)",
             ".model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)\n.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)",
             "",
             "* Порты: " + " ".join(ports)]
     cargs = " ".join("0" if p == "GND" else p for p in ports)
-    base.append("X%s %s %s" % (sheet, cargs, sheet))
-    base.append("")
+    if sheet == "FAN_KEY":
+        # Отдельный виртуальный стенд ШИМ-ключа: GND ключа отделён от батарейного
+        # узла, чтобы в деке добавить обратный провод (R34/L4). Мотор с проводами
+        # подключается ТОЛЬКО здесь (модельный уровень), на схеме его нет.
+        cargs = " ".join("XGND" if p == "GND" else p for p in ports)
+        base.append("X%s %s %s" % (sheet, cargs, sheet))
+        base.append("* мотор (motor_model.lab) + паразитные провода — только в тесте:")
+        base.append("XMOT VBAT_FAN MOTOR_TERM SPEED DC_MOTOR_ADVANCED")
+        base.append("R33 VBAT_SRC VBAT_FAN 0.015")
+        base.append("L3  VBAT_SRC VBAT_FAN 1.5u")
+        base.append("R34 XGND 0 0.015")
+        base.append("L4  XGND 0 1.5u")
+        base.append("")
+    else:
+        base.append("X%s %s %s" % (sheet, cargs, sheet))
+        base.append("")
 
     scns = scenarios_for(sheet)(nets, comps) if sheet == "PWR" else scenarios_for(sheet)
     if not scns:
@@ -222,8 +274,9 @@ def main():
             f.write("\n".join(S) + "\n")
     else:
         for sc in scns:
-            S = base + sc["deck"] + [".control", "op",
-                                     "print " + sc["print"], "run",
+            an = sc.get("analysis", "op")
+            body = sc.get("control") or ("print " + sc["print"])
+            S = base + sc["deck"] + [".control", an, body, "run",
                                      ".endc", ".end"]
             with open("spice/%s.cir" % sc["name"], "w", encoding="utf-8") as f:
                 f.write("\n".join(S) + "\n")

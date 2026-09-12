@@ -41,7 +41,7 @@ PY = sys.executable
 
 # Листы, для которых есть аналоговые сценарии (остальные пропускаем)
 SCENARIO_SHEETS = ("PWR", "UI", "SEN_HEAT", "SEN_SOLAR", "SEN_COND",
-                   "ACT", "OUT", "CAN", "SEN_CABIN")
+                   "ACT", "OUT", "CAN", "SEN_CABIN", "FAN_KEY")
 
 
 def run(cmd):

@@ -1,0 +1,41 @@
+* Ngspice тест: FAN_KEY (порт-интерфейс из KiCad)
+
+
+
+
+.INCLUDE hyg012n03_ngspice.lib
+.INCLUDE motor_model.lab
+.INCLUDE spice/FAN_KEY.sub
+.model MyD D(IS=1e-6 RS=0.01 CJ=2n BV=60)
+.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
+.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
+.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
+
+* Порты: FAN_GATE_EXT FAN_LOAD_LO FAN_PWM_OUT GND MOTOR_TERM VBAT_FAN
+XFAN_KEY FAN_GATE_EXT FAN_LOAD_LO FAN_PWM_OUT XGND MOTOR_TERM VBAT_FAN FAN_KEY
+* мотор (motor_model.lab) + паразитные провода — только в тесте:
+XMOT VBAT_FAN MOTOR_TERM SPEED DC_MOTOR_ADVANCED
+R33 VBAT_SRC VBAT_FAN 0.015
+L3  VBAT_SRC VBAT_FAN 1.5u
+R34 XGND 0 0.015
+L4  XGND 0 1.5u
+
+VB VBAT_SRC 0 DC 13.5
+* Источник ШИМ с импедансом выхода модуля контроля (R14 4.7k + R15 1k):
+* слабая подтяжка -> медленный фронт затвора (завал) на 4кГц
+RSRC FAN_PWM_OUT FAN_PWM_SRC 5.7k
+VDRV FAN_PWM_SRC 0 PULSE(12 0 0 0.5u 0.5u 125u 250u)
+.measure TRAN vdmax MAX v(FAN_LOAD_LO)
+* PASS: 4кГц ШИМ: завал фронтов затвора, сток на freewheel-диоде ~14В
+.control
+tran 2u 1m
+set maxstep=5u
+let vg = v(FAN_GATE_EXT)
+let n = length(vg)
+let vgsmax = vg[n-1]
+let ig = v(FAN_PWM_SRC,FAN_GATE_EXT)/5.7k
+let igavg = mean(ig)
+print vgsmax igavg
+run
+.endc
+.end
