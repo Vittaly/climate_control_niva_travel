@@ -216,7 +216,7 @@ class Writer:
             w_mm = comp.bbox_cols * self.cell_size_mm
             h_mm = comp.bbox_rows * self.cell_size_mm
 
-            filename = comp.sheet_file.replace(".yaml", ".kicad_sch")
+            filename = Path(comp.sheet_file).with_suffix(".kicad_sch").name
 
             try:
                 sobj = sch.add_sheet(

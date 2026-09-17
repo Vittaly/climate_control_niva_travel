@@ -9,11 +9,12 @@
 компонентов, сеть — владелец своих соединений.
 """
 from dataclasses import dataclass, field
-from typing import List
+from typing import Dict, List
 
 from constants import DEFAULT_NET_TYPE
 from logging_setup import get_logger
 from wire import Wire
+from pin import Pin
 
 log = get_logger(__name__)
 
@@ -38,7 +39,7 @@ class Net:
     name: str
     net_type: str = DEFAULT_NET_TYPE
     flags: List[str] = field(default_factory=list)
-    pins: List[str] = field(default_factory=list)
+    pins: Dict[str, Pin] = field(default_factory=dict)
     wires: List[Wire] = field(default_factory=list)
 
     # ---------- добавление ----------

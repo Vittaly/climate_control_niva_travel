@@ -198,47 +198,75 @@ class Router(RouterLogMixin):
     # =========================================================
 
     def _route_net(self, net_name: str,
-                   endpoints: List[Tuple[Cell, "Pin"]],
-                   sheet) -> List[Wire]:
-        """Трассирует одну сеть: первое соединение + T-врезки."""
+               endpoints: List[Tuple[Cell, "Pin"]],
+               sheet) -> List[Wire]:
+        """Трассирует одну сеть.
+
+        1. Пробуем ВСЕ пары (i, j) как первую пару — в порядке
+        возрастания манхэттенского расстояния между пинами.
+        Первая успешная пара становится затравкой.
+        2. Оставшиеся пины присоединяем T-врезками к уже
+        проложенным проводам.
+        3. Если ни одна пара не соединилась — метим ВСЕ пины
+        FallbackLabel'ами.
+        """
         wires: List[Wire] = []
+        n = len(endpoints)
+        used: set = set()
 
-        cell_a, pin_a = endpoints[0]
-        cell_b, pin_b = endpoints[1]
+        # --- 1. перебираем пары как первые, по возрастанию расстояния ---
+        pairs = []
+        for i in range(n):
+            for j in range(i + 1, n):
+                ci, _ = endpoints[i]
+                cj, _ = endpoints[j]
+                d = abs(ci.col - cj.col) + abs(ci.row - cj.row)
+                pairs.append((d, i, j))
+        pairs.sort()
 
-        wire = self._route_pair(net_name, cell_a, pin_a,
-                                cell_b, pin_b, sheet)
-        if wire is None:
-            log.warning("%s fail %s → %s",
-                        ctx(page=self.page, net=net_name,
-                            comp=self._designator(pin_a),
-                            pin=self._pin_num(pin_a)),
-                        pin_a.local_key, pin_b.local_key)
+        seed: Optional[Wire] = None
+        for _, i, j in pairs:
+            ca, pa = endpoints[i]
+            cb, pb = endpoints[j]
+            w = self._route_pair(net_name, ca, pa, cb, pb, sheet)
+            if w is not None:
+                wires.append(w)
+                used.add(i)
+                used.add(j)
+                seed = w
+                log.info("%s seed_pair %s → %s",
+                        ctx(page=self.page, net=net_name),
+                        pa.local_key, pb.local_key)
+                break
+
+        # --- 2. ничего не соединилось — метим все пины и выходим ---
+        if seed is None:
+            log.warning("%s no_seed_pair endpoints=%d",
+                        ctx(page=self.page, net=net_name), n)
+            for cell, pin in endpoints:
+                self._mark_fallback(sheet, net_name, pin, cell,
+                                    "route failed")
             return wires
 
-        wires.append(wire)
-        log.info("%s ok segments=%d",
-                 ctx(page=self.page, net=net_name,
-                     comp=self._designator(pin_a),
-                     pin=self._pin_num(pin_a)),
-                 len(wire.segments()))
-
-        for cell_c, pin_c in endpoints[2:]:
-            wire = self._route_t_junction(net_name, cell_c, pin_c,
-                                          wires, sheet)
-            if wire:
-                wires.append(wire)
+        # --- 3. T-врезки для оставшихся пинов ---
+        for k, (cell, pin) in enumerate(endpoints):
+            if k in used:
+                continue
+            w = self._route_t_junction(net_name, cell, pin, wires, sheet)
+            if w:
+                wires.append(w)
+                used.add(k)
                 log.info("%s ok t_junction=%s",
-                         ctx(page=self.page, net=net_name,
-                             comp=self._designator(pin_c),
-                             pin=self._pin_num(pin_c)),
-                         wire.end.local_key if wire.end else "?")
+                        ctx(page=self.page, net=net_name,
+                            comp=self._designator(pin),
+                            pin=self._pin_num(pin)),
+                        w.end.local_key if w.end else "?")
             else:
                 log.warning("%s fail %s → net",
                             ctx(page=self.page, net=net_name,
-                                comp=self._designator(pin_c),
-                                pin=self._pin_num(pin_c)),
-                            pin_c.local_key)
+                                comp=self._designator(pin),
+                                pin=self._pin_num(pin)),
+                            pin.local_key)
 
         return wires
 

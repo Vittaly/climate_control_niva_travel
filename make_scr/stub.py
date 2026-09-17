@@ -231,7 +231,7 @@ def plan_stub(pin: "Pin", placer: "Placer",
         - пишется log.error;
         - возвращается вырожденный StubResult (tip = pin_cell, on_grid=True).
     """
-    from occupant import ComponentBody, PinCell, WireCell
+    from occupant import ComponentBody, WireCell
 
     comp = pin.component
     if comp is None:
@@ -286,22 +286,22 @@ def plan_stub(pin: "Pin", placer: "Placer",
             occupied_extra += 1
             continue
 
-        if isinstance(occ, PinCell):
-            # Свой пин — пропускаем.
-            if occ.pin is pin or occ.pin.local_key == pin.local_key:
-                stub_cells.append(tip)
-                tip = Cell(tip.col + dc, tip.row + dr)
-                occupied_extra += 1
-                continue
-            # Чужой пин — блокировка.
-            log.error("%s stub_blocked_by_pin comp=%s.%s pin=%s tip=%s",
-                      ctx(page=page, comp=comp.designator, pin=pin.local_key),
-                      occ.component.designator, occ.pin.number,
-                      pin.local_key, tip)
-            return _degenerate_result(
-                pin, pin_mm, pin_cell, direction, comp, page,
-                reason="foreign_pin",
-            )
+        # if isinstance(occ, PinCell):
+        #     # Свой пин — пропускаем.
+        #     if occ.pin is pin or occ.pin.local_key == pin.local_key:
+        #         stub_cells.append(tip)
+        #         tip = Cell(tip.col + dc, tip.row + dr)
+        #         occupied_extra += 1
+        #         continue
+        #     # Чужой пин — блокировка.
+        #     log.error("%s stub_blocked_by_pin comp=%s.%s pin=%s tip=%s",
+        #               ctx(page=page, comp=comp.designator, pin=pin.local_key),
+        #               occ.component.designator, occ.pin.number,
+        #               pin.local_key, tip)
+        #     return _degenerate_result(
+        #         pin, pin_mm, pin_cell, direction, comp, page,
+        #         reason="foreign_pin",
+        #     )
 
         if isinstance(occ, ComponentBody):
             log.error("%s stub_blocked_by_bbox comp=%s pin=%s tip=%s",

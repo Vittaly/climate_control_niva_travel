@@ -959,15 +959,15 @@ class Placer:
                 for r in range(pos.row, pos.row + comp.bbox_rows):
                     m[(c, r)] = ComponentBody(component=comp)
 
-        for designator, comp in self.components.items():
-            pos = self.positions.get(designator)
-            if pos is None:
-                continue
-            for pin in comp.pins:
-                pc = comp.abs_pin_cell(pin)
-                key = (pc.col, pc.row)
-                m[key] = PinCell(component=comp, pin=pin)
-                pin_count += 1
+        # for designator, comp in self.components.items():
+        #     pos = self.positions.get(designator)
+        #     if pos is None:
+        #         continue
+        #     for pin in comp.pins:
+        #         pc = comp.abs_pin_cell(pin)
+        #         key = (pc.col, pc.row)
+        #         m[key] = PinCell(component=comp, pin=pin)
+        #         pin_count += 1
 
         log.info("%s router_map components=%d pin_cells=%d total=%d",
                  ctx(page=self.page),

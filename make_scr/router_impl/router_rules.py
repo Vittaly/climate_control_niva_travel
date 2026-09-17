@@ -44,10 +44,10 @@ def can_enter(map_, bounds, cell: Cell, net: str,
     if isinstance(occ, ComponentBody):
         return False, f"box {occ.component.designator}"
 
-    if isinstance(occ, PinCell):
-        if occ.pin.net_ref == net:
-            return True, None
-        return False, f"pin {occ.component.designator}.{occ.pin.number}"
+    # if isinstance(occ, PinCell):
+    #     if occ.pin.net_ref == net:
+    #         return True, None
+    #     return False, f"pin {occ.component.designator}.{occ.pin.number}"
 
     if isinstance(occ, WireCell):
         if occ.wire.net_name == net:
@@ -126,16 +126,34 @@ def is_parallel(wire, cell: Cell, angle: WireAngle) -> bool:
 
 def has_parallel_foreign_wire(map_, cell: Cell, net: str,
                               entry_angle: WireAngle) -> bool:
-    """Есть ли рядом параллельный провод чужой сети."""
-    if entry_angle in (WireAngle.EAST, WireAngle.WEST):
-        perp = [Cell(cell.col, cell.row - 1),
-                Cell(cell.col, cell.row + 1)]
-    else:
-        perp = [Cell(cell.col - 1, cell.row),
-                Cell(cell.col + 1, cell.row)]
+    """Есть ли рядом чужой провод, ПАРАЛЛЕЛЬНЫЙ возможному повороту.
 
-    for c in perp:
+    Если чужой провод в соседней клетке делает ПОВОРОТ (есть и
+    горизонтальный, и вертикальный сегменты), он блокирует вход:
+    любой поворот из нашей клетки наложится на соответствующую
+    часть чужого поворота.
+
+    is_parallel перебирает ВСЕ сегменты провода в клетке — так
+    что поворот учитывается автоматически: вертикальный сегмент
+    даст True при проверке вертикального поворота, горизонтальный —
+    при проверке горизонтального.
+    """
+    if entry_angle in (WireAngle.EAST, WireAngle.WEST):
+        neighbors = [Cell(cell.col, cell.row - 1),
+                     Cell(cell.col, cell.row + 1)]
+        turn_dirs = (WireAngle.NORTH, WireAngle.SOUTH)
+    else:
+        neighbors = [Cell(cell.col - 1, cell.row),
+                     Cell(cell.col + 1, cell.row)]
+        turn_dirs = (WireAngle.EAST, WireAngle.WEST)
+
+    for c in neighbors:
         occ = map_.get((c.col, c.row))
-        if isinstance(occ, WireCell) and occ.wire.net_name != net:
-            return True
+        if not isinstance(occ, WireCell):
+            continue
+        if occ.wire.net_name == net:
+            continue
+        for d in turn_dirs:
+            if is_parallel(occ.wire, c, d):
+                return True
     return False

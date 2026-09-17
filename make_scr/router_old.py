@@ -156,11 +156,11 @@ class Router:
         for comp in self.components.values():
             if comp.anchor_page_mm is None:
                 continue
-            bbox = comp.bbox_page_cell()   # (col0, row0, col1, row1)
+            bbox = comp.bbox_page_cell()   # (col0, row0, col1, row1), col1/row1 — эксклюзивные
             min_c = min(min_c, bbox[0])
-            max_c = max(max_c, bbox[2])
+            max_c = max(max_c, bbox[2] - 1)   # ← последняя клетка bbox
             min_r = min(min_r, bbox[1])
-            max_r = max(max_r, bbox[3])
+            max_r = max(max_r, bbox[3] - 1)   # ← последняя клетка bbox
 
         if min_c > max_c or min_r > max_r:
             return (0, 0, 0, 0)

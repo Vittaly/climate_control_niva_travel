@@ -61,7 +61,7 @@ class SheetRefComponent(Component):
     ports: List[dict] = field(default_factory=list)
 
     # Габарит листа считается по числу портов — как в Writer
-    CHAR_WIDTH_CELLS = 0.75
+    CHAR_WIDTH_CELLS = 1
     ROW_HEIGHT_CELLS = 2       # высота одной строки порта, в клетках
     PADDING_ROWS = 4           # отступы сверху/снизу
     MIN_WIDTH_CELLS = 16       # минимум 16 клеток в ширину

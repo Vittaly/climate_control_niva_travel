@@ -120,26 +120,15 @@ class Netlist:
         net_name: str,
         pin: Pin,
     ) -> None:
-        """Привязывает FQN-пин к сети.
-
-        Если в этой же сети уже есть пин ТОГО ЖЕ КОМПОНЕНТА с теми же
-        координатами и именем (в пределах GRID_EPSILON_MM), новый пин
-        не добавляется в net.pins и pin_to_net, а получает alias_of
-        на канонический пин.
-
-        Пины разных компонентов не схлопываются, даже если их
-        абсолютные координаты на странице совпали.
-
-        Args:
-            fqn_key:  FQN-ключ пина ("X_ACT/U2:5").
-            net_name: имя сети.
-            pin:      объект пина (обязателен).
-
-        Raises:
-            ValueError: если сеть не зарегистрирована.
-        """
         if net_name not in self.nets:
             raise ValueError(f"Нет сети: {net_name}")
+
+        net = self.nets[net_name]
+
+        # уже в этой сети — no-op
+        if fqn_key in net.pins:
+            log.debug("Уже в сети %s: %s, пропускаю", net_name, fqn_key)
+            return
 
         pin.net_ref = net_name
 
@@ -154,9 +143,9 @@ class Netlist:
             )
             return
 
+        net.pins[fqn_key] = pin
         self.net_pins[fqn_key] = pin
         self.pin_to_net[fqn_key] = net_name
-        self.nets[net_name].pins.append(fqn_key)
 
     def _find_duplicate_in_net(self, pin: Pin, net_name: str) -> Optional[Pin]:
         """Ищет в сети канонический пин-дубликат ВНУТРИ ТОГО ЖЕ КОМПОНЕНТА.
@@ -180,18 +169,11 @@ class Netlist:
         return None
 
     def _pins_of_same_component_in_net(
-        self, pin: Pin, net_name: str,
+    self, pin: Pin, net_name: str,
     ) -> List[Pin]:
         """Канонические пины сети, принадлежащие тому же компоненту, что и pin."""
-        result: List[Pin] = []
-        for fqn in self.nets[net_name].pins:
-            existing = self.net_pins.get(fqn)
-            if existing is None:
-                continue
-            if existing.component is not pin.component:
-                continue
-            result.append(existing)
-        return result
+        return [p for p in self.nets[net_name].pins.values()
+                if p.component is pin.component]
 
     # ---------- провода ----------
 
@@ -218,7 +200,7 @@ class Netlist:
         Alias-пины сюда не входят — они покрыты каноническими.
         """
         net = self.get_net(net_name)
-        return net.pins if net else []
+        return list(net.pins.keys()) if net else []
 
     def pin_by_fqn(self, fqn_key: str) -> Optional[Pin]:
         """Возвращает канонический Pin по FQN или None."""

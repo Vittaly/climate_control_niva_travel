@@ -27,12 +27,21 @@ Alias-пины:
     После конвертации pin.offset_mm — всегда в системе страницы (Y↓),
     отсчитывается ОТ ЯКОРЯ.
 
-    bbox_size (cols, rows) рассчитывается по координатам пинов.
-    Если ширина/высота bbox меньше одной клетки, bbox СИММЕТРИЧНО
-    расширяется на одну клетку С КАЖДОЙ СТОРОНЫ. bbox.min в системе
-    компонента = (0, 0) — не сдвигается. При расширении сдвигается
-    только якорь (anchor_offset_mm увеличивается на grid_mm с каждой
-    стороны). Смещения пинов от якоря НЕ меняются.
+    bbox_size (cols, rows) покрывает ВСЕ клетки пинов.
+    Границы bbox по каждой оси снапаются к сетке:
+        min — floor вниз, max — ceil вверх,
+    и берётся диапазон [min_cell .. max_cell] ВКЛЮЧИТЕЛЬНО
+    (то есть bbox_cols = max_cell - min_cell + 1).
+    Это гарантирует, что клетка любого пина (в смысле abs_pin_cell,
+    который округляет по round) лежит внутри bbox, даже если пин
+    стоит не кратно сетке.
+
+    Если ширина/высота bbox меньше клетки (все пины в одной точке),
+    bbox СИММЕТРИЧНО расширяется на одну клетку С КАЖДОЙ СТОРОНЫ.
+
+    Смещения пинов от якоря НЕ меняются. При расширении меняется
+    только anchor_offset_mm (якорь сдвигается относительно левого-
+    верхнего угла bbox).
 
     Точка якоря на странице (anchor_page_mm) вычисляется из
     bbox_origin (переданного placer'ом) и anchor_offset_mm:
@@ -52,6 +61,7 @@ Alias-пины:
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Dict, Iterator, List, Optional, Tuple, TYPE_CHECKING
 
@@ -75,6 +85,12 @@ if TYPE_CHECKING:
     from sheet import Sheet
 
 log = get_logger(__name__)
+
+
+# Эпсилон для floor/ceil при снапе границ bbox к сетке.
+# Нужен, чтобы пины, стоящие ровно на линии сетки, не «уезжали»
+# в соседнюю клетку из-за float-погрешности деления.
+_SNAP_EPS = 1e-6
 
 
 # =========================================================
@@ -229,12 +245,16 @@ class Component:
 
         Что РАССЧИТЫВАЕТСЯ:
             - bbox_sym (min/max по пинам, система символа, Y↑);
-            - bbox СИММЕТРИЧНО расширяется на grid_mm с КАЖДОЙ стороны,
-              если ширина/высота < grid_mm. bbox.min в системе
-              компонента = (0, 0) — не сдвигается. Сдвигается только
-              якорь (anchor_offset_mm += grid_mm с каждой стороны).
+            - границы bbox снапаются к сетке: floor для min,
+              ceil для max; размер = диапазон [min .. max]
+              ВКЛЮЧИТЕЛЬНО, то есть max - min + 1 клеток.
+              Так клетка любого пина (в смысле abs_pin_cell)
+              попадает в bbox, даже если пин не кратен сетке;
+            - если ширина/высота bbox меньше клетки, bbox
+              СИММЕТРИЧНО расширяется на одну клетку С КАЖДОЙ стороны;
             - bbox_size (cols, rows) в клетках;
-            - anchor_offset_mm (смещение якоря от bbox.min, мм, Y↓);
+            - anchor_offset_mm (смещение якоря от левого-верхнего
+              угла bbox, мм, Y↓) — считается от СНАПНУТЫХ границ;
             - pin.offset_mm (смещение пина от якоря, мм, Y↓);
             - pin.direction (из геометрии, на сырых координатах).
 
@@ -266,7 +286,7 @@ class Component:
                       designator, lib_id)
             return None
 
-        # --- 1. bbox по пинам (система СИМВОЛА, Y↑) ---
+        # --- 1. Сырые границы bbox по пинам (система СИМВОЛА, Y↑) ---
         pin_coords = [(float(p.get("x_mm", 0.0)), float(p.get("y_mm", 0.0)))
                       for p in pins_raw]
         if pin_coords:
@@ -277,11 +297,9 @@ class Component:
         else:
             min_x = max_x = min_y = max_y = 0.0
 
-        # --- 2. СИММЕТРИЧНОЕ расширение bbox на grid_mm с КАЖДОЙ стороны ---
-        # bbox.min в системе компонента = (0, 0) — не сдвигается.
-        # Сдвигается только якорь: anchor_offset_mm увеличивается
-        # на grid_mm с каждой стороны (влево/вправо/вверх/вниз).
-        # Смещения пинов от якоря НЕ меняются.
+        # --- 2. СИММЕТРИЧНОЕ расширение, если ширина меньше клетки ---
+        # (все пины в одной точке — bbox всё равно должен быть хоть
+        #  размером с клетку)
         if max_x - min_x < grid_mm:
             min_x -= grid_mm
             max_x += grid_mm
@@ -289,9 +307,19 @@ class Component:
             min_y -= grid_mm
             max_y += grid_mm
 
-        # --- 3. размер в клетках ---
-        bbox_cols = max(1, int(round((max_x - min_x) / grid_mm)))
-        bbox_rows = max(1, int(round((max_y - min_y) / grid_mm)))
+        # --- 3. Снап границ bbox к клеткам сетки ---
+        # Пин может стоять между линиями сетки. Чтобы его клетка
+        # (по round в abs_pin_cell) гарантированно попала в bbox,
+        # левая и нижняя границы снапаются к floor, правая и
+        # верхняя — к ceil. Размер bbox — диапазон [min .. max]
+        # включительно, то есть max - min + 1 клеток.
+        min_col_sym = math.floor(min_x / grid_mm + _SNAP_EPS)
+        max_col_sym = math.ceil(max_x / grid_mm - _SNAP_EPS)
+        min_row_sym = math.floor(min_y / grid_mm + _SNAP_EPS)
+        max_row_sym = math.ceil(max_y / grid_mm - _SNAP_EPS)
+
+        bbox_cols = max(1, max_col_sym - min_col_sym + 1)
+        bbox_rows = max(1, max_row_sym - min_row_sym + 1)
         bbox_size = (bbox_cols, bbox_rows)
 
         # --- 4. anchor в системе символа ---
@@ -299,10 +327,11 @@ class Component:
         anchor_y_sym = 0.0
 
         # --- 5. anchor_offset_mm (от левого-верхнего угла bbox, Y↓) ---
-        # В системе символа: anchor_offset_sym = anchor - bbox.min
-        # В системе страницы: X не инвертируется, Y инвертируется
-        anchor_offset_x = anchor_x_sym - min_x
-        anchor_offset_y = max_y - anchor_y_sym   # Y↓
+        # Левый край bbox в системе символа = min_col_sym * grid_mm.
+        # Верхний край bbox в системе символа = max_row_sym * grid_mm.
+        # В системе страницы X не инвертируется, Y инвертируется.
+        anchor_offset_x = anchor_x_sym - min_col_sym * grid_mm
+        anchor_offset_y = max_row_sym * grid_mm - anchor_y_sym   # Y↓
         anchor_offset_mm = (anchor_offset_x, anchor_offset_y)
 
         # --- 6. пины (система СТРАНИЦЫ, Y↓, смещение от якоря) ---
@@ -500,6 +529,9 @@ class Component:
     def bbox_page_cell(self) -> Tuple[int, int, int, int]:
         """(col0, row0, col1, row1) — прямоугольник на странице (клетки).
 
+        col1, row1 — ИСКЛЮЧАЮЩИЕ границы: клетки bbox лежат в
+        [col0, col1) x [row0, row1). Размер bbox = (col1-col0, row1-row0).
+
         Raises:
             RuntimeError: если anchor_page_mm не установлен.
         """
@@ -528,6 +560,10 @@ class Component:
     def abs_pin_cell(self, pin: Pin) -> Cell:
         """Клетка пина на странице (округление от abs_pin_mm).
 
+        Использует round. Границы bbox снапаются через floor/ceil
+        так, чтобы клетка любого пина гарантированно лежала внутри
+        bbox — см. from_yaml.
+
         Raises:
             RuntimeError: если anchor_page_mm не установлен.
         """
@@ -536,6 +572,10 @@ class Component:
 
     def iter_occupied_cells(self) -> Iterator[Tuple[int, int]]:
         """Генерирует клетки, занятые габаритом компонента.
+
+        Диапазон [origin.col, origin.col + bbox_cols) ×
+                 [origin.row, origin.row + bbox_rows)
+        включает все клетки bbox, в том числе клетки пинов.
 
         Raises:
             RuntimeError: если anchor_page_mm не установлен.

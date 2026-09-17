@@ -196,12 +196,7 @@ class Project:
                 continue
             pin = comp.pins[0]
             fqn = f"{sheet.fqn(comp.designator)}:{pin.number}"
-
-            pins_container = net.pins
-            if hasattr(pins_container, "add"):
-                pins_container.add(fqn)
-            else:
-                pins_container.append(fqn)
+            self.netlist.assign_pin_to_net(fqn, comp.net_name, pin=pin)
 
             log.debug("[%s] порт %s: пин %s привязан к сети %s",
                       sheet.sheet_path or "root",
@@ -226,11 +221,7 @@ class Project:
                     continue
 
                 fqn = f"{sheet.fqn(comp.designator)}:{pin.number}"
-                pins_container = net.pins
-                if hasattr(pins_container, "add"):
-                    pins_container.add(fqn)
-                else:
-                    pins_container.append(fqn)
+                self.netlist.assign_pin_to_net(fqn, net_name, pin=pin)
 
                 log.debug("[%s] SheetRef %s: пин %s привязан к сети %s",
                           sheet.sheet_path or "root",
