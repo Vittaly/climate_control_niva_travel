@@ -21,6 +21,14 @@ X_PWR будет три пина с этими именами. Роутер см
     bbox_size — размер листа в клетках.
     anchor_offset_mm = (0, 0) — anchor совпадает с левым-верхним
         углом bbox. Пины задаются offset_mm от anchor (мм, Y↓).
+
+Семантика pin.direction:
+    Как в PortComponent и в символах KiCad, pin.direction смотрит
+    «в тело» компонента:
+        side="left"  → пин на ЛЕВОМ краю bbox,  direction=RIGHT (внутрь)
+        side="right" → пин на ПРАВОМ краю bbox, direction=LEFT  (внутрь)
+    stub.py инвертирует pin.direction (opposite) и получает
+    направление отводки НАРУЖУ bbox.
 """
 from __future__ import annotations
 
@@ -59,26 +67,80 @@ class SheetRefComponent(Component):
     MIN_WIDTH_CELLS = 16       # минимум 16 клеток в ширину
     MIN_HEIGHT_CELLS = 8       # минимум 8 клеток в высоту
 
+    # Зазор между встречными текстами левых и правых портов.
+    GAP_CELLS = 2
+    # Отступы от краёв bbox до текстов (пиктограмма + поля).
+    SIDE_PADDING_CELLS = 1
+
+    # -------- классификация портов --------
+    @staticmethod
+    def _is_output(port: dict) -> bool:
+        """True, если порт выходной (стоит справа)."""
+        return str(port.get("type", "INPUT")).upper() == "OUTPUT"
+
+    @classmethod
+    def _split_ports(cls, ports: List[dict]) -> Tuple[List[dict], List[dict]]:
+        """Делит порты на левые (входные) и правые (выходные)."""
+        left = [p for p in ports if not cls._is_output(p)]
+        right = [p for p in ports if cls._is_output(p)]
+        return left, right
+
+    @classmethod
+    def _label_cells(cls, ports: List[dict]) -> int:
+        """Ширина самого длинного net_label среди портов, в клетках."""
+        max_len = max(
+            (len(str(p.get("net_label", ""))) for p in ports),
+            default=0,
+        )
+        return int(round(max_len * cls.CHAR_WIDTH_CELLS))
+
+    @classmethod
+    def _compute_bbox_cols(cls, left: List[dict], right: List[dict]) -> int:
+        """Ширина bbox: левый текст + зазор + правый текст + отступы.
+
+        Левые порты стоят у левого края bbox и растут вправо.
+        Правые порты стоят у правого края bbox и растут влево.
+        Их тексты встречаются в середине — нужно, чтобы они
+        не накладывались.
+        """
+        left_cells = cls._label_cells(left)
+        right_cells = cls._label_cells(right)
+
+        # если одна сторона пуста — зазор не нужен
+        gap = cls.GAP_CELLS if (left and right) else 0
+        padding = 2 * cls.SIDE_PADDING_CELLS
+
+        return max(
+            cls.MIN_WIDTH_CELLS,
+            left_cells + gap + right_cells + padding,
+        )
+
+    @classmethod
+    def _compute_bbox_rows(cls, n_ports: int, ports_per_side_max: int) -> int:
+        """Высота bbox: отступы сверху/снизу + строки портов.
+
+        Левые и правые порты нумеруются независимо (index в своей
+        группе), но физически они делят одну колонку строк. Поэтому
+        высота определяется МАКСИМУМОМ из числа левых и правых портов,
+        а не их суммой.
+        """
+        return max(
+            cls.MIN_HEIGHT_CELLS,
+            cls.PADDING_ROWS + ports_per_side_max * cls.ROW_HEIGHT_CELLS,
+        )
+
     def __post_init__(self):
         """Создаёт пины по портам дочернего YAML и считает габарит."""
         if not self.ports:
-            # если портов нет — оставляем пустой список
             self.ports = []
 
-        # габарит по числу портов
-        n = len(self.ports)
-        label_max = max(
-            (len(str(p.get("net_label", ""))) for p in self.ports),
-            default=8,
-        )
+        left, right = self._split_ports(self.ports)
 
-        bbox_cols = max(
-            self.MIN_WIDTH_CELLS,
-            int(round(label_max * self.CHAR_WIDTH_CELLS)) + 4,
-        )
-        bbox_rows = max(
-            self.MIN_HEIGHT_CELLS,
-            self.PADDING_ROWS + n * self.ROW_HEIGHT_CELLS,
+        # ---- габарит ----
+        bbox_cols = self._compute_bbox_cols(left, right)
+        bbox_rows = self._compute_bbox_rows(
+            len(self.ports),
+            max(len(left), len(right)),
         )
         self.bbox_size = (bbox_cols, bbox_rows)
 
@@ -86,13 +148,8 @@ class SheetRefComponent(Component):
         # углом bbox. Пины задаются offset_mm от anchor.
         self.anchor_offset_mm = (0.0, 0.0)
 
-        # пины по портам: слева — input/power, справа — output
+        # ---- пины ----
         self.pins = []
-        left = [p for p in self.ports
-                if str(p.get("type", "INPUT")).upper() != "OUTPUT"]
-        right = [p for p in self.ports
-                 if str(p.get("type", "INPUT")).upper() == "OUTPUT"]
-
         for i, port in enumerate(left):
             self._add_pin(port, side="left", index=i)
         for i, port in enumerate(right):
@@ -109,6 +166,11 @@ class SheetRefComponent(Component):
             left  → col = 0
             right → col = bbox_cols - 1
             row = PADDING_ROWS // 2 + index * ROW_HEIGHT_CELLS
+
+        pin.direction — «в тело» компонента (как в PortComponent):
+            left  → RIGHT (внутрь bbox, вправо)
+            right → LEFT  (внутрь bbox, влево)
+        stub.py инвертирует его и получает отводку НАРУЖУ bbox.
         """
         net_label = str(port.get("net_label", ""))
         if not net_label:
@@ -119,10 +181,12 @@ class SheetRefComponent(Component):
 
         if side == "left":
             col_cell = 0
-            direction = Direction.LEFT
+            # «в тело»: пин на левом краю смотрит вправо (внутрь bbox)
+            direction = Direction.RIGHT
         else:
             col_cell = self.bbox_cols - 1
-            direction = Direction.RIGHT
+            # «в тело»: пин на правом краю смотрит влево (внутрь bbox)
+            direction = Direction.LEFT
 
         # смещение от anchor в мм
         offset_x = col_cell * self.grid_mm

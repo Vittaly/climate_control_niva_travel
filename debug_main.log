@@ -1,695 +1,506 @@
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C10] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C21] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C5] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C6] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C7] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C8] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C9] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [FB1] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [J2] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [R1] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [R2] size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [U1] size=28x76 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_CAN] size=16x16 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_PWR] size=16x52 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_UI] size=20x42 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_CABIN] size=16x12 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_HEAT] size=16x12 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_SOLAR] size=16x10 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_COND] size=16x10 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_OUT] size=16x16 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_ACT] size=16x54 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_BACKLIGHT] size=16x8 cells
-17:46:03 | INFO    | eda.placer             | [root] placement components=22 strategy=matrix
-17:46:03 | DEBUG   | eda.placer             | [root] strategy=matrix top=U1(74), X_PWR(54), X_UI(49), X_ACT(45), J2(32)
-17:46:03 | DEBUG   | eda.placer             | [root] matrix rcm_first8=['X_BACKLIGHT', 'X_ACT', 'X_OUT', 'X_SEN_COND', 'X_SEN_SOLAR', 'X_SEN_CABIN', 'X_CAN', 'R2']
-17:46:03 | DEBUG   | eda.placer             | [root] matrix rows=2 cols=11
-17:46:03 | DEBUG   | eda.placer             | [root] matrix cross_col=[52, 87, 73, 66, 59, 54, 42, 38, 36, 27]
-17:46:03 | DEBUG   | eda.placer             | [root] matrix cross_row=[110]
-17:46:03 | DEBUG   | eda.placer             | [root] matrix col_local=[39, 64, 61, 62, 63, 63, 67, 67, 67, 69]
-17:46:03 | DEBUG   | eda.placer             | [root] matrix row_local=[118]
-17:46:03 | DEBUG   | eda.placer             | [root] matrix divisor_col=12 divisor_row=3
-17:46:03 | DEBUG   | eda.placer             | [root] matrix street_cols=[46, 64, 64, 64, 64, 64, 64, 64, 64, 64]
-17:46:03 | DEBUG   | eda.placer             | [root] matrix street_rows=[64]
-17:46:03 | DEBUG   | eda.placer             | [root] matrix done components=22 rows=2 cols=11 size=789x197
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_BACKLIGHT] place bbox_origin=(3,26) anchor_mm=(3.81,33.02) rotation=0 mirror=None size=16x8 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_ACT] place bbox_origin=(71,3) anchor_mm=(90.17,3.81) rotation=0 mirror=None size=16x54 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_OUT] place bbox_origin=(157,22) anchor_mm=(199.39,27.94) rotation=0 mirror=None size=16x16 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_COND] place bbox_origin=(237,25) anchor_mm=(300.99,31.75) rotation=0 mirror=None size=16x10 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_SOLAR] place bbox_origin=(317,25) anchor_mm=(402.59,31.75) rotation=0 mirror=None size=16x10 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_CABIN] place bbox_origin=(397,24) anchor_mm=(504.19,30.48) rotation=0 mirror=None size=16x12 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_CAN] place bbox_origin=(477,22) anchor_mm=(605.79,27.94) rotation=0 mirror=None size=16x16 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [R2] place bbox_origin=(557,27) anchor_mm=(708.66,38.10) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C21] place bbox_origin=(623,27) anchor_mm=(792.48,38.10) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_HEAT] place bbox_origin=(689,24) anchor_mm=(875.03,30.48) rotation=0 mirror=None size=16x12 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_UI] place bbox_origin=(769,9) anchor_mm=(976.63,11.43) rotation=0 mirror=None size=20x42 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_PWR] place bbox_origin=(3,133) anchor_mm=(3.81,168.91) rotation=0 mirror=None size=16x52 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [U1] place bbox_origin=(65,121) anchor_mm=(100.33,201.93) rotation=0 mirror=None size=28x76 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [J2] place bbox_origin=(164,156) anchor_mm=(214.63,200.66) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C9] place bbox_origin=(244,156) anchor_mm=(311.15,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C8] place bbox_origin=(324,156) anchor_mm=(412.75,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C7] place bbox_origin=(404,156) anchor_mm=(514.35,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C6] place bbox_origin=(484,156) anchor_mm=(615.95,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C5] place bbox_origin=(557,156) anchor_mm=(708.66,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [C10] place bbox_origin=(623,156) anchor_mm=(792.48,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [R1] place bbox_origin=(696,156) anchor_mm=(885.19,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | DEBUG   | eda.placer             | [root] [-] [FB1] place bbox_origin=(778,156) anchor_mm=(989.33,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] matrix_placed components=22
-17:46:03 | INFO    | eda.placer             | [root] [-] [C10] matrix_placed bbox_origin=(623,156) anchor_mm=(792.48,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(792.48,198.12) abs=(624,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(792.48,205.74) abs=(624,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C21] matrix_placed bbox_origin=(623,27) anchor_mm=(792.48,38.10) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(792.48,34.29) abs=(624,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(792.48,41.91) abs=(624,33)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C5] matrix_placed bbox_origin=(557,156) anchor_mm=(708.66,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(708.66,198.12) abs=(558,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(708.66,205.74) abs=(558,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C6] matrix_placed bbox_origin=(484,156) anchor_mm=(615.95,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(615.95,198.12) abs=(485,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(615.95,205.74) abs=(485,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C7] matrix_placed bbox_origin=(404,156) anchor_mm=(514.35,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(514.35,198.12) abs=(405,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(514.35,205.74) abs=(405,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C8] matrix_placed bbox_origin=(324,156) anchor_mm=(412.75,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(412.75,198.12) abs=(325,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(412.75,205.74) abs=(325,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C9] matrix_placed bbox_origin=(244,156) anchor_mm=(311.15,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(311.15,198.12) abs=(245,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(311.15,205.74) abs=(245,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] matrix_placed bbox_origin=(778,156) anchor_mm=(989.33,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(989.33,198.12) abs=(779,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(989.33,205.74) abs=(779,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] matrix_placed bbox_origin=(164,156) anchor_mm=(214.63,200.66) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:1] matrix_placed offset_mm=(-5.08,-2.54) abs_mm=(209.55,198.12) abs=(165,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:2] matrix_placed offset_mm=(-5.08,0.00) abs_mm=(209.55,200.66) abs=(165,158)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:3] matrix_placed offset_mm=(-5.08,2.54) abs_mm=(209.55,203.20) abs=(165,160)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:4] matrix_placed offset_mm=(-5.08,5.08) abs_mm=(209.55,205.74) abs=(165,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R1] matrix_placed bbox_origin=(696,156) anchor_mm=(885.19,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(885.19,198.12) abs=(697,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(885.19,205.74) abs=(697,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R2] matrix_placed bbox_origin=(557,27) anchor_mm=(708.66,38.10) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(708.66,34.29) abs=(558,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(708.66,41.91) abs=(558,33)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] matrix_placed bbox_origin=(65,121) anchor_mm=(100.33,201.93) rotation=0 mirror=None size=28x76 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:1] matrix_placed offset_mm=(-5.08,-48.26) abs_mm=(95.25,153.67) abs=(75,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:2] matrix_placed offset_mm=(-17.78,12.70) abs_mm=(82.55,214.63) abs=(65,169)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:3] matrix_placed offset_mm=(-17.78,15.24) abs_mm=(82.55,217.17) abs=(65,171)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:4] matrix_placed offset_mm=(-17.78,17.78) abs_mm=(82.55,219.71) abs=(65,173)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:5] matrix_placed offset_mm=(-17.78,-30.48) abs_mm=(82.55,171.45) abs=(65,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:6] matrix_placed offset_mm=(-17.78,-27.94) abs_mm=(82.55,173.99) abs=(65,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:7] matrix_placed offset_mm=(-17.78,-40.64) abs_mm=(82.55,161.29) abs=(65,127)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:8] matrix_placed offset_mm=(-17.78,-20.32) abs_mm=(82.55,181.61) abs=(65,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:9] matrix_placed offset_mm=(-17.78,-17.78) abs_mm=(82.55,184.15) abs=(65,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:10] matrix_placed offset_mm=(-17.78,-15.24) abs_mm=(82.55,186.69) abs=(65,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:11] matrix_placed offset_mm=(-17.78,-12.70) abs_mm=(82.55,189.23) abs=(65,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:12] matrix_placed offset_mm=(2.54,48.26) abs_mm=(102.87,250.19) abs=(81,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:13] matrix_placed offset_mm=(7.62,-48.26) abs_mm=(107.95,153.67) abs=(85,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:14] matrix_placed offset_mm=(17.78,-40.64) abs_mm=(118.11,161.29) abs=(93,127)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:15] matrix_placed offset_mm=(17.78,-38.10) abs_mm=(118.11,163.83) abs=(93,129)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:16] matrix_placed offset_mm=(17.78,-35.56) abs_mm=(118.11,166.37) abs=(93,131)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:17] matrix_placed offset_mm=(17.78,-33.02) abs_mm=(118.11,168.91) abs=(93,133)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:18] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:19] matrix_placed offset_mm=(-2.54,-48.26) abs_mm=(97.79,153.67) abs=(77,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:20] matrix_placed offset_mm=(17.78,-30.48) abs_mm=(118.11,171.45) abs=(93,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:21] matrix_placed offset_mm=(17.78,-27.94) abs_mm=(118.11,173.99) abs=(93,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:22] matrix_placed offset_mm=(17.78,-25.40) abs_mm=(118.11,176.53) abs=(93,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:23] matrix_placed offset_mm=(17.78,-22.86) abs_mm=(118.11,179.07) abs=(93,141)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:24] matrix_placed offset_mm=(-17.78,-10.16) abs_mm=(82.55,191.77) abs=(65,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:25] matrix_placed offset_mm=(-17.78,-7.62) abs_mm=(82.55,194.31) abs=(65,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:26] matrix_placed offset_mm=(17.78,2.54) abs_mm=(118.11,204.47) abs=(93,161)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:27] matrix_placed offset_mm=(17.78,5.08) abs_mm=(118.11,207.01) abs=(93,163)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:28] matrix_placed offset_mm=(17.78,7.62) abs_mm=(118.11,209.55) abs=(93,165)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:29] matrix_placed offset_mm=(17.78,27.94) abs_mm=(118.11,229.87) abs=(93,181)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:30] matrix_placed offset_mm=(17.78,30.48) abs_mm=(118.11,232.41) abs=(93,183)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:31] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:32] matrix_placed offset_mm=(0.00,-48.26) abs_mm=(100.33,153.67) abs=(79,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:33] matrix_placed offset_mm=(17.78,33.02) abs_mm=(118.11,234.95) abs=(93,185)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:34] matrix_placed offset_mm=(17.78,35.56) abs_mm=(118.11,237.49) abs=(93,187)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:35] matrix_placed offset_mm=(17.78,38.10) abs_mm=(118.11,240.03) abs=(93,189)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:36] matrix_placed offset_mm=(17.78,40.64) abs_mm=(118.11,242.57) abs=(93,191)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:37] matrix_placed offset_mm=(-17.78,-5.08) abs_mm=(82.55,196.85) abs=(65,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:38] matrix_placed offset_mm=(-17.78,-2.54) abs_mm=(82.55,199.39) abs=(65,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:39] matrix_placed offset_mm=(-17.78,0.00) abs_mm=(82.55,201.93) abs=(65,159)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:40] matrix_placed offset_mm=(-17.78,2.54) abs_mm=(82.55,204.47) abs=(65,161)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:41] matrix_placed offset_mm=(17.78,-20.32) abs_mm=(118.11,181.61) abs=(93,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:42] matrix_placed offset_mm=(17.78,-17.78) abs_mm=(118.11,184.15) abs=(93,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:43] matrix_placed offset_mm=(17.78,-15.24) abs_mm=(118.11,186.69) abs=(93,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:44] matrix_placed offset_mm=(17.78,-12.70) abs_mm=(118.11,189.23) abs=(93,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:45] matrix_placed offset_mm=(17.78,-10.16) abs_mm=(118.11,191.77) abs=(93,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:46] matrix_placed offset_mm=(17.78,-7.62) abs_mm=(118.11,194.31) abs=(93,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:47] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:48] matrix_placed offset_mm=(2.54,-48.26) abs_mm=(102.87,153.67) abs=(81,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:49] matrix_placed offset_mm=(17.78,-5.08) abs_mm=(118.11,196.85) abs=(93,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:50] matrix_placed offset_mm=(17.78,-2.54) abs_mm=(118.11,199.39) abs=(93,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:51] matrix_placed offset_mm=(-17.78,5.08) abs_mm=(82.55,207.01) abs=(65,163)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:52] matrix_placed offset_mm=(-17.78,7.62) abs_mm=(82.55,209.55) abs=(65,165)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:53] matrix_placed offset_mm=(-17.78,10.16) abs_mm=(82.55,212.09) abs=(65,167)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:54] matrix_placed offset_mm=(-17.78,-25.40) abs_mm=(82.55,176.53) abs=(65,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:55] matrix_placed offset_mm=(17.78,10.16) abs_mm=(118.11,212.09) abs=(93,167)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:56] matrix_placed offset_mm=(17.78,12.70) abs_mm=(118.11,214.63) abs=(93,169)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:57] matrix_placed offset_mm=(17.78,15.24) abs_mm=(118.11,217.17) abs=(93,171)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:58] matrix_placed offset_mm=(17.78,17.78) abs_mm=(118.11,219.71) abs=(93,173)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:59] matrix_placed offset_mm=(17.78,20.32) abs_mm=(118.11,222.25) abs=(93,175)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:60] matrix_placed offset_mm=(-17.78,-35.56) abs_mm=(82.55,166.37) abs=(65,131)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:61] matrix_placed offset_mm=(17.78,22.86) abs_mm=(118.11,224.79) abs=(93,177)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:62] matrix_placed offset_mm=(17.78,25.40) abs_mm=(118.11,227.33) abs=(93,179)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:63] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:64] matrix_placed offset_mm=(5.08,-48.26) abs_mm=(105.41,153.67) abs=(83,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] matrix_placed bbox_origin=(71,3) anchor_mm=(90.17,3.81) rotation=0 mirror=None size=16x54 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(90.17,6.35) abs=(71,5)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(90.17,8.89) abs=(71,7)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN1] matrix_placed offset_mm=(0.00,7.62) abs_mm=(90.17,11.43) abs=(71,9)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN2] matrix_placed offset_mm=(0.00,10.16) abs_mm=(90.17,13.97) abs=(71,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] matrix_placed offset_mm=(0.00,12.70) abs_mm=(90.17,16.51) abs=(71,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN1] matrix_placed offset_mm=(0.00,15.24) abs_mm=(90.17,19.05) abs=(71,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN2] matrix_placed offset_mm=(0.00,17.78) abs_mm=(90.17,21.59) abs=(71,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] matrix_placed offset_mm=(0.00,20.32) abs_mm=(90.17,24.13) abs=(71,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN1] matrix_placed offset_mm=(0.00,22.86) abs_mm=(90.17,26.67) abs=(71,21)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN2] matrix_placed offset_mm=(0.00,25.40) abs_mm=(90.17,29.21) abs=(71,23)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4_RAW] matrix_placed offset_mm=(0.00,27.94) abs_mm=(90.17,31.75) abs=(71,25)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN1] matrix_placed offset_mm=(0.00,30.48) abs_mm=(90.17,34.29) abs=(71,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN2] matrix_placed offset_mm=(0.00,33.02) abs_mm=(90.17,36.83) abs=(71,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] matrix_placed offset_mm=(19.05,2.54) abs_mm=(109.22,6.35) abs=(86,5)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] matrix_placed offset_mm=(19.05,5.08) abs_mm=(109.22,8.89) abs=(86,7)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M1] matrix_placed offset_mm=(19.05,7.62) abs_mm=(109.22,11.43) abs=(86,9)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] matrix_placed offset_mm=(19.05,10.16) abs_mm=(109.22,13.97) abs=(86,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] matrix_placed offset_mm=(19.05,12.70) abs_mm=(109.22,16.51) abs=(86,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2] matrix_placed offset_mm=(19.05,15.24) abs_mm=(109.22,19.05) abs=(86,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] matrix_placed offset_mm=(19.05,17.78) abs_mm=(109.22,21.59) abs=(86,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] matrix_placed offset_mm=(19.05,20.32) abs_mm=(109.22,24.13) abs=(86,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3] matrix_placed offset_mm=(19.05,22.86) abs_mm=(109.22,26.67) abs=(86,21)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] matrix_placed offset_mm=(19.05,25.40) abs_mm=(109.22,29.21) abs=(86,23)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] matrix_placed offset_mm=(19.05,27.94) abs_mm=(109.22,31.75) abs=(86,25)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4] matrix_placed offset_mm=(19.05,30.48) abs_mm=(109.22,34.29) abs=(86,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] matrix_placed bbox_origin=(3,26) anchor_mm=(3.81,33.02) rotation=0 mirror=None size=16x8 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] matrix_placed offset_mm=(0.00,2.54) abs_mm=(3.81,35.56) abs=(3,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(3.81,38.10) abs=(3,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] matrix_placed bbox_origin=(477,22) anchor_mm=(605.79,27.94) rotation=0 mirror=None size=16x16 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:VCC_5V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(605.79,30.48) abs=(477,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(605.79,33.02) abs=(477,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_TX] matrix_placed offset_mm=(19.05,2.54) abs_mm=(624.84,30.48) abs=(492,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_RX] matrix_placed offset_mm=(19.05,5.08) abs_mm=(624.84,33.02) abs=(492,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANH] matrix_placed offset_mm=(19.05,7.62) abs_mm=(624.84,35.56) abs=(492,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANL] matrix_placed offset_mm=(19.05,10.16) abs_mm=(624.84,38.10) abs=(492,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] matrix_placed bbox_origin=(157,22) anchor_mm=(199.39,27.94) rotation=0 mirror=None size=16x16 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(199.39,30.48) abs=(157,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(199.39,33.02) abs=(157,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] matrix_placed offset_mm=(0.00,7.62) abs_mm=(199.39,35.56) abs=(157,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_CTL] matrix_placed offset_mm=(0.00,10.16) abs_mm=(199.39,38.10) abs=(157,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] matrix_placed offset_mm=(0.00,12.70) abs_mm=(199.39,40.64) abs=(157,32)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] matrix_placed offset_mm=(19.05,2.54) abs_mm=(218.44,30.48) abs=(172,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] matrix_placed bbox_origin=(3,133) anchor_mm=(3.81,168.91) rotation=0 mirror=None size=16x52 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(3.81,171.45) abs=(3,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_5V] matrix_placed offset_mm=(0.00,5.08) abs_mm=(3.81,173.99) abs=(3,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_3V3] matrix_placed offset_mm=(0.00,7.62) abs_mm=(3.81,176.53) abs=(3,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:GND] matrix_placed offset_mm=(0.00,10.16) abs_mm=(3.81,179.07) abs=(3,141)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] matrix_placed offset_mm=(0.00,12.70) abs_mm=(3.81,181.61) abs=(3,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:COND_RAW] matrix_placed offset_mm=(0.00,15.24) abs_mm=(3.81,184.15) abs=(3,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] matrix_placed offset_mm=(0.00,17.78) abs_mm=(3.81,186.69) abs=(3,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] matrix_placed offset_mm=(0.00,20.32) abs_mm=(3.81,189.23) abs=(3,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M4_RAW] matrix_placed offset_mm=(0.00,22.86) abs_mm=(3.81,191.77) abs=(3,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] matrix_placed offset_mm=(0.00,25.40) abs_mm=(3.81,194.31) abs=(3,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] matrix_placed offset_mm=(0.00,27.94) abs_mm=(3.81,196.85) abs=(3,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M1_RAW] matrix_placed offset_mm=(0.00,30.48) abs_mm=(3.81,199.39) abs=(3,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:NTC_HEAT_W] matrix_placed offset_mm=(19.05,2.54) abs_mm=(22.86,171.45) abs=(18,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] matrix_placed offset_mm=(19.05,5.08) abs_mm=(22.86,173.99) abs=(18,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] matrix_placed offset_mm=(19.05,7.62) abs_mm=(22.86,176.53) abs=(18,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] matrix_placed offset_mm=(19.05,10.16) abs_mm=(22.86,179.07) abs=(18,141)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] matrix_placed offset_mm=(19.05,12.70) abs_mm=(22.86,181.61) abs=(18,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] matrix_placed offset_mm=(19.05,15.24) abs_mm=(22.86,184.15) abs=(18,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] matrix_placed offset_mm=(19.05,17.78) abs_mm=(22.86,186.69) abs=(18,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] matrix_placed offset_mm=(19.05,20.32) abs_mm=(22.86,189.23) abs=(18,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] matrix_placed offset_mm=(19.05,22.86) abs_mm=(22.86,191.77) abs=(18,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANH] matrix_placed offset_mm=(19.05,25.40) abs_mm=(22.86,194.31) abs=(18,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANL] matrix_placed offset_mm=(19.05,27.94) abs_mm=(22.86,196.85) abs=(18,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] matrix_placed offset_mm=(19.05,30.48) abs_mm=(22.86,199.39) abs=(18,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] matrix_placed bbox_origin=(397,24) anchor_mm=(504.19,30.48) rotation=0 mirror=None size=16x12 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(504.19,33.02) abs=(397,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(504.19,35.56) abs=(397,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] matrix_placed offset_mm=(0.00,7.62) abs_mm=(504.19,38.10) abs=(397,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:M_FAN_CTL] matrix_placed offset_mm=(0.00,10.16) abs_mm=(504.19,40.64) abs=(397,32)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] matrix_placed bbox_origin=(237,25) anchor_mm=(300.99,31.75) rotation=0 mirror=None size=16x10 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] matrix_placed offset_mm=(0.00,2.54) abs_mm=(300.99,34.29) abs=(237,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] matrix_placed offset_mm=(0.00,5.08) abs_mm=(300.99,36.83) abs=(237,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_ADC] matrix_placed offset_mm=(19.05,2.54) abs_mm=(320.04,34.29) abs=(252,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] matrix_placed bbox_origin=(689,24) anchor_mm=(875.03,30.48) rotation=0 mirror=None size=16x12 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] matrix_placed offset_mm=(0.00,2.54) abs_mm=(875.03,33.02) abs=(689,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(875.03,35.56) abs=(689,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT_W] matrix_placed offset_mm=(19.05,2.54) abs_mm=(894.08,33.02) abs=(704,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT] matrix_placed offset_mm=(19.05,5.08) abs_mm=(894.08,35.56) abs=(704,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] matrix_placed bbox_origin=(317,25) anchor_mm=(402.59,31.75) rotation=0 mirror=None size=16x10 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] matrix_placed offset_mm=(0.00,2.54) abs_mm=(402.59,34.29) abs=(317,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] matrix_placed offset_mm=(0.00,5.08) abs_mm=(402.59,36.83) abs=(317,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_ADC] matrix_placed offset_mm=(19.05,2.54) abs_mm=(421.64,34.29) abs=(332,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] matrix_placed bbox_origin=(769,9) anchor_mm=(976.63,11.43) rotation=0 mirror=None size=20x42 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:VCC_3V3] matrix_placed offset_mm=(0.00,2.54) abs_mm=(976.63,13.97) abs=(769,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(976.63,16.51) abs=(769,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:NTC_CABIN] matrix_placed offset_mm=(0.00,7.62) abs_mm=(976.63,19.05) abs=(769,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] matrix_placed offset_mm=(0.00,10.16) abs_mm=(976.63,21.59) abs=(769,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_SENSE] matrix_placed offset_mm=(0.00,12.70) abs_mm=(976.63,24.13) abs=(769,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] matrix_placed offset_mm=(24.13,2.54) abs_mm=(1000.76,13.97) abs=(788,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FACE] matrix_placed offset_mm=(24.13,5.08) abs_mm=(1000.76,16.51) abs=(788,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FEET] matrix_placed offset_mm=(24.13,7.62) abs_mm=(1000.76,19.05) abs=(788,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DRY_GLASS] matrix_placed offset_mm=(24.13,10.16) abs_mm=(1000.76,21.59) abs=(788,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_AC] matrix_placed offset_mm=(24.13,12.70) abs_mm=(1000.76,24.13) abs=(788,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_RECIRC] matrix_placed offset_mm=(24.13,15.24) abs_mm=(1000.76,26.67) abs=(788,21)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DEFROST_GLASS_DRV] matrix_placed offset_mm=(24.13,17.78) abs_mm=(1000.76,29.21) abs=(788,23)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FACE_DRV] matrix_placed offset_mm=(24.13,20.32) abs_mm=(1000.76,31.75) abs=(788,25)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] matrix_placed offset_mm=(24.13,22.86) abs_mm=(1000.76,34.29) abs=(788,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DRY_GLASS_DRV] matrix_placed offset_mm=(24.13,25.40) abs_mm=(1000.76,36.83) abs=(788,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_AC_DRV] matrix_placed offset_mm=(24.13,27.94) abs_mm=(1000.76,39.37) abs=(788,31)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] matrix_placed offset_mm=(24.13,30.48) abs_mm=(1000.76,41.91) abs=(788,33)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:TEMP_SET_ADC] matrix_placed offset_mm=(24.13,33.02) abs_mm=(1000.76,44.45) abs=(788,35)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] matrix_placed offset_mm=(24.13,35.56) abs_mm=(1000.76,46.99) abs=(788,37)
-17:46:03 | INFO    | eda.placer             | [root] placement_done components=22
-17:46:03 | INFO    | eda.placer             | [root] [-] [C10] placement_done bbox_origin=(623,156) anchor_mm=(792.48,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(792.48,198.12) abs=(624,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:2] placement_done offset_mm=(0.00,3.81) abs_mm=(792.48,205.74) abs=(624,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C21] placement_done bbox_origin=(623,27) anchor_mm=(792.48,38.10) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(792.48,34.29) abs=(624,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:2] placement_done offset_mm=(0.00,3.81) abs_mm=(792.48,41.91) abs=(624,33)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C5] placement_done bbox_origin=(557,156) anchor_mm=(708.66,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(708.66,198.12) abs=(558,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:2] placement_done offset_mm=(0.00,3.81) abs_mm=(708.66,205.74) abs=(558,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C6] placement_done bbox_origin=(484,156) anchor_mm=(615.95,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(615.95,198.12) abs=(485,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:2] placement_done offset_mm=(0.00,3.81) abs_mm=(615.95,205.74) abs=(485,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C7] placement_done bbox_origin=(404,156) anchor_mm=(514.35,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(514.35,198.12) abs=(405,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:2] placement_done offset_mm=(0.00,3.81) abs_mm=(514.35,205.74) abs=(405,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C8] placement_done bbox_origin=(324,156) anchor_mm=(412.75,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(412.75,198.12) abs=(325,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:2] placement_done offset_mm=(0.00,3.81) abs_mm=(412.75,205.74) abs=(325,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C9] placement_done bbox_origin=(244,156) anchor_mm=(311.15,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(311.15,198.12) abs=(245,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:2] placement_done offset_mm=(0.00,3.81) abs_mm=(311.15,205.74) abs=(245,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] placement_done bbox_origin=(778,156) anchor_mm=(989.33,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(989.33,198.12) abs=(779,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:2] placement_done offset_mm=(0.00,3.81) abs_mm=(989.33,205.74) abs=(779,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] placement_done bbox_origin=(164,156) anchor_mm=(214.63,200.66) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:1] placement_done offset_mm=(-5.08,-2.54) abs_mm=(209.55,198.12) abs=(165,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:2] placement_done offset_mm=(-5.08,0.00) abs_mm=(209.55,200.66) abs=(165,158)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:3] placement_done offset_mm=(-5.08,2.54) abs_mm=(209.55,203.20) abs=(165,160)
-17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:4] placement_done offset_mm=(-5.08,5.08) abs_mm=(209.55,205.74) abs=(165,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R1] placement_done bbox_origin=(696,156) anchor_mm=(885.19,201.93) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(885.19,198.12) abs=(697,156)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:2] placement_done offset_mm=(0.00,3.81) abs_mm=(885.19,205.74) abs=(697,162)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R2] placement_done bbox_origin=(557,27) anchor_mm=(708.66,38.10) rotation=0 mirror=None size=2x6 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(708.66,34.29) abs=(558,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:2] placement_done offset_mm=(0.00,3.81) abs_mm=(708.66,41.91) abs=(558,33)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] placement_done bbox_origin=(65,121) anchor_mm=(100.33,201.93) rotation=0 mirror=None size=28x76 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:1] placement_done offset_mm=(-5.08,-48.26) abs_mm=(95.25,153.67) abs=(75,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:2] placement_done offset_mm=(-17.78,12.70) abs_mm=(82.55,214.63) abs=(65,169)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:3] placement_done offset_mm=(-17.78,15.24) abs_mm=(82.55,217.17) abs=(65,171)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:4] placement_done offset_mm=(-17.78,17.78) abs_mm=(82.55,219.71) abs=(65,173)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:5] placement_done offset_mm=(-17.78,-30.48) abs_mm=(82.55,171.45) abs=(65,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:6] placement_done offset_mm=(-17.78,-27.94) abs_mm=(82.55,173.99) abs=(65,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:7] placement_done offset_mm=(-17.78,-40.64) abs_mm=(82.55,161.29) abs=(65,127)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:8] placement_done offset_mm=(-17.78,-20.32) abs_mm=(82.55,181.61) abs=(65,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:9] placement_done offset_mm=(-17.78,-17.78) abs_mm=(82.55,184.15) abs=(65,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:10] placement_done offset_mm=(-17.78,-15.24) abs_mm=(82.55,186.69) abs=(65,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:11] placement_done offset_mm=(-17.78,-12.70) abs_mm=(82.55,189.23) abs=(65,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:12] placement_done offset_mm=(2.54,48.26) abs_mm=(102.87,250.19) abs=(81,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:13] placement_done offset_mm=(7.62,-48.26) abs_mm=(107.95,153.67) abs=(85,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:14] placement_done offset_mm=(17.78,-40.64) abs_mm=(118.11,161.29) abs=(93,127)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:15] placement_done offset_mm=(17.78,-38.10) abs_mm=(118.11,163.83) abs=(93,129)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:16] placement_done offset_mm=(17.78,-35.56) abs_mm=(118.11,166.37) abs=(93,131)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:17] placement_done offset_mm=(17.78,-33.02) abs_mm=(118.11,168.91) abs=(93,133)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:18] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:19] placement_done offset_mm=(-2.54,-48.26) abs_mm=(97.79,153.67) abs=(77,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:20] placement_done offset_mm=(17.78,-30.48) abs_mm=(118.11,171.45) abs=(93,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:21] placement_done offset_mm=(17.78,-27.94) abs_mm=(118.11,173.99) abs=(93,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:22] placement_done offset_mm=(17.78,-25.40) abs_mm=(118.11,176.53) abs=(93,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:23] placement_done offset_mm=(17.78,-22.86) abs_mm=(118.11,179.07) abs=(93,141)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:24] placement_done offset_mm=(-17.78,-10.16) abs_mm=(82.55,191.77) abs=(65,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:25] placement_done offset_mm=(-17.78,-7.62) abs_mm=(82.55,194.31) abs=(65,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:26] placement_done offset_mm=(17.78,2.54) abs_mm=(118.11,204.47) abs=(93,161)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:27] placement_done offset_mm=(17.78,5.08) abs_mm=(118.11,207.01) abs=(93,163)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:28] placement_done offset_mm=(17.78,7.62) abs_mm=(118.11,209.55) abs=(93,165)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:29] placement_done offset_mm=(17.78,27.94) abs_mm=(118.11,229.87) abs=(93,181)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:30] placement_done offset_mm=(17.78,30.48) abs_mm=(118.11,232.41) abs=(93,183)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:31] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:32] placement_done offset_mm=(0.00,-48.26) abs_mm=(100.33,153.67) abs=(79,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:33] placement_done offset_mm=(17.78,33.02) abs_mm=(118.11,234.95) abs=(93,185)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:34] placement_done offset_mm=(17.78,35.56) abs_mm=(118.11,237.49) abs=(93,187)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:35] placement_done offset_mm=(17.78,38.10) abs_mm=(118.11,240.03) abs=(93,189)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:36] placement_done offset_mm=(17.78,40.64) abs_mm=(118.11,242.57) abs=(93,191)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:37] placement_done offset_mm=(-17.78,-5.08) abs_mm=(82.55,196.85) abs=(65,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:38] placement_done offset_mm=(-17.78,-2.54) abs_mm=(82.55,199.39) abs=(65,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:39] placement_done offset_mm=(-17.78,0.00) abs_mm=(82.55,201.93) abs=(65,159)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:40] placement_done offset_mm=(-17.78,2.54) abs_mm=(82.55,204.47) abs=(65,161)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:41] placement_done offset_mm=(17.78,-20.32) abs_mm=(118.11,181.61) abs=(93,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:42] placement_done offset_mm=(17.78,-17.78) abs_mm=(118.11,184.15) abs=(93,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:43] placement_done offset_mm=(17.78,-15.24) abs_mm=(118.11,186.69) abs=(93,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:44] placement_done offset_mm=(17.78,-12.70) abs_mm=(118.11,189.23) abs=(93,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:45] placement_done offset_mm=(17.78,-10.16) abs_mm=(118.11,191.77) abs=(93,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:46] placement_done offset_mm=(17.78,-7.62) abs_mm=(118.11,194.31) abs=(93,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:47] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:48] placement_done offset_mm=(2.54,-48.26) abs_mm=(102.87,153.67) abs=(81,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:49] placement_done offset_mm=(17.78,-5.08) abs_mm=(118.11,196.85) abs=(93,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:50] placement_done offset_mm=(17.78,-2.54) abs_mm=(118.11,199.39) abs=(93,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:51] placement_done offset_mm=(-17.78,5.08) abs_mm=(82.55,207.01) abs=(65,163)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:52] placement_done offset_mm=(-17.78,7.62) abs_mm=(82.55,209.55) abs=(65,165)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:53] placement_done offset_mm=(-17.78,10.16) abs_mm=(82.55,212.09) abs=(65,167)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:54] placement_done offset_mm=(-17.78,-25.40) abs_mm=(82.55,176.53) abs=(65,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:55] placement_done offset_mm=(17.78,10.16) abs_mm=(118.11,212.09) abs=(93,167)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:56] placement_done offset_mm=(17.78,12.70) abs_mm=(118.11,214.63) abs=(93,169)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:57] placement_done offset_mm=(17.78,15.24) abs_mm=(118.11,217.17) abs=(93,171)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:58] placement_done offset_mm=(17.78,17.78) abs_mm=(118.11,219.71) abs=(93,173)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:59] placement_done offset_mm=(17.78,20.32) abs_mm=(118.11,222.25) abs=(93,175)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:60] placement_done offset_mm=(-17.78,-35.56) abs_mm=(82.55,166.37) abs=(65,131)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:61] placement_done offset_mm=(17.78,22.86) abs_mm=(118.11,224.79) abs=(93,177)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:62] placement_done offset_mm=(17.78,25.40) abs_mm=(118.11,227.33) abs=(93,179)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:63] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
-17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:64] placement_done offset_mm=(5.08,-48.26) abs_mm=(105.41,153.67) abs=(83,121)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] placement_done bbox_origin=(71,3) anchor_mm=(90.17,3.81) rotation=0 mirror=None size=16x54 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(90.17,6.35) abs=(71,5)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(90.17,8.89) abs=(71,7)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN1] placement_done offset_mm=(0.00,7.62) abs_mm=(90.17,11.43) abs=(71,9)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN2] placement_done offset_mm=(0.00,10.16) abs_mm=(90.17,13.97) abs=(71,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] placement_done offset_mm=(0.00,12.70) abs_mm=(90.17,16.51) abs=(71,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN1] placement_done offset_mm=(0.00,15.24) abs_mm=(90.17,19.05) abs=(71,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN2] placement_done offset_mm=(0.00,17.78) abs_mm=(90.17,21.59) abs=(71,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] placement_done offset_mm=(0.00,20.32) abs_mm=(90.17,24.13) abs=(71,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN1] placement_done offset_mm=(0.00,22.86) abs_mm=(90.17,26.67) abs=(71,21)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN2] placement_done offset_mm=(0.00,25.40) abs_mm=(90.17,29.21) abs=(71,23)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4_RAW] placement_done offset_mm=(0.00,27.94) abs_mm=(90.17,31.75) abs=(71,25)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN1] placement_done offset_mm=(0.00,30.48) abs_mm=(90.17,34.29) abs=(71,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN2] placement_done offset_mm=(0.00,33.02) abs_mm=(90.17,36.83) abs=(71,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] placement_done offset_mm=(19.05,2.54) abs_mm=(109.22,6.35) abs=(86,5)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] placement_done offset_mm=(19.05,5.08) abs_mm=(109.22,8.89) abs=(86,7)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M1] placement_done offset_mm=(19.05,7.62) abs_mm=(109.22,11.43) abs=(86,9)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] placement_done offset_mm=(19.05,10.16) abs_mm=(109.22,13.97) abs=(86,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] placement_done offset_mm=(19.05,12.70) abs_mm=(109.22,16.51) abs=(86,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2] placement_done offset_mm=(19.05,15.24) abs_mm=(109.22,19.05) abs=(86,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] placement_done offset_mm=(19.05,17.78) abs_mm=(109.22,21.59) abs=(86,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] placement_done offset_mm=(19.05,20.32) abs_mm=(109.22,24.13) abs=(86,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3] placement_done offset_mm=(19.05,22.86) abs_mm=(109.22,26.67) abs=(86,21)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] placement_done offset_mm=(19.05,25.40) abs_mm=(109.22,29.21) abs=(86,23)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] placement_done offset_mm=(19.05,27.94) abs_mm=(109.22,31.75) abs=(86,25)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4] placement_done offset_mm=(19.05,30.48) abs_mm=(109.22,34.29) abs=(86,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] placement_done bbox_origin=(3,26) anchor_mm=(3.81,33.02) rotation=0 mirror=None size=16x8 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] placement_done offset_mm=(0.00,2.54) abs_mm=(3.81,35.56) abs=(3,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(3.81,38.10) abs=(3,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] placement_done bbox_origin=(477,22) anchor_mm=(605.79,27.94) rotation=0 mirror=None size=16x16 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:VCC_5V] placement_done offset_mm=(0.00,2.54) abs_mm=(605.79,30.48) abs=(477,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(605.79,33.02) abs=(477,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_TX] placement_done offset_mm=(19.05,2.54) abs_mm=(624.84,30.48) abs=(492,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_RX] placement_done offset_mm=(19.05,5.08) abs_mm=(624.84,33.02) abs=(492,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANH] placement_done offset_mm=(19.05,7.62) abs_mm=(624.84,35.56) abs=(492,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANL] placement_done offset_mm=(19.05,10.16) abs_mm=(624.84,38.10) abs=(492,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] placement_done bbox_origin=(157,22) anchor_mm=(199.39,27.94) rotation=0 mirror=None size=16x16 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(199.39,30.48) abs=(157,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(199.39,33.02) abs=(157,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] placement_done offset_mm=(0.00,7.62) abs_mm=(199.39,35.56) abs=(157,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_CTL] placement_done offset_mm=(0.00,10.16) abs_mm=(199.39,38.10) abs=(157,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] placement_done offset_mm=(0.00,12.70) abs_mm=(199.39,40.64) abs=(157,32)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] placement_done offset_mm=(19.05,2.54) abs_mm=(218.44,30.48) abs=(172,24)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] placement_done bbox_origin=(3,133) anchor_mm=(3.81,168.91) rotation=0 mirror=None size=16x52 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(3.81,171.45) abs=(3,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_5V] placement_done offset_mm=(0.00,5.08) abs_mm=(3.81,173.99) abs=(3,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_3V3] placement_done offset_mm=(0.00,7.62) abs_mm=(3.81,176.53) abs=(3,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:GND] placement_done offset_mm=(0.00,10.16) abs_mm=(3.81,179.07) abs=(3,141)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] placement_done offset_mm=(0.00,12.70) abs_mm=(3.81,181.61) abs=(3,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:COND_RAW] placement_done offset_mm=(0.00,15.24) abs_mm=(3.81,184.15) abs=(3,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] placement_done offset_mm=(0.00,17.78) abs_mm=(3.81,186.69) abs=(3,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] placement_done offset_mm=(0.00,20.32) abs_mm=(3.81,189.23) abs=(3,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M4_RAW] placement_done offset_mm=(0.00,22.86) abs_mm=(3.81,191.77) abs=(3,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] placement_done offset_mm=(0.00,25.40) abs_mm=(3.81,194.31) abs=(3,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] placement_done offset_mm=(0.00,27.94) abs_mm=(3.81,196.85) abs=(3,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M1_RAW] placement_done offset_mm=(0.00,30.48) abs_mm=(3.81,199.39) abs=(3,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:NTC_HEAT_W] placement_done offset_mm=(19.05,2.54) abs_mm=(22.86,171.45) abs=(18,135)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] placement_done offset_mm=(19.05,5.08) abs_mm=(22.86,173.99) abs=(18,137)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] placement_done offset_mm=(19.05,7.62) abs_mm=(22.86,176.53) abs=(18,139)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] placement_done offset_mm=(19.05,10.16) abs_mm=(22.86,179.07) abs=(18,141)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] placement_done offset_mm=(19.05,12.70) abs_mm=(22.86,181.61) abs=(18,143)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] placement_done offset_mm=(19.05,15.24) abs_mm=(22.86,184.15) abs=(18,145)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] placement_done offset_mm=(19.05,17.78) abs_mm=(22.86,186.69) abs=(18,147)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] placement_done offset_mm=(19.05,20.32) abs_mm=(22.86,189.23) abs=(18,149)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] placement_done offset_mm=(19.05,22.86) abs_mm=(22.86,191.77) abs=(18,151)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANH] placement_done offset_mm=(19.05,25.40) abs_mm=(22.86,194.31) abs=(18,153)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANL] placement_done offset_mm=(19.05,27.94) abs_mm=(22.86,196.85) abs=(18,155)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] placement_done offset_mm=(19.05,30.48) abs_mm=(22.86,199.39) abs=(18,157)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] placement_done bbox_origin=(397,24) anchor_mm=(504.19,30.48) rotation=0 mirror=None size=16x12 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(504.19,33.02) abs=(397,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(504.19,35.56) abs=(397,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] placement_done offset_mm=(0.00,7.62) abs_mm=(504.19,38.10) abs=(397,30)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:M_FAN_CTL] placement_done offset_mm=(0.00,10.16) abs_mm=(504.19,40.64) abs=(397,32)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] placement_done bbox_origin=(237,25) anchor_mm=(300.99,31.75) rotation=0 mirror=None size=16x10 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] placement_done offset_mm=(0.00,2.54) abs_mm=(300.99,34.29) abs=(237,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] placement_done offset_mm=(0.00,5.08) abs_mm=(300.99,36.83) abs=(237,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_ADC] placement_done offset_mm=(19.05,2.54) abs_mm=(320.04,34.29) abs=(252,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] placement_done bbox_origin=(689,24) anchor_mm=(875.03,30.48) rotation=0 mirror=None size=16x12 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] placement_done offset_mm=(0.00,2.54) abs_mm=(875.03,33.02) abs=(689,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(875.03,35.56) abs=(689,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT_W] placement_done offset_mm=(19.05,2.54) abs_mm=(894.08,33.02) abs=(704,26)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT] placement_done offset_mm=(19.05,5.08) abs_mm=(894.08,35.56) abs=(704,28)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] placement_done bbox_origin=(317,25) anchor_mm=(402.59,31.75) rotation=0 mirror=None size=16x10 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] placement_done offset_mm=(0.00,2.54) abs_mm=(402.59,34.29) abs=(317,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] placement_done offset_mm=(0.00,5.08) abs_mm=(402.59,36.83) abs=(317,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_ADC] placement_done offset_mm=(19.05,2.54) abs_mm=(421.64,34.29) abs=(332,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] placement_done bbox_origin=(769,9) anchor_mm=(976.63,11.43) rotation=0 mirror=None size=20x42 cells
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:VCC_3V3] placement_done offset_mm=(0.00,2.54) abs_mm=(976.63,13.97) abs=(769,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(976.63,16.51) abs=(769,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:NTC_CABIN] placement_done offset_mm=(0.00,7.62) abs_mm=(976.63,19.05) abs=(769,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] placement_done offset_mm=(0.00,10.16) abs_mm=(976.63,21.59) abs=(769,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_SENSE] placement_done offset_mm=(0.00,12.70) abs_mm=(976.63,24.13) abs=(769,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] placement_done offset_mm=(24.13,2.54) abs_mm=(1000.76,13.97) abs=(788,11)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FACE] placement_done offset_mm=(24.13,5.08) abs_mm=(1000.76,16.51) abs=(788,13)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FEET] placement_done offset_mm=(24.13,7.62) abs_mm=(1000.76,19.05) abs=(788,15)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DRY_GLASS] placement_done offset_mm=(24.13,10.16) abs_mm=(1000.76,21.59) abs=(788,17)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_AC] placement_done offset_mm=(24.13,12.70) abs_mm=(1000.76,24.13) abs=(788,19)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_RECIRC] placement_done offset_mm=(24.13,15.24) abs_mm=(1000.76,26.67) abs=(788,21)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DEFROST_GLASS_DRV] placement_done offset_mm=(24.13,17.78) abs_mm=(1000.76,29.21) abs=(788,23)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FACE_DRV] placement_done offset_mm=(24.13,20.32) abs_mm=(1000.76,31.75) abs=(788,25)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] placement_done offset_mm=(24.13,22.86) abs_mm=(1000.76,34.29) abs=(788,27)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DRY_GLASS_DRV] placement_done offset_mm=(24.13,25.40) abs_mm=(1000.76,36.83) abs=(788,29)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_AC_DRV] placement_done offset_mm=(24.13,27.94) abs_mm=(1000.76,39.37) abs=(788,31)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] placement_done offset_mm=(24.13,30.48) abs_mm=(1000.76,41.91) abs=(788,33)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:TEMP_SET_ADC] placement_done offset_mm=(24.13,33.02) abs_mm=(1000.76,44.45) abs=(788,35)
-17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] placement_done offset_mm=(24.13,35.56) abs_mm=(1000.76,46.99) abs=(788,37)
-17:46:03 | INFO    | eda.placer             | [root] router_map components=22 pin_cells=184 total=6185
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [U8] size=20x16 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_5V] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CAN_TX] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CAN_RX] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANH] size=5x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANL] size=5x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C1] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C11] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C16] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C17] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C18] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C19] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C2] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C20] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C3] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [C4] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [D1] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [D2] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [D4] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [D5] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [J1] size=10x30 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [L1] size=2x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [U6] size=12x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [U7] size=12x6 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_5V] size=6x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_3V3] size=7x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_HEAT_W] size=10x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_SOLAR_RAW] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_COND_RAW] size=8x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_A] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_B] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_A] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_B] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M2_RAW] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_A] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_B] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M3_RAW] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_A] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_B] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M4_RAW] size=9x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_AC_REQ_OUT] size=10x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_IN_RAW] size=11x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANH] size=5x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANL] size=5x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_HEAT_FAN_PWM_CTL] size=14x2 cells
-17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M1_RAW] size=9x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [C22] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [C23] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [C24] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [C32] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [J3] size=2x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [J4] size=2x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED1] size=6x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED2] size=6x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED3] size=6x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED4] size=6x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED5] size=6x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED6] size=6x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R10] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R11] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R12] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R22] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R23] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R24] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R39] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R40] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R7] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R8] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [R9] size=2x6 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW1] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW2] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW3] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW4] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW5] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW6] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_3V3] size=7x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_DEFROST_GLASS] size=15x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_FACE] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_FEET] size=8x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_DRY_GLASS] size=12x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_AC] size=6x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_RECIRC] size=10x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_DEFROST_GLASS_DRV] size=18x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_FACE_DRV] size=11x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_FEET_DRV] size=11x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_DRY_GLASS_DRV] size=15x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_AC_DRV] size=10x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_RECIRC_DRV] size=12x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_TEMP_SET_ADC] size=11x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_FAN_SEL_ADC] size=10x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_CABIN] size=9x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_IN_RAW] size=11x2 cells
-17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_SENSE] size=10x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [D3] size=6x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [J5] size=2x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q2] size=6x8 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R16] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R17] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [RT1] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_CABIN] size=9x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_M_FAN_CTL] size=9x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [C25] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R25] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R26] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_3V3] size=7x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_HEAT_W] size=10x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_HEAT] size=8x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [C26] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R27] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R28] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_SOLAR_RAW] size=9x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_SOLAR_ADC] size=9x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [C27] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R29] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R30] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_COND_RAW] size=8x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_COND_ADC] size=8x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q1] size=6x8 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q3] size=6x8 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q4] size=6x8 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R13] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R14] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R15] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R18] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R19] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R20] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [R21] size=2x6 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_FAN_PWM_CTL] size=10x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_AC_CTL] size=6x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_AC_REQ_OUT] size=10x2 cells
-17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_HEAT_FAN_PWM_CTL] size=14x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C12] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C13] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C14] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C15] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C28] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C29] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C30] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [C31] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R3] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R32] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R33] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R34] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R35] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R36] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R37] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R38] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R4] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R5] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [R6] size=2x6 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [U2] size=16x16 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [U3] size=16x16 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [U4] size=16x16 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [U5] size=16x16 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_A] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_B] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M1] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M1_IN1] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M1_IN2] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_A] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_B] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M2_RAW] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M2] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M2_IN1] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M2_IN2] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_A] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_B] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M3_RAW] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M3] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M3_IN1] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M3_IN2] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_A] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_B] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M4_RAW] size=9x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M4] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M4_IN1] size=6x2 cells
-17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M4_IN2] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R1] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R2] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R3] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R4] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R5] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R6] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R7] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [R8] size=2x6 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED11] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED12] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED13] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED21] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED22] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED23] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED31] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED32] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED33] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED41] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED42] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED43] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED51] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED52] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED53] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED61] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED62] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED63] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED71] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED72] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED73] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED81] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED82] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED83] size=6x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_IN_RAW] size=11x2 cells
-17:48:24 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_12V] plan_stub X_PWR:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,171.45) pin_cell=Cell(col=3, row=135)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_12V] stub_found pin=X_PWR:VCC_12V tip=Cell(col=19, row=135) tip_mm=(24.13,171.45) extra=0 cells=1
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] plan_stub X_SEN_CABIN:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(287.02,33.02) pin_cell=Cell(col=226, row=26)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] stub_found pin=X_SEN_CABIN:VCC_12V tip=Cell(col=242, row=26) tip_mm=(307.34,33.02) extra=0 cells=1
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:VCC_12V] plan_stub X_OUT:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,30.48) pin_cell=Cell(col=151, row=24)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:VCC_12V] stub_found pin=X_OUT:VCC_12V tip=Cell(col=167, row=24) tip_mm=(212.09,30.48) extra=0 cells=1
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:VCC_12V] plan_stub X_ACT:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,6.35) pin_cell=Cell(col=67, row=5)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:VCC_12V] stub_found pin=X_ACT:VCC_12V tip=Cell(col=83, row=5) tip_mm=(105.41,6.35) extra=0 cells=1
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_12V] plan_stub X_PWR:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,171.45) pin_cell=Cell(col=3, row=135)
+17:53:34 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_12V] stub_max_extra_exceeded limit=20 pin=X_PWR:VCC_12V tip=Cell(col=40, row=135)
+17:53:34 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_12V] stub_failed reason=max_extra_exceeded pin=X_PWR:VCC_12V pin_mm=(3.81,171.45) cell=Cell(col=3, row=135)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] plan_stub X_SEN_CABIN:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(287.02,33.02) pin_cell=Cell(col=226, row=26)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] stub_found pin=X_SEN_CABIN:VCC_12V tip=Cell(col=243, row=26) tip_mm=(308.61,33.02) extra=1 cells=2
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:VCC_12V] plan_stub X_OUT:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,30.48) pin_cell=Cell(col=151, row=24)
+17:53:34 | ERROR   | eda.stub               | [root] [-] [X_OUT] [X_OUT:VCC_12V] stub_max_extra_exceeded limit=20 pin=X_OUT:VCC_12V tip=Cell(col=188, row=24)
+17:53:34 | ERROR   | eda.stub               | [root] [-] [X_OUT] [X_OUT:VCC_12V] stub_failed reason=max_extra_exceeded pin=X_OUT:VCC_12V pin_mm=(191.77,30.48) cell=Cell(col=151, row=24)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:VCC_12V] plan_stub X_ACT:VCC_12V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,6.35) pin_cell=Cell(col=67, row=5)
+17:53:34 | ERROR   | eda.stub               | [root] [-] [X_ACT] [X_ACT:VCC_12V] stub_max_extra_exceeded limit=20 pin=X_ACT:VCC_12V tip=Cell(col=104, row=5)
+17:53:34 | ERROR   | eda.stub               | [root] [-] [X_ACT] [X_ACT:VCC_12V] stub_failed reason=max_extra_exceeded pin=X_ACT:VCC_12V pin_mm=(85.09,6.35) cell=Cell(col=67, row=5)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:VCC_5V] plan_stub X_CAN:VCC_5V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(317.50,30.48) pin_cell=Cell(col=250, row=24)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:VCC_5V] stub_found pin=X_CAN:VCC_5V tip=Cell(col=266, row=24) tip_mm=(337.82,30.48) extra=0 cells=1
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_5V] plan_stub X_PWR:VCC_5V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,173.99) pin_cell=Cell(col=3, row=137)
+17:53:34 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_5V] stub_found pin=X_PWR:VCC_5V tip=Cell(col=19, row=137) tip_mm=(24.13,173.99) extra=0 cells=1
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:VCC_5V] plan_stub X_CAN:VCC_5V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(317.50,30.48) pin_cell=Cell(col=250, row=24)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:VCC_5V] stub_found pin=X_CAN:VCC_5V tip=Cell(col=267, row=24) tip_mm=(339.09,30.48) extra=1 cells=2
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_5V] plan_stub X_PWR:VCC_5V direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,173.99) pin_cell=Cell(col=3, row=137)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_5V] stub_found pin=X_PWR:VCC_5V tip=Cell(col=22, row=137) tip_mm=(27.94,173.99) extra=3 cells=4
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C5] [C5:1] plan_stub C5:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(351.79,198.12) pin_cell=Cell(col=277, row=156)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C5] [C5:1] stub_found pin=C5:1 tip=Cell(col=277, row=155) tip_mm=(351.79,196.85) extra=0 cells=1
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C6] [C6:1] plan_stub C6:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(327.66,198.12) pin_cell=Cell(col=258, row=156)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C6] [C6:1] stub_found pin=C6:1 tip=Cell(col=258, row=155) tip_mm=(327.66,196.85) extra=0 cells=1
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C7] [C7:1] plan_stub C7:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(297.18,198.12) pin_cell=Cell(col=234, row=156)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C7] [C7:1] stub_found pin=C7:1 tip=Cell(col=234, row=155) tip_mm=(297.18,196.85) extra=0 cells=1
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C8] [C8:1] plan_stub C8:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(266.70,198.12) pin_cell=Cell(col=210, row=156)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C8] [C8:1] stub_found pin=C8:1 tip=Cell(col=210, row=155) tip_mm=(266.70,196.85) extra=0 cells=1
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C9] [C9:1] plan_stub C9:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(234.95,198.12) pin_cell=Cell(col=185, row=156)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [C9] [C9:1] stub_found pin=C9:1 tip=Cell(col=185, row=155) tip_mm=(234.95,196.85) extra=0 cells=1
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:48] plan_stub U1:48 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(97.79,153.67) pin_cell=Cell(col=77, row=121)
+17:53:35 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:48] stub_found pin=U1:48 tip=Cell(col=77, row=119) tip_mm=(97.79,151.13) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:64] plan_stub U1:64 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(100.33,153.67) pin_cell=Cell(col=79, row=121)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:64] stub_found pin=U1:64 tip=Cell(col=79, row=119) tip_mm=(100.33,151.13) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:1] plan_stub U1:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(90.17,153.67) pin_cell=Cell(col=71, row=121)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:1] stub_found pin=U1:1 tip=Cell(col=71, row=119) tip_mm=(90.17,151.13) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [FB1] [FB1:1] plan_stub FB1:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(419.10,198.12) pin_cell=Cell(col=330, row=156)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [FB1] [FB1:1] stub_found pin=FB1:1 tip=Cell(col=330, row=155) tip_mm=(419.10,196.85) extra=0 cells=1
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [R1] [R1:1] plan_stub R1:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(386.08,198.12) pin_cell=Cell(col=304, row=156)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [R1] [R1:1] stub_found pin=R1:1 tip=Cell(col=304, row=154) tip_mm=(386.08,195.58) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:1] plan_stub J2:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(201.93,198.12) pin_cell=Cell(col=159, row=156)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:1] stub_found pin=J2:1 tip=Cell(col=159, row=155) tip_mm=(201.93,196.85) extra=0 cells=1
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_3V3] plan_stub X_PWR:VCC_3V3 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,176.53) pin_cell=Cell(col=3, row=139)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_3V3] stub_found pin=X_PWR:VCC_3V3 tip=Cell(col=19, row=139) tip_mm=(24.13,176.53) extra=0 cells=1
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:VCC_3V3] plan_stub X_UI:VCC_3V3 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,13.97) pin_cell=Cell(col=320, row=11)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:VCC_3V3] stub_found pin=X_UI:VCC_3V3 tip=Cell(col=340, row=11) tip_mm=(431.80,13.97) extra=0 cells=1
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] plan_stub X_SEN_HEAT:VCC_3V3 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(375.92,33.02) pin_cell=Cell(col=296, row=26)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] stub_found pin=X_SEN_HEAT:VCC_3V3 tip=Cell(col=312, row=26) tip_mm=(396.24,33.02) extra=0 cells=1
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:19] plan_stub U1:19 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(92.71,153.67) pin_cell=Cell(col=73, row=121)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:19] stub_found pin=U1:19 tip=Cell(col=73, row=119) tip_mm=(92.71,151.13) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:32] plan_stub U1:32 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(95.25,153.67) pin_cell=Cell(col=75, row=121)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:32] stub_found pin=U1:32 tip=Cell(col=75, row=119) tip_mm=(95.25,151.13) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_3V3] plan_stub X_PWR:VCC_3V3 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,176.53) pin_cell=Cell(col=3, row=139)
+17:53:36 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_3V3] stub_max_extra_exceeded limit=20 pin=X_PWR:VCC_3V3 tip=Cell(col=40, row=139)
+17:53:36 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:VCC_3V3] stub_failed reason=max_extra_exceeded pin=X_PWR:VCC_3V3 pin_mm=(3.81,176.53) cell=Cell(col=3, row=139)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:VCC_3V3] plan_stub X_UI:VCC_3V3 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,13.97) pin_cell=Cell(col=320, row=11)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:VCC_3V3] stub_found pin=X_UI:VCC_3V3 tip=Cell(col=341, row=11) tip_mm=(433.07,13.97) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] plan_stub X_SEN_HEAT:VCC_3V3 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(375.92,33.02) pin_cell=Cell(col=296, row=26)
+17:53:36 | ERROR   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] stub_blocked_by_bbox comp=X_UI pin=X_SEN_HEAT:VCC_3V3 tip=Cell(col=320, row=26)
+17:53:36 | ERROR   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] stub_failed reason=foreign_bbox pin=X_SEN_HEAT:VCC_3V3 pin_mm=(375.92,33.02) cell=Cell(col=296, row=26)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [FB1] [FB1:2] plan_stub FB1:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(419.10,205.74) pin_cell=Cell(col=330, row=162)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [FB1] [FB1:2] stub_found pin=FB1:2 tip=Cell(col=330, row=163) tip_mm=(419.10,207.01) extra=0 cells=1
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [C10] [C10:1] plan_stub C10:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(364.49,198.12) pin_cell=Cell(col=287, row=156)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [C10] [C10:1] stub_found pin=C10:1 tip=Cell(col=287, row=154) tip_mm=(364.49,195.58) extra=1 cells=2
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:13] plan_stub U1:13 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(102.87,153.67) pin_cell=Cell(col=81, row=121)
+17:53:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:13] stub_found pin=U1:13 tip=Cell(col=81, row=119) tip_mm=(102.87,151.13) extra=1 cells=2
+17:53:37 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:47] plan_stub U1:47 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(95.25,250.19) pin_cell=Cell(col=75, row=197)
+17:53:37 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:47] stub_found pin=U1:47 tip=Cell(col=75, row=198) tip_mm=(95.25,251.46) extra=0 cells=1
+17:53:37 | DEBUG   | eda.stub               | [root] [-] [C5] [C5:2] plan_stub C5:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(351.79,205.74) pin_cell=Cell(col=277, row=162)
+17:53:37 | DEBUG   | eda.stub               | [root] [-] [C5] [C5:2] stub_found pin=C5:2 tip=Cell(col=277, row=163) tip_mm=(351.79,207.01) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C6] [C6:2] plan_stub C6:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(327.66,205.74) pin_cell=Cell(col=258, row=162)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C6] [C6:2] stub_found pin=C6:2 tip=Cell(col=258, row=163) tip_mm=(327.66,207.01) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C7] [C7:2] plan_stub C7:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(297.18,205.74) pin_cell=Cell(col=234, row=162)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C7] [C7:2] stub_found pin=C7:2 tip=Cell(col=234, row=163) tip_mm=(297.18,207.01) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C8] [C8:2] plan_stub C8:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(266.70,205.74) pin_cell=Cell(col=210, row=162)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C8] [C8:2] stub_found pin=C8:2 tip=Cell(col=210, row=163) tip_mm=(266.70,207.01) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C9] [C9:2] plan_stub C9:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(234.95,205.74) pin_cell=Cell(col=185, row=162)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C9] [C9:2] stub_found pin=C9:2 tip=Cell(col=185, row=163) tip_mm=(234.95,207.01) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C10] [C10:2] plan_stub C10:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(364.49,205.74) pin_cell=Cell(col=287, row=162)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C10] [C10:2] stub_found pin=C10:2 tip=Cell(col=287, row=163) tip_mm=(364.49,207.01) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C21] [C21:2] plan_stub C21:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(364.49,41.91) pin_cell=Cell(col=287, row=33)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [C21] [C21:2] stub_found pin=C21:2 tip=Cell(col=287, row=34) tip_mm=(364.49,43.18) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [R2] [R2:2] plan_stub R2:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(351.79,41.91) pin_cell=Cell(col=277, row=33)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [R2] [R2:2] stub_found pin=R2:2 tip=Cell(col=277, row=34) tip_mm=(351.79,43.18) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:4] plan_stub J2:4 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(201.93,205.74) pin_cell=Cell(col=159, row=162)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:4] stub_found pin=J2:4 tip=Cell(col=159, row=163) tip_mm=(201.93,207.01) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:12] plan_stub U1:12 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(97.79,250.19) pin_cell=Cell(col=77, row=197)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:12] stub_found pin=U1:12 tip=Cell(col=77, row=199) tip_mm=(97.79,252.73) extra=1 cells=2
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:GND] plan_stub X_CAN:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(317.50,33.02) pin_cell=Cell(col=250, row=26)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:GND] stub_found pin=X_CAN:GND tip=Cell(col=267, row=26) tip_mm=(339.09,33.02) extra=1 cells=2
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:GND] plan_stub X_PWR:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,179.07) pin_cell=Cell(col=3, row=141)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:GND] stub_found pin=X_PWR:GND tip=Cell(col=19, row=141) tip_mm=(24.13,179.07) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:GND] plan_stub X_UI:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,16.51) pin_cell=Cell(col=320, row=13)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:GND] stub_found pin=X_UI:GND tip=Cell(col=341, row=13) tip_mm=(433.07,16.51) extra=1 cells=2
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] plan_stub X_SEN_CABIN:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(287.02,35.56) pin_cell=Cell(col=226, row=28)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] stub_found pin=X_SEN_CABIN:GND tip=Cell(col=243, row=28) tip_mm=(308.61,35.56) extra=1 cells=2
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] plan_stub X_SEN_HEAT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(375.92,35.56) pin_cell=Cell(col=296, row=28)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] stub_found pin=X_SEN_HEAT:GND tip=Cell(col=312, row=28) tip_mm=(396.24,35.56) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] plan_stub X_SEN_SOLAR:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(256.54,34.29) pin_cell=Cell(col=202, row=27)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] stub_found pin=X_SEN_SOLAR:GND tip=Cell(col=218, row=27) tip_mm=(276.86,34.29) extra=0 cells=1
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] plan_stub X_SEN_COND:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(224.79,34.29) pin_cell=Cell(col=177, row=27)
+17:53:38 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] stub_found pin=X_SEN_COND:GND tip=Cell(col=193, row=27) tip_mm=(245.11,34.29) extra=0 cells=1
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:GND] plan_stub X_OUT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,33.02) pin_cell=Cell(col=151, row=26)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:GND] stub_found pin=X_OUT:GND tip=Cell(col=167, row=26) tip_mm=(212.09,33.02) extra=0 cells=1
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:GND] plan_stub X_ACT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,8.89) pin_cell=Cell(col=67, row=7)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:GND] stub_found pin=X_ACT:GND tip=Cell(col=83, row=7) tip_mm=(105.41,8.89) extra=0 cells=1
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] plan_stub X_BACKLIGHT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,38.10) pin_cell=Cell(col=3, row=30)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] stub_found pin=X_BACKLIGHT:GND tip=Cell(col=19, row=30) tip_mm=(24.13,38.10) extra=0 cells=1
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:GND] plan_stub X_CAN:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(317.50,33.02) pin_cell=Cell(col=250, row=26)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:GND] stub_found pin=X_CAN:GND tip=Cell(col=276, row=26) tip_mm=(350.52,33.02) extra=10 cells=11
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:GND] plan_stub X_PWR:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,179.07) pin_cell=Cell(col=3, row=141)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:GND] stub_max_extra_exceeded limit=20 pin=X_PWR:GND tip=Cell(col=40, row=141)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:GND] stub_failed reason=max_extra_exceeded pin=X_PWR:GND pin_mm=(3.81,179.07) cell=Cell(col=3, row=141)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:GND] plan_stub X_UI:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,16.51) pin_cell=Cell(col=320, row=13)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:GND] stub_found pin=X_UI:GND tip=Cell(col=344, row=13) tip_mm=(436.88,16.51) extra=4 cells=5
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] plan_stub X_SEN_CABIN:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(287.02,35.56) pin_cell=Cell(col=226, row=28)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] stub_blocked_by_bbox comp=X_CAN pin=X_SEN_CABIN:GND tip=Cell(col=250, row=28)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] stub_failed reason=foreign_bbox pin=X_SEN_CABIN:GND pin_mm=(287.02,35.56) cell=Cell(col=226, row=28)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] plan_stub X_SEN_HEAT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(375.92,35.56) pin_cell=Cell(col=296, row=28)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] stub_found pin=X_SEN_HEAT:GND tip=Cell(col=315, row=28) tip_mm=(400.05,35.56) extra=3 cells=4
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] plan_stub X_SEN_SOLAR:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(256.54,34.29) pin_cell=Cell(col=202, row=27)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] stub_found pin=X_SEN_SOLAR:GND tip=Cell(col=224, row=27) tip_mm=(284.48,34.29) extra=6 cells=7
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] plan_stub X_SEN_COND:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(224.79,34.29) pin_cell=Cell(col=177, row=27)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] stub_blocked_by_pin comp=X_SEN_SOLAR.GND pin=X_SEN_COND:GND tip=Cell(col=202, row=27)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] stub_failed reason=foreign_pin pin=X_SEN_COND:GND pin_mm=(224.79,34.29) cell=Cell(col=177, row=27)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:GND] plan_stub X_OUT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,33.02) pin_cell=Cell(col=151, row=26)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_OUT] [X_OUT:GND] stub_blocked_by_bbox comp=X_SEN_COND pin=X_OUT:GND tip=Cell(col=177, row=26)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_OUT] [X_OUT:GND] stub_failed reason=foreign_bbox pin=X_OUT:GND pin_mm=(191.77,33.02) cell=Cell(col=151, row=26)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:GND] plan_stub X_ACT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,8.89) pin_cell=Cell(col=67, row=7)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_ACT] [X_ACT:GND] stub_max_extra_exceeded limit=20 pin=X_ACT:GND tip=Cell(col=104, row=7)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_ACT] [X_ACT:GND] stub_failed reason=max_extra_exceeded pin=X_ACT:GND pin_mm=(85.09,8.89) cell=Cell(col=67, row=7)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] plan_stub X_BACKLIGHT:GND direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,38.10) pin_cell=Cell(col=3, row=30)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] stub_max_extra_exceeded limit=20 pin=X_BACKLIGHT:GND tip=Cell(col=40, row=30)
+17:53:39 | ERROR   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] stub_failed reason=max_extra_exceeded pin=X_BACKLIGHT:GND pin_mm=(3.81,38.10) cell=Cell(col=3, row=30)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:7] plan_stub U1:7 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,161.29) pin_cell=Cell(col=61, row=127)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:7] stub_found pin=U1:7 tip=Cell(col=59, row=127) tip_mm=(74.93,161.29) extra=1 cells=2
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [R1] [R1:2] plan_stub R1:2 direction=down outward_symbol=down rotation=0 mirror=None pin_mm=(386.08,205.74) pin_cell=Cell(col=304, row=162)
+17:53:39 | DEBUG   | eda.stub               | [root] [-] [R1] [R1:2] stub_found pin=R1:2 tip=Cell(col=304, row=164) tip_mm=(386.08,208.28) extra=1 cells=2
+17:53:40 | DEBUG   | eda.stub               | [root] [-] [C21] [C21:1] plan_stub C21:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(364.49,34.29) pin_cell=Cell(col=287, row=27)
+17:53:40 | DEBUG   | eda.stub               | [root] [-] [C21] [C21:1] stub_found pin=C21:1 tip=Cell(col=287, row=26) tip_mm=(364.49,33.02) extra=0 cells=1
+17:53:40 | DEBUG   | eda.stub               | [root] [-] [R2] [R2:1] plan_stub R2:1 direction=up outward_symbol=up rotation=0 mirror=None pin_mm=(351.79,34.29) pin_cell=Cell(col=277, row=27)
+17:53:40 | DEBUG   | eda.stub               | [root] [-] [R2] [R2:1] stub_found pin=R2:1 tip=Cell(col=277, row=26) tip_mm=(351.79,33.02) extra=0 cells=1
+17:53:40 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:60] plan_stub U1:60 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,166.37) pin_cell=Cell(col=61, row=131)
+17:53:40 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:60] stub_found pin=U1:60 tip=Cell(col=59, row=131) tip_mm=(74.93,166.37) extra=1 cells=2
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:2] plan_stub J2:2 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(201.93,200.66) pin_cell=Cell(col=159, row=158)
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:2] stub_found pin=J2:2 tip=Cell(col=157, row=158) tip_mm=(199.39,200.66) extra=0 cells=1
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:46] plan_stub U1:46 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,194.31) pin_cell=Cell(col=89, row=153)
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:46] stub_found pin=U1:46 tip=Cell(col=90, row=153) tip_mm=(114.30,194.31) extra=0 cells=1
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:3] plan_stub J2:3 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(201.93,203.20) pin_cell=Cell(col=159, row=160)
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [J2] [J2:3] stub_found pin=J2:3 tip=Cell(col=157, row=160) tip_mm=(199.39,203.20) extra=0 cells=1
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:49] plan_stub U1:49 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,196.85) pin_cell=Cell(col=89, row=155)
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:49] stub_found pin=U1:49 tip=Cell(col=91, row=155) tip_mm=(115.57,196.85) extra=1 cells=2
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:29] plan_stub U1:29 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,229.87) pin_cell=Cell(col=89, row=181)
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:29] stub_found pin=U1:29 tip=Cell(col=90, row=181) tip_mm=(114.30,229.87) extra=0 cells=1
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] plan_stub X_UI:BTN_DEFROST_GLASS direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,13.97) pin_cell=Cell(col=339, row=11)
+17:53:42 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] stub_found pin=X_UI:BTN_DEFROST_GLASS tip=Cell(col=318, row=11) tip_mm=(403.86,13.97) extra=1 cells=2
+17:53:44 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] plan_stub X_UI:BTN_DEFROST_GLASS direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,13.97) pin_cell=Cell(col=339, row=11)
+17:53:44 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] stub_found pin=X_UI:BTN_DEFROST_GLASS tip=Cell(col=316, row=11) tip_mm=(401.32,13.97) extra=3 cells=4
+17:53:44 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:30] plan_stub U1:30 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,232.41) pin_cell=Cell(col=89, row=183)
+17:53:44 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:30] stub_found pin=U1:30 tip=Cell(col=90, row=183) tip_mm=(114.30,232.41) extra=0 cells=1
+17:53:44 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FACE] plan_stub X_UI:BTN_FACE direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,16.51) pin_cell=Cell(col=339, row=13)
+17:53:44 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FACE] stub_found pin=X_UI:BTN_FACE tip=Cell(col=318, row=13) tip_mm=(403.86,16.51) extra=1 cells=2
+17:53:46 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FACE] plan_stub X_UI:BTN_FACE direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,16.51) pin_cell=Cell(col=339, row=13)
+17:53:46 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FACE] stub_found pin=X_UI:BTN_FACE tip=Cell(col=314, row=13) tip_mm=(398.78,16.51) extra=5 cells=6
+17:53:46 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:33] plan_stub U1:33 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,234.95) pin_cell=Cell(col=89, row=185)
+17:53:46 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:33] stub_found pin=U1:33 tip=Cell(col=90, row=185) tip_mm=(114.30,234.95) extra=0 cells=1
+17:53:46 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FEET] plan_stub X_UI:BTN_FEET direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,19.05) pin_cell=Cell(col=339, row=15)
+17:53:46 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FEET] stub_found pin=X_UI:BTN_FEET tip=Cell(col=318, row=15) tip_mm=(403.86,19.05) extra=1 cells=2
+17:53:48 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FEET] plan_stub X_UI:BTN_FEET direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,19.05) pin_cell=Cell(col=339, row=15)
+17:53:48 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_FEET] stub_found pin=X_UI:BTN_FEET tip=Cell(col=309, row=15) tip_mm=(392.43,19.05) extra=10 cells=11
+17:53:48 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:34] plan_stub U1:34 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,237.49) pin_cell=Cell(col=89, row=187)
+17:53:48 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:34] stub_found pin=U1:34 tip=Cell(col=90, row=187) tip_mm=(114.30,237.49) extra=0 cells=1
+17:53:48 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_DRY_GLASS] plan_stub X_UI:BTN_DRY_GLASS direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,21.59) pin_cell=Cell(col=339, row=17)
+17:53:48 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_DRY_GLASS] stub_found pin=X_UI:BTN_DRY_GLASS tip=Cell(col=318, row=17) tip_mm=(403.86,21.59) extra=1 cells=2
+17:53:51 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:35] plan_stub U1:35 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,240.03) pin_cell=Cell(col=89, row=189)
+17:53:51 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:35] stub_found pin=U1:35 tip=Cell(col=90, row=189) tip_mm=(114.30,240.03) extra=0 cells=1
+17:53:51 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_AC] plan_stub X_UI:BTN_AC direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,24.13) pin_cell=Cell(col=339, row=19)
+17:53:51 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_AC] stub_found pin=X_UI:BTN_AC tip=Cell(col=318, row=19) tip_mm=(403.86,24.13) extra=1 cells=2
+17:53:54 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:36] plan_stub U1:36 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,242.57) pin_cell=Cell(col=89, row=191)
+17:53:54 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:36] stub_found pin=U1:36 tip=Cell(col=90, row=191) tip_mm=(114.30,242.57) extra=0 cells=1
+17:53:54 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_RECIRC] plan_stub X_UI:BTN_RECIRC direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,26.67) pin_cell=Cell(col=339, row=21)
+17:53:54 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:BTN_RECIRC] stub_found pin=X_UI:BTN_RECIRC tip=Cell(col=318, row=21) tip_mm=(403.86,26.67) extra=1 cells=2
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_DEFROST_GLASS_DRV] plan_stub X_UI:LED_DEFROST_GLASS_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,29.21) pin_cell=Cell(col=339, row=23)
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_DEFROST_GLASS_DRV] stub_found pin=X_UI:LED_DEFROST_GLASS_DRV tip=Cell(col=318, row=23) tip_mm=(403.86,29.21) extra=1 cells=2
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:50] plan_stub U1:50 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,199.39) pin_cell=Cell(col=89, row=157)
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:50] stub_found pin=U1:50 tip=Cell(col=91, row=157) tip_mm=(115.57,199.39) extra=1 cells=2
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_FACE_DRV] plan_stub X_UI:LED_FACE_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,31.75) pin_cell=Cell(col=339, row=25)
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_FACE_DRV] stub_found pin=X_UI:LED_FACE_DRV tip=Cell(col=318, row=25) tip_mm=(403.86,31.75) extra=1 cells=2
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:55] plan_stub U1:55 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,212.09) pin_cell=Cell(col=89, row=167)
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:55] stub_found pin=U1:55 tip=Cell(col=90, row=167) tip_mm=(114.30,212.09) extra=0 cells=1
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] plan_stub X_UI:LED_FEET_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,34.29) pin_cell=Cell(col=339, row=27)
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] stub_found pin=X_UI:LED_FEET_DRV tip=Cell(col=319, row=27) tip_mm=(405.13,34.29) extra=0 cells=1
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:56] plan_stub U1:56 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,214.63) pin_cell=Cell(col=89, row=169)
+17:53:56 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:56] stub_found pin=U1:56 tip=Cell(col=90, row=169) tip_mm=(114.30,214.63) extra=0 cells=1
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] plan_stub X_UI:LED_FEET_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,34.29) pin_cell=Cell(col=339, row=27)
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] stub_found pin=X_UI:LED_FEET_DRV tip=Cell(col=318, row=27) tip_mm=(403.86,34.29) extra=1 cells=2
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_DRY_GLASS_DRV] plan_stub X_UI:LED_DRY_GLASS_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,36.83) pin_cell=Cell(col=339, row=29)
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_DRY_GLASS_DRV] stub_found pin=X_UI:LED_DRY_GLASS_DRV tip=Cell(col=318, row=29) tip_mm=(403.86,36.83) extra=1 cells=2
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:3] plan_stub U1:3 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,217.17) pin_cell=Cell(col=61, row=171)
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:3] stub_found pin=U1:3 tip=Cell(col=59, row=171) tip_mm=(74.93,217.17) extra=1 cells=2
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_AC_DRV] plan_stub X_UI:LED_AC_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,39.37) pin_cell=Cell(col=339, row=31)
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_AC_DRV] stub_found pin=X_UI:LED_AC_DRV tip=Cell(col=319, row=31) tip_mm=(405.13,39.37) extra=0 cells=1
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:4] plan_stub U1:4 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,219.71) pin_cell=Cell(col=61, row=173)
+17:53:59 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:4] stub_found pin=U1:4 tip=Cell(col=59, row=173) tip_mm=(74.93,219.71) extra=1 cells=2
+17:54:01 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_AC_DRV] plan_stub X_UI:LED_AC_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,39.37) pin_cell=Cell(col=339, row=31)
+17:54:01 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_AC_DRV] stub_found pin=X_UI:LED_AC_DRV tip=Cell(col=318, row=31) tip_mm=(403.86,39.37) extra=1 cells=2
+17:54:01 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] plan_stub X_UI:LED_RECIRC_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,41.91) pin_cell=Cell(col=339, row=33)
+17:54:01 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] stub_found pin=X_UI:LED_RECIRC_DRV tip=Cell(col=319, row=33) tip_mm=(405.13,41.91) extra=0 cells=1
+17:54:01 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:10] plan_stub U1:10 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,186.69) pin_cell=Cell(col=61, row=147)
+17:54:01 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:10] stub_found pin=U1:10 tip=Cell(col=59, row=147) tip_mm=(74.93,186.69) extra=1 cells=2
+17:54:04 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] plan_stub X_UI:LED_RECIRC_DRV direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,41.91) pin_cell=Cell(col=339, row=33)
+17:54:04 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] stub_found pin=X_UI:LED_RECIRC_DRV tip=Cell(col=318, row=33) tip_mm=(403.86,41.91) extra=1 cells=2
+17:54:04 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:14] plan_stub U1:14 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,161.29) pin_cell=Cell(col=89, row=127)
+17:54:04 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:14] stub_found pin=U1:14 tip=Cell(col=90, row=127) tip_mm=(114.30,161.29) extra=0 cells=1
+17:54:04 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:TEMP_SET_ADC] plan_stub X_UI:TEMP_SET_ADC direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,44.45) pin_cell=Cell(col=339, row=35)
+17:54:04 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:TEMP_SET_ADC] stub_found pin=X_UI:TEMP_SET_ADC tip=Cell(col=318, row=35) tip_mm=(403.86,44.45) extra=1 cells=2
+17:54:08 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:15] plan_stub U1:15 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,163.83) pin_cell=Cell(col=89, row=129)
+17:54:08 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:15] stub_found pin=U1:15 tip=Cell(col=90, row=129) tip_mm=(114.30,163.83) extra=0 cells=1
+17:54:08 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] plan_stub X_UI:FAN_SEL_ADC direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,46.99) pin_cell=Cell(col=339, row=37)
+17:54:08 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] stub_found pin=X_UI:FAN_SEL_ADC tip=Cell(col=319, row=37) tip_mm=(405.13,46.99) extra=0 cells=1
+17:54:11 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] plan_stub X_UI:FAN_SEL_ADC direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(430.53,46.99) pin_cell=Cell(col=339, row=37)
+17:54:11 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] stub_found pin=X_UI:FAN_SEL_ADC tip=Cell(col=318, row=37) tip_mm=(403.86,46.99) extra=1 cells=2
+17:54:11 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:16] plan_stub U1:16 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,166.37) pin_cell=Cell(col=89, row=131)
+17:54:11 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:16] stub_found pin=U1:16 tip=Cell(col=90, row=131) tip_mm=(114.30,166.37) extra=0 cells=1
+17:54:11 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:NTC_CABIN] plan_stub X_UI:NTC_CABIN direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,19.05) pin_cell=Cell(col=320, row=15)
+17:54:11 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:NTC_CABIN] stub_found pin=X_UI:NTC_CABIN tip=Cell(col=341, row=15) tip_mm=(433.07,19.05) extra=1 cells=2
+17:54:14 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] plan_stub X_SEN_CABIN:NTC_CABIN direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(287.02,38.10) pin_cell=Cell(col=226, row=30)
+17:54:14 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] stub_found pin=X_SEN_CABIN:NTC_CABIN tip=Cell(col=243, row=30) tip_mm=(308.61,38.10) extra=1 cells=2
+17:54:15 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:NTC_CABIN] plan_stub X_UI:NTC_CABIN direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,19.05) pin_cell=Cell(col=320, row=15)
+17:54:15 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:NTC_CABIN] stub_found pin=X_UI:NTC_CABIN tip=Cell(col=343, row=15) tip_mm=(435.61,19.05) extra=3 cells=4
+17:54:15 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] plan_stub X_SEN_CABIN:NTC_CABIN direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(287.02,38.10) pin_cell=Cell(col=226, row=30)
+17:54:15 | ERROR   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] stub_blocked_by_bbox comp=X_CAN pin=X_SEN_CABIN:NTC_CABIN tip=Cell(col=250, row=30)
+17:54:15 | ERROR   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] stub_failed reason=foreign_bbox pin=X_SEN_CABIN:NTC_CABIN pin_mm=(287.02,38.10) cell=Cell(col=226, row=30)
+17:54:15 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:NTC_HEAT_W] plan_stub X_PWR:NTC_HEAT_W direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,171.45) pin_cell=Cell(col=18, row=135)
+17:54:15 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:NTC_HEAT_W] stub_found pin=X_PWR:NTC_HEAT_W tip=Cell(col=1, row=135) tip_mm=(1.27,171.45) extra=1 cells=2
+17:54:15 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT_W] plan_stub X_SEN_HEAT:NTC_HEAT_W direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(394.97,33.02) pin_cell=Cell(col=311, row=26)
+17:54:15 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT_W] stub_found pin=X_SEN_HEAT:NTC_HEAT_W tip=Cell(col=294, row=26) tip_mm=(373.38,33.02) extra=1 cells=2
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT] plan_stub X_SEN_HEAT:NTC_HEAT direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(394.97,35.56) pin_cell=Cell(col=311, row=28)
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT] stub_found pin=X_SEN_HEAT:NTC_HEAT tip=Cell(col=295, row=28) tip_mm=(374.65,35.56) extra=0 cells=1
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:17] plan_stub U1:17 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,168.91) pin_cell=Cell(col=89, row=133)
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:17] stub_found pin=U1:17 tip=Cell(col=90, row=133) tip_mm=(114.30,168.91) extra=0 cells=1
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] plan_stub X_PWR:SOLAR_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,181.61) pin_cell=Cell(col=3, row=143)
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] stub_found pin=X_PWR:SOLAR_RAW tip=Cell(col=19, row=143) tip_mm=(24.13,181.61) extra=0 cells=1
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] plan_stub X_SEN_SOLAR:SOLAR_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(256.54,36.83) pin_cell=Cell(col=202, row=29)
+17:54:19 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] stub_found pin=X_SEN_SOLAR:SOLAR_RAW tip=Cell(col=218, row=29) tip_mm=(276.86,36.83) extra=0 cells=1
+17:54:21 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] plan_stub X_PWR:SOLAR_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,181.61) pin_cell=Cell(col=3, row=143)
+17:54:21 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] stub_max_extra_exceeded limit=20 pin=X_PWR:SOLAR_RAW tip=Cell(col=40, row=143)
+17:54:21 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] stub_failed reason=max_extra_exceeded pin=X_PWR:SOLAR_RAW pin_mm=(3.81,181.61) cell=Cell(col=3, row=143)
+17:54:21 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] plan_stub X_SEN_SOLAR:SOLAR_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(256.54,36.83) pin_cell=Cell(col=202, row=29)
+17:54:21 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] stub_found pin=X_SEN_SOLAR:SOLAR_RAW tip=Cell(col=219, row=29) tip_mm=(278.13,36.83) extra=1 cells=2
+17:54:21 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:20] plan_stub U1:20 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,171.45) pin_cell=Cell(col=89, row=135)
+17:54:21 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:20] stub_found pin=U1:20 tip=Cell(col=90, row=135) tip_mm=(114.30,171.45) extra=0 cells=1
+17:54:21 | DEBUG   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_ADC] plan_stub X_SEN_SOLAR:SOLAR_ADC direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(275.59,34.29) pin_cell=Cell(col=217, row=27)
+17:54:21 | ERROR   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_ADC] stub_blocked_by_pin comp=X_SEN_COND.COND_ADC pin=X_SEN_SOLAR:SOLAR_ADC tip=Cell(col=192, row=27)
+17:54:21 | ERROR   | eda.stub               | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_ADC] stub_failed reason=foreign_pin pin=X_SEN_SOLAR:SOLAR_ADC pin_mm=(275.59,34.29) cell=Cell(col=217, row=27)
+17:54:25 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:COND_RAW] plan_stub X_PWR:COND_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,184.15) pin_cell=Cell(col=3, row=145)
+17:54:25 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:COND_RAW] stub_found pin=X_PWR:COND_RAW tip=Cell(col=19, row=145) tip_mm=(24.13,184.15) extra=0 cells=1
+17:54:25 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] plan_stub X_SEN_COND:COND_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(224.79,36.83) pin_cell=Cell(col=177, row=29)
+17:54:25 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] stub_found pin=X_SEN_COND:COND_RAW tip=Cell(col=193, row=29) tip_mm=(245.11,36.83) extra=0 cells=1
+17:54:27 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:COND_RAW] plan_stub X_PWR:COND_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,184.15) pin_cell=Cell(col=3, row=145)
+17:54:27 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:COND_RAW] stub_max_extra_exceeded limit=20 pin=X_PWR:COND_RAW tip=Cell(col=40, row=145)
+17:54:27 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:COND_RAW] stub_failed reason=max_extra_exceeded pin=X_PWR:COND_RAW pin_mm=(3.81,184.15) cell=Cell(col=3, row=145)
+17:54:27 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] plan_stub X_SEN_COND:COND_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(224.79,36.83) pin_cell=Cell(col=177, row=29)
+17:54:27 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] stub_found pin=X_SEN_COND:COND_RAW tip=Cell(col=194, row=29) tip_mm=(246.38,36.83) extra=1 cells=2
+17:54:27 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:21] plan_stub U1:21 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,173.99) pin_cell=Cell(col=89, row=137)
+17:54:27 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:21] stub_found pin=U1:21 tip=Cell(col=90, row=137) tip_mm=(114.30,173.99) extra=0 cells=1
+17:54:27 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_ADC] plan_stub X_SEN_COND:COND_ADC direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(243.84,34.29) pin_cell=Cell(col=192, row=27)
+17:54:27 | DEBUG   | eda.stub               | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_ADC] stub_found pin=X_SEN_COND:COND_ADC tip=Cell(col=175, row=27) tip_mm=(222.25,34.29) extra=1 cells=2
+17:54:31 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] plan_stub X_PWR:MOTOR_1_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,173.99) pin_cell=Cell(col=18, row=137)
+17:54:31 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] stub_found pin=X_PWR:MOTOR_1_A tip=Cell(col=2, row=137) tip_mm=(2.54,173.99) extra=0 cells=1
+17:54:31 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] plan_stub X_ACT:MOTOR_1_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,6.35) pin_cell=Cell(col=82, row=5)
+17:54:31 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] stub_found pin=X_ACT:MOTOR_1_A tip=Cell(col=65, row=5) tip_mm=(82.55,6.35) extra=1 cells=2
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] plan_stub X_PWR:MOTOR_1_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,173.99) pin_cell=Cell(col=18, row=137)
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] stub_found pin=X_PWR:MOTOR_1_A tip=Cell(col=-9, row=137) tip_mm=(-11.43,173.99) extra=11 cells=12
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] plan_stub X_ACT:MOTOR_1_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,6.35) pin_cell=Cell(col=82, row=5)
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] stub_found pin=X_ACT:MOTOR_1_A tip=Cell(col=61, row=5) tip_mm=(77.47,6.35) extra=5 cells=6
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] plan_stub X_PWR:MOTOR_1_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,176.53) pin_cell=Cell(col=18, row=139)
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] stub_found pin=X_PWR:MOTOR_1_B tip=Cell(col=-1, row=139) tip_mm=(-1.27,176.53) extra=3 cells=4
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] plan_stub X_ACT:MOTOR_1_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,8.89) pin_cell=Cell(col=82, row=7)
+17:54:32 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] stub_found pin=X_ACT:MOTOR_1_B tip=Cell(col=63, row=7) tip_mm=(80.01,8.89) extra=3 cells=4
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] plan_stub X_PWR:MOTOR_1_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,176.53) pin_cell=Cell(col=18, row=139)
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] stub_found pin=X_PWR:MOTOR_1_B tip=Cell(col=-12, row=139) tip_mm=(-15.24,176.53) extra=14 cells=15
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] plan_stub X_ACT:MOTOR_1_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,8.89) pin_cell=Cell(col=82, row=7)
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] stub_found pin=X_ACT:MOTOR_1_B tip=Cell(col=59, row=7) tip_mm=(74.93,8.89) extra=7 cells=8
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:22] plan_stub U1:22 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,176.53) pin_cell=Cell(col=89, row=139)
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:22] stub_found pin=U1:22 tip=Cell(col=90, row=139) tip_mm=(114.30,176.53) extra=0 cells=1
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M1] plan_stub X_ACT:FB_M1 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,11.43) pin_cell=Cell(col=82, row=9)
+17:54:33 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M1] stub_found pin=X_ACT:FB_M1 tip=Cell(col=66, row=9) tip_mm=(83.82,11.43) extra=0 cells=1
+17:54:35 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M1] plan_stub X_ACT:FB_M1 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,11.43) pin_cell=Cell(col=82, row=9)
+17:54:35 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M1] stub_found pin=X_ACT:FB_M1 tip=Cell(col=65, row=9) tip_mm=(82.55,11.43) extra=1 cells=2
+17:54:35 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:42] plan_stub U1:42 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,184.15) pin_cell=Cell(col=89, row=145)
+17:54:35 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:42] stub_found pin=U1:42 tip=Cell(col=90, row=145) tip_mm=(114.30,184.15) extra=0 cells=1
+17:54:35 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN1] plan_stub X_ACT:M1_IN1 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,11.43) pin_cell=Cell(col=67, row=9)
+17:54:35 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN1] stub_found pin=X_ACT:M1_IN1 tip=Cell(col=83, row=9) tip_mm=(105.41,11.43) extra=0 cells=1
+17:54:36 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN1] plan_stub X_ACT:M1_IN1 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,11.43) pin_cell=Cell(col=67, row=9)
+17:54:36 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN1] stub_found pin=X_ACT:M1_IN1 tip=Cell(col=84, row=9) tip_mm=(106.68,11.43) extra=1 cells=2
+17:54:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:43] plan_stub U1:43 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,186.69) pin_cell=Cell(col=89, row=147)
+17:54:36 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:43] stub_found pin=U1:43 tip=Cell(col=90, row=147) tip_mm=(114.30,186.69) extra=0 cells=1
+17:54:36 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN2] plan_stub X_ACT:M1_IN2 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,13.97) pin_cell=Cell(col=67, row=11)
+17:54:36 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN2] stub_found pin=X_ACT:M1_IN2 tip=Cell(col=84, row=11) tip_mm=(106.68,13.97) extra=1 cells=2
+17:54:38 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN2] plan_stub X_ACT:M1_IN2 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,13.97) pin_cell=Cell(col=67, row=11)
+17:54:38 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M1_IN2] stub_found pin=X_ACT:M1_IN2 tip=Cell(col=86, row=11) tip_mm=(109.22,13.97) extra=3 cells=4
+17:54:38 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] plan_stub X_PWR:MOTOR_2_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,179.07) pin_cell=Cell(col=18, row=141)
+17:54:38 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] stub_found pin=X_PWR:MOTOR_2_A tip=Cell(col=-3, row=141) tip_mm=(-3.81,179.07) extra=5 cells=6
+17:54:38 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] plan_stub X_ACT:MOTOR_2_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,13.97) pin_cell=Cell(col=82, row=11)
+17:54:38 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] stub_found pin=X_ACT:MOTOR_2_A tip=Cell(col=65, row=11) tip_mm=(82.55,13.97) extra=1 cells=2
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] plan_stub X_PWR:MOTOR_2_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,179.07) pin_cell=Cell(col=18, row=141)
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] stub_found pin=X_PWR:MOTOR_2_A tip=Cell(col=-15, row=141) tip_mm=(-19.05,179.07) extra=17 cells=18
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] plan_stub X_ACT:MOTOR_2_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,13.97) pin_cell=Cell(col=82, row=11)
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] stub_found pin=X_ACT:MOTOR_2_A tip=Cell(col=57, row=11) tip_mm=(72.39,13.97) extra=9 cells=10
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] plan_stub X_PWR:MOTOR_2_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,181.61) pin_cell=Cell(col=18, row=143)
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] stub_found pin=X_PWR:MOTOR_2_B tip=Cell(col=-5, row=143) tip_mm=(-6.35,181.61) extra=7 cells=8
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] plan_stub X_ACT:MOTOR_2_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,16.51) pin_cell=Cell(col=82, row=13)
+17:54:39 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] stub_found pin=X_ACT:MOTOR_2_B tip=Cell(col=65, row=13) tip_mm=(82.55,16.51) extra=1 cells=2
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] plan_stub X_PWR:MOTOR_2_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,181.61) pin_cell=Cell(col=18, row=143)
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] stub_found pin=X_PWR:MOTOR_2_B tip=Cell(col=-18, row=143) tip_mm=(-22.86,181.61) extra=20 cells=21
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] plan_stub X_ACT:MOTOR_2_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,16.51) pin_cell=Cell(col=82, row=13)
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] stub_found pin=X_ACT:MOTOR_2_B tip=Cell(col=55, row=13) tip_mm=(69.85,16.51) extra=11 cells=12
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] plan_stub X_PWR:FB_M2_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,186.69) pin_cell=Cell(col=3, row=147)
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] stub_found pin=X_PWR:FB_M2_RAW tip=Cell(col=19, row=147) tip_mm=(24.13,186.69) extra=0 cells=1
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] plan_stub X_ACT:FB_M2_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,16.51) pin_cell=Cell(col=67, row=13)
+17:54:40 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] stub_found pin=X_ACT:FB_M2_RAW tip=Cell(col=84, row=13) tip_mm=(106.68,16.51) extra=1 cells=2
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] plan_stub X_PWR:FB_M2_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,186.69) pin_cell=Cell(col=3, row=147)
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] stub_found pin=X_PWR:FB_M2_RAW tip=Cell(col=39, row=147) tip_mm=(49.53,186.69) extra=20 cells=21
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] plan_stub X_ACT:FB_M2_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,16.51) pin_cell=Cell(col=67, row=13)
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] stub_found pin=X_ACT:FB_M2_RAW tip=Cell(col=88, row=13) tip_mm=(111.76,16.51) extra=5 cells=6
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:23] plan_stub U1:23 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,179.07) pin_cell=Cell(col=89, row=141)
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:23] stub_found pin=U1:23 tip=Cell(col=90, row=141) tip_mm=(114.30,179.07) extra=0 cells=1
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2] plan_stub X_ACT:FB_M2 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,19.05) pin_cell=Cell(col=82, row=15)
+17:54:42 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2] stub_found pin=X_ACT:FB_M2 tip=Cell(col=65, row=15) tip_mm=(82.55,19.05) extra=1 cells=2
+17:54:44 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2] plan_stub X_ACT:FB_M2 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,19.05) pin_cell=Cell(col=82, row=15)
+17:54:44 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M2] stub_found pin=X_ACT:FB_M2 tip=Cell(col=53, row=15) tip_mm=(67.31,19.05) extra=13 cells=14
+17:54:44 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:44] plan_stub U1:44 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,189.23) pin_cell=Cell(col=89, row=149)
+17:54:44 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:44] stub_found pin=U1:44 tip=Cell(col=90, row=149) tip_mm=(114.30,189.23) extra=0 cells=1
+17:54:44 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN1] plan_stub X_ACT:M2_IN1 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,19.05) pin_cell=Cell(col=67, row=15)
+17:54:44 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN1] stub_found pin=X_ACT:M2_IN1 tip=Cell(col=84, row=15) tip_mm=(106.68,19.05) extra=1 cells=2
+17:54:46 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN1] plan_stub X_ACT:M2_IN1 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,19.05) pin_cell=Cell(col=67, row=15)
+17:54:46 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN1] stub_found pin=X_ACT:M2_IN1 tip=Cell(col=90, row=15) tip_mm=(114.30,19.05) extra=7 cells=8
+17:54:46 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:45] plan_stub U1:45 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,191.77) pin_cell=Cell(col=89, row=151)
+17:54:46 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:45] stub_found pin=U1:45 tip=Cell(col=90, row=151) tip_mm=(114.30,191.77) extra=0 cells=1
+17:54:46 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN2] plan_stub X_ACT:M2_IN2 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,21.59) pin_cell=Cell(col=67, row=17)
+17:54:46 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN2] stub_found pin=X_ACT:M2_IN2 tip=Cell(col=84, row=17) tip_mm=(106.68,21.59) extra=1 cells=2
+17:54:48 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN2] plan_stub X_ACT:M2_IN2 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,21.59) pin_cell=Cell(col=67, row=17)
+17:54:48 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M2_IN2] stub_found pin=X_ACT:M2_IN2 tip=Cell(col=92, row=17) tip_mm=(116.84,21.59) extra=9 cells=10
+17:54:48 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] plan_stub X_PWR:MOTOR_3_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,184.15) pin_cell=Cell(col=18, row=145)
+17:54:48 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] stub_found pin=X_PWR:MOTOR_3_A tip=Cell(col=-7, row=145) tip_mm=(-8.89,184.15) extra=9 cells=10
+17:54:48 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] plan_stub X_ACT:MOTOR_3_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,21.59) pin_cell=Cell(col=82, row=17)
+17:54:48 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] stub_found pin=X_ACT:MOTOR_3_A tip=Cell(col=65, row=17) tip_mm=(82.55,21.59) extra=1 cells=2
+17:54:49 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] plan_stub X_PWR:MOTOR_3_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,184.15) pin_cell=Cell(col=18, row=145)
+17:54:49 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] stub_max_extra_exceeded limit=20 pin=X_PWR:MOTOR_3_A tip=Cell(col=-19, row=145)
+17:54:49 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] stub_failed reason=max_extra_exceeded pin=X_PWR:MOTOR_3_A pin_mm=(22.86,184.15) cell=Cell(col=18, row=145)
+17:54:49 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] plan_stub X_ACT:MOTOR_3_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,21.59) pin_cell=Cell(col=82, row=17)
+17:54:49 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] stub_found pin=X_ACT:MOTOR_3_A tip=Cell(col=51, row=17) tip_mm=(64.77,21.59) extra=15 cells=16
+17:54:49 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] plan_stub X_PWR:MOTOR_3_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,186.69) pin_cell=Cell(col=18, row=147)
+17:54:49 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] stub_found pin=X_PWR:MOTOR_3_B tip=Cell(col=2, row=147) tip_mm=(2.54,186.69) extra=0 cells=1
+17:54:49 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] plan_stub X_ACT:MOTOR_3_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,24.13) pin_cell=Cell(col=82, row=19)
+17:54:49 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] stub_found pin=X_ACT:MOTOR_3_B tip=Cell(col=65, row=19) tip_mm=(82.55,24.13) extra=1 cells=2
+17:54:50 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] plan_stub X_PWR:MOTOR_3_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,186.69) pin_cell=Cell(col=18, row=147)
+17:54:50 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] stub_max_extra_exceeded limit=20 pin=X_PWR:MOTOR_3_B tip=Cell(col=-19, row=147)
+17:54:50 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] stub_failed reason=max_extra_exceeded pin=X_PWR:MOTOR_3_B pin_mm=(22.86,186.69) cell=Cell(col=18, row=147)
+17:54:50 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] plan_stub X_ACT:MOTOR_3_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,24.13) pin_cell=Cell(col=82, row=19)
+17:54:50 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] stub_found pin=X_ACT:MOTOR_3_B tip=Cell(col=49, row=19) tip_mm=(62.23,24.13) extra=17 cells=18
+17:54:50 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] plan_stub X_PWR:FB_M3_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,189.23) pin_cell=Cell(col=3, row=149)
+17:54:50 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] stub_found pin=X_PWR:FB_M3_RAW tip=Cell(col=19, row=149) tip_mm=(24.13,189.23) extra=0 cells=1
+17:54:50 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] plan_stub X_ACT:FB_M3_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,24.13) pin_cell=Cell(col=67, row=19)
+17:54:50 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] stub_found pin=X_ACT:FB_M3_RAW tip=Cell(col=84, row=19) tip_mm=(106.68,24.13) extra=1 cells=2
+17:54:52 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] plan_stub X_PWR:FB_M3_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,189.23) pin_cell=Cell(col=3, row=149)
+17:54:52 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] stub_max_extra_exceeded limit=20 pin=X_PWR:FB_M3_RAW tip=Cell(col=40, row=149)
+17:54:52 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] stub_failed reason=max_extra_exceeded pin=X_PWR:FB_M3_RAW pin_mm=(3.81,189.23) cell=Cell(col=3, row=149)
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] plan_stub X_ACT:FB_M3_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,24.13) pin_cell=Cell(col=67, row=19)
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] stub_found pin=X_ACT:FB_M3_RAW tip=Cell(col=94, row=19) tip_mm=(119.38,24.13) extra=11 cells=12
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:26] plan_stub U1:26 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,204.47) pin_cell=Cell(col=89, row=161)
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:26] stub_found pin=U1:26 tip=Cell(col=90, row=161) tip_mm=(114.30,204.47) extra=0 cells=1
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M3] plan_stub X_ACT:FB_M3 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,26.67) pin_cell=Cell(col=82, row=21)
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M3] stub_found pin=X_ACT:FB_M3 tip=Cell(col=65, row=21) tip_mm=(82.55,26.67) extra=1 cells=2
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:57] plan_stub U1:57 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,217.17) pin_cell=Cell(col=89, row=171)
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:57] stub_found pin=U1:57 tip=Cell(col=90, row=171) tip_mm=(114.30,217.17) extra=0 cells=1
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN1] plan_stub X_ACT:M3_IN1 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,26.67) pin_cell=Cell(col=67, row=21)
+17:54:53 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN1] stub_found pin=X_ACT:M3_IN1 tip=Cell(col=84, row=21) tip_mm=(106.68,26.67) extra=1 cells=2
+17:54:54 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN1] plan_stub X_ACT:M3_IN1 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,26.67) pin_cell=Cell(col=67, row=21)
+17:54:54 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN1] stub_found pin=X_ACT:M3_IN1 tip=Cell(col=96, row=21) tip_mm=(121.92,26.67) extra=13 cells=14
+17:54:54 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:58] plan_stub U1:58 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,219.71) pin_cell=Cell(col=89, row=173)
+17:54:54 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:58] stub_found pin=U1:58 tip=Cell(col=90, row=173) tip_mm=(114.30,219.71) extra=0 cells=1
+17:54:54 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN2] plan_stub X_ACT:M3_IN2 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,29.21) pin_cell=Cell(col=67, row=23)
+17:54:54 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN2] stub_found pin=X_ACT:M3_IN2 tip=Cell(col=84, row=23) tip_mm=(106.68,29.21) extra=1 cells=2
+17:54:56 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN2] plan_stub X_ACT:M3_IN2 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,29.21) pin_cell=Cell(col=67, row=23)
+17:54:56 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M3_IN2] stub_found pin=X_ACT:M3_IN2 tip=Cell(col=98, row=23) tip_mm=(124.46,29.21) extra=15 cells=16
+17:54:56 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] plan_stub X_PWR:MOTOR_4_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,189.23) pin_cell=Cell(col=18, row=149)
+17:54:56 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] stub_found pin=X_PWR:MOTOR_4_A tip=Cell(col=1, row=149) tip_mm=(1.27,189.23) extra=1 cells=2
+17:54:56 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] plan_stub X_ACT:MOTOR_4_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,29.21) pin_cell=Cell(col=82, row=23)
+17:54:56 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] stub_found pin=X_ACT:MOTOR_4_A tip=Cell(col=65, row=23) tip_mm=(82.55,29.21) extra=1 cells=2
+17:54:58 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] plan_stub X_PWR:MOTOR_4_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,189.23) pin_cell=Cell(col=18, row=149)
+17:54:58 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] stub_max_extra_exceeded limit=20 pin=X_PWR:MOTOR_4_A tip=Cell(col=-19, row=149)
+17:54:58 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] stub_failed reason=max_extra_exceeded pin=X_PWR:MOTOR_4_A pin_mm=(22.86,189.23) cell=Cell(col=18, row=149)
+17:54:58 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] plan_stub X_ACT:MOTOR_4_A direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,29.21) pin_cell=Cell(col=82, row=23)
+17:54:58 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] stub_found pin=X_ACT:MOTOR_4_A tip=Cell(col=47, row=23) tip_mm=(59.69,29.21) extra=19 cells=20
+17:54:58 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] plan_stub X_PWR:MOTOR_4_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,191.77) pin_cell=Cell(col=18, row=151)
+17:54:58 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] stub_found pin=X_PWR:MOTOR_4_B tip=Cell(col=1, row=151) tip_mm=(1.27,191.77) extra=1 cells=2
+17:54:58 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] plan_stub X_ACT:MOTOR_4_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,31.75) pin_cell=Cell(col=82, row=25)
+17:54:58 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] stub_found pin=X_ACT:MOTOR_4_B tip=Cell(col=65, row=25) tip_mm=(82.55,31.75) extra=1 cells=2
+17:55:00 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] plan_stub X_PWR:MOTOR_4_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,191.77) pin_cell=Cell(col=18, row=151)
+17:55:00 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] stub_max_extra_exceeded limit=20 pin=X_PWR:MOTOR_4_B tip=Cell(col=-19, row=151)
+17:55:00 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] stub_failed reason=max_extra_exceeded pin=X_PWR:MOTOR_4_B pin_mm=(22.86,191.77) cell=Cell(col=18, row=151)
+17:55:00 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] plan_stub X_ACT:MOTOR_4_B direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,31.75) pin_cell=Cell(col=82, row=25)
+17:55:00 | ERROR   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] stub_max_extra_exceeded limit=20 pin=X_ACT:MOTOR_4_B tip=Cell(col=45, row=25)
+17:55:00 | ERROR   | eda.stub               | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] stub_failed reason=max_extra_exceeded pin=X_ACT:MOTOR_4_B pin_mm=(104.14,31.75) cell=Cell(col=82, row=25)
+17:55:00 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M4_RAW] plan_stub X_PWR:FB_M4_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,191.77) pin_cell=Cell(col=3, row=151)
+17:55:00 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:FB_M4_RAW] stub_found pin=X_PWR:FB_M4_RAW tip=Cell(col=22, row=151) tip_mm=(27.94,191.77) extra=3 cells=4
+17:55:00 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M4_RAW] plan_stub X_ACT:FB_M4_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,31.75) pin_cell=Cell(col=67, row=25)
+17:55:00 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M4_RAW] stub_found pin=X_ACT:FB_M4_RAW tip=Cell(col=84, row=25) tip_mm=(106.68,31.75) extra=1 cells=2
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:27] plan_stub U1:27 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,207.01) pin_cell=Cell(col=89, row=163)
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:27] stub_found pin=U1:27 tip=Cell(col=91, row=163) tip_mm=(115.57,207.01) extra=1 cells=2
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M4] plan_stub X_ACT:FB_M4 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(104.14,34.29) pin_cell=Cell(col=82, row=27)
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:FB_M4] stub_found pin=X_ACT:FB_M4 tip=Cell(col=65, row=27) tip_mm=(82.55,34.29) extra=1 cells=2
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:59] plan_stub U1:59 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,222.25) pin_cell=Cell(col=89, row=175)
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:59] stub_found pin=U1:59 tip=Cell(col=90, row=175) tip_mm=(114.30,222.25) extra=0 cells=1
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M4_IN1] plan_stub X_ACT:M4_IN1 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,34.29) pin_cell=Cell(col=67, row=27)
+17:55:04 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M4_IN1] stub_found pin=X_ACT:M4_IN1 tip=Cell(col=84, row=27) tip_mm=(106.68,34.29) extra=1 cells=2
+17:55:09 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:2] plan_stub U1:2 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,214.63) pin_cell=Cell(col=61, row=169)
+17:55:09 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:2] stub_found pin=U1:2 tip=Cell(col=59, row=169) tip_mm=(74.93,214.63) extra=1 cells=2
+17:55:09 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M4_IN2] plan_stub X_ACT:M4_IN2 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(85.09,36.83) pin_cell=Cell(col=67, row=29)
+17:55:09 | DEBUG   | eda.stub               | [root] [-] [X_ACT] [X_ACT:M4_IN2] stub_found pin=X_ACT:M4_IN2 tip=Cell(col=84, row=29) tip_mm=(106.68,36.83) extra=1 cells=2
+17:55:13 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:41] plan_stub U1:41 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,181.61) pin_cell=Cell(col=89, row=143)
+17:55:13 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:41] stub_found pin=U1:41 tip=Cell(col=90, row=143) tip_mm=(114.30,181.61) extra=0 cells=1
+17:55:13 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] plan_stub X_OUT:FAN_PWM_CTL direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,35.56) pin_cell=Cell(col=151, row=28)
+17:55:13 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] stub_found pin=X_OUT:FAN_PWM_CTL tip=Cell(col=167, row=28) tip_mm=(212.09,35.56) extra=0 cells=1
+17:55:15 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] plan_stub X_OUT:FAN_PWM_CTL direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,35.56) pin_cell=Cell(col=151, row=28)
+17:55:15 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] stub_found pin=X_OUT:FAN_PWM_CTL tip=Cell(col=168, row=28) tip_mm=(213.36,35.56) extra=1 cells=2
+17:55:15 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] plan_stub X_PWR:HEAT_FAN_PWM_CTL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,199.39) pin_cell=Cell(col=18, row=157)
+17:55:15 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] stub_found pin=X_PWR:HEAT_FAN_PWM_CTL tip=Cell(col=1, row=157) tip_mm=(1.27,199.39) extra=1 cells=2
+17:55:15 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] plan_stub X_OUT:HEAT_FAN_PWM_CTL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(210.82,30.48) pin_cell=Cell(col=166, row=24)
+17:55:15 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] stub_found pin=X_OUT:HEAT_FAN_PWM_CTL tip=Cell(col=149, row=24) tip_mm=(189.23,30.48) extra=1 cells=2
+17:55:18 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] plan_stub X_PWR:HEAT_FAN_PWM_CTL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,199.39) pin_cell=Cell(col=18, row=157)
+17:55:18 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] stub_max_extra_exceeded limit=20 pin=X_PWR:HEAT_FAN_PWM_CTL tip=Cell(col=-19, row=157)
+17:55:18 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] stub_failed reason=max_extra_exceeded pin=X_PWR:HEAT_FAN_PWM_CTL pin_mm=(22.86,199.39) cell=Cell(col=18, row=157)
+17:55:18 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] plan_stub X_OUT:HEAT_FAN_PWM_CTL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(210.82,30.48) pin_cell=Cell(col=166, row=24)
+17:55:18 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] stub_found pin=X_OUT:HEAT_FAN_PWM_CTL tip=Cell(col=145, row=24) tip_mm=(184.15,30.48) extra=5 cells=6
+17:55:18 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:11] plan_stub U1:11 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,189.23) pin_cell=Cell(col=61, row=149)
+17:55:18 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:11] stub_found pin=U1:11 tip=Cell(col=59, row=149) tip_mm=(74.93,189.23) extra=1 cells=2
+17:55:18 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:M_FAN_CTL] plan_stub X_SEN_CABIN:M_FAN_CTL direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(287.02,40.64) pin_cell=Cell(col=226, row=32)
+17:55:18 | DEBUG   | eda.stub               | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:M_FAN_CTL] stub_found pin=X_SEN_CABIN:M_FAN_CTL tip=Cell(col=243, row=32) tip_mm=(308.61,40.64) extra=1 cells=2
+17:55:23 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:28] plan_stub U1:28 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,209.55) pin_cell=Cell(col=89, row=165)
+17:55:23 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:28] stub_found pin=U1:28 tip=Cell(col=91, row=165) tip_mm=(115.57,209.55) extra=1 cells=2
+17:55:23 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_CTL] plan_stub X_OUT:AC_CTL direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,38.10) pin_cell=Cell(col=151, row=30)
+17:55:23 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_CTL] stub_found pin=X_OUT:AC_CTL tip=Cell(col=168, row=30) tip_mm=(213.36,38.10) extra=1 cells=2
+17:55:26 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_CTL] plan_stub X_OUT:AC_CTL direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,38.10) pin_cell=Cell(col=151, row=30)
+17:55:26 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_CTL] stub_found pin=X_OUT:AC_CTL tip=Cell(col=170, row=30) tip_mm=(215.90,38.10) extra=3 cells=4
+17:55:26 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] plan_stub X_PWR:AC_REQ_OUT direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,194.31) pin_cell=Cell(col=3, row=153)
+17:55:26 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] stub_found pin=X_PWR:AC_REQ_OUT tip=Cell(col=20, row=153) tip_mm=(25.40,194.31) extra=1 cells=2
+17:55:26 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] plan_stub X_OUT:AC_REQ_OUT direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,40.64) pin_cell=Cell(col=151, row=32)
+17:55:26 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] stub_found pin=X_OUT:AC_REQ_OUT tip=Cell(col=168, row=32) tip_mm=(213.36,40.64) extra=1 cells=2
+17:55:29 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] plan_stub X_PWR:AC_REQ_OUT direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,194.31) pin_cell=Cell(col=3, row=153)
+17:55:29 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] stub_max_extra_exceeded limit=20 pin=X_PWR:AC_REQ_OUT tip=Cell(col=40, row=153)
+17:55:29 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] stub_failed reason=max_extra_exceeded pin=X_PWR:AC_REQ_OUT pin_mm=(3.81,194.31) cell=Cell(col=3, row=153)
+17:55:29 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] plan_stub X_OUT:AC_REQ_OUT direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(191.77,40.64) pin_cell=Cell(col=151, row=32)
+17:55:29 | DEBUG   | eda.stub               | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] stub_found pin=X_OUT:AC_REQ_OUT tip=Cell(col=172, row=32) tip_mm=(218.44,40.64) extra=5 cells=6
+17:55:29 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] plan_stub X_PWR:ILLUM_IN_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,196.85) pin_cell=Cell(col=3, row=155)
+17:55:29 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] stub_found pin=X_PWR:ILLUM_IN_RAW tip=Cell(col=20, row=155) tip_mm=(25.40,196.85) extra=1 cells=2
+17:55:29 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] plan_stub X_UI:ILLUM_IN_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,21.59) pin_cell=Cell(col=320, row=17)
+17:55:29 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] stub_found pin=X_UI:ILLUM_IN_RAW tip=Cell(col=341, row=17) tip_mm=(433.07,21.59) extra=1 cells=2
+17:55:34 | DEBUG   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] plan_stub X_BACKLIGHT:ILLUM_IN_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,35.56) pin_cell=Cell(col=3, row=28)
+17:55:34 | DEBUG   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] stub_found pin=X_BACKLIGHT:ILLUM_IN_RAW tip=Cell(col=19, row=28) tip_mm=(24.13,35.56) extra=0 cells=1
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] plan_stub X_PWR:ILLUM_IN_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,196.85) pin_cell=Cell(col=3, row=155)
+17:55:37 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] stub_max_extra_exceeded limit=20 pin=X_PWR:ILLUM_IN_RAW tip=Cell(col=40, row=155)
+17:55:37 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] stub_failed reason=max_extra_exceeded pin=X_PWR:ILLUM_IN_RAW pin_mm=(3.81,196.85) cell=Cell(col=3, row=155)
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] plan_stub X_UI:ILLUM_IN_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,21.59) pin_cell=Cell(col=320, row=17)
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] stub_found pin=X_UI:ILLUM_IN_RAW tip=Cell(col=345, row=17) tip_mm=(438.15,21.59) extra=5 cells=6
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] plan_stub X_BACKLIGHT:ILLUM_IN_RAW direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(3.81,35.56) pin_cell=Cell(col=3, row=28)
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] stub_found pin=X_BACKLIGHT:ILLUM_IN_RAW tip=Cell(col=22, row=28) tip_mm=(27.94,35.56) extra=3 cells=4
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:8] plan_stub U1:8 direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(77.47,181.61) pin_cell=Cell(col=61, row=143)
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:8] stub_found pin=U1:8 tip=Cell(col=59, row=143) tip_mm=(74.93,181.61) extra=1 cells=2
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:ILLUM_SENSE] plan_stub X_UI:ILLUM_SENSE direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(406.40,24.13) pin_cell=Cell(col=320, row=19)
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_UI] [X_UI:ILLUM_SENSE] stub_found pin=X_UI:ILLUM_SENSE tip=Cell(col=341, row=19) tip_mm=(433.07,24.13) extra=1 cells=2
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:62] plan_stub U1:62 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,227.33) pin_cell=Cell(col=89, row=179)
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:62] stub_found pin=U1:62 tip=Cell(col=90, row=179) tip_mm=(114.30,227.33) extra=0 cells=1
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CAN_TX] plan_stub X_CAN:CAN_TX direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(336.55,30.48) pin_cell=Cell(col=265, row=24)
+17:55:37 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CAN_TX] stub_found pin=X_CAN:CAN_TX tip=Cell(col=248, row=24) tip_mm=(314.96,30.48) extra=1 cells=2
+17:55:41 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CAN_TX] plan_stub X_CAN:CAN_TX direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(336.55,30.48) pin_cell=Cell(col=265, row=24)
+17:55:41 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CAN_TX] stub_found pin=X_CAN:CAN_TX tip=Cell(col=246, row=24) tip_mm=(312.42,30.48) extra=3 cells=4
+17:55:41 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:61] plan_stub U1:61 direction=right outward_symbol=right rotation=0 mirror=None pin_mm=(113.03,224.79) pin_cell=Cell(col=89, row=177)
+17:55:41 | DEBUG   | eda.stub               | [root] [-] [U1] [U1:61] stub_found pin=U1:61 tip=Cell(col=90, row=177) tip_mm=(114.30,224.79) extra=0 cells=1
+17:55:41 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CAN_RX] plan_stub X_CAN:CAN_RX direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(336.55,33.02) pin_cell=Cell(col=265, row=26)
+17:55:41 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CAN_RX] stub_found pin=X_CAN:CAN_RX tip=Cell(col=248, row=26) tip_mm=(314.96,33.02) extra=1 cells=2
+17:55:47 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANH] plan_stub X_CAN:CANH direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(336.55,35.56) pin_cell=Cell(col=265, row=28)
+17:55:47 | ERROR   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANH] stub_blocked_by_bbox comp=X_SEN_CABIN pin=X_CAN:CANH tip=Cell(col=241, row=28)
+17:55:47 | ERROR   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANH] stub_failed reason=foreign_bbox pin=X_CAN:CANH pin_mm=(336.55,35.56) cell=Cell(col=265, row=28)
+17:55:47 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:CANH] plan_stub X_PWR:CANH direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,194.31) pin_cell=Cell(col=18, row=153)
+17:55:47 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:CANH] stub_found pin=X_PWR:CANH tip=Cell(col=1, row=153) tip_mm=(1.27,194.31) extra=1 cells=2
+17:55:53 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANL] plan_stub X_CAN:CANL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(336.55,38.10) pin_cell=Cell(col=265, row=30)
+17:55:53 | ERROR   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANL] stub_blocked_by_bbox comp=X_SEN_CABIN pin=X_CAN:CANL tip=Cell(col=241, row=30)
+17:55:53 | ERROR   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANL] stub_failed reason=foreign_bbox pin=X_CAN:CANL pin_mm=(336.55,38.10) cell=Cell(col=265, row=30)
+17:55:53 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:CANL] plan_stub X_PWR:CANL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,196.85) pin_cell=Cell(col=18, row=155)
+17:55:53 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:CANL] stub_found pin=X_PWR:CANL tip=Cell(col=-5, row=155) tip_mm=(-6.35,196.85) extra=7 cells=8
+17:55:58 | DEBUG   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANL] plan_stub X_CAN:CANL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(336.55,38.10) pin_cell=Cell(col=265, row=30)
+17:55:58 | ERROR   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANL] stub_blocked_by_bbox comp=X_SEN_CABIN pin=X_CAN:CANL tip=Cell(col=241, row=30)
+17:55:58 | ERROR   | eda.stub               | [root] [-] [X_CAN] [X_CAN:CANL] stub_failed reason=foreign_bbox pin=X_CAN:CANL pin_mm=(336.55,38.10) cell=Cell(col=265, row=30)
+17:55:58 | DEBUG   | eda.stub               | [root] [-] [X_PWR] [X_PWR:CANL] plan_stub X_PWR:CANL direction=left outward_symbol=left rotation=0 mirror=None pin_mm=(22.86,196.85) pin_cell=Cell(col=18, row=155)
+17:55:58 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:CANL] stub_max_extra_exceeded limit=20 pin=X_PWR:CANL tip=Cell(col=-19, row=155)
+17:55:58 | ERROR   | eda.stub               | [root] [-] [X_PWR] [X_PWR:CANL] stub_failed reason=max_extra_exceeded pin=X_PWR:CANL pin_mm=(22.86,196.85) cell=Cell(col=18, row=155)

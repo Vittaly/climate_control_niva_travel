@@ -28,10 +28,10 @@ from routing_types import FallbackLabel, TJunction
 from stub import plan_stub
 from wire import Wire
 
-from router_impl import pathfind
-from router_impl.logging_ import RouterLogMixin
-from router_impl.rules import in_bounds
-from router_impl.types import RouteAttempt
+from router_impl import router_pathfind
+from router_impl.router_logging import RouterLogMixin
+from router_impl.router_rules import in_bounds
+from router_impl.router_types import RouteAttempt
 
 log = get_logger(__name__)
 
@@ -402,7 +402,7 @@ class Router(RouterLogMixin):
 
     def _find_path(self, net: str, start: Cell,
                    goal: Cell) -> RouteAttempt:
-        return pathfind.find_path(self, net, start, goal)
+        return router_pathfind.find_path(self, net, start, goal)
 
     # =========================================================
     # Заполнение карты

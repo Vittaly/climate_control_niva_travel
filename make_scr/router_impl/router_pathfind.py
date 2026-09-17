@@ -17,8 +17,8 @@ from logging_setup import ctx, get_logger
 from stub import ANGLE_DELTA, ANGLE_NAME
 from wire import WireSegment, segment_angle
 
-from router_impl.rules import can_enter, can_leave
-from router_impl.types import RouteAttempt
+from router_impl.router_rules import can_enter, can_leave
+from router_impl.router_types import RouteAttempt
 
 log = get_logger(__name__)
 

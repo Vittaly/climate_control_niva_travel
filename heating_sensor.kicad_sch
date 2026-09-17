@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
-	(uuid "132540b5-bf2a-4286-a860-0e85d540defa")
+	(uuid "80fd93a9-c70f-40ed-834f-0e11c598b779")
 	(paper "A4")
 	(lib_symbols
 		(symbol "Device:C"
@@ -310,7 +310,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "459de406-1f87-4efb-b4cb-6dcf65c9ab69")
+		(uuid "ad9192b0-f30c-496c-b214-cb9fc074212f")
 		(property "Reference" "C25"
 			(at 18.415 19.05 0.0000)
 			(effects
@@ -339,14 +339,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "aab021f5-7305-46b5-8b0f-c2a035d9d6ef")
+			(uuid "a5beea81-2c0b-4eb2-8ef7-c0621021e290")
 		)
 		(pin "2"
-			(uuid "5f8ff72e-2d0e-4fa1-a96b-5a834adacaa0")
+			(uuid "0b755cc0-6a04-4bcd-80ca-81db45a355d4")
 		)
 		(instances
 			(project "Untitled"
-				(path "/132540b5-bf2a-4286-a860-0e85d540defa"
+				(path "/80fd93a9-c70f-40ed-834f-0e11c598b779"
 					(reference "C25")
 					(unit 1)
 				)
@@ -362,7 +362,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "33616849-7930-479b-8c8a-1770f26597a3")
+		(uuid "26188c2a-45ea-4900-8e8b-cd496dd0c73d")
 		(property "Reference" "R25"
 			(at 18.542 17.78 90)
 			(effects
@@ -391,14 +391,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "2d511ae4-731c-455f-b730-37b5f31678d9")
+			(uuid "135fe0b9-bbd7-4a2e-869a-d5db820aa73a")
 		)
 		(pin "2"
-			(uuid "2c1c34e8-0cbe-44e7-b54d-8888c17ebb73")
+			(uuid "7bfbc04e-170e-46b2-b62c-8104a21efeab")
 		)
 		(instances
 			(project "Untitled"
-				(path "/132540b5-bf2a-4286-a860-0e85d540defa"
+				(path "/80fd93a9-c70f-40ed-834f-0e11c598b779"
 					(reference "R25")
 					(unit 1)
 				)
@@ -414,7 +414,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "bee02c12-1817-4cc8-9514-d165392ebd1d")
+		(uuid "1e971bda-315b-4fbd-b9c4-f9299d80f289")
 		(property "Reference" "R26"
 			(at 19.812 15.24 90)
 			(effects
@@ -443,14 +443,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "a993ad23-b2d2-4da0-a545-a64a6a1ca346")
+			(uuid "6093b49d-1670-4dbf-9e88-238a262c3345")
 		)
 		(pin "2"
-			(uuid "30c9f3ee-ee94-46dc-a939-7d9f98ce13c5")
+			(uuid "4d9c15de-1dc3-4d84-b05d-611af8b31d96")
 		)
 		(instances
 			(project "Untitled"
-				(path "/132540b5-bf2a-4286-a860-0e85d540defa"
+				(path "/80fd93a9-c70f-40ed-834f-0e11c598b779"
 					(reference "R26")
 					(unit 1)
 				)
@@ -465,7 +465,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "eefeeac8-f339-4cd9-8bf4-85adb1655296")
+		(uuid "9f4fbfa6-640d-41f9-a047-e426c201fe02")
 	)
 	(label "VCC_3V3"
 		(at 21.59 10.16 0)
@@ -475,7 +475,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "58986f70-5846-45fd-9590-b81f09db8315")
+		(uuid "8d5f77a6-a669-44fe-ba58-9747a7282f67")
 	)
 	(label "GND"
 		(at 17.78 20.32 0)
@@ -485,7 +485,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "818a6310-db96-4492-82fb-356e06c4ce0f")
+		(uuid "0aad705c-9512-4c22-a5bb-06c4ae650ffd")
 	)
 	(label "GND"
 		(at 19.05 11.43 0)
@@ -495,7 +495,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "5b0924ae-06af-4e21-8143-a98909910185")
+		(uuid "9bb41731-5800-4c03-a502-170fa9d97978")
 	)
 	(label "NTC_HEAT_W"
 		(at 16.51 21.59 0)
@@ -505,7 +505,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "1e0e37e9-39af-4ea1-9a35-7cd4f0918c85")
+		(uuid "57ef3ee9-6fe9-46da-9ab6-4d2a1881708a")
 	)
 	(label "NTC_HEAT_W"
 		(at 17.78 12.7 0)
@@ -515,7 +515,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "6302a25f-faad-4dce-9fe0-0aab33c8670b")
+		(uuid "5916ec68-47cd-4a7f-82a0-624a6b8eaba0")
 	)
 	(label "NTC_HEAT"
 		(at 17.78 19.05 0)
@@ -525,7 +525,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "08912a65-4554-4389-a157-0ecb4f14ed54")
+		(uuid "659f8310-a80e-4171-b040-2194d8020fce")
 	)
 	(label "NTC_HEAT"
 		(at 13.97 15.24 0)
@@ -535,7 +535,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "04ccf06b-3a47-47fe-a8dd-3d2fb50fbb9f")
+		(uuid "f45a3b83-85a5-4fc6-a887-d14e2c02d3db")
 	)
 	(hierarchical_label "VCC_3V3"
 		(shape input)
@@ -546,7 +546,7 @@
 			)
 			(justify left)
 		)
-		(uuid "740df4c3-aace-4d9d-996e-cb7a8d1e90f7")
+		(uuid "03a3b77a-cd26-419a-82de-7004e85057fc")
 	)
 	(hierarchical_label "GND"
 		(shape input)
@@ -557,7 +557,7 @@
 			)
 			(justify left)
 		)
-		(uuid "06435327-ee46-456b-be31-139422849a13")
+		(uuid "b155ce4c-3a53-4d57-b7fe-2c140d035230")
 	)
 	(hierarchical_label "NTC_HEAT_W"
 		(shape input)
@@ -568,7 +568,7 @@
 			)
 			(justify left)
 		)
-		(uuid "6ce53c6e-e8ec-4b90-9cc9-de023872e2c9")
+		(uuid "a7294928-3356-4baf-8a16-b750581dbb64")
 	)
 	(hierarchical_label "NTC_HEAT"
 		(shape input)
@@ -579,7 +579,7 @@
 			)
 			(justify left)
 		)
-		(uuid "c5b18dd5-5a5b-4fff-9cd2-277897c12df6")
+		(uuid "55db6818-6dc1-4156-a4a9-bfbc9c8abc10")
 	)
 	(sheet_instances
 		(path "/"
