@@ -1,0 +1,49 @@
+# Логи и lock-файлы — во всех папках проекта
+*.log
+*.lck
+**/*.log
+**/*.lck
+
+# Кэш Python — во всех папках
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Виртуальные окружения
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+
+# IDE
+.idea/
+**/.idea/
+.vscode/
+**/.vscode/
+*.swp
+*.swo
+
+# Артефакты сборки
+build/
+**/build/
+dist/
+**/dist/
+*.egg-info/
+**/*.egg-info/
+
+# KiCad временные файлы
+*-backups/
+**/*-backups/
+*.kicad_prl
+**/*.kicad_prl
+*.kicad_sch-bak
+**/*.kicad_sch-bak
+
+# Прочее
+.DS_Store
+**/.DS_Store
+Thumbs.db
+**/Thumbs.db
