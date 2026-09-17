@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_09_out.kicad_sch")
-		(date "2026-09-12T14:22:00")
+		(date "2026-09-12T18:45:14")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -89,7 +89,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f4ace3b3-2af6-4731-983a-8aab15324718")
+			(tstamps "55a9d646-0db7-4be2-af0a-76fc94177565")
 			(units
 				(unit
 					(name "A")
@@ -142,7 +142,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4738125c-603e-405e-8282-acede5d5b3ef")
+			(tstamps "f523c82d-e97d-4b80-a21c-fabb452fd929")
 			(units
 				(unit
 					(name "A")
@@ -195,7 +195,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "15a7ad87-cf5d-47d0-950c-8ef40622f17c")
+			(tstamps "4c1df554-1e13-4627-a953-1f86de541558")
 			(units
 				(unit
 					(name "A")
@@ -252,7 +252,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "cdf069f4-c755-4d00-9ea1-15ea9c3426c7")
+			(tstamps "6e55299f-a323-479e-b581-74fd395597f5")
 			(units
 				(unit
 					(name "A")
@@ -306,7 +306,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ef0f3fd0-9826-429a-a913-db3075f6dac4")
+			(tstamps "cbe4c1e1-5b3b-4122-82cd-afe3db74d6cb")
 			(units
 				(unit
 					(name "A")
@@ -360,7 +360,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d187e16b-3ee1-407d-972b-aad5312eae47")
+			(tstamps "847a7ec5-3d2d-4f78-82b2-b1384f4375c8")
 			(units
 				(unit
 					(name "A")
@@ -414,7 +414,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "98b4b383-1500-4f9e-8cf8-5343e4d2b3b2")
+			(tstamps "4e5ab968-1695-4c8b-a9dc-a061b487057c")
 			(units
 				(unit
 					(name "A")
@@ -468,7 +468,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "51ab43ea-9972-4311-ac1f-cfb81e523ce8")
+			(tstamps "f9336748-6a44-4238-88c0-479f6c9cfb00")
 			(units
 				(unit
 					(name "A")
@@ -522,7 +522,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "dfd8b3fc-75ee-461c-b0e1-e9d9dfa369e9")
+			(tstamps "0292570e-b5c6-4bf8-80d1-a5115f57ee44")
 			(units
 				(unit
 					(name "A")
@@ -576,7 +576,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f4ad97cb-0bbc-464c-8d88-92ad86469caf")
+			(tstamps "b3ce53f5-2b2a-4217-acb2-7f76f7686d2c")
 			(units
 				(unit
 					(name "A")
@@ -873,16 +873,6 @@
 		)
 		(net
 			(code "9")
-			(name "/FAN_PWM_OUT")
-			(class "Default")
-			(node
-				(ref "R15")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "10")
 			(name "/GND")
 			(class "Default")
 			(node
@@ -904,7 +894,7 @@
 			)
 		)
 		(net
-			(code "11")
+			(code "10")
 			(name "/VCC_12V")
 			(class "Default")
 			(node
@@ -920,6 +910,16 @@
 			)
 			(node
 				(ref "R20")
+				(pin "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "11")
+			(name "unconnected-(R15-Pad2)")
+			(class "Default")
+			(node
+				(ref "R15")
 				(pin "2")
 				(pintype "passive")
 			)

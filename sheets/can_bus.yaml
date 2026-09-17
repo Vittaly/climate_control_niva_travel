@@ -1,0 +1,129 @@
+page_name: CAN
+file: can_bus.kicad_sch
+functional_purpose: Модуль CAN
+ports:
+- net_label: VCC_5V
+  type: POWER
+  description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
+    3,3В)
+- net_label: GND
+  type: POWER
+  description: Общий провод (кузов автомобиля)
+- net_label: CAN_TX
+  type: OUTPUT
+  description: 'CAN: передача от МК к трансиверу'
+- net_label: CAN_RX
+  type: OUTPUT
+  description: 'CAN: приём от трансивера к МК'
+- net_label: CANH
+  type: OUTPUT
+  description: 'CAN: шина High (J1:25)'
+- net_label: CANL
+  type: OUTPUT
+  description: 'CAN: шина Low (J1:26)'
+component_types:
+  TYPE_MCP2562-E-SN_MCP2562-E-SN:
+    symbol: Interface_CAN_LIN:MCP2562-E-SN
+    footprint: Package_SO:SOIC-8_3.9x4.9mm_P1.27mm
+    value: MCP2562-E-SN
+    fields: {}
+components:
+  U8:
+    type: TYPE_MCP2562-E-SN_MCP2562-E-SN
+    description: CAN transceiver, SOIC-8
+nets:
+  VCC_5V:
+    name: VCC_5V
+    description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
+      3,3В)
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 5.0V
+      current_max: 0.5A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U8
+      pin: '3'
+    - component: U8
+      pin: '5'
+  GND:
+    name: GND
+    description: Общий провод (кузов автомобиля)
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U8
+      pin: '2'
+    - component: U8
+      pin: '8'
+  CAN_TX:
+    name: CAN_TX
+    description: 'CAN: передача от МК к трансиверу'
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U8
+      pin: '1'
+  CAN_RX:
+    name: CAN_RX
+    description: 'CAN: приём от трансивера к МК'
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U8
+      pin: '4'
+  CANH:
+    name: CANH
+    description: 'CAN: шина High (J1:25)'
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U8
+      pin: '7'
+  CANL:
+    name: CANL
+    description: 'CAN: шина Low (J1:26)'
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U8
+      pin: '6'

@@ -2,14 +2,14 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_11_fan_key.kicad_sch")
-		(date "2026-09-12T14:22:01")
+		(date "2026-09-12T18:45:15")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title)
+				(title "FAN_KEY")
 				(company)
 				(rev)
 				(date)
@@ -55,9 +55,8 @@
 	)
 	(components
 		(comp
-			(ref "C_GATE")
+			(ref "CGATE1")
 			(value "1n")
-			(description "Unpolarized capacitor")
 			(fields
 				(field
 					(name "Footprint")
@@ -66,7 +65,8 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "Unpolarized capacitor")
+					(name "Description")
+				)
 			)
 			(libsource
 				(lib "Device")
@@ -93,7 +93,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "bf89ad3b-6fdc-40f5-93a8-6f039cbf1c67")
+			(tstamps "caeb0e83-0e88-434a-ac8c-4f5fbf1d846a")
 			(units
 				(unit
 					(name "A")
@@ -109,9 +109,8 @@
 			)
 		)
 		(comp
-			(ref "C_OUT")
+			(ref "COUT1")
 			(value "100n")
-			(description "Unpolarized capacitor")
 			(fields
 				(field
 					(name "Footprint")
@@ -120,7 +119,8 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "Unpolarized capacitor")
+					(name "Description")
+				)
 			)
 			(libsource
 				(lib "Device")
@@ -147,7 +147,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ee6c8088-c1bd-41e4-9edc-3ad089975062")
+			(tstamps "5862ae48-8dff-4e06-b9ce-065c74995939")
 			(units
 				(unit
 					(name "A")
@@ -165,7 +165,6 @@
 		(comp
 			(ref "D6")
 			(value "SS54")
-			(description "Diode")
 			(fields
 				(field
 					(name "Footprint")
@@ -174,7 +173,8 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "Diode")
+					(name "Description")
+				)
 			)
 			(libsource
 				(lib "Device")
@@ -201,7 +201,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "baa99825-b82f-42b5-9b3d-24040776ab1b")
+			(tstamps "15349256-ecce-4417-86fa-0e1351179e74")
 			(units
 				(unit
 					(name "A")
@@ -217,9 +217,8 @@
 			)
 		)
 		(comp
-			(ref "L_OUT")
+			(ref "LOUT1")
 			(value "2u")
-			(description "Inductor")
 			(fields
 				(field
 					(name "Footprint")
@@ -228,7 +227,8 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "Inductor")
+					(name "Description")
+				)
 			)
 			(libsource
 				(lib "Device")
@@ -255,7 +255,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e1da5b16-d115-4163-9fb0-314028304343")
+			(tstamps "61cb4a15-1ec8-4ce7-8353-afaee15d1ac3")
 			(units
 				(unit
 					(name "A")
@@ -273,7 +273,6 @@
 		(comp
 			(ref "Q5")
 			(value "HYG012N03")
-			(description "N-MOSFET transistor")
 			(fields
 				(field
 					(name "Footprint")
@@ -282,7 +281,8 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "N-MOSFET transistor")
+					(name "Description")
+				)
 			)
 			(libsource
 				(lib "Device")
@@ -305,7 +305,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d8d812e3-d23a-4f7d-ae5f-0ce3dcb1e57a")
+			(tstamps "6a91912f-ba6c-41ad-80a9-4a9e2cab225b")
 			(units
 				(unit
 					(name "A")
@@ -326,7 +326,6 @@
 		(comp
 			(ref "R31")
 			(value "100R")
-			(description "Resistor")
 			(fields
 				(field
 					(name "Footprint")
@@ -335,7 +334,8 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "Resistor")
+					(name "Description")
+				)
 			)
 			(libsource
 				(lib "Device")
@@ -362,7 +362,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "da515e40-091b-4479-b80d-3c591af62689")
+			(tstamps "0819d9ff-2ca1-46f5-aafa-9884b07a7aa8")
 			(units
 				(unit
 					(name "A")
@@ -576,7 +576,7 @@
 			(name "/FAN_GATE_EXT")
 			(class "Default")
 			(node
-				(ref "C_GATE")
+				(ref "CGATE1")
 				(pin "1")
 				(pintype "passive")
 			)
@@ -598,12 +598,12 @@
 			(class "Default")
 			(node
 				(ref "D6")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
-				(ref "L_OUT")
+				(ref "LOUT1")
 				(pin "1")
 				(pinfunction "1_1")
 				(pintype "passive")
@@ -630,12 +630,12 @@
 			(name "/GND")
 			(class "Default")
 			(node
-				(ref "C_GATE")
+				(ref "CGATE1")
 				(pin "2")
 				(pintype "passive")
 			)
 			(node
-				(ref "C_OUT")
+				(ref "COUT1")
 				(pin "2")
 				(pintype "passive")
 			)
@@ -651,12 +651,12 @@
 			(name "/MOTOR_TERM")
 			(class "Default")
 			(node
-				(ref "C_OUT")
+				(ref "COUT1")
 				(pin "1")
 				(pintype "passive")
 			)
 			(node
-				(ref "L_OUT")
+				(ref "LOUT1")
 				(pin "2")
 				(pinfunction "2_2")
 				(pintype "passive")
@@ -668,8 +668,8 @@
 			(class "Default")
 			(node
 				(ref "D6")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)

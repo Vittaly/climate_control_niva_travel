@@ -1,0 +1,830 @@
+ERC report (2026-09-14T21:54:46, Encoding UTF8)
+Report includes: Errors, Warnings
+
+***** Sheet /
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(203.20 mm, 130.81 mm): Symbol C21 [C]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(203.20 mm, 135.89 mm): Symbol R2 [R]
+[lib_symbol_mismatch]: Symbol 'L' doesn't match copy in library 'Device'
+    ; warning
+    @(219.71 mm, 119.38 mm): Symbol FB1 [L]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(222.25 mm, 119.38 mm): Symbol C6 [C]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(222.25 mm, 127.00 mm): Symbol R1 [R]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(224.79 mm, 119.38 mm): Symbol C8 [C]
+[lib_symbol_mismatch]: Symbol 'STM32F103R_C-D-E_Tx' doesn't match copy in library 'MCU_ST_STM32F1'
+    ; warning
+    @(224.79 mm, 171.45 mm): Symbol U1 [STM32F103R_C-D-E_Tx]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(227.33 mm, 97.79 mm): Symbol C7 [C]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(227.33 mm, 119.38 mm): Symbol C5 [C]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(229.87 mm, 119.38 mm): Symbol C9 [C]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(232.41 mm, 119.38 mm): Symbol C10 [C]
+[lib_symbol_mismatch]: Symbol 'Conn_01x04' doesn't match copy in library 'Connector_Generic'
+    ; warning
+    @(236.22 mm, 100.33 mm): Symbol J2 [Conn_01x04]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(127.00 mm, 101.60 mm): Symbol C26 [C]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(127.00 mm, 107.95 mm): Symbol R28 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(162.56 mm, 106.68 mm): Symbol R27 [R]
+[lib_symbol_mismatch]: Symbol 'AO3400A' doesn't match copy in library 'Transistor_FET'
+    ; warning
+    @(130.81 mm, 107.95 mm): Symbol Q2 [AO3400A]
+[lib_symbol_mismatch]: Symbol 'Thermistor_NTC' doesn't match copy in library 'Device'
+    ; warning
+    @(137.16 mm, 81.28 mm): Symbol RT1 [Thermistor_NTC]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(154.94 mm, 109.22 mm): Symbol R17 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(154.94 mm, 116.84 mm): Symbol R16 [R]
+[lib_symbol_mismatch]: Symbol 'D' doesn't match copy in library 'Device'
+    ; warning
+    @(168.91 mm, 109.22 mm): Symbol D3 [D]
+[lib_symbol_mismatch]: Symbol 'Conn_01x02' doesn't match copy in library 'Connector_Generic'
+    ; warning
+    @(173.99 mm, 102.87 mm): Symbol J5 [Conn_01x02]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(171.45 mm, 328.73 mm): Symbol LED51 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(171.45 mm, 338.42 mm): Symbol LED31 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(171.45 mm, 348.11 mm): Symbol LED12 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(171.45 mm, 357.80 mm): Symbol LED41 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(175.26 mm, 35.05 mm): Symbol R8_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(175.26 mm, 38.86 mm): Symbol R8_1 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(175.26 mm, 316.99 mm): Symbol R1_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(175.26 mm, 320.80 mm): Symbol R1_1 [R]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(175.26 mm, 328.73 mm): Symbol LED51 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(175.26 mm, 338.42 mm): Symbol LED31 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(175.26 mm, 348.11 mm): Symbol LED12 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(175.26 mm, 357.80 mm): Symbol LED41 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(175.26 mm, 377.19 mm): Symbol LED52 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(182.24 mm, 147.83 mm): Symbol R3_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(182.24 mm, 151.64 mm): Symbol R3_1 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(189.22 mm, 147.83 mm): Symbol R7_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(189.22 mm, 151.64 mm): Symbol R7_1 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(196.20 mm, 260.60 mm): Symbol R2_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(196.20 mm, 264.41 mm): Symbol R2_1 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(203.18 mm, 91.44 mm): Symbol R4_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(203.18 mm, 95.25 mm): Symbol R4_1 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(203.18 mm, 260.60 mm): Symbol R6_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(203.18 mm, 264.41 mm): Symbol R6_1 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(203.18 mm, 373.38 mm): Symbol R5_1 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(203.18 mm, 377.19 mm): Symbol R5_1 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(214.12 mm, 377.19 mm): Symbol LED73 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(217.93 mm, 377.19 mm): Symbol LED73 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(221.74 mm, 377.19 mm): Symbol #PWR065 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(232.41 mm, 319.03 mm): Symbol LED32 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(232.41 mm, 328.73 mm): Symbol LED62 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(232.41 mm, 348.11 mm): Symbol LED71 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(232.41 mm, 357.80 mm): Symbol LED42 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(232.41 mm, 367.50 mm): Symbol LED11 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(236.22 mm, 319.03 mm): Symbol LED32 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(236.22 mm, 328.73 mm): Symbol LED62 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(236.22 mm, 348.11 mm): Symbol LED71 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(236.22 mm, 357.80 mm): Symbol LED42 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(236.22 mm, 367.50 mm): Symbol LED11 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(256.79 mm, 328.73 mm): Symbol LED83 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(256.79 mm, 357.80 mm): Symbol LED23 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(256.79 mm, 367.50 mm): Symbol LED63 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(260.60 mm, 328.73 mm): Symbol LED83 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(260.60 mm, 357.80 mm): Symbol LED23 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(260.60 mm, 367.50 mm): Symbol LED63 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(264.41 mm, 328.73 mm): Symbol #PWR066 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(264.41 mm, 357.80 mm): Symbol #PWR060 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(264.41 mm, 367.50 mm): Symbol #PWR064 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(293.37 mm, 348.11 mm): Symbol LED61 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(297.18 mm, 348.11 mm): Symbol LED61 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(297.18 mm, 377.19 mm): Symbol LED22 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(299.47 mm, 367.50 mm): Symbol LED53 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(299.47 mm, 377.19 mm): Symbol LED33 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(303.28 mm, 367.50 mm): Symbol LED53 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(303.28 mm, 377.19 mm): Symbol LED33 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(307.09 mm, 367.50 mm): Symbol #PWR063 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(307.09 mm, 377.19 mm): Symbol #PWR061 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(342.14 mm, 338.42 mm): Symbol LED43 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(342.14 mm, 348.11 mm): Symbol LED13 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(345.95 mm, 338.42 mm): Symbol LED43 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(345.95 mm, 348.11 mm): Symbol LED13 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(349.76 mm, 338.42 mm): Symbol #PWR062 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(349.76 mm, 348.11 mm): Symbol #PWR059 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(354.33 mm, 328.73 mm): Symbol LED21 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(354.33 mm, 338.42 mm): Symbol LED72 Pin 1 [K, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(354.33 mm, 348.11 mm): Symbol LED82 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(358.14 mm, 328.73 mm): Symbol LED21 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(358.14 mm, 338.42 mm): Symbol LED72 [LED]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(358.14 mm, 348.11 mm): Symbol LED82 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(415.29 mm, 367.50 mm): Symbol LED81 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(419.10 mm, 367.50 mm): Symbol LED81 [LED]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 102.87 mm): Symbol C27 [C]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 107.95 mm): Symbol R30 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(161.29 mm, 106.68 mm): Symbol R29 [R]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 97.79 mm): Symbol C25 [C]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(148.59 mm, 114.30 mm): Symbol R25 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(152.40 mm, 119.38 mm): Symbol R26 [R]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 46.99 mm): Symbol C13 [C]
+[lib_symbol_mismatch]: Symbol 'DRV8871DDA' doesn't match copy in library 'Driver_Motor'
+    ; warning
+    @(128.27 mm, 60.96 mm): Symbol U4 [DRV8871DDA]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(128.27 mm, 130.30 mm): Symbol R37 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 134.11 mm): Symbol R37 [R]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 138.43 mm): Symbol C12 [C]
+[lib_symbol_mismatch]: Symbol 'DRV8871DDA' doesn't match copy in library 'Driver_Motor'
+    ; warning
+    @(128.27 mm, 152.40 mm): Symbol U5 [DRV8871DDA]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 184.15 mm): Symbol C14 [C]
+[lib_symbol_mismatch]: Symbol 'DRV8871DDA' doesn't match copy in library 'Driver_Motor'
+    ; warning
+    @(128.27 mm, 198.12 mm): Symbol U3 [DRV8871DDA]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(135.25 mm, 102.87 mm): Symbol R36 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(135.25 mm, 106.68 mm): Symbol R36 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(135.25 mm, 110.49 mm): Symbol #PWR050 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(135.25 mm, 185.17 mm): Symbol R32 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(135.25 mm, 188.98 mm): Symbol R32 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(135.25 mm, 192.79 mm): Symbol #PWR048 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(136.19 mm, 212.60 mm): Symbol C28 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(136.19 mm, 216.41 mm): Symbol C28 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(136.19 mm, 220.22 mm): Symbol #PWR043 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(136.19 mm, 240.03 mm): Symbol C30 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(136.19 mm, 243.84 mm): Symbol C30 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(136.19 mm, 247.65 mm): Symbol #PWR045 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(142.23 mm, 102.87 mm): Symbol R34 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(142.23 mm, 106.68 mm): Symbol R34 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(142.23 mm, 110.49 mm): Symbol #PWR049 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(142.23 mm, 166.88 mm): Symbol R35 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(142.23 mm, 170.69 mm): Symbol R35 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(142.23 mm, 240.03 mm): Symbol R38 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(142.23 mm, 243.84 mm): Symbol R38 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(142.23 mm, 247.65 mm): Symbol #PWR051 Pin 1 [Power input, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(142.24 mm, 66.04 mm): Symbol R5 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(142.24 mm, 157.48 mm): Symbol R6 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(142.24 mm, 203.20 mm): Symbol R4 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(144.12 mm, 130.30 mm): Symbol C29 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(144.12 mm, 134.11 mm): Symbol C29 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(144.12 mm, 137.92 mm): Symbol #PWR044 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(144.12 mm, 157.73 mm): Symbol C31 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(144.12 mm, 161.54 mm): Symbol C31 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(144.12 mm, 165.35 mm): Symbol #PWR046 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(149.21 mm, 166.88 mm): Symbol R33 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(149.21 mm, 170.69 mm): Symbol R33 [R]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(288.29 mm, 229.87 mm): Symbol C15 [C]
+[lib_symbol_mismatch]: Symbol 'DRV8871DDA' doesn't match copy in library 'Driver_Motor'
+    ; warning
+    @(288.29 mm, 243.84 mm): Symbol U2 [DRV8871DDA]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(302.26 mm, 248.92 mm): Symbol R3 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(119.38 mm, 67.31 mm): Symbol R18 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(119.38 mm, 74.93 mm): Symbol R19 [R]
+[lib_symbol_mismatch]: Symbol 'MMBT3904' doesn't match copy in library 'Transistor_BJT'
+    ; warning
+    @(119.38 mm, 76.20 mm): Symbol Q3 [MMBT3904]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 78.74 mm): Symbol R20 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(147.32 mm, 132.08 mm): Symbol R21 [R]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(154.94 mm, 104.14 mm): Symbol R14 [R]
+[lib_symbol_mismatch]: Symbol 'MMBT3906' doesn't match copy in library 'Transistor_BJT'
+    ; warning
+    @(156.21 mm, 134.62 mm): Symbol Q4 [MMBT3906]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(162.56 mm, 104.14 mm): Symbol R15 [R]
+[lib_symbol_mismatch]: Symbol 'BSS138' doesn't match copy in library 'Transistor_FET'
+    ; warning
+    @(163.83 mm, 106.68 mm): Symbol Q1 [BSS138]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(163.83 mm, 115.57 mm): Symbol R13 [R]
+[lib_symbol_mismatch]: Symbol 'MCP2562-E-SN' doesn't match copy in library 'Interface_CAN_LIN'
+    ; warning
+    @(149.86 mm, 106.68 mm): Symbol U8 [MCP2562-E-SN]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(120.65 mm, 43.18 mm): Symbol C4 [C]
+[lib_symbol_mismatch]: Symbol 'AP1117-15' doesn't match copy in library 'Regulator_Linear'
+    ; warning
+    @(124.46 mm, 53.34 mm): Symbol U7 [AP1117-15]
+[lib_symbol_mismatch]: Symbol 'D_Schottky' doesn't match copy in library 'Device'
+    ; warning
+    @(128.27 mm, 43.18 mm): Symbol D4 [D_Schottky]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 107.95 mm): Symbol C2 [C]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 107.95 mm): Symbol C3 [C]
+[lib_symbol_mismatch]: Symbol 'L' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 107.95 mm): Symbol L1 [L]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 107.95 mm): Symbol C1 [C]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 115.57 mm): Symbol C11 [C]
+[lib_symbol_mismatch]: Symbol 'D_Zener' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 115.57 mm): Symbol D2 [D_Zener]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(130.81 mm, 115.57 mm): Symbol C20 [C]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(157.48 mm, 102.87 mm): Symbol C19 [C]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(157.48 mm, 102.87 mm): Symbol C16 [C]
+[lib_symbol_mismatch]: Symbol 'LM78M05_TO252' doesn't match copy in library 'Regulator_Linear'
+    ; warning
+    @(157.48 mm, 111.76 mm): Symbol U6 [LM78M05_TO252]
+[lib_symbol_mismatch]: Symbol 'D_Schottky' doesn't match copy in library 'Device'
+    ; warning
+    @(157.48 mm, 129.54 mm): Symbol D1 [D_Schottky]
+[isolated_pin_label]: Label connected to only one pin
+    ; warning
+    @(161.29 mm, 137.16 mm): Global Label 'FB_M1_RAW'
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(165.10 mm, 102.87 mm): Symbol C17 [C]
+[lib_symbol_mismatch]: Symbol 'Conn_02x16_Odd_Even' doesn't match copy in library 'Connector_Generic'
+    ; warning
+    @(166.37 mm, 147.32 mm): Symbol J1 [Conn_02x16_Odd_Even]
+[lib_symbol_mismatch]: Symbol 'D_Zener' doesn't match copy in library 'Device'
+    ; warning
+    @(168.91 mm, 64.77 mm): Symbol D5 [D_Zener]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(176.53 mm, 64.77 mm): Symbol C18 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(149.86 mm, 235.36 mm): Symbol SW6 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(149.86 mm, 252.97 mm): Symbol SW3 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(149.86 mm, 261.78 mm): Symbol SW1 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(151.13 mm, 269.71 mm): Symbol LED2 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(154.94 mm, 127.00 mm): Symbol C22 [C]
+[footprint_link_issues]: Footprint 'SW_Push_1P1T_NO_6x6mm_H7.0mm' not found in library 'Button_Switch_THT'
+    ; warning
+    @(154.94 mm, 235.36 mm): Symbol SW6 [SW_Push]
+[lib_symbol_mismatch]: Symbol 'SW_Push' doesn't match copy in library 'Switch'
+    ; warning
+    @(154.94 mm, 235.36 mm): Symbol SW6 [SW_Push]
+[footprint_link_issues]: Footprint 'SW_Push_1P1T_NO_6x6mm_H7.0mm' not found in library 'Button_Switch_THT'
+    ; warning
+    @(154.94 mm, 252.97 mm): Symbol SW3 [SW_Push]
+[lib_symbol_mismatch]: Symbol 'SW_Push' doesn't match copy in library 'Switch'
+    ; warning
+    @(154.94 mm, 252.97 mm): Symbol SW3 [SW_Push]
+[footprint_link_issues]: Footprint 'SW_Push_1P1T_NO_6x6mm_H7.0mm' not found in library 'Button_Switch_THT'
+    ; warning
+    @(154.94 mm, 261.78 mm): Symbol SW1 [SW_Push]
+[lib_symbol_mismatch]: Symbol 'SW_Push' doesn't match copy in library 'Switch'
+    ; warning
+    @(154.94 mm, 261.78 mm): Symbol SW1 [SW_Push]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(154.94 mm, 269.71 mm): Symbol LED2 [LED]
+[lib_symbol_mismatch]: Symbol 'Conn_01x02' doesn't match copy in library 'Connector_Generic'
+    ; warning
+    @(154.94 mm, 279.40 mm): Symbol J4 [Conn_01x02]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(160.02 mm, 235.36 mm): Symbol #PWR027 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(160.02 mm, 252.97 mm): Symbol #PWR024 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(160.02 mm, 261.78 mm): Symbol #PWR022 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(161.92 mm, 24.13 mm): Symbol R39 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(161.92 mm, 27.94 mm): Symbol R39 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(161.92 mm, 237.49 mm): Symbol R11 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(161.92 mm, 241.30 mm): Symbol R11 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(168.90 mm, 69.85 mm): Symbol R9 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(168.90 mm, 73.66 mm): Symbol R9 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(168.90 mm, 80.52 mm): Symbol R10 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(168.90 mm, 84.33 mm): Symbol R10 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(168.90 mm, 187.20 mm): Symbol R12 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(168.90 mm, 191.01 mm): Symbol R12 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(170.79 mm, 239.01 mm): Symbol C23 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(170.79 mm, 242.82 mm): Symbol C23 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(170.79 mm, 246.63 mm): Symbol #PWR016 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(175.88 mm, 104.90 mm): Symbol R23 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(175.88 mm, 108.71 mm): Symbol R23 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(175.88 mm, 196.34 mm): Symbol R24 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(175.88 mm, 200.15 mm): Symbol R24 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(175.88 mm, 231.39 mm): Symbol R22 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(175.88 mm, 235.20 mm): Symbol R22 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(178.71 mm, 275.59 mm): Symbol C32 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(178.71 mm, 279.40 mm): Symbol C32 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(178.71 mm, 283.21 mm): Symbol #PWR018 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(181.86 mm, 261.78 mm): Symbol SW5 Pin 1 [1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(182.86 mm, 56.13 mm): Symbol R7 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(182.86 mm, 59.94 mm): Symbol R7 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(182.86 mm, 193.29 mm): Symbol R8 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(182.86 mm, 197.10 mm): Symbol R8 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(182.86 mm, 239.01 mm): Symbol R40 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'R' doesn't match copy in library 'Device'
+    ; warning
+    @(182.86 mm, 242.82 mm): Symbol R40 [R]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(182.86 mm, 246.63 mm): Symbol #PWR021 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(186.64 mm, 275.59 mm): Symbol C24 Pin 1 [Passive, Line]
+[lib_symbol_mismatch]: Symbol 'C' doesn't match copy in library 'Device'
+    ; warning
+    @(186.64 mm, 279.40 mm): Symbol C24 [C]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(186.64 mm, 283.21 mm): Symbol #PWR017 Pin 1 [Power input, Line]
+[footprint_link_issues]: Footprint 'SW_Push_1P1T_NO_6x6mm_H7.0mm' not found in library 'Button_Switch_THT'
+    ; warning
+    @(186.94 mm, 261.78 mm): Symbol SW5 [SW_Push]
+[lib_symbol_mismatch]: Symbol 'SW_Push' doesn't match copy in library 'Switch'
+    ; warning
+    @(186.94 mm, 261.78 mm): Symbol SW5 [SW_Push]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(192.02 mm, 261.78 mm): Symbol #PWR026 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(199.90 mm, 240.63 mm): Symbol LED3 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(203.71 mm, 240.63 mm): Symbol LED3 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(215.14 mm, 279.40 mm): Symbol LED4 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(218.95 mm, 279.40 mm): Symbol LED4 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(227.33 mm, 250.32 mm): Symbol LED1 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(231.14 mm, 250.32 mm): Symbol LED1 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(236.47 mm, 250.32 mm): Symbol LED5 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(240.28 mm, 250.32 mm): Symbol LED5 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(255.02 mm, 252.97 mm): Symbol SW2 Pin 1 [1, Passive, Line]
+[footprint_link_issues]: Footprint 'SW_Push_1P1T_NO_6x6mm_H7.0mm' not found in library 'Button_Switch_THT'
+    ; warning
+    @(260.10 mm, 252.97 mm): Symbol SW2 [SW_Push]
+[lib_symbol_mismatch]: Symbol 'SW_Push' doesn't match copy in library 'Switch'
+    ; warning
+    @(260.10 mm, 252.97 mm): Symbol SW2 [SW_Push]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(260.86 mm, 279.40 mm): Symbol LED6 Pin 1 [K, Passive, Line]
+[lib_symbol_mismatch]: Symbol 'LED' doesn't match copy in library 'Device'
+    ; warning
+    @(264.67 mm, 279.40 mm): Symbol LED6 [LED]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(265.18 mm, 252.97 mm): Symbol #PWR023 Pin 1 [Power input, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(271.78 mm, 241.18 mm): Symbol J3 Pin 1 [Pin_1, Passive, Line]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(271.78 mm, 243.72 mm): Symbol #PWR019 Pin 1 [Power input, Line]
+[lib_symbol_mismatch]: Symbol 'Conn_01x02' doesn't match copy in library 'Connector_Generic'
+    ; warning
+    @(276.86 mm, 241.18 mm): Symbol J3 [Conn_01x02]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(277.88 mm, 235.36 mm): Symbol SW4 Pin 1 [1, Passive, Line]
+[footprint_link_issues]: Footprint 'SW_Push_1P1T_NO_6x6mm_H7.0mm' not found in library 'Button_Switch_THT'
+    ; warning
+    @(282.96 mm, 235.36 mm): Symbol SW4 [SW_Push]
+[lib_symbol_mismatch]: Symbol 'SW_Push' doesn't match copy in library 'Switch'
+    ; warning
+    @(282.96 mm, 235.36 mm): Symbol SW4 [SW_Push]
+[endpoint_off_grid]: Symbol pin or wire end off connection grid
+    ; warning
+    @(288.04 mm, 235.36 mm): Symbol #PWR025 Pin 1 [Power input, Line]
+
+***** Sheet /ROOT/
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 140.97 mm): Symbol U1 Pin 5 [PD0, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 143.51 mm): Symbol U1 Pin 6 [PD1, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 146.05 mm): Symbol U1 Pin 54 [PD2, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 153.67 mm): Symbol U1 Pin 9 [PC1, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 161.29 mm): Symbol U1 Pin 24 [PC4, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 163.83 mm): Symbol U1 Pin 25 [PC5, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 166.37 mm): Symbol U1 Pin 37 [PC6, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 168.91 mm): Symbol U1 Pin 38 [PC7, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 171.45 mm): Symbol U1 Pin 39 [PC8, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 173.99 mm): Symbol U1 Pin 40 [PC9, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 176.53 mm): Symbol U1 Pin 51 [PC10, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 179.07 mm): Symbol U1 Pin 52 [PC11, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(207.01 mm, 181.61 mm): Symbol U1 Pin 53 [PC12, Bidirectional, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(219.71 mm, 123.19 mm): Symbol U1 Pin 1 [VBAT, Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(232.41 mm, 123.19 mm): Symbol U1 Pin 13 [VDDA, Power input, Line]
+
+***** Sheet /ROOT/SHEET_SEN_SOLAR/
+
+***** Sheet /ROOT/SHEET_SEN_CABIN/
+
+***** Sheet /ROOT/SHEET_BACKLIGHT/
+
+***** Sheet /ROOT/SHEET_SEN_COND/
+
+***** Sheet /ROOT/SHEET_SEN_HEAT/
+
+***** Sheet /ROOT/SHEET_ACT/
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(288.29 mm, 233.68 mm): Symbol U2 Pin 5 [VM, Power input, Line]
+
+***** Sheet /ROOT/SHEET_OUT/
+
+***** Sheet /ROOT/SHEET_CAN/
+
+***** Sheet /ROOT/SHEET_PWR/
+[pin_not_connected]: Pin not connected
+    ; error
+    @(161.29 mm, 162.56 mm): Symbol J1 Pin 27 [Pin_27, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(161.29 mm, 165.10 mm): Symbol J1 Pin 29 [Pin_29, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(161.29 mm, 167.64 mm): Symbol J1 Pin 31 [Pin_31, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(173.99 mm, 162.56 mm): Symbol J1 Pin 28 [Pin_28, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(173.99 mm, 165.10 mm): Symbol J1 Pin 30 [Pin_30, Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(173.99 mm, 167.64 mm): Symbol J1 Pin 32 [Pin_32, Passive, Line]
+[multiple_net_names]: Both VBAT_PROT and GND are attached to the same items; VBAT_PROT will be used in the netlist
+    ; warning
+    @(153.67 mm, 129.54 mm): Global Label 'VBAT_PROT'
+    @(180.34 mm, 64.77 mm): Symbol #PWR004 Pin 1 [Power input, Line]
+
+***** Sheet /ROOT/SHEET_UI/
+
+ ** ERC messages: 265  Errors 22  Warnings 243
+
+ ** Ignored checks:
+    - Global label only appears once in the schematic
+    - Four connection points are joined together
+    - SPICE model issue
+    - Assigned footprint doesn't match footprint filters

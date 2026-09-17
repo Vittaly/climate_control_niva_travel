@@ -1,0 +1,1491 @@
+root_page:
+  project: Climate Control Niva Travel
+  version: '2.2'
+  file: climate_control_niva_travel.kicad_sch
+  mcu_pin_map:
+    '1':
+      signal: VBAT
+      net: VCC_3V3
+      function: power_in
+    '2':
+      signal: PC13
+      net: M4_IN2
+      comment: драйвер U5
+    '3':
+      signal: PC14
+      net: LED_DRY_GLASS_DRV
+    '4':
+      signal: PC15
+      net: LED_AC_DRV
+    '5':
+      signal: PD0
+      net: null
+      function: OSC_IN
+    '6':
+      signal: PD1
+      net: null
+      function: OSC_OUT
+    '7':
+      signal: NRST
+      net: NRST
+      function: reset
+    '8':
+      signal: PC0
+      net: ILLUM_SENSE
+    '9':
+      signal: PC1
+      net: null
+    '10':
+      signal: PC2
+      net: LED_RECIRC_DRV
+    '11':
+      signal: PC3
+      net: M_FAN_CTL
+    '12':
+      signal: VSSA
+      net: GND
+      function: power_in
+    '13':
+      signal: VDDA
+      net: VDDA_3V3
+      function: power_in
+    '14':
+      signal: PA0
+      net: TEMP_SET_ADC
+    '15':
+      signal: PA1
+      net: FAN_SEL_ADC
+    '16':
+      signal: PA2
+      net: NTC_CABIN
+    '17':
+      signal: PA3
+      net: NTC_HEAT
+    '18':
+      signal: VSS_1
+      net: GND
+      function: power_in
+    '19':
+      signal: VDD_1
+      net: VCC_3V3
+      function: power_in
+    '20':
+      signal: PA4
+      net: SOLAR_ADC
+    '21':
+      signal: PA5
+      net: COND_ADC
+    '22':
+      signal: PA6
+      net: FB_M1
+    '23':
+      signal: PA7
+      net: FB_M2
+    '24':
+      signal: PC4
+      net: null
+    '25':
+      signal: PC5
+      net: null
+    '26':
+      signal: PB0
+      net: FB_M3
+    '27':
+      signal: PB1
+      net: FB_M4
+    '28':
+      signal: PB2
+      net: AC_CTL
+      comment: запрос кондиционера
+    '29':
+      signal: PB10
+      net: BTN_DEFROST_GLASS
+    '30':
+      signal: PB11
+      net: BTN_FACE
+    '31':
+      signal: VSS_2
+      net: GND
+      function: power_in
+    '32':
+      signal: VDD_2
+      net: VCC_3V3
+      function: power_in
+    '33':
+      signal: PB12
+      net: BTN_FEET
+    '34':
+      signal: PB13
+      net: BTN_DRY_GLASS
+    '35':
+      signal: PB14
+      net: BTN_AC
+    '36':
+      signal: PB15
+      net: BTN_RECIRC
+    '37':
+      signal: PC6
+      net: null
+    '38':
+      signal: PC7
+      net: null
+    '39':
+      signal: PC8
+      net: null
+    '40':
+      signal: PC9
+      net: null
+    '41':
+      signal: PA8
+      net: FAN_PWM_CTL
+      comment: TIM1_CH1
+    '42':
+      signal: PA9
+      net: M1_IN1
+    '43':
+      signal: PA10
+      net: M1_IN2
+    '44':
+      signal: PA11
+      net: M2_IN1
+    '45':
+      signal: PA12
+      net: M2_IN2
+    '46':
+      signal: PA13
+      net: SWDIO
+      function: SWDIO
+    '47':
+      signal: VSS_3
+      net: GND
+      function: power_in
+    '48':
+      signal: VDD_3
+      net: VCC_3V3
+      function: power_in
+    '49':
+      signal: PA14
+      net: SWCLK
+      function: SWCLK
+    '50':
+      signal: PA15
+      net: LED_DEFROST_GLASS_DRV
+    '51':
+      signal: PC10
+      net: null
+    '52':
+      signal: PC11
+      net: null
+    '53':
+      signal: PC12
+      net: null
+    '54':
+      signal: PD2
+      net: null
+    '55':
+      signal: PB3
+      net: LED_FACE_DRV
+    '56':
+      signal: PB4
+      net: LED_FEET_DRV
+    '57':
+      signal: PB5
+      net: M3_IN1
+    '58':
+      signal: PB6
+      net: M3_IN2
+    '59':
+      signal: PB7
+      net: M4_IN1
+    '60':
+      signal: BOOT0
+      net: BOOT0
+      function: boot
+      comment: через 10k к GND
+    '61':
+      signal: PB8
+      net: CAN_RX
+    '62':
+      signal: PB9
+      net: CAN_TX
+    '63':
+      signal: VSS_4
+      net: GND
+      function: power_in
+    '64':
+      signal: VDD_4
+      net: VCC_3V3
+      function: power_in
+  j1_pinout:
+    '1': +12В_БАТ вход питания
+    '2': +12В_БАТ вход питания (дубль, снижение нагрузки)
+    '3': GND_PWR
+    '4': GND_PWR (дубль)
+    '5': M1_A
+    '6': M1_B
+    '7': M1_FB (выход потенциометра ОС)
+    '8': M2_A
+    '9': M2_B
+    '10': M2_FB
+    '11': M3_A
+    '12': M3_B
+    '13': M3_FB
+    '14': M4_A
+    '15': M4_B
+    '16': M4_FB
+    '17': +5В_SENS/REF (края потенциометров заслонок и питание датчиков)
+    '18': DGND (общая цифровая земля датчиков/потенциометров)
+    '19': NTC_HEAT (датчик на патрубке радиатора печки)
+    '20': SOLAR_OUT (0..5В)
+    '21': COND_OUT (0..5В)
+    '22': ILLUM_IN (подсветка прибора)
+    '23': FAN_PWM_OUT (ШИМ на внешний силовой модуль)
+    '24': AC_REQ_OUT (+12В запрос кондиционера на вход ЭБУ)
+    '25': CANH
+    '26': CANL
+    '27': резерв
+    '28': резерв
+    '29': резерв
+    '30': резерв
+    '31': резерв
+    '32': резерв
+  symbol_pin_map: {}
+  component_types:
+    TYPE_C_100NF:
+      symbol: Device:C
+      footprint: Capacitor_SMD:C_0603_1608Metric
+      value: 100nF
+      fields:
+        Type: Ceramic
+        Dielectric: X7R
+    TYPE_C_10UF_6.3V:
+      symbol: Device:C
+      footprint: Capacitor_SMD:C_0805_2012Metric
+      value: 10uF
+      fields:
+        Voltage: 6.3V
+        Type: Ceramic
+        Dielectric: X7R
+    TYPE_L_ФЕРРИТ600ОМ@100МГЦПОПИТАНИЮVDDA:
+      symbol: Device:L
+      footprint: Inductor_SMD:L_0805_2012Metric
+      value: Феррит 600Ом@100МГц по питанию VDDA
+      fields: {}
+    TYPE_CONN01X04_SWD-ОТЛАДКА1X04:
+      symbol: Connector_Generic:Conn_01x04
+      footprint: Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
+      value: SWD-отладка 1x04
+      fields: {}
+    TYPE_R_10K:
+      symbol: Device:R
+      footprint: Resistor_SMD:R_0603_1608Metric
+      value: 10k
+      fields:
+        Power: 0.1W
+        Tolerance: 1%
+    TYPE_STM32F103RC-D-ETX_STM32F103RCT6:
+      symbol: MCU_ST_STM32F1:STM32F103R_C-D-E_Tx
+      footprint: Package_QFP:LQFP-64_10x10mm_P0.5mm
+      value: STM32F103RCT6
+      fields: {}
+  components:
+    C10:
+      type: TYPE_C_100NF
+      description: фильтр VDDA
+    C21:
+      type: TYPE_C_100NF
+      description: сброс МК
+    C5:
+      type: TYPE_C_10UF_6.3V
+      description: выход стабилизатора 3,3В
+    C6:
+      type: TYPE_C_10UF_6.3V
+      description: шина 3,3В (общий накопитель
+    C7:
+      type: TYPE_C_100NF
+      description: развязка VDD_1
+    C8:
+      type: TYPE_C_100NF
+      description: развязка VDD_2
+    C9:
+      type: TYPE_C_100NF
+      description: развязка VDD_3
+    FB1:
+      type: TYPE_L_ФЕРРИТ600ОМ@100МГЦПОПИТАНИЮVDDA
+      description: Феррит 600Ом@100МГц по питанию VDDA
+    J2:
+      type: TYPE_CONN01X04_SWD-ОТЛАДКА1X04
+      description: SWD-отладка 1x04
+    R1:
+      type: TYPE_R_10K
+      description: сброс МК
+    R2:
+      type: TYPE_R_10K
+      description: к GND
+    U1:
+      type: TYPE_STM32F103RC-D-ETX_STM32F103RCT6
+      description: LQFP-64
+    X_CAN:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/can_bus.yaml
+      description: Модуль CAN
+      value_sch: sheets/can_bus.kicad_sch
+    X_PWR:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/power_supply.yaml
+      description: Модуль PWR
+      value_sch: sheets/power_supply.kicad_sch
+    X_UI:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/user_interface.yaml
+      description: Модуль UI
+      value_sch: sheets/user_interface.kicad_sch
+    X_SEN_CABIN:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/cabin_sensor.yaml
+      description: Модуль SEN_CABIN
+      value_sch: sheets/cabin_sensor.kicad_sch
+    X_SEN_HEAT:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/heating_sensor.yaml
+      description: Модуль SEN_HEAT
+      value_sch: sheets/heating_sensor.kicad_sch
+    X_SEN_SOLAR:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/solar_sensor.yaml
+      description: Модуль SEN_SOLAR
+      value_sch: sheets/solar_sensor.kicad_sch
+    X_SEN_COND:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/condensate_sensor.yaml
+      description: Модуль SEN_COND
+      value_sch: sheets/condensate_sensor.kicad_sch
+    X_OUT:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/power_outputs.yaml
+      description: Модуль OUT
+      value_sch: sheets/power_outputs.kicad_sch
+    X_ACT:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/actuators.yaml
+      description: Модуль ACT
+      value_sch: sheets/actuators.kicad_sch
+    X_BACKLIGHT:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/backlight.yaml
+      description: Модуль радиальной фоновой подсветки шкал ручек управления
+      value_sch: sheets/backlight.kicad_sch
+  nets:
+    VCC_12V:
+      name: VCC_12V
+      description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+      attributes:
+        type: POWER
+        voltage_level: 12.0V
+        current_max: 15A
+        spice_simulation:
+          model_stimulus: DC 12.0
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: VCC_12V
+      - component: X_SEN_CABIN
+        pin: VCC_12V
+      - component: X_OUT
+        pin: VCC_12V
+      - component: X_ACT
+        pin: VCC_12V
+    VCC_5V:
+      name: VCC_5V
+      description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
+        3,3В)
+      attributes:
+        type: POWER
+        voltage_level: 5.0V
+        current_max: 0.5A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_CAN
+        pin: VCC_5V
+      - component: X_PWR
+        pin: VCC_5V
+    VCC_3V3:
+      name: VCC_3V3
+      description: Логическое питание +3,3В микроконтроллера и фронт-панели
+      attributes:
+        type: POWER
+        voltage_level: 3.3V
+        current_max: 0.3A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: C5
+        pin: '1'
+      - component: C6
+        pin: '1'
+      - component: C7
+        pin: '1'
+      - component: C8
+        pin: '1'
+      - component: C9
+        pin: '1'
+      - component: U1
+        pin: '48'
+      - component: U1
+        pin: '64'
+      - component: U1
+        pin: '1'
+      - component: FB1
+        pin: '1'
+      - component: R1
+        pin: '1'
+      - component: J2
+        pin: '1'
+      - component: X_PWR
+        pin: VCC_3V3
+      - component: X_UI
+        pin: VCC_3V3
+      - component: X_SEN_HEAT
+        pin: VCC_3V3
+      - component: U1
+        pin: '19'
+      - component: U1
+        pin: '32'
+    VDDA_3V3:
+      name: VDDA_3V3
+      description: Аналоговое питание АЦП (через феррит FB1 от VCC_3V3)
+      attributes:
+        type: POWER
+        voltage_level: 3.3V
+        current_max: 0.3A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: FB1
+        pin: '2'
+      - component: C10
+        pin: '1'
+      - component: U1
+        pin: '13'
+    GND:
+      name: GND
+      description: Общий провод (кузов автомобиля)
+      attributes:
+        type: GND
+        voltage_level: 0V
+        current_max: 15A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '47'
+      - component: U1
+        pin: '63'
+      - component: C5
+        pin: '2'
+      - component: C6
+        pin: '2'
+      - component: C7
+        pin: '2'
+      - component: C8
+        pin: '2'
+      - component: C9
+        pin: '2'
+      - component: C10
+        pin: '2'
+      - component: C21
+        pin: '2'
+      - component: R2
+        pin: '2'
+      - component: J2
+        pin: '4'
+      - component: U1
+        pin: '12'
+      - component: X_CAN
+        pin: GND
+      - component: X_PWR
+        pin: GND
+      - component: X_UI
+        pin: GND
+      - component: X_SEN_CABIN
+        pin: GND
+      - component: X_SEN_HEAT
+        pin: GND
+      - component: X_SEN_SOLAR
+        pin: GND
+      - component: X_SEN_COND
+        pin: GND
+      - component: X_OUT
+        pin: GND
+      - component: X_ACT
+        pin: GND
+      - component: U1
+        pin: '18'
+      - component: U1
+        pin: '31'
+      - component: X_BACKLIGHT
+        pin: GND
+    NRST:
+      name: NRST
+      description: Сброс МК (RC-цепь)
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '7'
+      - component: R1
+        pin: '2'
+      - component: C21
+        pin: '1'
+    BOOT0:
+      name: BOOT0
+      description: 'Выбор режима загрузки: подтяжка к GND (загрузка из основной Flash)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: R2
+        pin: '1'
+      - component: U1
+        pin: '60'
+    SWDIO:
+      name: SWDIO
+      description: 'Отладочный интерфейс SWD: данные'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: J2
+        pin: '2'
+      - component: U1
+        pin: '46'
+    SWCLK:
+      name: SWCLK
+      description: 'Отладочный интерфейс SWD: тактирование'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: J2
+        pin: '3'
+      - component: U1
+        pin: '49'
+    BTN_DEFROST_GLASS:
+      name: BTN_DEFROST_GLASS
+      description: 'Кнопка: воздух на стекло'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '29'
+      - component: X_UI
+        pin: BTN_DEFROST_GLASS
+    BTN_FACE:
+      name: BTN_FACE
+      description: 'Кнопка: воздух в лицо'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '30'
+      - component: X_UI
+        pin: BTN_FACE
+    BTN_FEET:
+      name: BTN_FEET
+      description: 'Кнопка: воздух в ноги'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '33'
+      - component: X_UI
+        pin: BTN_FEET
+    BTN_DRY_GLASS:
+      name: BTN_DRY_GLASS
+      description: 'Кнопка: сушка стекла'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '34'
+      - component: X_UI
+        pin: BTN_DRY_GLASS
+    BTN_AC:
+      name: BTN_AC
+      description: 'Кнопка: кондиционер'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '35'
+      - component: X_UI
+        pin: BTN_AC
+    BTN_RECIRC:
+      name: BTN_RECIRC
+      description: 'Кнопка: рециркуляция'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '36'
+      - component: X_UI
+        pin: BTN_RECIRC
+    LED_DEFROST_GLASS_DRV:
+      name: LED_DEFROST_GLASS_DRV
+      description: 'Индикатор кнопки: воздух на стекло (управление, активный низкий
+        уровень)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_UI
+        pin: LED_DEFROST_GLASS_DRV
+      - component: U1
+        pin: '50'
+    LED_FACE_DRV:
+      name: LED_FACE_DRV
+      description: 'Индикатор кнопки: воздух в лицо (управление, активный низкий уровень)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_UI
+        pin: LED_FACE_DRV
+      - component: U1
+        pin: '55'
+    LED_FEET_DRV:
+      name: LED_FEET_DRV
+      description: 'Индикатор кнопки: воздух в ноги (управление, активный низкий уровень)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_UI
+        pin: LED_FEET_DRV
+      - component: U1
+        pin: '56'
+    LED_DRY_GLASS_DRV:
+      name: LED_DRY_GLASS_DRV
+      description: 'Индикатор кнопки: сушка стекла (управление, активный низкий уровень)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_UI
+        pin: LED_DRY_GLASS_DRV
+      - component: U1
+        pin: '3'
+    LED_AC_DRV:
+      name: LED_AC_DRV
+      description: 'Индикатор кнопки: кондиционер (управление, активный низкий уровень)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_UI
+        pin: LED_AC_DRV
+      - component: U1
+        pin: '4'
+    LED_RECIRC_DRV:
+      name: LED_RECIRC_DRV
+      description: 'Индикатор кнопки: рециркуляция (управление, активный низкий уровень)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_UI
+        pin: LED_RECIRC_DRV
+      - component: U1
+        pin: '10'
+    TEMP_SET_ADC:
+      name: TEMP_SET_ADC
+      description: АЦП задания температуры (потенциометр, 2-проводное включение, внутренний
+        коннектор J_POT)
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '14'
+      - component: X_UI
+        pin: TEMP_SET_ADC
+    FAN_SEL_ADC:
+      name: FAN_SEL_ADC
+      description: АЦП выбора режима/скорости вентилятора (галлетник AUTO,0..4, резисторный
+        код)
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '15'
+      - component: X_UI
+        pin: FAN_SEL_ADC
+    NTC_CABIN:
+      name: NTC_CABIN
+      description: Температура воздуха в салоне (NTC на плате в трубе продувки)
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '16'
+      - component: X_UI
+        pin: NTC_CABIN
+      - component: X_SEN_CABIN
+        pin: NTC_CABIN
+    NTC_HEAT_W:
+      name: NTC_HEAT_W
+      description: 'Датчик патрубка отопителя: узел линии на разъёме'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: NTC_HEAT_W
+      - component: X_SEN_HEAT
+        pin: NTC_HEAT_W
+    NTC_HEAT:
+      name: NTC_HEAT
+      description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора)'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_SEN_HEAT
+        pin: NTC_HEAT
+      - component: U1
+        pin: '17'
+    SOLAR_RAW:
+      name: SOLAR_RAW
+      description: Выход датчика солнечной радиации (0..5В)
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: SOLAR_RAW
+      - component: X_SEN_SOLAR
+        pin: SOLAR_RAW
+    SOLAR_ADC:
+      name: SOLAR_ADC
+      description: Сигнал солнечной радиации после делителя 5В->3,3В на АЦП
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '20'
+      - component: X_SEN_SOLAR
+        pin: SOLAR_ADC
+    COND_RAW:
+      name: COND_RAW
+      description: Выход датчика конденсата на стекле (0..5В)
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: COND_RAW
+      - component: X_SEN_COND
+        pin: COND_RAW
+    COND_ADC:
+      name: COND_ADC
+      description: Сигнал конденсата после делителя 5В->3,3В на АЦП
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '21'
+      - component: X_SEN_COND
+        pin: COND_ADC
+    MOTOR_1_A:
+      name: MOTOR_1_A
+      description: 'Заслонка 1: выход А мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_1_A
+      - component: X_ACT
+        pin: MOTOR_1_A
+    MOTOR_1_B:
+      name: MOTOR_1_B
+      description: 'Заслонка 1: выход B мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_1_B
+      - component: X_ACT
+        pin: MOTOR_1_B
+    FB_M1:
+      name: FB_M1
+      description: 'Заслонка 1: сигнал ОС после делителя 5В->3,3В на АЦП'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '22'
+      - component: X_ACT
+        pin: FB_M1
+    M1_IN1:
+      name: M1_IN1
+      description: 'Заслонка 1: вход IN1 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '42'
+      - component: X_ACT
+        pin: M1_IN1
+    M1_IN2:
+      name: M1_IN2
+      description: 'Заслонка 1: вход IN2 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '43'
+      - component: X_ACT
+        pin: M1_IN2
+    MOTOR_2_A:
+      name: MOTOR_2_A
+      description: 'Заслонка 2: выход А мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_2_A
+      - component: X_ACT
+        pin: MOTOR_2_A
+    MOTOR_2_B:
+      name: MOTOR_2_B
+      description: 'Заслонка 2: выход B мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_2_B
+      - component: X_ACT
+        pin: MOTOR_2_B
+    FB_M2_RAW:
+      name: FB_M2_RAW
+      description: 'Заслонка 2: выход потенциометра положения (0..5В)'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: FB_M2_RAW
+      - component: X_ACT
+        pin: FB_M2_RAW
+    FB_M2:
+      name: FB_M2
+      description: 'Заслонка 2: сигнал ОС после делителя 5В->3,3В на АЦП'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '23'
+      - component: X_ACT
+        pin: FB_M2
+    M2_IN1:
+      name: M2_IN1
+      description: 'Заслонка 2: вход IN1 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '44'
+      - component: X_ACT
+        pin: M2_IN1
+    M2_IN2:
+      name: M2_IN2
+      description: 'Заслонка 2: вход IN2 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '45'
+      - component: X_ACT
+        pin: M2_IN2
+    MOTOR_3_A:
+      name: MOTOR_3_A
+      description: 'Заслонка 3: выход А мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_3_A
+      - component: X_ACT
+        pin: MOTOR_3_A
+    MOTOR_3_B:
+      name: MOTOR_3_B
+      description: 'Заслонка 3: выход B мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_3_B
+      - component: X_ACT
+        pin: MOTOR_3_B
+    FB_M3_RAW:
+      name: FB_M3_RAW
+      description: 'Заслонка 3: выход потенциометра положения (0..5В)'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: FB_M3_RAW
+      - component: X_ACT
+        pin: FB_M3_RAW
+    FB_M3:
+      name: FB_M3
+      description: 'Заслонка 3: сигнал ОС после делителя 5В->3,3В на АЦП'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '26'
+      - component: X_ACT
+        pin: FB_M3
+    M3_IN1:
+      name: M3_IN1
+      description: 'Заслонка 3: вход IN1 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '57'
+      - component: X_ACT
+        pin: M3_IN1
+    M3_IN2:
+      name: M3_IN2
+      description: 'Заслонка 3: вход IN2 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '58'
+      - component: X_ACT
+        pin: M3_IN2
+    MOTOR_4_A:
+      name: MOTOR_4_A
+      description: 'Заслонка 4: выход А мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_4_A
+      - component: X_ACT
+        pin: MOTOR_4_A
+    MOTOR_4_B:
+      name: MOTOR_4_B
+      description: 'Заслонка 4: выход B мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_4_B
+      - component: X_ACT
+        pin: MOTOR_4_B
+    FB_M4_RAW:
+      name: FB_M4_RAW
+      description: 'Заслонка 4: выход потенциометра положения (0..5В)'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: FB_M4_RAW
+      - component: X_ACT
+        pin: FB_M4_RAW
+    FB_M4:
+      name: FB_M4
+      description: 'Заслонка 4: сигнал ОС после делителя 5В->3,3В на АЦП'
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '27'
+      - component: X_ACT
+        pin: FB_M4
+    M4_IN1:
+      name: M4_IN1
+      description: 'Заслонка 4: вход IN1 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '59'
+      - component: X_ACT
+        pin: M4_IN1
+    M4_IN2:
+      name: M4_IN2
+      description: 'Заслонка 4: вход IN2 драйвера'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '2'
+      - component: X_ACT
+        pin: M4_IN2
+    FAN_PWM_CTL:
+      name: FAN_PWM_CTL
+      description: Внутренний ШИМ-сигнал управления основным вентилятором с МК
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '41'
+      - component: X_OUT
+        pin: FAN_PWM_CTL
+    HEAT_FAN_PWM_CTL:
+      name: HEAT_FAN_PWM_CTL
+      description: Внешний ШИМ-выход на автомобильный разъем к штатному силовому модулю
+        вентилятора
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 0.5A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: HEAT_FAN_PWM_CTL
+      - component: X_OUT
+        pin: HEAT_FAN_PWM_CTL
+    M_FAN_CTL:
+      name: M_FAN_CTL
+      description: Управление мини-вентилятором продувки датчика
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '11'
+      - component: X_SEN_CABIN
+        pin: M_FAN_CTL
+    AC_CTL:
+      name: AC_CTL
+      description: Управление транзистором запроса кондиционера
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '28'
+      - component: X_OUT
+        pin: AC_CTL
+    AC_REQ_OUT:
+      name: AC_REQ_OUT
+      description: Линия запроса кондиционера +12В к J1:31 (вход ЭБУ двигателя)
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: AC_REQ_OUT
+      - component: X_OUT
+        pin: AC_REQ_OUT
+    ILLUM_IN_RAW:
+      name: ILLUM_IN_RAW
+      description: Вход внешней подсветки прибора (+12В габаритов)
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: ILLUM_IN_RAW
+      - component: X_UI
+        pin: ILLUM_IN_RAW
+      - component: X_BACKLIGHT
+        pin: ILLUM_IN_RAW
+    ILLUM_SENSE:
+      name: ILLUM_SENSE
+      description: Сигнал подсветки после делителя на вход МК
+      attributes:
+        type: ANALOG_SIGNAL
+        voltage_level: 0..3.3V
+        current_max: 0.005A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '8'
+      - component: X_UI
+        pin: ILLUM_SENSE
+    CAN_TX:
+      name: CAN_TX
+      description: 'CAN: передача от МК к трансиверу'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '62'
+      - component: X_CAN
+        pin: CAN_TX
+    CAN_RX:
+      name: CAN_RX
+      description: 'CAN: приём от трансивера к МК'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: U1
+        pin: '61'
+      - component: X_CAN
+        pin: CAN_RX
+    CANH:
+      name: CANH
+      description: 'CAN: шина High (J1:25)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_CAN
+        pin: CANH
+      - component: X_PWR
+        pin: CANH
+    CANL:
+      name: CANL
+      description: 'CAN: шина Low (J1:26)'
+      attributes:
+        type: DIGITAL_SIGNAL
+        voltage_level: 3.3V
+        current_max: 0.02A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_CAN
+        pin: CANL
+      - component: X_PWR
+        pin: CANL

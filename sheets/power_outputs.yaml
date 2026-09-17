@@ -1,0 +1,299 @@
+page_name: OUT
+file: power_outputs.kicad_sch
+functional_purpose: Модуль OUT
+ports:
+- net_label: VCC_12V
+  type: POWER
+  description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+- net_label: GND
+  type: POWER
+  description: Общий провод (кузов автомобиля)
+- net_label: FAN_PWM_CTL
+  type: INPUT
+  description: ШИМ управления основным вентилятором (TIM1_CH1)
+- net_label: AC_CTL
+  type: INPUT
+  description: Управление транзистором запроса кондиционера
+- net_label: AC_REQ_OUT
+  type: INPUT
+  description: Линия запроса кондиционера +12В к J1:31 (вход ЭБУ двигателя)
+- net_label: HEAT_FAN_PWM_CTL
+  type: OUTPUT
+  description: ШИМ вентилятора печки на J1:23 (после буфера Q1 и защитного R15)
+component_types:
+  TYPE_QNMOS_BSS138:
+    symbol: Transistor_FET:BSS138
+    footprint: Package_TO_SOT_SMD:SOT-23
+    value: BSS138
+    fields: {}
+  TYPE_QNPN_MMBT3904:
+    symbol: Transistor_BJT:MMBT3904
+    footprint: Package_TO_SOT_SMD:SOT-23
+    value: MMBT3904
+    fields: {}
+  TYPE_QPNP_MMBT3906_3906V:
+    symbol: Transistor_BJT:MMBT3906
+    footprint: Package_TO_SOT_SMD:SOT-23
+    value: MMBT3906
+    fields:
+      Voltage: 3906V
+  TYPE_R_1K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 1k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_4_12V:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: '4'
+    fields:
+      Voltage: 12V
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_10K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 10k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_100K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 100k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_10K_12V:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 10k
+    fields:
+      Voltage: 12V
+      Power: 0.1W
+      Tolerance: 1%
+components:
+  Q1:
+    type: TYPE_QNMOS_BSS138
+    description: буфер ШИМ вентилятора
+  Q3:
+    type: TYPE_QNPN_MMBT3904
+    description: драйвер запроса кондиционера
+  Q4:
+    type: TYPE_QPNP_MMBT3906_3906V
+    description: высокосторонний ключ 12В
+  R13:
+    type: TYPE_R_1K
+    description: затвор Q_FAN
+  R14:
+    type: TYPE_R_4_12V
+    description: подтяжка выхода ШИМ к 12В
+  R15:
+    type: TYPE_R_1K
+    description: защитный резистор в линии ШИМ вентилятора (к J1:30
+  R18:
+    type: TYPE_R_10K
+    description: база Q_AC_N
+  R19:
+    type: TYPE_R_100K
+    description: подтяжка базы Q_AC_N к GND
+  R20:
+    type: TYPE_R_10K_12V
+    description: подтяжка базы PNP к +12В
+  R21:
+    type: TYPE_R_1K
+    description: защитный резистор линии запроса кондиционера (к J1:31
+nets:
+  VCC_12V:
+    name: VCC_12V
+    description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 12.0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: DC 12.0
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: Q4
+      pin: '2'
+    - component: R20
+      pin: '2'
+    - component: R14
+      pin: '2'
+  GND:
+    name: GND
+    description: Общий провод (кузов автомобиля)
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: Q1
+      pin: '2'
+    - component: Q3
+      pin: '2'
+    - component: R19
+      pin: '2'
+  FAN_PWM_CTL:
+    name: FAN_PWM_CTL
+    description: ШИМ управления основным вентилятором (TIM1_CH1)
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R13
+      pin: '1'
+  FAN_GATE:
+    name: FAN_GATE
+    description: Затвор буферного MOSFET
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R13
+      pin: '2'
+    - component: Q1
+      pin: '1'
+  FAN_PWM_NODE:
+    name: FAN_PWM_NODE
+    description: Выход ШИМ 12В на внешний силовой модуль вентилятора (открытый сток,
+      инверсный)
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: Q1
+      pin: '3'
+    - component: R14
+      pin: '1'
+    - component: R15
+      pin: '1'
+  AC_CTL:
+    name: AC_CTL
+    description: Управление транзистором запроса кондиционера
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R18
+      pin: '1'
+  AC_BASE:
+    name: AC_BASE
+    description: База NPN-драйвера запроса кондиционера
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R18
+      pin: '2'
+    - component: Q3
+      pin: '1'
+    - component: R19
+      pin: '1'
+  AC_PNP_BASE:
+    name: AC_PNP_BASE
+    description: База высокостороннего PNP-ключа 12В
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: Q3
+      pin: '3'
+    - component: Q4
+      pin: '1'
+    - component: R20
+      pin: '1'
+  AC_REQ:
+    name: AC_REQ
+    description: Выход запроса кондиционера (через защитный резистор R_AC_SER)
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: Q4
+      pin: '3'
+    - component: R21
+      pin: '1'
+  AC_REQ_OUT:
+    name: AC_REQ_OUT
+    description: Линия запроса кондиционера +12В к J1:31 (вход ЭБУ двигателя)
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R21
+      pin: '2'
+  HEAT_FAN_PWM_CTL:
+    name: HEAT_FAN_PWM_CTL
+    description: Внешний ШИМ-выход вентилятора печки на J1:23 через защитный резистор
+      R15
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 0.5A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R15
+      pin: '2'

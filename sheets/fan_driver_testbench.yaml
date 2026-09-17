@@ -1,0 +1,162 @@
+page_name: FAN_KEY
+file: fan_driver_testbench.kicad_sch
+functional_purpose: 'Внешний ШИМ-ключ вентилятора — ОТДЕЛЬНАЯ схема cc_11_fan_key.kicad_sch
+  (виртуальный стенд, в иерархию не входит и с модулем контроля не соединяется). Интеллектуальный
+  ключ BTS141 (с защитой от КЗ и перегрева): затвор через R31 100Ом с фильтром C_GATE
+  1нФ, защитный freewheel-диод D6 (SS54) на стоке, выходной LC-фильтр L_OUT 2мкГн
+  + C_OUT 100нФ. Мотор (motor_model.lab, номинал 15А / пуск 30А) и паразитные параметры
+  проводов подключаются ТОЛЬКО при прогоне тестов Ngspice (SPICE-уровень), на схеме
+  мотора нет.'
+ports:
+- net_label: FAN_PWM_EXT_IN
+  type: INPUT
+  description: Внешний силовой ШИМ-вход управления затвором ключа BTS141
+- net_label: VBAT_FAN
+  type: POWER
+  description: Питание защитного freewheel-диода мотора вентилятора (+12В)
+- net_label: GND
+  type: POWER
+  description: Силовая земля внешнего модуля
+- net_label: FAN_LOAD_LO
+  type: OUTPUT
+  description: Автоматически синхронизированный иерархический порт FAN_LOAD_LO
+- net_label: MOTOR_TERM
+  type: OUTPUT
+  description: Автоматически синхронизированный иерархический порт MOTOR_TERM
+component_types:
+  TYPE_R_0603_100R:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 100R
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_C_0603_1NF:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    value: 1nF
+    fields:
+      Voltage: 50V
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_C_0603_100NF:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    value: 100nF
+    fields:
+      Voltage: 50V
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_DIODE_SMA_SS54:
+    symbol: Device:D
+    footprint: Diode_SMD:D_SMA
+    value: SS54
+    fields:
+      Type: Schottky
+  TYPE_INDUCTOR_1210_2UH:
+    symbol: Device:L
+    footprint: Inductor_SMD:L_1210_3225Metric
+    value: 2uH
+    fields: {}
+  TYPE_SWITCH_TO252_BTS141:
+    symbol: Device:Q_NMOS_GSD
+    footprint: Package_TO_SOT_SMD:TO-252-3_TabPin2
+    value: BTS141
+    fields:
+      Type: Smart_LowSide_Switch
+components:
+  R31:
+    type: TYPE_R_0603_100R
+    description: Защитное сопротивление линии IN ключа вентилятора
+  C546:
+    type: TYPE_C_0603_1NF
+    description: Фильтрующий конденсатор затвора
+  Q5:
+    type: TYPE_SWITCH_TO252_BTS141
+    description: Интеллектуальный ШИМ-ключ основного вентилятора в нижнем плече
+  D6:
+    type: TYPE_DIODE_SMA_SS54
+    description: Защитный freewheel-диод мотора вентилятора
+  L637:
+    type: TYPE_INDUCTOR_1210_2UH
+    description: Силовой сглаживающий дроссель фильтра OUT
+  C593:
+    type: TYPE_C_0603_100NF
+    description: Конденсатор LC-фильтра на выходе подключения мотора
+nets:
+  FAN_PWM_EXT_IN:
+    name: FAN_PWM_EXT_IN
+    description: Входной узел затвора внешнего стенда подсветки
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+    nodes:
+    - component: R31
+      pin: '1'
+  Net-(Q5-Pad1):
+    name: Net-(Q5-Pad1)
+    description: Внутренний узел затвора после защитного резистора
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+    nodes:
+    - component: R31
+      pin: '2'
+    - component: C546
+      pin: '1'
+    - component: Q5
+      pin: '1'
+  FAN_LOAD_LO:
+    name: FAN_LOAD_LO
+    description: Коммутируемый выход OUT смарт-ключа к минусу мотора вентилятора
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 30.0A
+    nodes:
+    - component: Q5
+      pin: '2'
+    - component: D6
+      pin: '2'
+    - component: L637
+      pin: '1'
+  MOTOR_TERM:
+    name: MOTOR_TERM
+    description: Выходной вывод подключения мотора после LC-фильтра
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 30.0A
+    nodes:
+    - component: L637
+      pin: '2'
+    - component: C593
+      pin: '1'
+  VBAT_FAN:
+    name: VBAT_FAN
+    description: Питание защитного диода мотора вентилятора
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 12.0V
+    nodes:
+    - component: D6
+      pin: '1'
+  GND:
+    name: GND
+    description: Общая силовая земля модуля
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+    nodes:
+    - component: Q5
+      pin: '3'
+    - component: C546
+      pin: '2'
+    - component: C593
+      pin: '2'

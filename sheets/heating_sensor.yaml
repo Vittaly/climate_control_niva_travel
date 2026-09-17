@@ -1,0 +1,106 @@
+page_name: SEN_HEAT
+file: heating_sensor.kicad_sch
+functional_purpose: Модуль SEN_HEAT
+ports:
+- net_label: VCC_3V3
+  type: POWER
+  description: Логическое питание +3,3В микроконтроллера и фронт-панели
+- net_label: GND
+  type: POWER
+  description: Общий провод (кузов автомобиля)
+- net_label: NTC_HEAT_W
+  type: OUTPUT
+  description: 'Датчик патрубка отопителя: узел линии на разъёме'
+- net_label: NTC_HEAT
+  type: OUTPUT
+  description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора)'
+component_types:
+  TYPE_C_100NF:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    value: 100nF
+    fields:
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_R_10K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 10k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+components:
+  C25:
+    type: TYPE_C_100NF
+    description: фильтр АЦП ОЖ
+  R25:
+    type: TYPE_R_10K
+    description: подтяжка NTC патрубка отопителя
+  R26:
+    type: TYPE_R_10K
+    description: защитный резистор линии NTC патрубка перед АЦП (J1:25
+nets:
+  VCC_3V3:
+    name: VCC_3V3
+    description: Логическое питание +3,3В микроконтроллера и фронт-панели
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 3.3V
+      current_max: 0.3A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R25
+      pin: '1'
+  GND:
+    name: GND
+    description: Общий провод (кузов автомобиля)
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: C25
+      pin: '2'
+  NTC_HEAT_W:
+    name: NTC_HEAT_W
+    description: 'Датчик патрубка отопителя: узел линии на разъёме'
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R25
+      pin: '2'
+    - component: C25
+      pin: '1'
+    - component: R26
+      pin: '1'
+  NTC_HEAT:
+    name: NTC_HEAT
+    description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора)'
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R26
+      pin: '2'

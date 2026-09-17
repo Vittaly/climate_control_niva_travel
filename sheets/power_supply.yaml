@@ -1,0 +1,702 @@
+page_name: PWR
+file: power_supply.kicad_sch
+functional_purpose: Модуль PWR
+ports:
+- net_label: VCC_12V
+  type: POWER
+  description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+- net_label: VCC_5V
+  type: POWER
+  description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
+    3,3В)
+- net_label: VCC_3V3
+  type: POWER
+  description: Логическое питание +3,3В микроконтроллера и фронт-панели
+- net_label: GND
+  type: POWER
+  description: Общий провод (кузов автомобиля)
+- net_label: NTC_HEAT_W
+  type: OUTPUT
+  description: 'Датчик патрубка отопителя: узел линии на разъёме'
+- net_label: SOLAR_RAW
+  type: INPUT
+  description: Выход датчика солнечной радиации (0..5В)
+- net_label: COND_RAW
+  type: INPUT
+  description: Выход датчика конденсата на стекле (0..5В)
+- net_label: MOTOR_1_A
+  type: OUTPUT
+  description: 'Заслонка 1: выход А мостового драйвера к моторедуктору'
+- net_label: MOTOR_1_B
+  type: OUTPUT
+  description: 'Заслонка 1: выход B мостового драйвера к моторедуктору'
+- net_label: MOTOR_2_A
+  type: OUTPUT
+  description: 'Заслонка 2: выход А мостового драйвера к моторедуктору'
+- net_label: MOTOR_2_B
+  type: OUTPUT
+  description: 'Заслонка 2: выход B мостового драйвера к моторедуктору'
+- net_label: FB_M2_RAW
+  type: INPUT
+  description: 'Заслонка 2: выход потенциометра положения (0..5В)'
+- net_label: MOTOR_3_A
+  type: OUTPUT
+  description: 'Заслонка 3: выход А мостового драйвера к моторедуктору'
+- net_label: MOTOR_3_B
+  type: OUTPUT
+  description: 'Заслонка 3: выход B мостового драйвера к моторедуктору'
+- net_label: FB_M3_RAW
+  type: INPUT
+  description: 'Заслонка 3: выход потенциометра положения (0..5В)'
+- net_label: MOTOR_4_A
+  type: OUTPUT
+  description: 'Заслонка 4: выход А мостового драйвера к моторедуктору'
+- net_label: MOTOR_4_B
+  type: OUTPUT
+  description: 'Заслонка 4: выход B мостового драйвера к моторедуктору'
+- net_label: FB_M4_RAW
+  type: INPUT
+  description: 'Заслонка 4: выход потенциометра положения (0..5В)'
+- net_label: AC_REQ_OUT
+  type: INPUT
+  description: Линия запроса кондиционера +12В к J1:31 (вход ЭБУ двигателя)
+- net_label: ILLUM_IN_RAW
+  type: INPUT
+  description: Вход внешней подсветки прибора (+12В габаритов)
+- net_label: CANH
+  type: OUTPUT
+  description: 'CAN: шина High (J1:25)'
+- net_label: CANL
+  type: OUTPUT
+  description: 'CAN: шина Low (J1:26)'
+- net_label: HEAT_FAN_PWM_CTL
+  type: OUTPUT
+  description: Автоматически синхронизированный иерархический порт FAN_PWM_OUT
+- net_label: FB_M1_RAW
+  type: INPUT
+  description: 'Заслонка 1: выход потенциометра положения (0..5В)'
+component_types:
+  TYPE_C_470UF_25V:
+    symbol: Device:C
+    footprint: Capacitor_SMD:CP_Elec_10x10.5
+    value: 470uF
+    fields:
+      Voltage: 25V
+      Type: Aluminum Electrolytic
+  TYPE_C_100UF_25V:
+    symbol: Device:C
+    footprint: Capacitor_SMD:CP_Elec_8x10.5
+    value: 100uF
+    fields:
+      Voltage: 25V
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_C_100NF:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    value: 100nF
+    fields:
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_C_100NF_12V:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    value: 100nF
+    fields:
+      Voltage: 12V
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_C_1UF_25V:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0805_2012Metric
+    value: 1uF
+    fields:
+      Voltage: 25V
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_C_10UF_35V:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0805_2012Metric
+    value: 10uF
+    fields:
+      Voltage: 35V
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_C_10UF_10V:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0805_2012Metric
+    value: 10uF
+    fields:
+      Voltage: 10V
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_DSCHOTTKY_SS54_40V:
+    symbol: Device:D_Schottky
+    footprint: Diode_SMD:D_SMA
+    value: SS54
+    fields:
+      Voltage: 40V
+  TYPE_DZENER_SMBJ15ATVS:
+    symbol: Device:D_Zener
+    footprint: Diode_SMD:D_SMB
+    value: SMBJ15A TVS
+    fields: {}
+  TYPE_DSCHOTTKY_SS14_12V:
+    symbol: Device:D_Schottky
+    footprint: Diode_SMD:D_SMA
+    value: SS14
+    fields:
+      Voltage: 12V
+  TYPE_DZENER_SMBJ5P0A/5,6В_5.6V:
+    symbol: Device:D_Zener
+    footprint: Diode_SMD:D_SMB
+    value: SMBJ5.0A / 5,6В
+    fields:
+      Voltage: 5.6V
+  TYPE_CONN02X16ODDEVEN_РАЗЪЁМКАВТОМОБИЛЮ2X16(32КОНТP):
+    symbol: Connector_Generic:Conn_02x16_Odd_Even
+    footprint: Connector_PinHeader_2.54mm:PinHeader_2x16_P2.54mm_Horizontal
+    value: Разъём к автомобилю 2x16 (32 конт.)
+    fields: {}
+  TYPE_L_ФЕРРИТ/ДРОССЕЛЬПОВХОДУ+12В(ПОМЕХИ)_12V:
+    symbol: Device:L
+    footprint: Inductor_SMD:L_1210_3225Metric
+    value: Феррит/дроссель по входу +12В (помехи)
+    fields:
+      Voltage: 12V
+  TYPE_LM78M05TO252_MC78M05CDTG_5V:
+    symbol: Regulator_Linear:LM78M05_TO252
+    footprint: Package_TO_SOT_SMD:TO-252-3_TabPin2
+    value: MC78M05CDTG
+    fields:
+      Voltage: 5V
+  TYPE_AP1117-15_AMS1117-3P3_3.3V:
+    symbol: Regulator_Linear:AP1117-15
+    footprint: Package_TO_SOT_SMD:SOT-223-3_TabPin2
+    value: AMS1117-3.3
+    fields:
+      Voltage: 3.3V
+components:
+  C1:
+    type: TYPE_C_470UF_25V
+    description: электролит по питанию
+  C11:
+    type: TYPE_C_100UF_25V
+    description: силовая шина моторов
+  C16:
+    type: TYPE_C_100NF
+    description: фильтр опоры потенциометра M1
+  C17:
+    type: TYPE_C_100NF
+    description: фильтр опоры потенциометра M2
+  C18:
+    type: TYPE_C_100NF
+    description: фильтр опоры потенциометра M3
+  C19:
+    type: TYPE_C_100NF
+    description: фильтр опоры потенциометра M4
+  C2:
+    type: TYPE_C_100NF_12V
+    description: керамика по питанию 12В
+  C20:
+    type: TYPE_C_1UF_25V
+    description: керамика по входу +12В (ВЧ-фильтр
+  C3:
+    type: TYPE_C_10UF_35V
+    description: вход стабилизатора 5В
+  C4:
+    type: TYPE_C_10UF_10V
+    description: выход стабилизатора 5В
+  D1:
+    type: TYPE_DSCHOTTKY_SS54_40V
+    description: 5A, 40В) защита от переполюсовки
+  D2:
+    type: TYPE_DZENER_SMBJ15ATVS
+    description: защита от выбросов
+  D4:
+    type: TYPE_DSCHOTTKY_SS14_12V
+    description: диодная развязка от обратного +12В на линии датчиков
+  D5:
+    type: TYPE_DZENER_SMBJ5P0A/5,6В_5.6V
+    description: защита линии +5В датчиков
+  J1:
+    type: TYPE_CONN02X16ODDEVEN_РАЗЪЁМКАВТОМОБИЛЮ2X16(32КОНТP)
+    description: Разъём к автомобилю 2x16 (32 конт.)
+  L1:
+    type: TYPE_L_ФЕРРИТ/ДРОССЕЛЬПОВХОДУ+12В(ПОМЕХИ)_12V
+    description: Феррит/дроссель по входу +12В (помехи)
+  U6:
+    type: TYPE_LM78M05TO252_MC78M05CDTG_5V
+    description: 5В, 500мА, TO-252
+  U7:
+    type: TYPE_AP1117-15_AMS1117-3P3_3.3V
+    description: 3,3В, SOT-223
+nets:
+  VBAT_IN:
+    name: VBAT_IN
+    description: Входное бортовое питание +12В, выводы 1-2 разъёма J1
+    is_hierarchical_port: false
+    attributes:
+      type: POWER
+      voltage_level: 12.0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: DC 12.0
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '1'
+    - component: J1
+      pin: '2'
+    - component: D1
+      pin: '1'
+  VBAT_PROT:
+    name: VBAT_PROT
+    description: После защиты от переполюсовки (D1), перед входным фильтром L1
+    is_hierarchical_port: false
+    attributes:
+      type: POWER
+      voltage_level: 12.0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: DC 12.0
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: D1
+      pin: '2'
+    - component: L1
+      pin: '1'
+  VCC_12V:
+    name: VCC_12V
+    description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 12.0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: DC 12.0
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: L1
+      pin: '2'
+    - component: D2
+      pin: '2'
+    - component: C1
+      pin: '1'
+    - component: C2
+      pin: '1'
+    - component: C20
+      pin: '1'
+    - component: C3
+      pin: '1'
+    - component: U6
+      pin: '1'
+    - component: C11
+      pin: '1'
+  VCC_5V:
+    name: VCC_5V
+    description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
+      3,3В)
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 5.0V
+      current_max: 0.5A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U6
+      pin: '3'
+    - component: C4
+      pin: '1'
+    - component: U7
+      pin: '1'
+    - component: D4
+      pin: '1'
+  V5_SENS:
+    name: V5_SENS
+    description: Общий выход +5В/опора на датчики и края потенциометров ОС (J1:17).
+      Диод D4 исключает обратную подачу +12В снаружи
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: D4
+      pin: '2'
+    - component: D5
+      pin: '2'
+    - component: C16
+      pin: '1'
+    - component: C17
+      pin: '1'
+    - component: C18
+      pin: '1'
+    - component: C19
+      pin: '1'
+    - component: J1
+      pin: '17'
+  VCC_3V3:
+    name: VCC_3V3
+    description: Логическое питание +3,3В микроконтроллера и фронт-панели
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 3.3V
+      current_max: 0.3A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: U7
+      pin: '3'
+  GND:
+    name: GND
+    description: Общий провод (кузов автомобиля)
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '3'
+    - component: J1
+      pin: '4'
+    - component: J1
+      pin: '18'
+    - component: U6
+      pin: '2'
+    - component: U7
+      pin: '2'
+    - component: C20
+      pin: '2'
+    - component: D5
+      pin: '1'
+    - component: D2
+      pin: '1'
+    - component: C1
+      pin: '2'
+    - component: C2
+      pin: '2'
+    - component: C3
+      pin: '2'
+    - component: C4
+      pin: '2'
+    - component: C11
+      pin: '2'
+    - component: C16
+      pin: '2'
+    - component: C17
+      pin: '2'
+    - component: C18
+      pin: '2'
+    - component: C19
+      pin: '2'
+  NTC_HEAT_W:
+    name: NTC_HEAT_W
+    description: 'Датчик патрубка отопителя: узел линии на разъёме'
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '19'
+  SOLAR_RAW:
+    name: SOLAR_RAW
+    description: Выход датчика солнечной радиации (0..5В)
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '20'
+  COND_RAW:
+    name: COND_RAW
+    description: Выход датчика конденсата на стекле (0..5В)
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '21'
+  MOTOR_1_A:
+    name: MOTOR_1_A
+    description: 'Заслонка 1: выход А мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '5'
+  MOTOR_1_B:
+    name: MOTOR_1_B
+    description: 'Заслонка 1: выход B мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '6'
+  FB_M1_RAW:
+    name: FB_M1_RAW
+    description: 'Заслонка 1: выход потенциометра положения (0..5В)'
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '7'
+  MOTOR_2_A:
+    name: MOTOR_2_A
+    description: 'Заслонка 2: выход А мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '8'
+  MOTOR_2_B:
+    name: MOTOR_2_B
+    description: 'Заслонка 2: выход B мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '9'
+  FB_M2_RAW:
+    name: FB_M2_RAW
+    description: 'Заслонка 2: выход потенциометра положения (0..5В)'
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '10'
+  MOTOR_3_A:
+    name: MOTOR_3_A
+    description: 'Заслонка 3: выход А мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '11'
+  MOTOR_3_B:
+    name: MOTOR_3_B
+    description: 'Заслонка 3: выход B мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '12'
+  FB_M3_RAW:
+    name: FB_M3_RAW
+    description: 'Заслонка 3: выход потенциометра положения (0..5В)'
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '13'
+  MOTOR_4_A:
+    name: MOTOR_4_A
+    description: 'Заслонка 4: выход А мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '14'
+  MOTOR_4_B:
+    name: MOTOR_4_B
+    description: 'Заслонка 4: выход B мостового драйвера к моторедуктору'
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '15'
+  FB_M4_RAW:
+    name: FB_M4_RAW
+    description: 'Заслонка 4: выход потенциометра положения (0..5В)'
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '16'
+  AC_REQ_OUT:
+    name: AC_REQ_OUT
+    description: Линия запроса кондиционера +12В к J1:31 (вход ЭБУ двигателя)
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '24'
+  ILLUM_IN_RAW:
+    name: ILLUM_IN_RAW
+    description: Вход внешней подсветки прибора (+12В габаритов)
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '22'
+  CANH:
+    name: CANH
+    description: 'CAN: шина High (J1:25)'
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '25'
+  CANL:
+    name: CANL
+    description: 'CAN: шина Low (J1:26)'
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J1
+      pin: '26'
+  HEAT_FAN_PWM_CTL:
+    name: HEAT_FAN_PWM_CTL
+    is_hierarchical_port: true
+    nodes:
+    - component: J1
+      pin: '23'

@@ -1,0 +1,695 @@
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C10] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C21] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C5] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C6] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C7] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C8] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C9] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [FB1] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [J2] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [R1] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [R2] size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [U1] size=28x76 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_CAN] size=16x16 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_PWR] size=16x52 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_UI] size=20x42 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_CABIN] size=16x12 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_HEAT] size=16x12 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_SOLAR] size=16x10 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_COND] size=16x10 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_OUT] size=16x16 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_ACT] size=16x54 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_BACKLIGHT] size=16x8 cells
+17:46:03 | INFO    | eda.placer             | [root] placement components=22 strategy=matrix
+17:46:03 | DEBUG   | eda.placer             | [root] strategy=matrix top=U1(74), X_PWR(54), X_UI(49), X_ACT(45), J2(32)
+17:46:03 | DEBUG   | eda.placer             | [root] matrix rcm_first8=['X_BACKLIGHT', 'X_ACT', 'X_OUT', 'X_SEN_COND', 'X_SEN_SOLAR', 'X_SEN_CABIN', 'X_CAN', 'R2']
+17:46:03 | DEBUG   | eda.placer             | [root] matrix rows=2 cols=11
+17:46:03 | DEBUG   | eda.placer             | [root] matrix cross_col=[52, 87, 73, 66, 59, 54, 42, 38, 36, 27]
+17:46:03 | DEBUG   | eda.placer             | [root] matrix cross_row=[110]
+17:46:03 | DEBUG   | eda.placer             | [root] matrix col_local=[39, 64, 61, 62, 63, 63, 67, 67, 67, 69]
+17:46:03 | DEBUG   | eda.placer             | [root] matrix row_local=[118]
+17:46:03 | DEBUG   | eda.placer             | [root] matrix divisor_col=12 divisor_row=3
+17:46:03 | DEBUG   | eda.placer             | [root] matrix street_cols=[46, 64, 64, 64, 64, 64, 64, 64, 64, 64]
+17:46:03 | DEBUG   | eda.placer             | [root] matrix street_rows=[64]
+17:46:03 | DEBUG   | eda.placer             | [root] matrix done components=22 rows=2 cols=11 size=789x197
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_BACKLIGHT] place bbox_origin=(3,26) anchor_mm=(3.81,33.02) rotation=0 mirror=None size=16x8 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_ACT] place bbox_origin=(71,3) anchor_mm=(90.17,3.81) rotation=0 mirror=None size=16x54 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_OUT] place bbox_origin=(157,22) anchor_mm=(199.39,27.94) rotation=0 mirror=None size=16x16 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_COND] place bbox_origin=(237,25) anchor_mm=(300.99,31.75) rotation=0 mirror=None size=16x10 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_SOLAR] place bbox_origin=(317,25) anchor_mm=(402.59,31.75) rotation=0 mirror=None size=16x10 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_CABIN] place bbox_origin=(397,24) anchor_mm=(504.19,30.48) rotation=0 mirror=None size=16x12 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_CAN] place bbox_origin=(477,22) anchor_mm=(605.79,27.94) rotation=0 mirror=None size=16x16 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [R2] place bbox_origin=(557,27) anchor_mm=(708.66,38.10) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C21] place bbox_origin=(623,27) anchor_mm=(792.48,38.10) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_SEN_HEAT] place bbox_origin=(689,24) anchor_mm=(875.03,30.48) rotation=0 mirror=None size=16x12 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_UI] place bbox_origin=(769,9) anchor_mm=(976.63,11.43) rotation=0 mirror=None size=20x42 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [X_PWR] place bbox_origin=(3,133) anchor_mm=(3.81,168.91) rotation=0 mirror=None size=16x52 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [U1] place bbox_origin=(65,121) anchor_mm=(100.33,201.93) rotation=0 mirror=None size=28x76 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [J2] place bbox_origin=(164,156) anchor_mm=(214.63,200.66) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C9] place bbox_origin=(244,156) anchor_mm=(311.15,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C8] place bbox_origin=(324,156) anchor_mm=(412.75,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C7] place bbox_origin=(404,156) anchor_mm=(514.35,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C6] place bbox_origin=(484,156) anchor_mm=(615.95,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C5] place bbox_origin=(557,156) anchor_mm=(708.66,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [C10] place bbox_origin=(623,156) anchor_mm=(792.48,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [R1] place bbox_origin=(696,156) anchor_mm=(885.19,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | DEBUG   | eda.placer             | [root] [-] [FB1] place bbox_origin=(778,156) anchor_mm=(989.33,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] matrix_placed components=22
+17:46:03 | INFO    | eda.placer             | [root] [-] [C10] matrix_placed bbox_origin=(623,156) anchor_mm=(792.48,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(792.48,198.12) abs=(624,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(792.48,205.74) abs=(624,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C21] matrix_placed bbox_origin=(623,27) anchor_mm=(792.48,38.10) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(792.48,34.29) abs=(624,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(792.48,41.91) abs=(624,33)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C5] matrix_placed bbox_origin=(557,156) anchor_mm=(708.66,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(708.66,198.12) abs=(558,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(708.66,205.74) abs=(558,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C6] matrix_placed bbox_origin=(484,156) anchor_mm=(615.95,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(615.95,198.12) abs=(485,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(615.95,205.74) abs=(485,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C7] matrix_placed bbox_origin=(404,156) anchor_mm=(514.35,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(514.35,198.12) abs=(405,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(514.35,205.74) abs=(405,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C8] matrix_placed bbox_origin=(324,156) anchor_mm=(412.75,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(412.75,198.12) abs=(325,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(412.75,205.74) abs=(325,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C9] matrix_placed bbox_origin=(244,156) anchor_mm=(311.15,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(311.15,198.12) abs=(245,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(311.15,205.74) abs=(245,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] matrix_placed bbox_origin=(778,156) anchor_mm=(989.33,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(989.33,198.12) abs=(779,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(989.33,205.74) abs=(779,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] matrix_placed bbox_origin=(164,156) anchor_mm=(214.63,200.66) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:1] matrix_placed offset_mm=(-5.08,-2.54) abs_mm=(209.55,198.12) abs=(165,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:2] matrix_placed offset_mm=(-5.08,0.00) abs_mm=(209.55,200.66) abs=(165,158)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:3] matrix_placed offset_mm=(-5.08,2.54) abs_mm=(209.55,203.20) abs=(165,160)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:4] matrix_placed offset_mm=(-5.08,5.08) abs_mm=(209.55,205.74) abs=(165,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R1] matrix_placed bbox_origin=(696,156) anchor_mm=(885.19,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(885.19,198.12) abs=(697,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(885.19,205.74) abs=(697,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R2] matrix_placed bbox_origin=(557,27) anchor_mm=(708.66,38.10) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:1] matrix_placed offset_mm=(0.00,-3.81) abs_mm=(708.66,34.29) abs=(558,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:2] matrix_placed offset_mm=(0.00,3.81) abs_mm=(708.66,41.91) abs=(558,33)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] matrix_placed bbox_origin=(65,121) anchor_mm=(100.33,201.93) rotation=0 mirror=None size=28x76 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:1] matrix_placed offset_mm=(-5.08,-48.26) abs_mm=(95.25,153.67) abs=(75,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:2] matrix_placed offset_mm=(-17.78,12.70) abs_mm=(82.55,214.63) abs=(65,169)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:3] matrix_placed offset_mm=(-17.78,15.24) abs_mm=(82.55,217.17) abs=(65,171)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:4] matrix_placed offset_mm=(-17.78,17.78) abs_mm=(82.55,219.71) abs=(65,173)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:5] matrix_placed offset_mm=(-17.78,-30.48) abs_mm=(82.55,171.45) abs=(65,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:6] matrix_placed offset_mm=(-17.78,-27.94) abs_mm=(82.55,173.99) abs=(65,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:7] matrix_placed offset_mm=(-17.78,-40.64) abs_mm=(82.55,161.29) abs=(65,127)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:8] matrix_placed offset_mm=(-17.78,-20.32) abs_mm=(82.55,181.61) abs=(65,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:9] matrix_placed offset_mm=(-17.78,-17.78) abs_mm=(82.55,184.15) abs=(65,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:10] matrix_placed offset_mm=(-17.78,-15.24) abs_mm=(82.55,186.69) abs=(65,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:11] matrix_placed offset_mm=(-17.78,-12.70) abs_mm=(82.55,189.23) abs=(65,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:12] matrix_placed offset_mm=(2.54,48.26) abs_mm=(102.87,250.19) abs=(81,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:13] matrix_placed offset_mm=(7.62,-48.26) abs_mm=(107.95,153.67) abs=(85,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:14] matrix_placed offset_mm=(17.78,-40.64) abs_mm=(118.11,161.29) abs=(93,127)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:15] matrix_placed offset_mm=(17.78,-38.10) abs_mm=(118.11,163.83) abs=(93,129)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:16] matrix_placed offset_mm=(17.78,-35.56) abs_mm=(118.11,166.37) abs=(93,131)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:17] matrix_placed offset_mm=(17.78,-33.02) abs_mm=(118.11,168.91) abs=(93,133)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:18] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:19] matrix_placed offset_mm=(-2.54,-48.26) abs_mm=(97.79,153.67) abs=(77,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:20] matrix_placed offset_mm=(17.78,-30.48) abs_mm=(118.11,171.45) abs=(93,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:21] matrix_placed offset_mm=(17.78,-27.94) abs_mm=(118.11,173.99) abs=(93,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:22] matrix_placed offset_mm=(17.78,-25.40) abs_mm=(118.11,176.53) abs=(93,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:23] matrix_placed offset_mm=(17.78,-22.86) abs_mm=(118.11,179.07) abs=(93,141)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:24] matrix_placed offset_mm=(-17.78,-10.16) abs_mm=(82.55,191.77) abs=(65,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:25] matrix_placed offset_mm=(-17.78,-7.62) abs_mm=(82.55,194.31) abs=(65,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:26] matrix_placed offset_mm=(17.78,2.54) abs_mm=(118.11,204.47) abs=(93,161)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:27] matrix_placed offset_mm=(17.78,5.08) abs_mm=(118.11,207.01) abs=(93,163)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:28] matrix_placed offset_mm=(17.78,7.62) abs_mm=(118.11,209.55) abs=(93,165)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:29] matrix_placed offset_mm=(17.78,27.94) abs_mm=(118.11,229.87) abs=(93,181)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:30] matrix_placed offset_mm=(17.78,30.48) abs_mm=(118.11,232.41) abs=(93,183)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:31] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:32] matrix_placed offset_mm=(0.00,-48.26) abs_mm=(100.33,153.67) abs=(79,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:33] matrix_placed offset_mm=(17.78,33.02) abs_mm=(118.11,234.95) abs=(93,185)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:34] matrix_placed offset_mm=(17.78,35.56) abs_mm=(118.11,237.49) abs=(93,187)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:35] matrix_placed offset_mm=(17.78,38.10) abs_mm=(118.11,240.03) abs=(93,189)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:36] matrix_placed offset_mm=(17.78,40.64) abs_mm=(118.11,242.57) abs=(93,191)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:37] matrix_placed offset_mm=(-17.78,-5.08) abs_mm=(82.55,196.85) abs=(65,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:38] matrix_placed offset_mm=(-17.78,-2.54) abs_mm=(82.55,199.39) abs=(65,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:39] matrix_placed offset_mm=(-17.78,0.00) abs_mm=(82.55,201.93) abs=(65,159)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:40] matrix_placed offset_mm=(-17.78,2.54) abs_mm=(82.55,204.47) abs=(65,161)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:41] matrix_placed offset_mm=(17.78,-20.32) abs_mm=(118.11,181.61) abs=(93,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:42] matrix_placed offset_mm=(17.78,-17.78) abs_mm=(118.11,184.15) abs=(93,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:43] matrix_placed offset_mm=(17.78,-15.24) abs_mm=(118.11,186.69) abs=(93,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:44] matrix_placed offset_mm=(17.78,-12.70) abs_mm=(118.11,189.23) abs=(93,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:45] matrix_placed offset_mm=(17.78,-10.16) abs_mm=(118.11,191.77) abs=(93,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:46] matrix_placed offset_mm=(17.78,-7.62) abs_mm=(118.11,194.31) abs=(93,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:47] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:48] matrix_placed offset_mm=(2.54,-48.26) abs_mm=(102.87,153.67) abs=(81,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:49] matrix_placed offset_mm=(17.78,-5.08) abs_mm=(118.11,196.85) abs=(93,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:50] matrix_placed offset_mm=(17.78,-2.54) abs_mm=(118.11,199.39) abs=(93,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:51] matrix_placed offset_mm=(-17.78,5.08) abs_mm=(82.55,207.01) abs=(65,163)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:52] matrix_placed offset_mm=(-17.78,7.62) abs_mm=(82.55,209.55) abs=(65,165)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:53] matrix_placed offset_mm=(-17.78,10.16) abs_mm=(82.55,212.09) abs=(65,167)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:54] matrix_placed offset_mm=(-17.78,-25.40) abs_mm=(82.55,176.53) abs=(65,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:55] matrix_placed offset_mm=(17.78,10.16) abs_mm=(118.11,212.09) abs=(93,167)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:56] matrix_placed offset_mm=(17.78,12.70) abs_mm=(118.11,214.63) abs=(93,169)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:57] matrix_placed offset_mm=(17.78,15.24) abs_mm=(118.11,217.17) abs=(93,171)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:58] matrix_placed offset_mm=(17.78,17.78) abs_mm=(118.11,219.71) abs=(93,173)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:59] matrix_placed offset_mm=(17.78,20.32) abs_mm=(118.11,222.25) abs=(93,175)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:60] matrix_placed offset_mm=(-17.78,-35.56) abs_mm=(82.55,166.37) abs=(65,131)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:61] matrix_placed offset_mm=(17.78,22.86) abs_mm=(118.11,224.79) abs=(93,177)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:62] matrix_placed offset_mm=(17.78,25.40) abs_mm=(118.11,227.33) abs=(93,179)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:63] matrix_placed offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:64] matrix_placed offset_mm=(5.08,-48.26) abs_mm=(105.41,153.67) abs=(83,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] matrix_placed bbox_origin=(71,3) anchor_mm=(90.17,3.81) rotation=0 mirror=None size=16x54 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(90.17,6.35) abs=(71,5)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(90.17,8.89) abs=(71,7)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN1] matrix_placed offset_mm=(0.00,7.62) abs_mm=(90.17,11.43) abs=(71,9)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN2] matrix_placed offset_mm=(0.00,10.16) abs_mm=(90.17,13.97) abs=(71,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] matrix_placed offset_mm=(0.00,12.70) abs_mm=(90.17,16.51) abs=(71,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN1] matrix_placed offset_mm=(0.00,15.24) abs_mm=(90.17,19.05) abs=(71,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN2] matrix_placed offset_mm=(0.00,17.78) abs_mm=(90.17,21.59) abs=(71,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] matrix_placed offset_mm=(0.00,20.32) abs_mm=(90.17,24.13) abs=(71,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN1] matrix_placed offset_mm=(0.00,22.86) abs_mm=(90.17,26.67) abs=(71,21)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN2] matrix_placed offset_mm=(0.00,25.40) abs_mm=(90.17,29.21) abs=(71,23)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4_RAW] matrix_placed offset_mm=(0.00,27.94) abs_mm=(90.17,31.75) abs=(71,25)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN1] matrix_placed offset_mm=(0.00,30.48) abs_mm=(90.17,34.29) abs=(71,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN2] matrix_placed offset_mm=(0.00,33.02) abs_mm=(90.17,36.83) abs=(71,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] matrix_placed offset_mm=(19.05,2.54) abs_mm=(109.22,6.35) abs=(86,5)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] matrix_placed offset_mm=(19.05,5.08) abs_mm=(109.22,8.89) abs=(86,7)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M1] matrix_placed offset_mm=(19.05,7.62) abs_mm=(109.22,11.43) abs=(86,9)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] matrix_placed offset_mm=(19.05,10.16) abs_mm=(109.22,13.97) abs=(86,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] matrix_placed offset_mm=(19.05,12.70) abs_mm=(109.22,16.51) abs=(86,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2] matrix_placed offset_mm=(19.05,15.24) abs_mm=(109.22,19.05) abs=(86,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] matrix_placed offset_mm=(19.05,17.78) abs_mm=(109.22,21.59) abs=(86,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] matrix_placed offset_mm=(19.05,20.32) abs_mm=(109.22,24.13) abs=(86,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3] matrix_placed offset_mm=(19.05,22.86) abs_mm=(109.22,26.67) abs=(86,21)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] matrix_placed offset_mm=(19.05,25.40) abs_mm=(109.22,29.21) abs=(86,23)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] matrix_placed offset_mm=(19.05,27.94) abs_mm=(109.22,31.75) abs=(86,25)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4] matrix_placed offset_mm=(19.05,30.48) abs_mm=(109.22,34.29) abs=(86,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] matrix_placed bbox_origin=(3,26) anchor_mm=(3.81,33.02) rotation=0 mirror=None size=16x8 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] matrix_placed offset_mm=(0.00,2.54) abs_mm=(3.81,35.56) abs=(3,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(3.81,38.10) abs=(3,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] matrix_placed bbox_origin=(477,22) anchor_mm=(605.79,27.94) rotation=0 mirror=None size=16x16 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:VCC_5V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(605.79,30.48) abs=(477,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(605.79,33.02) abs=(477,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_TX] matrix_placed offset_mm=(19.05,2.54) abs_mm=(624.84,30.48) abs=(492,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_RX] matrix_placed offset_mm=(19.05,5.08) abs_mm=(624.84,33.02) abs=(492,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANH] matrix_placed offset_mm=(19.05,7.62) abs_mm=(624.84,35.56) abs=(492,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANL] matrix_placed offset_mm=(19.05,10.16) abs_mm=(624.84,38.10) abs=(492,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] matrix_placed bbox_origin=(157,22) anchor_mm=(199.39,27.94) rotation=0 mirror=None size=16x16 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(199.39,30.48) abs=(157,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(199.39,33.02) abs=(157,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] matrix_placed offset_mm=(0.00,7.62) abs_mm=(199.39,35.56) abs=(157,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_CTL] matrix_placed offset_mm=(0.00,10.16) abs_mm=(199.39,38.10) abs=(157,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] matrix_placed offset_mm=(0.00,12.70) abs_mm=(199.39,40.64) abs=(157,32)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] matrix_placed offset_mm=(19.05,2.54) abs_mm=(218.44,30.48) abs=(172,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] matrix_placed bbox_origin=(3,133) anchor_mm=(3.81,168.91) rotation=0 mirror=None size=16x52 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(3.81,171.45) abs=(3,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_5V] matrix_placed offset_mm=(0.00,5.08) abs_mm=(3.81,173.99) abs=(3,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_3V3] matrix_placed offset_mm=(0.00,7.62) abs_mm=(3.81,176.53) abs=(3,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:GND] matrix_placed offset_mm=(0.00,10.16) abs_mm=(3.81,179.07) abs=(3,141)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] matrix_placed offset_mm=(0.00,12.70) abs_mm=(3.81,181.61) abs=(3,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:COND_RAW] matrix_placed offset_mm=(0.00,15.24) abs_mm=(3.81,184.15) abs=(3,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] matrix_placed offset_mm=(0.00,17.78) abs_mm=(3.81,186.69) abs=(3,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] matrix_placed offset_mm=(0.00,20.32) abs_mm=(3.81,189.23) abs=(3,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M4_RAW] matrix_placed offset_mm=(0.00,22.86) abs_mm=(3.81,191.77) abs=(3,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] matrix_placed offset_mm=(0.00,25.40) abs_mm=(3.81,194.31) abs=(3,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] matrix_placed offset_mm=(0.00,27.94) abs_mm=(3.81,196.85) abs=(3,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M1_RAW] matrix_placed offset_mm=(0.00,30.48) abs_mm=(3.81,199.39) abs=(3,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:NTC_HEAT_W] matrix_placed offset_mm=(19.05,2.54) abs_mm=(22.86,171.45) abs=(18,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] matrix_placed offset_mm=(19.05,5.08) abs_mm=(22.86,173.99) abs=(18,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] matrix_placed offset_mm=(19.05,7.62) abs_mm=(22.86,176.53) abs=(18,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] matrix_placed offset_mm=(19.05,10.16) abs_mm=(22.86,179.07) abs=(18,141)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] matrix_placed offset_mm=(19.05,12.70) abs_mm=(22.86,181.61) abs=(18,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] matrix_placed offset_mm=(19.05,15.24) abs_mm=(22.86,184.15) abs=(18,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] matrix_placed offset_mm=(19.05,17.78) abs_mm=(22.86,186.69) abs=(18,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] matrix_placed offset_mm=(19.05,20.32) abs_mm=(22.86,189.23) abs=(18,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] matrix_placed offset_mm=(19.05,22.86) abs_mm=(22.86,191.77) abs=(18,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANH] matrix_placed offset_mm=(19.05,25.40) abs_mm=(22.86,194.31) abs=(18,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANL] matrix_placed offset_mm=(19.05,27.94) abs_mm=(22.86,196.85) abs=(18,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] matrix_placed offset_mm=(19.05,30.48) abs_mm=(22.86,199.39) abs=(18,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] matrix_placed bbox_origin=(397,24) anchor_mm=(504.19,30.48) rotation=0 mirror=None size=16x12 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] matrix_placed offset_mm=(0.00,2.54) abs_mm=(504.19,33.02) abs=(397,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(504.19,35.56) abs=(397,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] matrix_placed offset_mm=(0.00,7.62) abs_mm=(504.19,38.10) abs=(397,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:M_FAN_CTL] matrix_placed offset_mm=(0.00,10.16) abs_mm=(504.19,40.64) abs=(397,32)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] matrix_placed bbox_origin=(237,25) anchor_mm=(300.99,31.75) rotation=0 mirror=None size=16x10 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] matrix_placed offset_mm=(0.00,2.54) abs_mm=(300.99,34.29) abs=(237,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] matrix_placed offset_mm=(0.00,5.08) abs_mm=(300.99,36.83) abs=(237,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_ADC] matrix_placed offset_mm=(19.05,2.54) abs_mm=(320.04,34.29) abs=(252,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] matrix_placed bbox_origin=(689,24) anchor_mm=(875.03,30.48) rotation=0 mirror=None size=16x12 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] matrix_placed offset_mm=(0.00,2.54) abs_mm=(875.03,33.02) abs=(689,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(875.03,35.56) abs=(689,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT_W] matrix_placed offset_mm=(19.05,2.54) abs_mm=(894.08,33.02) abs=(704,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT] matrix_placed offset_mm=(19.05,5.08) abs_mm=(894.08,35.56) abs=(704,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] matrix_placed bbox_origin=(317,25) anchor_mm=(402.59,31.75) rotation=0 mirror=None size=16x10 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] matrix_placed offset_mm=(0.00,2.54) abs_mm=(402.59,34.29) abs=(317,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] matrix_placed offset_mm=(0.00,5.08) abs_mm=(402.59,36.83) abs=(317,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_ADC] matrix_placed offset_mm=(19.05,2.54) abs_mm=(421.64,34.29) abs=(332,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] matrix_placed bbox_origin=(769,9) anchor_mm=(976.63,11.43) rotation=0 mirror=None size=20x42 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:VCC_3V3] matrix_placed offset_mm=(0.00,2.54) abs_mm=(976.63,13.97) abs=(769,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:GND] matrix_placed offset_mm=(0.00,5.08) abs_mm=(976.63,16.51) abs=(769,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:NTC_CABIN] matrix_placed offset_mm=(0.00,7.62) abs_mm=(976.63,19.05) abs=(769,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] matrix_placed offset_mm=(0.00,10.16) abs_mm=(976.63,21.59) abs=(769,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_SENSE] matrix_placed offset_mm=(0.00,12.70) abs_mm=(976.63,24.13) abs=(769,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] matrix_placed offset_mm=(24.13,2.54) abs_mm=(1000.76,13.97) abs=(788,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FACE] matrix_placed offset_mm=(24.13,5.08) abs_mm=(1000.76,16.51) abs=(788,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FEET] matrix_placed offset_mm=(24.13,7.62) abs_mm=(1000.76,19.05) abs=(788,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DRY_GLASS] matrix_placed offset_mm=(24.13,10.16) abs_mm=(1000.76,21.59) abs=(788,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_AC] matrix_placed offset_mm=(24.13,12.70) abs_mm=(1000.76,24.13) abs=(788,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_RECIRC] matrix_placed offset_mm=(24.13,15.24) abs_mm=(1000.76,26.67) abs=(788,21)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DEFROST_GLASS_DRV] matrix_placed offset_mm=(24.13,17.78) abs_mm=(1000.76,29.21) abs=(788,23)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FACE_DRV] matrix_placed offset_mm=(24.13,20.32) abs_mm=(1000.76,31.75) abs=(788,25)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] matrix_placed offset_mm=(24.13,22.86) abs_mm=(1000.76,34.29) abs=(788,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DRY_GLASS_DRV] matrix_placed offset_mm=(24.13,25.40) abs_mm=(1000.76,36.83) abs=(788,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_AC_DRV] matrix_placed offset_mm=(24.13,27.94) abs_mm=(1000.76,39.37) abs=(788,31)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] matrix_placed offset_mm=(24.13,30.48) abs_mm=(1000.76,41.91) abs=(788,33)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:TEMP_SET_ADC] matrix_placed offset_mm=(24.13,33.02) abs_mm=(1000.76,44.45) abs=(788,35)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] matrix_placed offset_mm=(24.13,35.56) abs_mm=(1000.76,46.99) abs=(788,37)
+17:46:03 | INFO    | eda.placer             | [root] placement_done components=22
+17:46:03 | INFO    | eda.placer             | [root] [-] [C10] placement_done bbox_origin=(623,156) anchor_mm=(792.48,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(792.48,198.12) abs=(624,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C10] [C10:2] placement_done offset_mm=(0.00,3.81) abs_mm=(792.48,205.74) abs=(624,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C21] placement_done bbox_origin=(623,27) anchor_mm=(792.48,38.10) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(792.48,34.29) abs=(624,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C21] [C21:2] placement_done offset_mm=(0.00,3.81) abs_mm=(792.48,41.91) abs=(624,33)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C5] placement_done bbox_origin=(557,156) anchor_mm=(708.66,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(708.66,198.12) abs=(558,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C5] [C5:2] placement_done offset_mm=(0.00,3.81) abs_mm=(708.66,205.74) abs=(558,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C6] placement_done bbox_origin=(484,156) anchor_mm=(615.95,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(615.95,198.12) abs=(485,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C6] [C6:2] placement_done offset_mm=(0.00,3.81) abs_mm=(615.95,205.74) abs=(485,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C7] placement_done bbox_origin=(404,156) anchor_mm=(514.35,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(514.35,198.12) abs=(405,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C7] [C7:2] placement_done offset_mm=(0.00,3.81) abs_mm=(514.35,205.74) abs=(405,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C8] placement_done bbox_origin=(324,156) anchor_mm=(412.75,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(412.75,198.12) abs=(325,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C8] [C8:2] placement_done offset_mm=(0.00,3.81) abs_mm=(412.75,205.74) abs=(325,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C9] placement_done bbox_origin=(244,156) anchor_mm=(311.15,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(311.15,198.12) abs=(245,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [C9] [C9:2] placement_done offset_mm=(0.00,3.81) abs_mm=(311.15,205.74) abs=(245,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] placement_done bbox_origin=(778,156) anchor_mm=(989.33,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(989.33,198.12) abs=(779,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [FB1] [FB1:2] placement_done offset_mm=(0.00,3.81) abs_mm=(989.33,205.74) abs=(779,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] placement_done bbox_origin=(164,156) anchor_mm=(214.63,200.66) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:1] placement_done offset_mm=(-5.08,-2.54) abs_mm=(209.55,198.12) abs=(165,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:2] placement_done offset_mm=(-5.08,0.00) abs_mm=(209.55,200.66) abs=(165,158)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:3] placement_done offset_mm=(-5.08,2.54) abs_mm=(209.55,203.20) abs=(165,160)
+17:46:03 | INFO    | eda.placer             | [root] [-] [J2] [J2:4] placement_done offset_mm=(-5.08,5.08) abs_mm=(209.55,205.74) abs=(165,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R1] placement_done bbox_origin=(696,156) anchor_mm=(885.19,201.93) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(885.19,198.12) abs=(697,156)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R1] [R1:2] placement_done offset_mm=(0.00,3.81) abs_mm=(885.19,205.74) abs=(697,162)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R2] placement_done bbox_origin=(557,27) anchor_mm=(708.66,38.10) rotation=0 mirror=None size=2x6 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:1] placement_done offset_mm=(0.00,-3.81) abs_mm=(708.66,34.29) abs=(558,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [R2] [R2:2] placement_done offset_mm=(0.00,3.81) abs_mm=(708.66,41.91) abs=(558,33)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] placement_done bbox_origin=(65,121) anchor_mm=(100.33,201.93) rotation=0 mirror=None size=28x76 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:1] placement_done offset_mm=(-5.08,-48.26) abs_mm=(95.25,153.67) abs=(75,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:2] placement_done offset_mm=(-17.78,12.70) abs_mm=(82.55,214.63) abs=(65,169)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:3] placement_done offset_mm=(-17.78,15.24) abs_mm=(82.55,217.17) abs=(65,171)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:4] placement_done offset_mm=(-17.78,17.78) abs_mm=(82.55,219.71) abs=(65,173)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:5] placement_done offset_mm=(-17.78,-30.48) abs_mm=(82.55,171.45) abs=(65,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:6] placement_done offset_mm=(-17.78,-27.94) abs_mm=(82.55,173.99) abs=(65,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:7] placement_done offset_mm=(-17.78,-40.64) abs_mm=(82.55,161.29) abs=(65,127)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:8] placement_done offset_mm=(-17.78,-20.32) abs_mm=(82.55,181.61) abs=(65,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:9] placement_done offset_mm=(-17.78,-17.78) abs_mm=(82.55,184.15) abs=(65,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:10] placement_done offset_mm=(-17.78,-15.24) abs_mm=(82.55,186.69) abs=(65,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:11] placement_done offset_mm=(-17.78,-12.70) abs_mm=(82.55,189.23) abs=(65,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:12] placement_done offset_mm=(2.54,48.26) abs_mm=(102.87,250.19) abs=(81,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:13] placement_done offset_mm=(7.62,-48.26) abs_mm=(107.95,153.67) abs=(85,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:14] placement_done offset_mm=(17.78,-40.64) abs_mm=(118.11,161.29) abs=(93,127)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:15] placement_done offset_mm=(17.78,-38.10) abs_mm=(118.11,163.83) abs=(93,129)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:16] placement_done offset_mm=(17.78,-35.56) abs_mm=(118.11,166.37) abs=(93,131)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:17] placement_done offset_mm=(17.78,-33.02) abs_mm=(118.11,168.91) abs=(93,133)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:18] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:19] placement_done offset_mm=(-2.54,-48.26) abs_mm=(97.79,153.67) abs=(77,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:20] placement_done offset_mm=(17.78,-30.48) abs_mm=(118.11,171.45) abs=(93,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:21] placement_done offset_mm=(17.78,-27.94) abs_mm=(118.11,173.99) abs=(93,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:22] placement_done offset_mm=(17.78,-25.40) abs_mm=(118.11,176.53) abs=(93,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:23] placement_done offset_mm=(17.78,-22.86) abs_mm=(118.11,179.07) abs=(93,141)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:24] placement_done offset_mm=(-17.78,-10.16) abs_mm=(82.55,191.77) abs=(65,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:25] placement_done offset_mm=(-17.78,-7.62) abs_mm=(82.55,194.31) abs=(65,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:26] placement_done offset_mm=(17.78,2.54) abs_mm=(118.11,204.47) abs=(93,161)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:27] placement_done offset_mm=(17.78,5.08) abs_mm=(118.11,207.01) abs=(93,163)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:28] placement_done offset_mm=(17.78,7.62) abs_mm=(118.11,209.55) abs=(93,165)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:29] placement_done offset_mm=(17.78,27.94) abs_mm=(118.11,229.87) abs=(93,181)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:30] placement_done offset_mm=(17.78,30.48) abs_mm=(118.11,232.41) abs=(93,183)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:31] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:32] placement_done offset_mm=(0.00,-48.26) abs_mm=(100.33,153.67) abs=(79,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:33] placement_done offset_mm=(17.78,33.02) abs_mm=(118.11,234.95) abs=(93,185)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:34] placement_done offset_mm=(17.78,35.56) abs_mm=(118.11,237.49) abs=(93,187)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:35] placement_done offset_mm=(17.78,38.10) abs_mm=(118.11,240.03) abs=(93,189)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:36] placement_done offset_mm=(17.78,40.64) abs_mm=(118.11,242.57) abs=(93,191)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:37] placement_done offset_mm=(-17.78,-5.08) abs_mm=(82.55,196.85) abs=(65,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:38] placement_done offset_mm=(-17.78,-2.54) abs_mm=(82.55,199.39) abs=(65,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:39] placement_done offset_mm=(-17.78,0.00) abs_mm=(82.55,201.93) abs=(65,159)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:40] placement_done offset_mm=(-17.78,2.54) abs_mm=(82.55,204.47) abs=(65,161)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:41] placement_done offset_mm=(17.78,-20.32) abs_mm=(118.11,181.61) abs=(93,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:42] placement_done offset_mm=(17.78,-17.78) abs_mm=(118.11,184.15) abs=(93,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:43] placement_done offset_mm=(17.78,-15.24) abs_mm=(118.11,186.69) abs=(93,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:44] placement_done offset_mm=(17.78,-12.70) abs_mm=(118.11,189.23) abs=(93,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:45] placement_done offset_mm=(17.78,-10.16) abs_mm=(118.11,191.77) abs=(93,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:46] placement_done offset_mm=(17.78,-7.62) abs_mm=(118.11,194.31) abs=(93,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:47] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:48] placement_done offset_mm=(2.54,-48.26) abs_mm=(102.87,153.67) abs=(81,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:49] placement_done offset_mm=(17.78,-5.08) abs_mm=(118.11,196.85) abs=(93,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:50] placement_done offset_mm=(17.78,-2.54) abs_mm=(118.11,199.39) abs=(93,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:51] placement_done offset_mm=(-17.78,5.08) abs_mm=(82.55,207.01) abs=(65,163)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:52] placement_done offset_mm=(-17.78,7.62) abs_mm=(82.55,209.55) abs=(65,165)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:53] placement_done offset_mm=(-17.78,10.16) abs_mm=(82.55,212.09) abs=(65,167)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:54] placement_done offset_mm=(-17.78,-25.40) abs_mm=(82.55,176.53) abs=(65,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:55] placement_done offset_mm=(17.78,10.16) abs_mm=(118.11,212.09) abs=(93,167)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:56] placement_done offset_mm=(17.78,12.70) abs_mm=(118.11,214.63) abs=(93,169)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:57] placement_done offset_mm=(17.78,15.24) abs_mm=(118.11,217.17) abs=(93,171)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:58] placement_done offset_mm=(17.78,17.78) abs_mm=(118.11,219.71) abs=(93,173)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:59] placement_done offset_mm=(17.78,20.32) abs_mm=(118.11,222.25) abs=(93,175)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:60] placement_done offset_mm=(-17.78,-35.56) abs_mm=(82.55,166.37) abs=(65,131)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:61] placement_done offset_mm=(17.78,22.86) abs_mm=(118.11,224.79) abs=(93,177)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:62] placement_done offset_mm=(17.78,25.40) abs_mm=(118.11,227.33) abs=(93,179)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:63] placement_done offset_mm=(0.00,48.26) abs_mm=(100.33,250.19) abs=(79,197)
+17:46:03 | INFO    | eda.placer             | [root] [-] [U1] [U1:64] placement_done offset_mm=(5.08,-48.26) abs_mm=(105.41,153.67) abs=(83,121)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] placement_done bbox_origin=(71,3) anchor_mm=(90.17,3.81) rotation=0 mirror=None size=16x54 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(90.17,6.35) abs=(71,5)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(90.17,8.89) abs=(71,7)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN1] placement_done offset_mm=(0.00,7.62) abs_mm=(90.17,11.43) abs=(71,9)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M1_IN2] placement_done offset_mm=(0.00,10.16) abs_mm=(90.17,13.97) abs=(71,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2_RAW] placement_done offset_mm=(0.00,12.70) abs_mm=(90.17,16.51) abs=(71,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN1] placement_done offset_mm=(0.00,15.24) abs_mm=(90.17,19.05) abs=(71,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M2_IN2] placement_done offset_mm=(0.00,17.78) abs_mm=(90.17,21.59) abs=(71,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3_RAW] placement_done offset_mm=(0.00,20.32) abs_mm=(90.17,24.13) abs=(71,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN1] placement_done offset_mm=(0.00,22.86) abs_mm=(90.17,26.67) abs=(71,21)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M3_IN2] placement_done offset_mm=(0.00,25.40) abs_mm=(90.17,29.21) abs=(71,23)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4_RAW] placement_done offset_mm=(0.00,27.94) abs_mm=(90.17,31.75) abs=(71,25)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN1] placement_done offset_mm=(0.00,30.48) abs_mm=(90.17,34.29) abs=(71,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:M4_IN2] placement_done offset_mm=(0.00,33.02) abs_mm=(90.17,36.83) abs=(71,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_A] placement_done offset_mm=(19.05,2.54) abs_mm=(109.22,6.35) abs=(86,5)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_1_B] placement_done offset_mm=(19.05,5.08) abs_mm=(109.22,8.89) abs=(86,7)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M1] placement_done offset_mm=(19.05,7.62) abs_mm=(109.22,11.43) abs=(86,9)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_A] placement_done offset_mm=(19.05,10.16) abs_mm=(109.22,13.97) abs=(86,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_2_B] placement_done offset_mm=(19.05,12.70) abs_mm=(109.22,16.51) abs=(86,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M2] placement_done offset_mm=(19.05,15.24) abs_mm=(109.22,19.05) abs=(86,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_A] placement_done offset_mm=(19.05,17.78) abs_mm=(109.22,21.59) abs=(86,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_3_B] placement_done offset_mm=(19.05,20.32) abs_mm=(109.22,24.13) abs=(86,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M3] placement_done offset_mm=(19.05,22.86) abs_mm=(109.22,26.67) abs=(86,21)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_A] placement_done offset_mm=(19.05,25.40) abs_mm=(109.22,29.21) abs=(86,23)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:MOTOR_4_B] placement_done offset_mm=(19.05,27.94) abs_mm=(109.22,31.75) abs=(86,25)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_ACT] [X_ACT:FB_M4] placement_done offset_mm=(19.05,30.48) abs_mm=(109.22,34.29) abs=(86,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] placement_done bbox_origin=(3,26) anchor_mm=(3.81,33.02) rotation=0 mirror=None size=16x8 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:ILLUM_IN_RAW] placement_done offset_mm=(0.00,2.54) abs_mm=(3.81,35.56) abs=(3,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_BACKLIGHT] [X_BACKLIGHT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(3.81,38.10) abs=(3,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] placement_done bbox_origin=(477,22) anchor_mm=(605.79,27.94) rotation=0 mirror=None size=16x16 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:VCC_5V] placement_done offset_mm=(0.00,2.54) abs_mm=(605.79,30.48) abs=(477,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(605.79,33.02) abs=(477,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_TX] placement_done offset_mm=(19.05,2.54) abs_mm=(624.84,30.48) abs=(492,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CAN_RX] placement_done offset_mm=(19.05,5.08) abs_mm=(624.84,33.02) abs=(492,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANH] placement_done offset_mm=(19.05,7.62) abs_mm=(624.84,35.56) abs=(492,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_CAN] [X_CAN:CANL] placement_done offset_mm=(19.05,10.16) abs_mm=(624.84,38.10) abs=(492,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] placement_done bbox_origin=(157,22) anchor_mm=(199.39,27.94) rotation=0 mirror=None size=16x16 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(199.39,30.48) abs=(157,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(199.39,33.02) abs=(157,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:FAN_PWM_CTL] placement_done offset_mm=(0.00,7.62) abs_mm=(199.39,35.56) abs=(157,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_CTL] placement_done offset_mm=(0.00,10.16) abs_mm=(199.39,38.10) abs=(157,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:AC_REQ_OUT] placement_done offset_mm=(0.00,12.70) abs_mm=(199.39,40.64) abs=(157,32)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_OUT] [X_OUT:HEAT_FAN_PWM_CTL] placement_done offset_mm=(19.05,2.54) abs_mm=(218.44,30.48) abs=(172,24)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] placement_done bbox_origin=(3,133) anchor_mm=(3.81,168.91) rotation=0 mirror=None size=16x52 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(3.81,171.45) abs=(3,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_5V] placement_done offset_mm=(0.00,5.08) abs_mm=(3.81,173.99) abs=(3,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:VCC_3V3] placement_done offset_mm=(0.00,7.62) abs_mm=(3.81,176.53) abs=(3,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:GND] placement_done offset_mm=(0.00,10.16) abs_mm=(3.81,179.07) abs=(3,141)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:SOLAR_RAW] placement_done offset_mm=(0.00,12.70) abs_mm=(3.81,181.61) abs=(3,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:COND_RAW] placement_done offset_mm=(0.00,15.24) abs_mm=(3.81,184.15) abs=(3,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M2_RAW] placement_done offset_mm=(0.00,17.78) abs_mm=(3.81,186.69) abs=(3,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M3_RAW] placement_done offset_mm=(0.00,20.32) abs_mm=(3.81,189.23) abs=(3,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M4_RAW] placement_done offset_mm=(0.00,22.86) abs_mm=(3.81,191.77) abs=(3,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:AC_REQ_OUT] placement_done offset_mm=(0.00,25.40) abs_mm=(3.81,194.31) abs=(3,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:ILLUM_IN_RAW] placement_done offset_mm=(0.00,27.94) abs_mm=(3.81,196.85) abs=(3,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:FB_M1_RAW] placement_done offset_mm=(0.00,30.48) abs_mm=(3.81,199.39) abs=(3,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:NTC_HEAT_W] placement_done offset_mm=(19.05,2.54) abs_mm=(22.86,171.45) abs=(18,135)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_A] placement_done offset_mm=(19.05,5.08) abs_mm=(22.86,173.99) abs=(18,137)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_1_B] placement_done offset_mm=(19.05,7.62) abs_mm=(22.86,176.53) abs=(18,139)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_A] placement_done offset_mm=(19.05,10.16) abs_mm=(22.86,179.07) abs=(18,141)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_2_B] placement_done offset_mm=(19.05,12.70) abs_mm=(22.86,181.61) abs=(18,143)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_A] placement_done offset_mm=(19.05,15.24) abs_mm=(22.86,184.15) abs=(18,145)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_3_B] placement_done offset_mm=(19.05,17.78) abs_mm=(22.86,186.69) abs=(18,147)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_A] placement_done offset_mm=(19.05,20.32) abs_mm=(22.86,189.23) abs=(18,149)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:MOTOR_4_B] placement_done offset_mm=(19.05,22.86) abs_mm=(22.86,191.77) abs=(18,151)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANH] placement_done offset_mm=(19.05,25.40) abs_mm=(22.86,194.31) abs=(18,153)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:CANL] placement_done offset_mm=(19.05,27.94) abs_mm=(22.86,196.85) abs=(18,155)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_PWR] [X_PWR:HEAT_FAN_PWM_CTL] placement_done offset_mm=(19.05,30.48) abs_mm=(22.86,199.39) abs=(18,157)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] placement_done bbox_origin=(397,24) anchor_mm=(504.19,30.48) rotation=0 mirror=None size=16x12 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:VCC_12V] placement_done offset_mm=(0.00,2.54) abs_mm=(504.19,33.02) abs=(397,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(504.19,35.56) abs=(397,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:NTC_CABIN] placement_done offset_mm=(0.00,7.62) abs_mm=(504.19,38.10) abs=(397,30)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_CABIN] [X_SEN_CABIN:M_FAN_CTL] placement_done offset_mm=(0.00,10.16) abs_mm=(504.19,40.64) abs=(397,32)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] placement_done bbox_origin=(237,25) anchor_mm=(300.99,31.75) rotation=0 mirror=None size=16x10 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:GND] placement_done offset_mm=(0.00,2.54) abs_mm=(300.99,34.29) abs=(237,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_RAW] placement_done offset_mm=(0.00,5.08) abs_mm=(300.99,36.83) abs=(237,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_COND] [X_SEN_COND:COND_ADC] placement_done offset_mm=(19.05,2.54) abs_mm=(320.04,34.29) abs=(252,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] placement_done bbox_origin=(689,24) anchor_mm=(875.03,30.48) rotation=0 mirror=None size=16x12 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:VCC_3V3] placement_done offset_mm=(0.00,2.54) abs_mm=(875.03,33.02) abs=(689,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(875.03,35.56) abs=(689,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT_W] placement_done offset_mm=(19.05,2.54) abs_mm=(894.08,33.02) abs=(704,26)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_HEAT] [X_SEN_HEAT:NTC_HEAT] placement_done offset_mm=(19.05,5.08) abs_mm=(894.08,35.56) abs=(704,28)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] placement_done bbox_origin=(317,25) anchor_mm=(402.59,31.75) rotation=0 mirror=None size=16x10 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:GND] placement_done offset_mm=(0.00,2.54) abs_mm=(402.59,34.29) abs=(317,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_RAW] placement_done offset_mm=(0.00,5.08) abs_mm=(402.59,36.83) abs=(317,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_SEN_SOLAR] [X_SEN_SOLAR:SOLAR_ADC] placement_done offset_mm=(19.05,2.54) abs_mm=(421.64,34.29) abs=(332,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] placement_done bbox_origin=(769,9) anchor_mm=(976.63,11.43) rotation=0 mirror=None size=20x42 cells
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:VCC_3V3] placement_done offset_mm=(0.00,2.54) abs_mm=(976.63,13.97) abs=(769,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:GND] placement_done offset_mm=(0.00,5.08) abs_mm=(976.63,16.51) abs=(769,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:NTC_CABIN] placement_done offset_mm=(0.00,7.62) abs_mm=(976.63,19.05) abs=(769,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_IN_RAW] placement_done offset_mm=(0.00,10.16) abs_mm=(976.63,21.59) abs=(769,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:ILLUM_SENSE] placement_done offset_mm=(0.00,12.70) abs_mm=(976.63,24.13) abs=(769,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DEFROST_GLASS] placement_done offset_mm=(24.13,2.54) abs_mm=(1000.76,13.97) abs=(788,11)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FACE] placement_done offset_mm=(24.13,5.08) abs_mm=(1000.76,16.51) abs=(788,13)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_FEET] placement_done offset_mm=(24.13,7.62) abs_mm=(1000.76,19.05) abs=(788,15)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_DRY_GLASS] placement_done offset_mm=(24.13,10.16) abs_mm=(1000.76,21.59) abs=(788,17)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_AC] placement_done offset_mm=(24.13,12.70) abs_mm=(1000.76,24.13) abs=(788,19)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:BTN_RECIRC] placement_done offset_mm=(24.13,15.24) abs_mm=(1000.76,26.67) abs=(788,21)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DEFROST_GLASS_DRV] placement_done offset_mm=(24.13,17.78) abs_mm=(1000.76,29.21) abs=(788,23)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FACE_DRV] placement_done offset_mm=(24.13,20.32) abs_mm=(1000.76,31.75) abs=(788,25)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_FEET_DRV] placement_done offset_mm=(24.13,22.86) abs_mm=(1000.76,34.29) abs=(788,27)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_DRY_GLASS_DRV] placement_done offset_mm=(24.13,25.40) abs_mm=(1000.76,36.83) abs=(788,29)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_AC_DRV] placement_done offset_mm=(24.13,27.94) abs_mm=(1000.76,39.37) abs=(788,31)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:LED_RECIRC_DRV] placement_done offset_mm=(24.13,30.48) abs_mm=(1000.76,41.91) abs=(788,33)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:TEMP_SET_ADC] placement_done offset_mm=(24.13,33.02) abs_mm=(1000.76,44.45) abs=(788,35)
+17:46:03 | INFO    | eda.placer             | [root] [-] [X_UI] [X_UI:FAN_SEL_ADC] placement_done offset_mm=(24.13,35.56) abs_mm=(1000.76,46.99) abs=(788,37)
+17:46:03 | INFO    | eda.placer             | [root] router_map components=22 pin_cells=184 total=6185
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [U8] size=20x16 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_5V] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CAN_TX] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CAN_RX] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANH] size=5x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANL] size=5x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C1] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C11] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C16] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C17] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C18] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C19] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C2] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C20] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C3] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [C4] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [D1] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [D2] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [D4] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [D5] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [J1] size=10x30 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [L1] size=2x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [U6] size=12x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [U7] size=12x6 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_5V] size=6x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_3V3] size=7x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_HEAT_W] size=10x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_SOLAR_RAW] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_COND_RAW] size=8x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_A] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_B] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_A] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_B] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M2_RAW] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_A] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_B] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M3_RAW] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_A] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_B] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M4_RAW] size=9x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_AC_REQ_OUT] size=10x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_IN_RAW] size=11x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANH] size=5x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_CANL] size=5x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_HEAT_FAN_PWM_CTL] size=14x2 cells
+17:47:35 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M1_RAW] size=9x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [C22] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [C23] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [C24] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [C32] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [J3] size=2x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [J4] size=2x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED1] size=6x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED2] size=6x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED3] size=6x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED4] size=6x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED5] size=6x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [LED6] size=6x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R10] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R11] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R12] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R22] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R23] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R24] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R39] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R40] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R7] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R8] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [R9] size=2x6 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW1] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW2] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW3] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW4] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW5] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [SW6] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_3V3] size=7x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_DEFROST_GLASS] size=15x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_FACE] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_FEET] size=8x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_DRY_GLASS] size=12x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_AC] size=6x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_BTN_RECIRC] size=10x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_DEFROST_GLASS_DRV] size=18x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_FACE_DRV] size=11x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_FEET_DRV] size=11x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_DRY_GLASS_DRV] size=15x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_AC_DRV] size=10x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_LED_RECIRC_DRV] size=12x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_TEMP_SET_ADC] size=11x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_FAN_SEL_ADC] size=10x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_CABIN] size=9x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_IN_RAW] size=11x2 cells
+17:47:58 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_SENSE] size=10x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [D3] size=6x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [J5] size=2x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q2] size=6x8 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R16] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R17] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [RT1] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_CABIN] size=9x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_M_FAN_CTL] size=9x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [C25] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R25] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R26] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_3V3] size=7x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_HEAT_W] size=10x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_NTC_HEAT] size=8x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [C26] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R27] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R28] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_SOLAR_RAW] size=9x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_SOLAR_ADC] size=9x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [C27] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R29] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R30] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_COND_RAW] size=8x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_COND_ADC] size=8x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q1] size=6x8 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q3] size=6x8 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [Q4] size=6x8 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R13] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R14] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R15] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R18] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R19] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R20] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [R21] size=2x6 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_FAN_PWM_CTL] size=10x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_AC_CTL] size=6x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_AC_REQ_OUT] size=10x2 cells
+17:48:02 | DEBUG   | eda.placer             | [root] [-] [PORT_HEAT_FAN_PWM_CTL] size=14x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C12] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C13] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C14] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C15] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C28] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C29] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C30] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [C31] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R3] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R32] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R33] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R34] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R35] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R36] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R37] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R38] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R4] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R5] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [R6] size=2x6 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [U2] size=16x16 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [U3] size=16x16 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [U4] size=16x16 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [U5] size=16x16 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_VCC_12V] size=7x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_A] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_1_B] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M1] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M1_IN1] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M1_IN2] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_A] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_2_B] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M2_RAW] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M2] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M2_IN1] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M2_IN2] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_A] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_3_B] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M3_RAW] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M3] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M3_IN1] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M3_IN2] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_A] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_MOTOR_4_B] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M4_RAW] size=9x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_FB_M4] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M4_IN1] size=6x2 cells
+17:48:03 | DEBUG   | eda.placer             | [root] [-] [PORT_M4_IN2] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R1] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R2] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R3] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R4] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R5] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R6] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R7] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [R8] size=2x6 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED11] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED12] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED13] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED21] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED22] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED23] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED31] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED32] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED33] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED41] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED42] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED43] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED51] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED52] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED53] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED61] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED62] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED63] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED71] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED72] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED73] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED81] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED82] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [LED83] size=6x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [PORT_ILLUM_IN_RAW] size=11x2 cells
+17:48:24 | DEBUG   | eda.placer             | [root] [-] [PORT_GND] size=4x2 cells

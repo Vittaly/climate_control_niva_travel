@@ -1,0 +1,97 @@
+page_name: SEN_SOLAR
+file: solar_sensor.kicad_sch
+functional_purpose: Модуль SEN_SOLAR
+ports:
+- net_label: GND
+  type: POWER
+  description: Общий провод (кузов автомобиля)
+- net_label: SOLAR_RAW
+  type: INPUT
+  description: Выход датчика солнечной радиации (0..5В)
+- net_label: SOLAR_ADC
+  type: OUTPUT
+  description: Сигнал солнечной радиации после делителя 5В->3,3В на АЦП
+component_types:
+  TYPE_C_100NF:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    value: 100nF
+    fields:
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_R_10K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 10k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_20K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 20k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+components:
+  C26:
+    type: TYPE_C_100NF
+    description: фильтр АЦП солнечной радиации
+  R27:
+    type: TYPE_R_10K
+    description: делитель сигнала солнечной радиации (верх
+  R28:
+    type: TYPE_R_20K
+    description: делитель сигнала солнечной радиации (низ
+nets:
+  GND:
+    name: GND
+    description: Общий провод (кузов автомобиля)
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R28
+      pin: '2'
+    - component: C26
+      pin: '2'
+  SOLAR_RAW:
+    name: SOLAR_RAW
+    description: Выход датчика солнечной радиации (0..5В)
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R27
+      pin: '1'
+  SOLAR_ADC:
+    name: SOLAR_ADC
+    description: Сигнал солнечной радиации после делителя 5В->3,3В на АЦП
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R27
+      pin: '2'
+    - component: R28
+      pin: '1'
+    - component: C26
+      pin: '1'

@@ -1,0 +1,177 @@
+page_name: SEN_CABIN
+file: cabin_sensor.kicad_sch
+functional_purpose: Модуль SEN_CABIN
+ports:
+- net_label: VCC_12V
+  type: POWER
+  description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+- net_label: GND
+  type: POWER
+  description: Общий провод (кузов автомобиля)
+- net_label: NTC_CABIN
+  type: INPUT
+  description: Температура воздуха в салоне (NTC на плате в трубе продувки)
+- net_label: M_FAN_CTL
+  type: INPUT
+  description: Управление мини-вентилятором продувки датчика
+component_types:
+  TYPE_D_1N4148W:
+    symbol: Device:D
+    footprint: Diode_SMD:D_SOD-123
+    value: 1N4148W
+    fields: {}
+  TYPE_CONN01X02_ВНУТРPКОННЕКТОРВЕНТИЛЯТОРАПРОДУВКИ(2П,XH):
+    symbol: Connector_Generic:Conn_01x02
+    footprint: Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical
+    value: Внутр. коннектор вентилятора продувки (2п, XH)
+    fields: {}
+  TYPE_QNMOS_AO3400:
+    symbol: Transistor_FET:AO3400A
+    footprint: Package_TO_SOT_SMD:SOT-23
+    value: AO3400
+    fields: {}
+  TYPE_R_1K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 1k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_10K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 10k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_THERMISTORNTC_10K:
+    symbol: Device:Thermistor_NTC
+    footprint: Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal
+    value: 10k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+components:
+  D3:
+    type: TYPE_D_1N4148W
+    description: обратный диод вентилятора
+  J5:
+    type: TYPE_CONN01X02_ВНУТРPКОННЕКТОРВЕНТИЛЯТОРАПРОДУВКИ(2П,XH)
+    description: Внутр. коннектор вентилятора продувки (2п, XH)
+  Q2:
+    type: TYPE_QNMOS_AO3400
+    description: ключ мини-вентилятора (логич. уровень, 5,7А
+  R16:
+    type: TYPE_R_1K
+    description: затвор Q_MFAN
+  R17:
+    type: TYPE_R_10K
+    description: подтяжка затвора Q_MFAN к GND
+  RT1:
+    type: TYPE_THERMISTORNTC_10K
+    description: длинные ножки, в трубе продувки
+nets:
+  VCC_12V:
+    name: VCC_12V
+    description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 12.0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: DC 12.0
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: J5
+      pin: '1'
+    - component: D3
+      pin: '2'
+  GND:
+    name: GND
+    description: Общий провод (кузов автомобиля)
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+      current_max: 15A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: Q2
+      pin: '3'
+    - component: RT1
+      pin: '2'
+    - component: R17
+      pin: '2'
+  NTC_CABIN:
+    name: NTC_CABIN
+    description: Температура воздуха в салоне (NTC на плате в трубе продувки)
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: RT1
+      pin: '1'
+  M_FAN_CTL:
+    name: M_FAN_CTL
+    description: Управление мини-вентилятором продувки датчика
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R16
+      pin: '1'
+  M_FAN_GATE:
+    name: M_FAN_GATE
+    description: Затвор MOSFET мини-вентилятора
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: R16
+      pin: '2'
+    - component: Q2
+      pin: '1'
+    - component: R17
+      pin: '1'
+  SENS_FAN_SW:
+    name: SENS_FAN_SW
+    description: Коммутируемая линия питания мини-вентилятора
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+    - component: Q2
+      pin: '2'
+    - component: J5
+      pin: '2'
+    - component: D3
+      pin: '1'

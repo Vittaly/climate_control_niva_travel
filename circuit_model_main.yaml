@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "project": "Climate Control Niva Travel",
+    "version": "2.9",
+    "mcu": "STM32F103C8T6 (LQFP-48)"
+  },
+  "j1_pinout": {
+    "1": "+12В_БАТ вход питания",
+    "22": "ILLUM_IN (вход +12В включения габаритов)",
+    "23": "FAN_PWM_OUT (ШИМ на силовой модуль)"
+  },
+  "mcu_pin_map": {
+    "5": "PD0 -> ILLUM_SENSE",
+    "46": "PB9 -> ILLUM_PWM_CTL"
+  },
+  "sheets": [
+    { "order": 1, "name": "CONTROLLER", "file": "climate_control_niva_travel.kicad_sch" },
+    { "order": 3, "name": "PWR", "file": "cc_03_pwr.kicad_sch" },
+    { "order": 11, "name": "FAN_KEY", "file": "cc_11_fan_key.kicad_sch" },
+    { "order": 12, "name": "ILLUM", "file": "cc_12_illum.kicad_sch" }
+  ],
+  "components": {
+    "$include": [
+      "sheets/01_controller.json",
+      "sheets/03_pwr.json",
+      "sheets/11_fan_key.json",
+      "sheets/12_illum.json"
+    ]
+  },
+  "nets": {
+    "$include": [
+      "sheets/nets_global.json",
+      "sheets/nets_illum.json"
+    ]
+  }
+}
+
