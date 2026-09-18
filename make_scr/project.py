@@ -28,8 +28,22 @@ from sheet import Sheet
 from sheet_ref import SheetRefComponent
 from writer import Writer
 
+from designators import DesignatorError, validate_component_designator
+
 log = get_logger(__name__)
 
+
+class ProjectLoadError(Exception):
+    """Загрузка проекта прервана: YAML несовместим с KiCad.
+
+    Собирает все обнаруженные ошибки, чтобы не гонять пользователя
+    по одному компоненту за раз.
+    """
+    def __init__(self, errors: list[str]):
+        self.errors = list(errors)
+        super().__init__(
+            "Загрузка проекта прервана:\n  " + "\n  ".join(self.errors)
+        )
 
 class Project:
     """Точка входа: загрузка, размещение, роутинг, сохранение."""
@@ -49,6 +63,7 @@ class Project:
         self.root_data: dict = {}
         # yaml_rel -> sheet_path: не грузим один YAML дважды
         self._loaded_yaml: Dict[str, str] = {}
+        self._load_errors: list[str] = []    
 
         log.info(
             "Project создан: %s", self.root_path,
@@ -73,6 +88,8 @@ class Project:
                 "path":  str(self.root_path),
             },
         )
+
+        self._load_errors.clear() 
         self._read_root()
 
         grid_mm = float(self.root_data.get("grid_mm", DEFAULT_GRID_MM))
@@ -84,6 +101,10 @@ class Project:
         self._load_nets(self.root_sheet, self.root_data)
         self._log_components_with_nets(self.root_sheet)
         self._discover_sheets(self.root_sheet, self.root_data)
+
+        # Никакого place_and_route, пока есть ошибки загрузки.
+        if self._load_errors:
+            raise ProjectLoadError(self._load_errors)
 
         total_components = sum(len(s.components) for s in self.sheets.values())
         total_pins = sum(
@@ -171,25 +192,45 @@ class Project:
                 )
                 continue
 
-            comp = Component.from_yaml(
-                designator=designator,
-                cdef=cdef,
-                types=types,
-                source=self.source,
-                grid_mm=sheet.grid_mm,
-            )
+            try:
+                comp = Component.from_yaml(
+                    designator=designator,
+                    cdef=cdef,
+                    types=types,
+                    source=self.source,
+                    grid_mm=sheet.grid_mm,
+                )
+            except DesignatorError as e:
+                # не добавляем в sheet и не роняем весь цикл —
+                # соберём все ошибки и упадём одним списком
+                self._load_errors.append(
+                    f"{yaml_path}: components.{designator}: {e}"
+                )
+                continue
+
             if comp:
                 sheet.add_component(comp)
 
         # --- Порты страницы (data['ports']) ---
-        self._load_ports(sheet, data)
+        self._load_ports(sheet, data, yaml_path)
 
-    def _load_ports(self, sheet: Sheet, data: dict) -> None:
+    def _load_ports(self, sheet: Sheet, data: dict,
+                    yaml_path: Path | None = None) -> None:
         """Создаёт PortComponent для каждого порта из data['ports'].
 
         Сети ещё не зарегистрированы в netlist (это делает _load_nets
         сразу после), поэтому FQN пинов регистрируются отдельно —
         в _load_nets, где все сети уже есть.
+
+        Ошибки именования порта (не PORT_<NET>, пустой net_name)
+        не роняют загрузку сразу, а копятся в self._load_errors:
+        Project.load() в конце бросит ProjectLoadError со списком.
+        Так пользователь видит сразу все проблемы, а не по одной.
+
+        Args:
+            sheet:     страница, в которую добавляются порты.
+            data:      распарсенный YAML (локальный для загрузчика).
+            yaml_path: путь к YAML — для читаемых сообщений об ошибках.
         """
         from port_component import PortComponent
 
@@ -200,18 +241,38 @@ class Project:
         for p in ports:
             net_label = p.get("net_label", "")
             if not net_label:
+                # молча пропускаем, как и раньше: у порта без net_label
+                # нет смысла в designator'е
                 continue
+
             ptype = str(p.get("type", "INPUT")).upper()
             shape = p.get("shape") or _default_port_shape(ptype)
             side = "left" if ptype in ("INPUT", "POWER") else "right"
 
-            port = PortComponent.create(
-                designator=f"PORT_{net_label}",
-                net_name=net_label,
-                shape=shape,
-                side=side,
-            )
+            designator = f"PORT_{net_label}"
+            where = (f"{yaml_path}: ports.{net_label}"
+                     if yaml_path else f"ports.{net_label}")
+
+            try:
+                port = PortComponent.create(
+                    designator=designator,
+                    net_name=net_label,
+                    shape=shape,
+                    side=side,
+                )
+            except DesignatorError as e:
+                self._load_errors.append(f"{where}: {e}")
+                continue
+
+            if port is None:
+                self._load_errors.append(
+                    f"{where}: порт не собран "
+                    f"(net_label={net_label!r}, type={ptype!r})"
+                )
+                continue
+
             sheet.add_component(port)
+
             log.debug(
                 "%s port_added des=%s side=%s shape=%s",
                 ctx(page=sheet.page), port.designator, side, shape,

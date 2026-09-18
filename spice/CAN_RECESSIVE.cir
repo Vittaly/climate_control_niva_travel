@@ -4,14 +4,14 @@
 * делителями к ~2,5В. Vdiff ≈ 0.
 .INCLUDE spice/CAN.sub
 
-* Порты: CANL CAN_RX CAN_TX GND
+* Порты: CANH CANL CAN_RX CAN_TX GND
 
 * V1: Питание трансивера +5В
 V1 VCC_5V 0 DC 5.0
 
 * V2: TXD = 1 (рецессив, драйвер выключен)
 V2 CAN_TX 0 DC 5.0
-XCAN CANL CAN_RX CAN_TX 0 CAN
+XCAN CANH CANL CAN_RX CAN_TX 0 CAN
 
 .op
 .control

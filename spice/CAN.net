@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/can_bus.kicad_sch")
-		(date "2026-09-18T10:57:34")
+		(date "2026-09-19T00:47:58")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a51d6009-5af3-403b-9c90-a7fc8cd0347f")
+			(tstamps "d3456dd0-e706-48f2-8b49-7792329b272a")
 			(units
 				(unit
 					(name "A")
@@ -209,42 +209,8 @@
 	(nets
 		(net
 			(code "1")
-			(name "/CANL")
+			(name "/CANH")
 			(class "Default")
-			(node
-				(ref "U8")
-				(pin "6")
-				(pinfunction "CANL_6")
-				(pintype "bidirectional")
-			)
-		)
-		(net
-			(code "2")
-			(name "/CAN_RX")
-			(class "Default")
-			(node
-				(ref "U8")
-				(pin "4")
-				(pinfunction "RXD_4")
-				(pintype "output")
-			)
-		)
-		(net
-			(code "3")
-			(name "/CAN_TX")
-			(class "Default")
-			(node
-				(ref "U8")
-				(pin "1")
-				(pinfunction "TXD_1")
-				(pintype "input")
-			)
-			(node
-				(ref "U8")
-				(pin "2")
-				(pinfunction "VSS_2")
-				(pintype "power_in")
-			)
 			(node
 				(ref "U8")
 				(pin "3")
@@ -262,6 +228,50 @@
 				(pin "7")
 				(pinfunction "CANH_7")
 				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "2")
+			(name "/CANL")
+			(class "Default")
+			(node
+				(ref "U8")
+				(pin "6")
+				(pinfunction "CANL_6")
+				(pintype "bidirectional")
+			)
+		)
+		(net
+			(code "3")
+			(name "/CAN_RX")
+			(class "Default")
+			(node
+				(ref "U8")
+				(pin "4")
+				(pinfunction "RXD_4")
+				(pintype "output")
+			)
+		)
+		(net
+			(code "4")
+			(name "/CAN_TX")
+			(class "Default")
+			(node
+				(ref "U8")
+				(pin "1")
+				(pinfunction "TXD_1")
+				(pintype "input")
+			)
+		)
+		(net
+			(code "5")
+			(name "/GND")
+			(class "Default")
+			(node
+				(ref "U8")
+				(pin "2")
+				(pinfunction "VSS_2")
+				(pintype "power_in")
 			)
 			(node
 				(ref "U8")

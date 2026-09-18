@@ -61,28 +61,30 @@ class Net:
             )
         self.wires.append(wire)
 
-        # Контекст префикса: [page] [net] [comp] [pin].
-        # Атрибуты wire могут называться по-разному — берём через
-        # getattr с разумными дефолтами, чтобы модуль не падал,
-        # если Wire эволюционирует.
-        page = getattr(wire, "page", None) or getattr(wire, "sheet", None)
-        comp = getattr(wire, "owner", None) or getattr(wire, "comp", None)
-        pin = getattr(wire, "port", None) or getattr(wire, "pin", None)
+        # Контракт Wire зафиксирован в wire.py:
+        #   start: Pin                 — пин-начало (обязателен)
+        #   end:   Optional[Pin]       — пин-конец; None для T-врезки
+        #   segments() -> List[WireSegment]
+        #   length: int
+        # Никаких getattr-угадываний: если Wire изменится, падать
+        # лучше на AttributeError в тесте, а не молча печатать "?".
+        start_pin: Pin = wire.start
+        end_pin = wire.end
 
-        src = getattr(wire, "src_fqn", None) or getattr(wire, "from_fqn", "?")
-        dst = getattr(wire, "dst_fqn", None) or getattr(wire, "to_fqn", "?")
+        src = start_pin.local_key
+        dst = end_pin.local_key if end_pin is not None else "T"
 
-        # segments — метод, нужен вызов
-        segments = getattr(wire, "segments", None)
-        if callable(segments):
-            seg = len(segments())
-        else:
-            seg = len(getattr(wire, "points", []) or [])
+        comp = start_pin.component.designator \
+            if start_pin.component is not None else None
+        page = None
+        if start_pin.component is not None \
+                and start_pin.component.sheet is not None:
+            page = start_pin.component.sheet.page or None
 
         log.debug(
-            "%s wire %s -> %s segments=%d",
-            ctx(page=page, net=self.name, comp=comp, pin=pin),
-            src, dst, seg,
+            "%s wire %s -> %s segments=%d cells=%d",
+            ctx(page=page, net=self.name, comp=comp, pin=start_pin.number),
+            src, dst, len(wire.segments()), wire.length,
         )
 
     # ---------- проверки ----------

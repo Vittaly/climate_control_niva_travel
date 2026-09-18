@@ -20,6 +20,12 @@ functional_purpose: |
   Ток одного канала при 12В: (12 − 3·3,2)/130 ≈ 18,5 мА.
   Суммарный ток: ≈ 260 мА.
 
+  Соответствие KiCad-reference и логических ролей:
+    R9  = R_BTN1, R10 = R_BTN2,
+    R11 = R_PTR1, R12 = R_PTR2, R13 = R_PTR3, R14 = R_PTR4,
+    LED101..LED106   = LED_BTN_1..LED_BTN_6,
+    LED201..LED212   = LED_PTR_1..LED_PTR_12.
+
 ports:
 - net_label: ILLUM_IN_RAW
   type: POWER
@@ -114,46 +120,52 @@ components:
   LED83: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 12' }
 
   # ─── Подсветка кнопок (2 канала × 3 LED, белые 1206) ───────────
-  R_BTN1:
+  R9:
     type: TYPE_R_0603_130R
-    description: "Резистор канала подсветки кнопок SW1..SW3"
-  R_BTN2:
+    description: "R_BTN1: резистор канала подсветки кнопок SW1..SW3"
+    fields: { Role: R_BTN1 }
+  R10:
     type: TYPE_R_0603_130R
-    description: "Резистор канала подсветки кнопок SW4..SW6"
+    description: "R_BTN2: резистор канала подсветки кнопок SW4..SW6"
+    fields: { Role: R_BTN2 }
 
-  LED_BTN_1: { type: TYPE_LED_1206_WHITE, description: 'Подсветка кнопки SW1 (стекло)' }
-  LED_BTN_2: { type: TYPE_LED_1206_WHITE, description: 'Подсветка кнопки SW2 (лицо)' }
-  LED_BTN_3: { type: TYPE_LED_1206_WHITE, description: 'Подсветка кнопки SW3 (ноги)' }
-  LED_BTN_4: { type: TYPE_LED_1206_WHITE, description: 'Подсветка кнопки SW4 (сушка стекла)' }
-  LED_BTN_5: { type: TYPE_LED_1206_WHITE, description: 'Подсветка кнопки SW5 (кондиционер)' }
-  LED_BTN_6: { type: TYPE_LED_1206_WHITE, description: 'Подсветка кнопки SW6 (рециркуляция)' }
+  LED101: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_1: Подсветка кнопки SW1 (стекло)' }
+  LED102: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_2: Подсветка кнопки SW2 (лицо)' }
+  LED103: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_3: Подсветка кнопки SW3 (ноги)' }
+  LED104: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_4: Подсветка кнопки SW4 (сушка стекла)' }
+  LED105: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_5: Подсветка кнопки SW5 (кондиционер)' }
+  LED106: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_6: Подсветка кнопки SW6 (рециркуляция)' }
 
   # ─── Указатель (4 канала × 3 LED, белые 0603) ──────────────────
-  R_PTR1:
+  R11:
     type: TYPE_R_0603_130R
-    description: "Резистор канала указателя 1"
-  R_PTR2:
+    description: "R_PTR1: резистор канала указателя 1"
+    fields: { Role: R_PTR1 }
+  R12:
     type: TYPE_R_0603_130R
-    description: "Резистор канала указателя 2"
-  R_PTR3:
+    description: "R_PTR2: резистор канала указателя 2"
+    fields: { Role: R_PTR2 }
+  R13:
     type: TYPE_R_0603_130R
-    description: "Резистор канала указателя 3"
-  R_PTR4:
+    description: "R_PTR3: резистор канала указателя 3"
+    fields: { Role: R_PTR3 }
+  R14:
     type: TYPE_R_0603_130R
-    description: "Резистор канала указателя 4"
+    description: "R_PTR4: резистор канала указателя 4"
+    fields: { Role: R_PTR4 }
 
-  LED_PTR_1:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 1' }
-  LED_PTR_2:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 2' }
-  LED_PTR_3:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 3' }
-  LED_PTR_4:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 4' }
-  LED_PTR_5:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 5' }
-  LED_PTR_6:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 6' }
-  LED_PTR_7:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 7' }
-  LED_PTR_8:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 8' }
-  LED_PTR_9:  { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 9' }
-  LED_PTR_10: { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 10' }
-  LED_PTR_11: { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 11' }
-  LED_PTR_12: { type: TYPE_LED_0603_WHITE, description: 'Указатель шкалы: Диод 12' }
+  LED201: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_1:  Указатель шкалы: Диод 1' }
+  LED202: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_2:  Указатель шкалы: Диод 2' }
+  LED203: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_3:  Указатель шкалы: Диод 3' }
+  LED204: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_4:  Указатель шкалы: Диод 4' }
+  LED205: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_5:  Указатель шкалы: Диод 5' }
+  LED206: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_6:  Указатель шкалы: Диод 6' }
+  LED207: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_7:  Указатель шкалы: Диод 7' }
+  LED208: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_8:  Указатель шкалы: Диод 8' }
+  LED209: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_9:  Указатель шкалы: Диод 9' }
+  LED210: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_10: Указатель шкалы: Диод 10' }
+  LED211: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_11: Указатель шкалы: Диод 11' }
+  LED212: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_12: Указатель шкалы: Диод 12' }
 
 nets:
   ILLUM_IN_RAW:
@@ -169,20 +181,20 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: R1,      pin: '1' }
-    - { component: R2,      pin: '1' }
-    - { component: R3,      pin: '1' }
-    - { component: R4,      pin: '1' }
-    - { component: R5,      pin: '1' }
-    - { component: R6,      pin: '1' }
-    - { component: R7,      pin: '1' }
-    - { component: R8,      pin: '1' }
-    - { component: R_BTN1,  pin: '1' }
-    - { component: R_BTN2,  pin: '1' }
-    - { component: R_PTR1,  pin: '1' }
-    - { component: R_PTR2,  pin: '1' }
-    - { component: R_PTR3,  pin: '1' }
-    - { component: R_PTR4,  pin: '1' }
+    - { component: R1,  pin: '1' }
+    - { component: R2,  pin: '1' }
+    - { component: R3,  pin: '1' }
+    - { component: R4,  pin: '1' }
+    - { component: R5,  pin: '1' }
+    - { component: R6,  pin: '1' }
+    - { component: R7,  pin: '1' }
+    - { component: R8,  pin: '1' }
+    - { component: R9,  pin: '1' }
+    - { component: R10, pin: '1' }
+    - { component: R11, pin: '1' }
+    - { component: R12, pin: '1' }
+    - { component: R13, pin: '1' }
+    - { component: R14, pin: '1' }
 
   GND:
     name: GND
@@ -198,22 +210,22 @@ nets:
         parasitic_l_h: 10n
     nodes:
     # Шкалы
-    - { component: LED13,    pin: '2' }
-    - { component: LED23,    pin: '2' }
-    - { component: LED33,    pin: '2' }
-    - { component: LED43,    pin: '2' }
-    - { component: LED53,    pin: '2' }
-    - { component: LED63,    pin: '2' }
-    - { component: LED73,    pin: '2' }
-    - { component: LED83,    pin: '2' }
+    - { component: LED13,  pin: '2' }
+    - { component: LED23,  pin: '2' }
+    - { component: LED33,  pin: '2' }
+    - { component: LED43,  pin: '2' }
+    - { component: LED53,  pin: '2' }
+    - { component: LED63,  pin: '2' }
+    - { component: LED73,  pin: '2' }
+    - { component: LED83,  pin: '2' }
     # Кнопки
-    - { component: LED_BTN_3, pin: '2' }
-    - { component: LED_BTN_6, pin: '2' }
+    - { component: LED103, pin: '2' }
+    - { component: LED106, pin: '2' }
     # Указатель
-    - { component: LED_PTR_3,  pin: '2' }
-    - { component: LED_PTR_6,  pin: '2' }
-    - { component: LED_PTR_9,  pin: '2' }
-    - { component: LED_PTR_12, pin: '2' }
+    - { component: LED203, pin: '2' }
+    - { component: LED206, pin: '2' }
+    - { component: LED209, pin: '2' }
+    - { component: LED212, pin: '2' }
 
   # ─── Шкалы ручек (8 каналов × 3 LED) ───────────────────────────
   NET_SCALE_CH1_A: { name: NET_SCALE_CH1_A, is_hierarchical_port: false,
@@ -274,47 +286,47 @@ nets:
 
   # ─── Подсветка кнопок (2 канала × 3 LED) ───────────────────────
   NET_BTN_CH1_A: { name: NET_BTN_CH1_A, is_hierarchical_port: false,
-    nodes: [{ component: R_BTN1,    pin: '2' }, { component: LED_BTN_1, pin: '1' }] }
+    nodes: [{ component: R9,     pin: '2' }, { component: LED101, pin: '1' }] }
   NET_BTN_CH1_B: { name: NET_BTN_CH1_B, is_hierarchical_port: false,
-    nodes: [{ component: LED_BTN_1, pin: '2' }, { component: LED_BTN_2, pin: '1' }] }
+    nodes: [{ component: LED101, pin: '2' }, { component: LED102, pin: '1' }] }
   NET_BTN_CH1_C: { name: NET_BTN_CH1_C, is_hierarchical_port: false,
-    nodes: [{ component: LED_BTN_2, pin: '2' }, { component: LED_BTN_3, pin: '1' }] }
+    nodes: [{ component: LED102, pin: '2' }, { component: LED103, pin: '1' }] }
 
   NET_BTN_CH2_A: { name: NET_BTN_CH2_A, is_hierarchical_port: false,
-    nodes: [{ component: R_BTN2,    pin: '2' }, { component: LED_BTN_4, pin: '1' }] }
+    nodes: [{ component: R10,    pin: '2' }, { component: LED104, pin: '1' }] }
   NET_BTN_CH2_B: { name: NET_BTN_CH2_B, is_hierarchical_port: false,
-    nodes: [{ component: LED_BTN_4, pin: '2' }, { component: LED_BTN_5, pin: '1' }] }
+    nodes: [{ component: LED104, pin: '2' }, { component: LED105, pin: '1' }] }
   NET_BTN_CH2_C: { name: NET_BTN_CH2_C, is_hierarchical_port: false,
-    nodes: [{ component: LED_BTN_5, pin: '2' }, { component: LED_BTN_6, pin: '1' }] }
+    nodes: [{ component: LED105, pin: '2' }, { component: LED106, pin: '1' }] }
 
   # ─── Указатель (4 канала × 3 LED) ──────────────────────────────
   NET_PTR_CH1_A: { name: NET_PTR_CH1_A, is_hierarchical_port: false,
-    nodes: [{ component: R_PTR1,    pin: '2' }, { component: LED_PTR_1, pin: '1' }] }
+    nodes: [{ component: R11,    pin: '2' }, { component: LED201, pin: '1' }] }
   NET_PTR_CH1_B: { name: NET_PTR_CH1_B, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_1, pin: '2' }, { component: LED_PTR_2, pin: '1' }] }
+    nodes: [{ component: LED201, pin: '2' }, { component: LED202, pin: '1' }] }
   NET_PTR_CH1_C: { name: NET_PTR_CH1_C, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_2, pin: '2' }, { component: LED_PTR_3, pin: '1' }] }
+    nodes: [{ component: LED202, pin: '2' }, { component: LED203, pin: '1' }] }
 
   NET_PTR_CH2_A: { name: NET_PTR_CH2_A, is_hierarchical_port: false,
-    nodes: [{ component: R_PTR2,    pin: '2' }, { component: LED_PTR_4, pin: '1' }] }
+    nodes: [{ component: R12,    pin: '2' }, { component: LED204, pin: '1' }] }
   NET_PTR_CH2_B: { name: NET_PTR_CH2_B, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_4, pin: '2' }, { component: LED_PTR_5, pin: '1' }] }
+    nodes: [{ component: LED204, pin: '2' }, { component: LED205, pin: '1' }] }
   NET_PTR_CH2_C: { name: NET_PTR_CH2_C, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_5, pin: '2' }, { component: LED_PTR_6, pin: '1' }] }
+    nodes: [{ component: LED205, pin: '2' }, { component: LED206, pin: '1' }] }
 
   NET_PTR_CH3_A: { name: NET_PTR_CH3_A, is_hierarchical_port: false,
-    nodes: [{ component: R_PTR3,    pin: '2' }, { component: LED_PTR_7, pin: '1' }] }
+    nodes: [{ component: R13,    pin: '2' }, { component: LED207, pin: '1' }] }
   NET_PTR_CH3_B: { name: NET_PTR_CH3_B, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_7, pin: '2' }, { component: LED_PTR_8, pin: '1' }] }
+    nodes: [{ component: LED207, pin: '2' }, { component: LED208, pin: '1' }] }
   NET_PTR_CH3_C: { name: NET_PTR_CH3_C, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_8, pin: '2' }, { component: LED_PTR_9, pin: '1' }] }
+    nodes: [{ component: LED208, pin: '2' }, { component: LED209, pin: '1' }] }
 
   NET_PTR_CH4_A: { name: NET_PTR_CH4_A, is_hierarchical_port: false,
-    nodes: [{ component: R_PTR4,     pin: '2' }, { component: LED_PTR_10, pin: '1' }] }
+    nodes: [{ component: R14,    pin: '2' }, { component: LED210, pin: '1' }] }
   NET_PTR_CH4_B: { name: NET_PTR_CH4_B, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_10, pin: '2' }, { component: LED_PTR_11, pin: '1' }] }
+    nodes: [{ component: LED210, pin: '2' }, { component: LED211, pin: '1' }] }
   NET_PTR_CH4_C: { name: NET_PTR_CH4_C, is_hierarchical_port: false,
-    nodes: [{ component: LED_PTR_11, pin: '2' }, { component: LED_PTR_12, pin: '1' }] }
+    nodes: [{ component: LED211, pin: '2' }, { component: LED212, pin: '1' }] }
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice

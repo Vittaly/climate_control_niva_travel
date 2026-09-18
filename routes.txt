@@ -115,10 +115,10 @@ R23: 10k anchor_mm=(102.87,66.04) 3x7 cells rot=0 mirror=None
 R24: 10k anchor_mm=(130.81,91.44) 3x7 cells rot=0 mirror=None
 R39: 47k anchor_mm=(71.12,91.44) 3x7 cells rot=0 mirror=None
 R40: 10k anchor_mm=(38.10,138.43) 3x7 cells rot=0 mirror=None
-R_SEL_1: 20k anchor_mm=(10.16,91.44) 3x7 cells rot=0 mirror=None
-R_SEL_2: 10k anchor_mm=(204.47,66.04) 3x7 cells rot=0 mirror=None
-R_SEL_3: 4.7k anchor_mm=(161.29,66.04) 3x7 cells rot=0 mirror=None
-R_SEL_4: 1k anchor_mm=(130.81,66.04) 3x7 cells rot=0 mirror=None
+R25: 20k anchor_mm=(10.16,91.44) 3x7 cells rot=0 mirror=None
+R26: 10k anchor_mm=(204.47,66.04) 3x7 cells rot=0 mirror=None
+R27: 4.7k anchor_mm=(161.29,66.04) 3x7 cells rot=0 mirror=None
+R28: 1k anchor_mm=(130.81,66.04) 3x7 cells rot=0 mirror=None
 SW1: Кнопка тактовая 6x6 без фиксации anchor_mm=(161.29,157.48) 9x3 cells rot=0 mirror=None
 SW2: Кнопка тактовая 6x6 без фиксации anchor_mm=(102.87,157.48) 9x3 cells rot=0 mirror=None
 SW3: Кнопка тактовая 6x6 без фиксации anchor_mm=(71.12,157.48) 9x3 cells rot=0 mirror=None
@@ -255,30 +255,30 @@ LED73: Белый SMD 0805 anchor_mm=(177.80,46.99) 7x3 cells rot=0 mirror=None
 LED81: Белый SMD 0805 anchor_mm=(36.83,33.02) 7x3 cells rot=0 mirror=None
 LED82: Белый SMD 0805 anchor_mm=(177.80,5.08) 7x3 cells rot=0 mirror=None
 LED83: Белый SMD 0805 anchor_mm=(152.40,46.99) 7x3 cells rot=0 mirror=None
-R_BTN1: 130R anchor_mm=(7.62,100.33) 3x7 cells rot=0 mirror=None
-R_BTN2: 130R anchor_mm=(227.33,67.31) 3x7 cells rot=0 mirror=None
-LED_BTN_1: Белый SMD 1206 anchor_mm=(7.62,33.02) 7x3 cells rot=0 mirror=None
-LED_BTN_2: Белый SMD 1206 anchor_mm=(152.40,5.08) 7x3 cells rot=0 mirror=None
-LED_BTN_3: Белый SMD 1206 anchor_mm=(127.00,46.99) 7x3 cells rot=0 mirror=None
-LED_BTN_4: Белый SMD 1206 anchor_mm=(227.33,19.05) 7x3 cells rot=0 mirror=None
-LED_BTN_5: Белый SMD 1206 anchor_mm=(127.00,5.08) 7x3 cells rot=0 mirror=None
-LED_BTN_6: Белый SMD 1206 anchor_mm=(97.79,46.99) 7x3 cells rot=0 mirror=None
-R_PTR1: 130R anchor_mm=(201.93,67.31) 3x7 cells rot=0 mirror=None
-R_PTR2: 130R anchor_mm=(177.80,67.31) 3x7 cells rot=0 mirror=None
-R_PTR3: 130R anchor_mm=(152.40,67.31) 3x7 cells rot=0 mirror=None
-R_PTR4: 130R anchor_mm=(127.00,67.31) 3x7 cells rot=0 mirror=None
-LED_PTR_1: Белый SMD 0603 anchor_mm=(201.93,19.05) 7x3 cells rot=0 mirror=None
-LED_PTR_2: Белый SMD 0603 anchor_mm=(97.79,5.08) 7x3 cells rot=0 mirror=None
-LED_PTR_3: Белый SMD 0603 anchor_mm=(67.31,46.99) 7x3 cells rot=0 mirror=None
-LED_PTR_4: Белый SMD 0603 anchor_mm=(177.80,19.05) 7x3 cells rot=0 mirror=None
-LED_PTR_5: Белый SMD 0603 anchor_mm=(67.31,5.08) 7x3 cells rot=0 mirror=None
-LED_PTR_6: Белый SMD 0603 anchor_mm=(36.83,46.99) 7x3 cells rot=0 mirror=None
-LED_PTR_7: Белый SMD 0603 anchor_mm=(152.40,19.05) 7x3 cells rot=0 mirror=None
-LED_PTR_8: Белый SMD 0603 anchor_mm=(36.83,5.08) 7x3 cells rot=0 mirror=None
-LED_PTR_9: Белый SMD 0603 anchor_mm=(7.62,46.99) 7x3 cells rot=0 mirror=None
-LED_PTR_10: Белый SMD 0603 anchor_mm=(127.00,19.05) 7x3 cells rot=0 mirror=None
-LED_PTR_11: Белый SMD 0603 anchor_mm=(7.62,5.08) 7x3 cells rot=0 mirror=None
-LED_PTR_12: Белый SMD 0603 anchor_mm=(227.33,33.02) 7x3 cells rot=0 mirror=None
+R9: 130R anchor_mm=(7.62,100.33) 3x7 cells rot=0 mirror=None
+R10: 130R anchor_mm=(227.33,67.31) 3x7 cells rot=0 mirror=None
+LED101: Белый SMD 1206 anchor_mm=(7.62,33.02) 7x3 cells rot=0 mirror=None
+LED102: Белый SMD 1206 anchor_mm=(152.40,5.08) 7x3 cells rot=0 mirror=None
+LED103: Белый SMD 1206 anchor_mm=(127.00,46.99) 7x3 cells rot=0 mirror=None
+LED104: Белый SMD 1206 anchor_mm=(227.33,19.05) 7x3 cells rot=0 mirror=None
+LED105: Белый SMD 1206 anchor_mm=(127.00,5.08) 7x3 cells rot=0 mirror=None
+LED106: Белый SMD 1206 anchor_mm=(97.79,46.99) 7x3 cells rot=0 mirror=None
+R11: 130R anchor_mm=(201.93,67.31) 3x7 cells rot=0 mirror=None
+R12: 130R anchor_mm=(177.80,67.31) 3x7 cells rot=0 mirror=None
+R13: 130R anchor_mm=(152.40,67.31) 3x7 cells rot=0 mirror=None
+R14: 130R anchor_mm=(127.00,67.31) 3x7 cells rot=0 mirror=None
+LED201: Белый SMD 0603 anchor_mm=(201.93,19.05) 7x3 cells rot=0 mirror=None
+LED202: Белый SMD 0603 anchor_mm=(97.79,5.08) 7x3 cells rot=0 mirror=None
+LED203: Белый SMD 0603 anchor_mm=(67.31,46.99) 7x3 cells rot=0 mirror=None
+LED204: Белый SMD 0603 anchor_mm=(177.80,19.05) 7x3 cells rot=0 mirror=None
+LED205: Белый SMD 0603 anchor_mm=(67.31,5.08) 7x3 cells rot=0 mirror=None
+LED206: Белый SMD 0603 anchor_mm=(36.83,46.99) 7x3 cells rot=0 mirror=None
+LED207: Белый SMD 0603 anchor_mm=(152.40,19.05) 7x3 cells rot=0 mirror=None
+LED208: Белый SMD 0603 anchor_mm=(36.83,5.08) 7x3 cells rot=0 mirror=None
+LED209: Белый SMD 0603 anchor_mm=(7.62,46.99) 7x3 cells rot=0 mirror=None
+LED210: Белый SMD 0603 anchor_mm=(127.00,19.05) 7x3 cells rot=0 mirror=None
+LED211: Белый SMD 0603 anchor_mm=(7.62,5.08) 7x3 cells rot=0 mirror=None
+LED212: Белый SMD 0603 anchor_mm=(227.33,33.02) 7x3 cells rot=0 mirror=None
 PORT_ILLUM_IN_RAW: ILLUM_IN_RAW anchor_mm=(220.98,99.06) 11x2 cells rot=0 mirror=None
 PORT_GND: GND anchor_mm=(95.25,66.04) 4x2 cells rot=0 mirror=None
 # sheet=actuator_channel.kicad_sch
@@ -286,12 +286,12 @@ PORT_GND: GND anchor_mm=(95.25,66.04) 4x2 cells rot=0 mirror=None
 # components=14
 # labels=1
 # t_junctions=6
-U: DRV8871 H-мост anchor_mm=(48.26,57.15) 17x17 cells rot=0 mirror=None
-C_VM: 100nF anchor_mm=(7.62,26.67) 3x7 cells rot=0 mirror=None
-R_ILIM: 33k anchor_mm=(48.26,26.67) 3x7 cells rot=0 mirror=None
-R_TOP: 10k anchor_mm=(24.13,7.62) 3x7 cells rot=0 mirror=None
-R_BOT: 20k anchor_mm=(92.71,7.62) 3x7 cells rot=0 mirror=None
-C_FB: 100nF anchor_mm=(73.66,7.62) 3x7 cells rot=0 mirror=None
+U1: DRV8871 H-мост anchor_mm=(48.26,57.15) 17x17 cells rot=0 mirror=None
+C1: 100nF anchor_mm=(7.62,26.67) 3x7 cells rot=0 mirror=None
+R1: 33k anchor_mm=(48.26,26.67) 3x7 cells rot=0 mirror=None
+R2: 10k anchor_mm=(24.13,7.62) 3x7 cells rot=0 mirror=None
+R3: 20k anchor_mm=(92.71,7.62) 3x7 cells rot=0 mirror=None
+C2: 100nF anchor_mm=(73.66,7.62) 3x7 cells rot=0 mirror=None
 PORT_VCC_12V: VCC_12V anchor_mm=(69.85,25.40) 7x2 cells rot=0 mirror=None
 PORT_GND: GND anchor_mm=(22.86,25.40) 4x2 cells rot=0 mirror=None
 PORT_IN1: IN1 anchor_mm=(71.12,55.88) 4x2 cells rot=0 mirror=None

@@ -86,6 +86,8 @@ from constants import (
 from logging_setup import get_logger, ctx
 from pin import Pin
 
+from designators import validate_component_designator
+
 if TYPE_CHECKING:
     from kicad_source import KiCadSource
     from sheet import Sheet
@@ -422,6 +424,29 @@ class Component:
         comp._warn_duplicate_pin_positions()
 
         return comp
+
+
+    def __post_init__(self) -> None:
+        """Валидация инвариантов компонента при создании.
+
+        Reference компонента обязан быть KiCad-совместимым
+        (<1..4 латинских буквы><номер>). Если это не так —
+        падаем сразу, а не молча теряем компонент в Writer.
+
+        Порты (PORT_*) — отдельный класс; сюда попадать не должны.
+        Если сюда попал designator, начинающийся с PORT_, это ошибка
+        вызывающего кода: порт создаётся не как Component.
+        """
+        page = self.sheet_path or None
+
+        if self.designator.startswith("PORT_"):
+            raise DesignatorError(
+                f"designator {self.designator!r} — это порт, "
+                f"а не компонент. Порты создаются отдельным классом "
+                f"и пишутся как иерархические метки."
+            )
+
+        validate_component_designator(self.designator, page=page)
 
     # ---------- диагностика дубликатов пинов ----------
 

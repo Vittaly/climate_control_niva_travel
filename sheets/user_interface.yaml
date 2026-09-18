@@ -10,7 +10,7 @@ functional_purpose: |
     * Внешний 5-позиционный переключатель с общим проводом.
     * С галлетника идут ТОЛЬКО сигнальные провода — по одному
       на каждую скорость (1..4) плюс общий на GND.
-    * Резисторы ступеней R_SEL_1..R_SEL_4 находятся на плате.
+    * Резисторы ступеней R25..R28 находятся на плате.
     * Каждый резистор через свой контакт галлетника замыкается
       на GND, формируя делитель с подтяжкой R23 (10к к +3,3В).
     * AUTO — положение, при котором ни один контакт не замкнут,
@@ -18,10 +18,10 @@ functional_purpose: |
 
   Кодировка напряжений на FAN_SEL_ADC:
     AUTO (все разомкнуты)          → 3,30 В
-    Позиция 1 (R_SEL_1 = 20к)      → 2,20 В
-    Позиция 2 (R_SEL_2 = 10к)      → 1,65 В
-    Позиция 3 (R_SEL_3 = 4,7к)     → 1,05 В
-    Позиция 4 (R_SEL_4 = 1к)       → 0,30 В
+    Позиция 1 (R25 = 20к)      → 2,20 В
+    Позиция 2 (R26 = 10к)      → 1,65 В
+    Позиция 3 (R27 = 4,7к)     → 1,05 В
+    Позиция 4 (R28 = 1к)       → 0,30 В
 
   Детектор габаритов:
     * Делитель R39 (47к) / R40 (10к) от ILLUM_IN_RAW (1..14,4В)
@@ -84,12 +84,12 @@ ports:
   description: АЦП задания температуры (внешний потенциометр, 2-проводное включение)
 - net_label: FAN_SEL_ADC
   type: OUTPUT
-  description: АЦП скорости вентилятора (кодировка резисторами R_SEL_1..4 на плате)
+  description: АЦП скорости вентилятора (кодировка резисторами R25..4 на плате)
 - net_label: GALLET_POS_1
   type: INPUT
   description: |
     Контакт галлетника — позиция 1 скорости.
-    При замыкании на GALLET_COM/общий провод замыкает R_SEL_1
+    При замыкании на GALLET_COM/общий провод замыкает R25
     на GND. В остальных положениях — разомкнут.
 - net_label: GALLET_POS_2
   type: INPUT
@@ -259,23 +259,23 @@ components:
   R40:
     type: TYPE_R_10K
     description: "Делитель входа детектора габаритов, нижнее плечо"
-  R_SEL_1:
+  R25:
     type: TYPE_R_20K
     description: |
       Резистор ступени галлетника, позиция 1.
       Замыкается на GND через контакт GALLET_POS_1.
       Даёт FAN_SEL_ADC ≈ 2,20В.
-  R_SEL_2:
+  R26:
     type: TYPE_R_10K
     description: |
       Резистор ступени галлетника, позиция 2.
       Даёт FAN_SEL_ADC ≈ 1,65В.
-  R_SEL_3:
+  R27:
     type: TYPE_R_4K7
     description: |
       Резистор ступени галлетника, позиция 3.
       Даёт FAN_SEL_ADC ≈ 1,05В.
-  R_SEL_4:
+  R28:
     type: TYPE_R_1K
     description: |
       Резистор ступени галлетника, позиция 4 (максимум).
@@ -493,7 +493,7 @@ nets:
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,      pin: '2' }
-    - { component: R_SEL_1, pin: '1' }
+    - { component: R25, pin: '1' }
 
   GALLET_POS_2:
     name: GALLET_POS_2
@@ -502,7 +502,7 @@ nets:
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,      pin: '3' }
-    - { component: R_SEL_2, pin: '1' }
+    - { component: R26, pin: '1' }
 
   GALLET_POS_3:
     name: GALLET_POS_3
@@ -511,7 +511,7 @@ nets:
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,      pin: '4' }
-    - { component: R_SEL_3, pin: '1' }
+    - { component: R27, pin: '1' }
 
   GALLET_POS_4:
     name: GALLET_POS_4
@@ -520,22 +520,22 @@ nets:
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,      pin: '5' }
-    - { component: R_SEL_4, pin: '1' }
+    - { component: R28, pin: '1' }
 
   FAN_SEL_ADC:
     name: FAN_SEL_ADC
     description: |
       АЦП скорости вентилятора. Кодировка через резисторы ступеней:
-      R_SEL_1..4 на плате, замыкаются контактами галлетника на GND.
+      R25..4 на плате, замыкаются контактами галлетника на GND.
       Подтяжка R23 (10к) к +3,3В, фильтр C23.
     is_hierarchical_port: true
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: R23,     pin: '2' }
-    - { component: R_SEL_1, pin: '2' }
-    - { component: R_SEL_2, pin: '2' }
-    - { component: R_SEL_3, pin: '2' }
-    - { component: R_SEL_4, pin: '2' }
+    - { component: R25, pin: '2' }
+    - { component: R26, pin: '2' }
+    - { component: R27, pin: '2' }
+    - { component: R28, pin: '2' }
     - { component: C23,     pin: '1' }
 
   NTC_CABIN:
@@ -591,10 +591,10 @@ spice:
 #
 # Кодировка FAN_SEL_ADC:
 #   AUTO (все разомкнуты)      → 3,30В (только R23)
-#   Позиция 1 (R_SEL_1 = 20к)  → 2,20В
-#   Позиция 2 (R_SEL_2 = 10к)  → 1,65В
-#   Позиция 3 (R_SEL_3 = 4,7к) → 1,05В
-#   Позиция 4 (R_SEL_4 = 1к)   → 0,30В
+#   Позиция 1 (R25 = 20к)  → 2,20В
+#   Позиция 2 (R26 = 10к)  → 1,65В
+#   Позиция 3 (R27 = 4,7к) → 1,05В
+#   Позиция 4 (R28 = 1к)   → 0,30В
 # ─────────────────────────────────────────────────────────────────────
 
 scenarios:
@@ -616,7 +616,7 @@ scenarios:
   - name: UI_FAN_POS_1
     description: |
       Галлетник в позиции 1 — замкнут GALLET_POS_1 на GND.
-      Делитель R23 (10к) / R_SEL_1 (20к) → 2,20В.
+      Делитель R23 (10к) / R25 (20к) → 2,20В.
     analysis: op
     deck:
       - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3,
@@ -630,7 +630,7 @@ scenarios:
   - name: UI_FAN_POS_2
     description: |
       Галлетник в позиции 2 — замкнут GALLET_POS_2.
-      Делитель R23 / R_SEL_2 (10к) → 1,65В.
+      Делитель R23 / R26 (10к) → 1,65В.
     analysis: op
     deck:
       - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
@@ -642,7 +642,7 @@ scenarios:
 
   - name: UI_FAN_POS_3
     description: |
-      Галлетник в позиции 3. R_SEL_3 (4,7к) → 1,05В.
+      Галлетник в позиции 3. R27 (4,7к) → 1,05В.
     analysis: op
     deck:
       - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
@@ -654,7 +654,7 @@ scenarios:
 
   - name: UI_FAN_POS_4
     description: |
-      Галлетник в позиции 4 (максимум). R_SEL_4 (1к) → 0,30В.
+      Галлетник в позиции 4 (максимум). R28 (1к) → 0,30В.
     analysis: op
     deck:
       - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }

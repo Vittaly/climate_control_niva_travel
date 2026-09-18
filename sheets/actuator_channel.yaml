@@ -11,6 +11,11 @@ functional_purpose: |
   внутри листа используются обобщённые имена: IN1, IN2, MOTOR_A,
   MOTOR_B, FB_RAW, FB.
 
+  Соответствие KiCad-reference и логических ролей:
+    U1 = U,     C1 = C_VM,
+    R1 = R_ILIM, R2 = R_TOP, R3 = R_BOT,
+    C2 = C_FB.
+
 ports:
   - net_label: VCC_12V
     type: POWER
@@ -73,24 +78,30 @@ component_types:
     fields: {}
 
 components:
-  U:
+  U1:
     type: TYPE_DRV8871DDA
-    description: "H-мост драйвера моторедуктора заслонки"
-  C_VM:
+    description: "U: H-мост драйвера моторедуктора заслонки"
+    fields: { Role: U }
+  C1:
     type: TYPE_C_100NF
-    description: "Развязка питания драйвера по VM"
-  R_ILIM:
+    description: "C_VM: развязка питания драйвера по VM"
+    fields: { Role: C_VM }
+  R1:
     type: TYPE_R_33K
-    description: "Резистор установки токоограничения драйвера (подобрать)"
-  R_TOP:
+    description: "R_ILIM: резистор установки токоограничения драйвера (подобрать)"
+    fields: { Role: R_ILIM }
+  R2:
     type: TYPE_R_10K
-    description: "Верхнее плечо делителя ОС потенциометра положения"
-  R_BOT:
+    description: "R_TOP: верхнее плечо делителя ОС потенциометра положения"
+    fields: { Role: R_TOP }
+  R3:
     type: TYPE_R_20K
-    description: "Нижнее плечо делителя ОС потенциометра положения"
-  C_FB:
+    description: "R_BOT: нижнее плечо делителя ОС потенциометра положения"
+    fields: { Role: R_BOT }
+  C2:
     type: TYPE_C_100NF
-    description: "Фильтр АЦП сигнала ОС"
+    description: "C_FB: фильтр АЦП сигнала ОС"
+    fields: { Role: C_FB }
 
 nets:
   VCC_12V:
@@ -106,9 +117,9 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U
+      - component: U1
         pin: '5'
-      - component: C_VM
+      - component: C1
         pin: '1'
 
   GND:
@@ -124,17 +135,17 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U
+      - component: U1
         pin: '1'
-      - component: U
+      - component: U1
         pin: '7'
-      - component: C_VM
+      - component: C1
         pin: '2'
-      - component: R_ILIM
+      - component: R1
         pin: '2'
-      - component: R_BOT
+      - component: R3
         pin: '2'
-      - component: C_FB
+      - component: C2
         pin: '2'
 
   IN1:
@@ -150,7 +161,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U
+      - component: U1
         pin: '3'
 
   IN2:
@@ -166,7 +177,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U
+      - component: U1
         pin: '2'
 
   MOTOR_A:
@@ -182,7 +193,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U
+      - component: U1
         pin: '6'
 
   MOTOR_B:
@@ -198,7 +209,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U
+      - component: U1
         pin: '8'
 
   FB_RAW:
@@ -214,7 +225,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: R_TOP
+      - component: R2
         pin: '1'
 
   FB:
@@ -230,11 +241,11 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: R_TOP
+      - component: R2
         pin: '2'
-      - component: R_BOT
+      - component: R3
         pin: '1'
-      - component: C_FB
+      - component: C2
         pin: '1'
 
   ILIM:
@@ -250,24 +261,24 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U
+      - component: U1
         pin: '4'
-      - component: R_ILIM
+      - component: R1
         pin: '1'
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice для канала заслонки
 #
-# Драйвер DRV8871 (U), пины:
+# Драйвер DRV8871 (U1), пины:
 #   1 GND, 2 IN2, 3 IN1, 4 ILIM, 5 VM, 6 OUT1 (=MOTOR_A), 7 PGND, 8 OUT2 (=MOTOR_B)
 #
 # Логика H-моста:
 #   IN1=H, IN2=L  → MOTOR_A ≈ VCC_12V, MOTOR_B ≈ GND  (прямое)
 #   IN1=L, IN2=H  → MOTOR_A ≈ GND,     MOTOR_B ≈ VCC  (обратное)
 #
-# Делитель ОС:
-#   FB_RAW → R_TOP (10k) → FB → R_BOT (20k) → GND
-#   K = R_BOT / (R_TOP + R_BOT) = 20 / 30 = 2/3
+# Делитель ОС (R2 = R_TOP, R3 = R_BOT):
+#   FB_RAW → R2 (10k) → FB → R3 (20k) → GND
+#   K = R3 / (R2 + R3) = 20 / 30 = 2/3
 #   При FB_RAW = 5В   → FB = 3,333В
 #   При FB_RAW = 2,5В → FB = 1,667В
 #

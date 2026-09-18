@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cabin_sensor.kicad_sch")
-		(date "2026-09-18T10:57:34")
+		(date "2026-09-19T00:47:59")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "40f78341-3faa-4372-92e0-12b2bb12b87c")
+			(tstamps "5d5e9661-e873-457e-b79c-a2a81bec42d8")
 			(units
 				(unit
 					(name "A")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2f602b45-c919-44ab-891f-56fe3516c13f")
+			(tstamps "edf38646-68b7-423f-ab6a-66973af1530c")
 			(units
 				(unit
 					(name "A")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5f44eb6d-4fe2-4258-9a8b-bfee1b36e29d")
+			(tstamps "dab69ad0-2cb6-4d63-a8a4-ebed0ef55799")
 			(units
 				(unit
 					(name "A")
@@ -282,7 +282,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "492a7549-9fee-4b11-a938-04d90d48830a")
+			(tstamps "ba24e088-610d-4e55-97a6-b4b701e80915")
 			(units
 				(unit
 					(name "A")
@@ -342,7 +342,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d713783d-9c17-40dd-88dc-d123510fcb5f")
+			(tstamps "0b6edef9-dd69-493e-bcae-b0b0d6d26357")
 			(units
 				(unit
 					(name "A")
@@ -402,7 +402,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "692b7ac7-662a-4202-bb10-1a0bbb2af354")
+			(tstamps "70bab070-4f90-44c8-b161-bc991f6db8da")
 			(units
 				(unit
 					(name "A")
@@ -624,28 +624,10 @@
 			(name "/GND")
 			(class "Default")
 			(node
-				(ref "D3")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "J5")
-				(pin "2")
-				(pinfunction "Pin_2_2")
-				(pintype "passive")
-			)
-			(node
 				(ref "Q2")
 				(pin "1")
 				(pinfunction "G_1")
 				(pintype "input")
-			)
-			(node
-				(ref "Q2")
-				(pin "2")
-				(pinfunction "S_2")
-				(pintype "passive")
 			)
 			(node
 				(ref "Q2")
@@ -679,18 +661,6 @@
 			(name "/M_FAN_CTL")
 			(class "Default")
 			(node
-				(ref "D3")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-			(node
-				(ref "J5")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive")
-			)
-			(node
 				(ref "R16")
 				(pin "1")
 				(pintype "passive")
@@ -703,6 +673,46 @@
 			(node
 				(ref "RT1")
 				(pin "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "4")
+			(name "/VCC_12V")
+			(class "Default")
+			(node
+				(ref "D3")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J5")
+				(pin "1")
+				(pinfunction "Pin_1_1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "5")
+			(name "Net-(D3-K)")
+			(class "Default")
+			(node
+				(ref "D3")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J5")
+				(pin "2")
+				(pinfunction "Pin_2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q2")
+				(pin "2")
+				(pinfunction "S_2")
 				(pintype "passive")
 			)
 		)

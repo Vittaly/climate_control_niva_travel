@@ -5,7 +5,7 @@
 * ток через вентилятор ≈ 0.
 .INCLUDE spice/SEN_CABIN.sub
 
-* Порты: GND M_FAN_CTL NTC_CABIN
+* Порты: GND M_FAN_CTL NTC_CABIN VCC_12V
 
 * V1: Бортовая сеть +14,4В
 V1 VCC_12V 0 DC 14.4
@@ -15,7 +15,7 @@ V2 M_FAN_CTL 0 DC 0.0
 
 * R_FAN: Эквивалент обмотки вентилятора
 R_FAN VCC_12V SENS_FAN_SW 100
-XSEN_CABIN 0 M_FAN_CTL NTC_CABIN SEN_CABIN
+XSEN_CABIN 0 M_FAN_CTL NTC_CABIN VCC_12V SEN_CABIN
 
 .op
 .control

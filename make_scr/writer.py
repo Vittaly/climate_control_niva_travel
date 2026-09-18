@@ -10,21 +10,27 @@ Writer привязан к одной Sheet — как Placer и Router:
 Провода берутся из self.netlist (Net.wires), фильтруются по странице
 через pin.component.sheet is self.sheet.
 
-Порты страницы (PortComponent) рисуются как hierarchical_label.
+Порты страницы (PortComponent) рисуются как hierarchical_label
+в точке их пина (не в anchor'е компонента).
+
 Вложенные листы (SheetRefComponent) — через add_sheet + sheet_pin.
 T-врезки пишутся через sch.junctions.add.
 Метки-заглушки — через sch.add_label.
 
 Позиционирование:
     Компонент хранит anchor_page_mm (точку якоря на странице, мм).
-    Writer передаёт её в (at x y angle) для symbol и использует
-    для листов/портов.
-    Никаких placer.positions — они временные.
+    Writer передаёт её в (at x y angle) для symbol.
+    Для hier_label берётся точка пина: comp.abs_pin_mm(pin).
+
+Провода пишутся по wire.segments() — прямолинейные отрезки между
+углами поворота. Не по клеткам: одна клетка = один (wire ...)
+превращает любое пересечение крестом в короткое замыкание.
 
 Логирование:
     Все лог-строки — одна строка, префикс ctx():
         [page] [net] [comp] [pin]
     Пропущенное поле в середине — [-], хвостовые — опускаются.
+    Геометрия проводов (write_wire / write_stub_*) — на уровне TRACE.
 """
 from pathlib import Path
 from typing import List, Optional, TYPE_CHECKING
@@ -53,11 +59,7 @@ class Writer:
     # =========================================================
 
     def cell_to_mm(self, cell: Cell) -> tuple[float, float]:
-        """Переводит координаты клетки в мм от начала листа.
-
-        Используется для T-врезок и меток — там клетки.
-        Для компонентов используется anchor_page_mm (уже в мм).
-        """
+        """Переводит координаты клетки в мм от начала листа."""
         return (cell.col * self.cell_size_mm,
                 cell.row * self.cell_size_mm)
 
@@ -75,10 +77,10 @@ class Writer:
             270 — текст вниз
         """
         return {
-            Direction.LEFT:    0,     # пин смотрит влево  → текст вправо
-            Direction.RIGHT: 180,     # пин смотрит вправо → текст влево
-            Direction.DOWN:   90,     # пин смотрит вниз   → текст вверх
-            Direction.UP:    270,     # пин смотрит вверх  → текст вниз
+            Direction.LEFT:    0,
+            Direction.RIGHT: 180,
+            Direction.DOWN:   90,
+            Direction.UP:    270,
         }[direction]
 
     def write_text(self) -> str:
@@ -109,10 +111,7 @@ class Writer:
 
     @staticmethod
     def _designator(pin) -> str:
-        """Designator компонента из Pin.
-
-        Пробует pin.component.designator, иначе — split local_key.
-        """
+        """Designator компонента из Pin."""
         if pin is None:
             return "-"
         comp = getattr(pin, "component", None)
@@ -127,10 +126,7 @@ class Writer:
 
     @staticmethod
     def _pin_num(pin) -> str:
-        """Номер/имя пина из Pin.
-
-        Пробует pin.number, иначе — split local_key.
-        """
+        """Номер/имя пина из Pin."""
         if pin is None:
             return "-"
         num = getattr(pin, "number", None)
@@ -158,7 +154,6 @@ class Writer:
         out_path = Path(out_path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # пробуем KiCad API
         try:
             import kicad_sch_api as ksa
         except ImportError:
@@ -182,22 +177,34 @@ class Writer:
                 continue
             x_mm, y_mm = anchor_mm
 
-            # --- Порт: hierarchical_label ---
+            # --- Порт: hierarchical_label в точке ПИНА ---
+            # ВАЖНО: не в anchor'е! У портов пин смещён от якоря
+            # на offset_mm (у PORT_VCC_12V это +7.62 мм по X).
+            # Иначе hier_label висит в воздухе и порт не попадает
+            # в нетлист.
             if getattr(comp, "is_port", False):
+                if not comp.pins:
+                    log.warning("%s port_no_pins",
+                                ctx(page=label, net=comp.net_name,
+                                    comp=comp.designator))
+                    continue
+                pin = comp.pins[0]
+                px, py = comp.abs_pin_mm(pin)
                 rotation = 180 if comp.side == "left" else 0
                 try:
                     sch.add_hierarchical_label(
                         text=comp.net_name,
                         shape=comp.shape,
-                        position=(x_mm, y_mm),
+                        position=(px, py),
                         rotation=rotation,
                     )
                     log.info(
-                        "%s write_hier_label net=%s anchor_mm=(%.2f,%.2f) "
-                        "rotation=%d shape=%s",
+                        "%s write_hier_label net=%s pin_mm=(%.2f,%.2f) "
+                        "anchor_mm=(%.2f,%.2f) rotation=%d shape=%s",
                         ctx(page=label, net=comp.net_name,
                             comp=comp.designator),
-                        comp.net_name, x_mm, y_mm, rotation, comp.shape,
+                        comp.net_name, px, py,
+                        x_mm, y_mm, rotation, comp.shape,
                     )
                     placed += 1
                 except Exception as e:
@@ -264,7 +271,6 @@ class Writer:
                           ctx(page=label, comp=designator), e)
                 continue
 
-            # ---------- 3. Sheet pins для этого листа ----------
             n_sheet_pins += self._add_sheet_pins(
                 sch, sobj, comp, x_mm, y_mm, w_mm, h_mm, label)
 
@@ -335,12 +341,7 @@ class Writer:
                         x_mm: float, y_mm: float,
                         w_mm: float, h_mm: float,
                         label: str) -> int:
-        """Добавляет sheet_pin-ы по пинам SheetRefComponent.
-
-        У SheetRefComponent по одному пину на каждый порт дочернего
-        YAML. Пин задан offset_mm от anchor (= левый-верхний угол
-        листа). Сторона определяется offset_x: 0 — left, иначе right.
-        """
+        """Добавляет sheet_pin-ы по пинам SheetRefComponent."""
         uid = (getattr(sobj, "uuid", None)
                or getattr(sobj, "id", None))
         if uid is None and isinstance(sobj, str):
@@ -369,10 +370,8 @@ class Writer:
             if not net:
                 continue
 
-            # сторона: offset_x == 0 → left, иначе right
             side = "left" if pin.offset_mm[Axis.X] == 0.0 else "right"
 
-            # тип: ищем по имени порта в comp.ports
             port = next(
                 (p for p in getattr(comp, "ports", [])
                  if p.get("net_label") == net),
@@ -383,7 +382,6 @@ class Writer:
                      else "output" if ptype == "OUTPUT"
                      else "input")
 
-            # Y пина в мм от верхнего края листа
             pin_y_mm = y_mm + pin.offset_mm[Axis.Y]
             if pin_y_mm > y_mm + h_mm - grid_mm:
                 log.warning("%s sheet_pin pin=%s overflow",
@@ -391,8 +389,6 @@ class Writer:
                                 pin=pin.local_key))
                 continue
 
-            # offset: для left API считает от НИЖНЕГО угла,
-            # для right — от ВЕРХНЕГО
             if side == "left":
                 offset = (y_mm + h_mm) - pin_y_mm
             else:
@@ -444,26 +440,13 @@ class Writer:
         return False
 
     def _emit_wire(self, sch, wire, label: str, net_name: str) -> int:
-        """Разбивает Wire на ортогональные отрезки и пишет их.
+        """Пишет провод: start_stub + path-сегменты + end_stub.
 
-        Пишет:
-            1. start_stub: от pin_mm до tip_mm (в мм).
-            2. path: клетки пути (в мм через cell_to_mm).
-            3. end_stub: от tip_mm до pin_mm (в мм).
-
-        Логирование:
-            - start_stub — в контексте wire.start;
-            - end_stub   — в контексте wire.end;
-            - path       — дублируется в контексте обоих пинов
-                           (если end есть и это не T-врезка).
-            sch.add_wire для каждого сегмента вызывается ОДИН раз;
-            дублируется только log.trace.
-
-        Args:
-            sch:      schematic API.
-            wire:     Wire с path, start_stub, end_stub.
-            label:    имя страницы для логов.
-            net_name: имя сети для логов.
+        Path пишется по wire.segments() — прямолинейными отрезками
+        между углами поворота. Это критично: если писать по клеткам,
+        любая клетка становится endpoint, и пересечение крестом
+        двух проводов разных сетей превращается в короткое
+        замыкание на уровне KiCad.
         """
         n = 0
         is_t = bool(getattr(wire, "t_junction", False))
@@ -489,10 +472,9 @@ class Writer:
                     log.warning("%s add_stub_in error=%s",
                                 self._ctx(label, net_name, wire.start), e)
 
-        # --- 2. path — общая геометрия ---
+        # --- 2. path — прямолинейные сегменты ---
         path_segments = self._collect_path_segments(wire)
 
-        # 2a. добавляем в sch — один раз на сегмент
         for (a, b, _ca, _cb) in path_segments:
             try:
                 sch.add_wire(a, b)
@@ -502,20 +484,20 @@ class Writer:
                             self._ctx(label, net_name, wire.start),
                             a, b, e)
 
-        # 2b. логируем — в контексте start и (если есть) end
-        views = [wire.start]
-        if has_end:
-            views.append(wire.end)
-        for view_pin in views:
-            cctx = self._ctx(label, net_name, view_pin)
-            for (a, b, ca, cb) in path_segments:
-                log.trace(
-                    "%s write_wire a_mm=(%.2f,%.2f) b_mm=(%.2f,%.2f) "
-                    "a_cell=(%d,%d) b_cell=(%d,%d)",
-                    cctx,
-                    a[0], a[1], b[0], b[1],
-                    ca.col, ca.row, cb.col, cb.row,
-                )
+        if path_segments:
+            views = [wire.start]
+            if has_end:
+                views.append(wire.end)
+            for view_pin in views:
+                cctx = self._ctx(label, net_name, view_pin)
+                for (a, b, ca, cb) in path_segments:
+                    log.trace(
+                        "%s write_wire a_mm=(%.2f,%.2f) b_mm=(%.2f,%.2f) "
+                        "a_cell=(%d,%d) b_cell=(%d,%d)",
+                        cctx,
+                        a[0], a[1], b[0], b[1],
+                        ca.col, ca.row, cb.col, cb.row,
+                    )
 
         # --- 3. end_stub — контекст wire.end ---
         if wire.end_stub is not None and has_end:
@@ -540,19 +522,25 @@ class Writer:
         return n
 
     def _collect_path_segments(self, wire):
-        """Возвращает список (a_mm, b_mm, a_cell, b_cell) для path.
+        """Возвращает [(a_mm, b_mm, a_cell, b_cell), ...] для path.
 
-        Пропускает нулевые отрезки (a == b). Используется и для
-        sch.add_wire, и для log.trace — чтобы path считался один раз.
+        Использует wire.segments() — прямолинейные отрезки между
+        углами поворота. Один сегмент длиной 16 клеток пишется одним
+        sch.add_wire, а не шестнадцатью. Это принципиально для
+        корректного пересечения крестом: два провода разных сетей,
+        проходящие через общую клетку транзитом, остаются
+        несоединёнными (у них нет общего endpoint'а).
+
+        Отростки (start_stub, end_stub) сюда не входят — их пишет
+        _emit_wire отдельно.
         """
-        cells = list(wire.all_cells())
         out = []
-        for i in range(len(cells) - 1):
-            a = self.cell_to_mm(cells[i])
-            b = self.cell_to_mm(cells[i + 1])
+        for seg in wire.segments():
+            a = self.cell_to_mm(seg.start)
+            b = self.cell_to_mm(seg.end)
             if abs(a[0] - b[0]) < 1e-9 and abs(a[1] - b[1]) < 1e-9:
                 continue
-            out.append((a, b, cells[i], cells[i + 1]))
+            out.append((a, b, seg.start, seg.end))
         return out
 
     # =========================================================

@@ -1,6 +1,6 @@
 * SEN_CABIN — субсхема из нетлиста KiCad + YAML
-.subckt SEN_CABIN GND M_FAN_CTL NTC_CABIN PARAMS: RT1_T RT1_R25 RT1_BETA
-  D3 GND M_FAN_CTL MyD
+.subckt SEN_CABIN GND M_FAN_CTL NTC_CABIN VCC_12V PARAMS: RT1_T RT1_R25 RT1_BETA
+  D3 Net-(D3-K) VCC_12V MyD
   * J5: Conn_01x02 (Внутр. коннектор вентилятора продувки (2п, XH)) — не моделируется
   * Q2: AO3400A (AO3400) — не моделируется
   R16 M_FAN_CTL GND 1k

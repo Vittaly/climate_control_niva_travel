@@ -1,9 +1,27 @@
 * BACKLIGHT — субсхема из нетлиста KiCad + YAML
-.subckt BACKLIGHT GND NET_SCALE_CH2_C NET_SCALE_CH3_C NET_SCALE_CH5_C NET_SCALE_CH6_C NET_SCALE_CH7_C NET_SCALE_CH8_A NET_SCALE_CH8_C
+.subckt BACKLIGHT GND ILLUM_IN_RAW NET_BTN_CH1_C NET_PTR_CH1_A NET_SCALE_CH2_C NET_SCALE_CH3_C NET_SCALE_CH5_C NET_SCALE_CH6_C NET_SCALE_CH7_C NET_SCALE_CH8_A NET_SCALE_CH8_C
+  * LED101: LED (Белый SMD 1206) — не моделируется
+  * LED102: LED (Белый SMD 1206) — не моделируется
+  * LED103: LED (Белый SMD 1206) — не моделируется
+  * LED104: LED (Белый SMD 1206) — не моделируется
+  * LED105: LED (Белый SMD 1206) — не моделируется
+  * LED106: LED (Белый SMD 1206) — не моделируется
   * LED11: LED (Белый SMD 0805) — не моделируется
   * LED12: LED (Белый SMD 0805) — не моделируется
   * LED13: LED (Белый SMD 0805) — не моделируется
+  * LED201: LED (Белый SMD 0603) — не моделируется
+  * LED202: LED (Белый SMD 0603) — не моделируется
+  * LED203: LED (Белый SMD 0603) — не моделируется
+  * LED204: LED (Белый SMD 0603) — не моделируется
+  * LED205: LED (Белый SMD 0603) — не моделируется
+  * LED206: LED (Белый SMD 0603) — не моделируется
+  * LED207: LED (Белый SMD 0603) — не моделируется
+  * LED208: LED (Белый SMD 0603) — не моделируется
+  * LED209: LED (Белый SMD 0603) — не моделируется
   * LED21: LED (Белый SMD 0805) — не моделируется
+  * LED210: LED (Белый SMD 0603) — не моделируется
+  * LED211: LED (Белый SMD 0603) — не моделируется
+  * LED212: LED (Белый SMD 0603) — не моделируется
   * LED22: LED (Белый SMD 0805) — не моделируется
   * LED23: LED (Белый SMD 0805) — не моделируется
   * LED31: LED (Белый SMD 0805) — не моделируется
@@ -24,12 +42,18 @@
   * LED81: LED (Белый SMD 0805) — не моделируется
   * LED82: LED (Белый SMD 0805) — не моделируется
   * LED83: LED (Белый SMD 0805) — не моделируется
-  R1 GND Net-(LED11-K) 130
-  R2 GND GND 130
-  R3 GND GND 130
-  R4 GND GND 130
-  R5 GND GND 130
-  R6 GND GND 130
-  R7 GND GND 130
-  R8 GND NET_SCALE_CH8_A 130
+  R1 ILLUM_IN_RAW Net-(LED11-K) 130
+  R10 ILLUM_IN_RAW Net-(LED104-K) 130
+  R11 ILLUM_IN_RAW NET_PTR_CH1_A 130
+  R12 ILLUM_IN_RAW Net-(LED204-K) 130
+  R13 ILLUM_IN_RAW Net-(LED207-K) 130
+  R14 ILLUM_IN_RAW Net-(LED210-K) 130
+  R2 ILLUM_IN_RAW Net-(LED21-K) 130
+  R3 ILLUM_IN_RAW Net-(LED31-K) 130
+  R4 ILLUM_IN_RAW Net-(LED41-K) 130
+  R5 ILLUM_IN_RAW Net-(LED51-K) 130
+  R6 ILLUM_IN_RAW ILLUM_IN_RAW 130
+  R7 ILLUM_IN_RAW ILLUM_IN_RAW 130
+  R8 ILLUM_IN_RAW NET_SCALE_CH8_A 130
+  R9 ILLUM_IN_RAW Net-(LED101-K) 130
 .ends BACKLIGHT

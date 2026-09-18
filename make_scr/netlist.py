@@ -115,21 +115,38 @@ class Netlist:
     # ---------- пины ----------
 
     def assign_pin_to_net(
-        self,
-        fqn_key: str,
-        net_name: str,
-        pin: Pin,
-    ) -> None:
+    self,
+    fqn_key: str,
+    net_name: str,
+    pin: Pin) -> None:
         if net_name not in self.nets:
             raise ValueError(f"Нет сети: {net_name}")
 
         net = self.nets[net_name]
 
-        # уже в этой сети — no-op
+        # ── 1. уже в этой сети — no-op ──────────────────────────────
         if fqn_key in net.pins:
             log.debug("Уже в сети %s: %s, пропускаю", net_name, fqn_key)
             return
 
+        # ── 2. пин уже привязан к другой сети? ──────────────────────
+        existing_net = self.pin_to_net.get(fqn_key)
+        if existing_net is not None and existing_net != net_name:
+            raise ValueError(
+                f"Пин {fqn_key} уже привязан к сети {existing_net!r}, "
+                f"попытка привязать к {net_name!r}. Один пин — одна сеть."
+            )
+
+        # ── 3. пин.net_ref уже проставлен в другую сеть? ────────────
+        # (страховка на случай, если pin_to_net рассинхронизирован
+        #  с pin.net_ref — например, пин вернули из другой страницы)
+        if pin.net_ref is not None and pin.net_ref != net_name:
+            raise ValueError(
+                f"Пин {fqn_key}: pin.net_ref={pin.net_ref!r}, "
+                f"попытка привязать к {net_name!r}."
+            )
+
+        # ── 4. всё чисто, можно присваивать ─────────────────────────
         pin.net_ref = net_name
 
         duplicate = self._find_duplicate_in_net(pin, net_name)
@@ -138,8 +155,7 @@ class Netlist:
             pin.alias_of = duplicate
             log.info(
                 "alias: %s → %s (net=%s, comp=%s)",
-                fqn_key, duplicate.local_key, net_name,
-                _designator(pin),
+                fqn_key, duplicate.local_key, net_name, _designator(pin),
             )
             return
 
