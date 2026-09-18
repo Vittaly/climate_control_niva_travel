@@ -1,21 +1,112 @@
 # router_impl/rules.py
 """Правила входа/выхода в клетку. Чистые функции без self.
 
-Правила маршрутизации (один слой):
-    - вход в чужой WireCell ПЕРПЕНДИКУЛЯРНО разрешён (пересечение);
-    - вход в чужой WireCell ПАРАЛЛЕЛЬНО запрещён (наложение);
-    - после перпендикулярного входа в чужой WireCell следующий
-      шаг ПАРАЛЛЕЛЬНО чужому проводу запрещён — нельзя «въехать»
-      в чужой провод и поехать вдоль него;
-    - выход ПЕРПЕНДИКУЛЯРНО из чужого WireCell разрешён
-      (завершение пересечения).
+Модель: клетка может быть занята до ДВУМЯ проводами разных сетей,
+если оба проходят через неё ТРАНЗИТОМ и перпендикулярно друг другу.
+Один endpoint (пин, T-врезка, конец пути, угол) — блокирует клетку
+для чужой сети монопольно.
+
+Правила:
+    - ComponentBody — стена;
+    - PinCell — endpoint, чужая сеть не входит;
+    - WireCell:
+        * своя сеть — всегда ок;
+        * чужая с is_endpoint — запрещено;
+        * чужая транзитная перпендикулярно к входу — разрешено;
+        * чужая транзитная параллельно — запрещено;
+    - пустая клетка — ок.
+
+has_parallel_foreign_wire больше не нужен: прямой чек по всем
+usage в клетке (включая corner как две ориентации) закрывает
+все случаи, ради которых он был введён.
 """
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from cell import Cell
-from constants import WireAngle
+from constants import WireAngle, WireOrientation
 from occupant import ComponentBody, PinCell, WireCell
 
+
+# =========================================================
+# Определение ориентации и endpoint провода в клетке
+# =========================================================
+
+def _orientations_at(wire, cell: Cell) -> List[WireOrientation]:
+    """Ориентации сегментов провода, проходящих через клетку.
+
+    Возвращает:
+        []              — провод не проходит через клетку;
+        [HORIZONTAL]    — прямолинейный проход по горизонтали;
+        [VERTICAL]      — прямолинейный проход по вертикали;
+        [DIAGONAL]      — диагональный сегмент;
+        [H, V]          — угол (провод поворачивает в этой клетке).
+    """
+    orients: List[WireOrientation] = []
+    for seg in wire.segments():
+        if cell not in seg.cells():
+            continue
+        orients.append(seg.orientation)
+    return orients
+
+
+def _is_endpoint_at(wire, cell: Cell) -> bool:
+    """Является ли клетка endpoint провода.
+
+    Endpoint — пин, T-врезка, концы path. Угол провода — не
+    endpoint, но он «блокирует» клетку через наличие двух
+    ориентаций (см. _orientations_at).
+    """
+    # Пин start
+    if wire.start is not None and wire.start.component is not None:
+        if wire.start.component.abs_pin_cell(wire.start) == cell:
+            return True
+    # Пин end (не T)
+    if (wire.end is not None
+            and not getattr(wire, "t_junction", False)
+            and wire.end.component is not None):
+        if wire.end.component.abs_pin_cell(wire.end) == cell:
+            return True
+    # T-точка
+    if getattr(wire, "t_junction", False) and wire.path:
+        if wire.path[-1] == cell:
+            return True
+    # Концы path
+    if wire.path:
+        if wire.path[0] == cell or wire.path[-1] == cell:
+            return True
+    return False
+
+
+def _check_entry(orients: List[WireOrientation],
+                 is_endpoint: bool,
+                 entry_angle: WireAngle,
+                 entry_is_endpoint: bool,
+                 foreign_net: str) -> Optional[str]:
+    """Проверяет совместимость чужого usage с нашим входом.
+
+    Возвращает причину конфликта или None.
+    """
+    if is_endpoint:
+        return f"foreign endpoint {foreign_net}"
+    if entry_is_endpoint:
+        return f"our endpoint into {foreign_net}"
+    if WireOrientation.DIAGONAL in orients:
+        return f"foreign diagonal {foreign_net}"
+
+    # наш вход — горизонтальный/вертикальный
+    entry_h = entry_angle in (WireAngle.EAST, WireAngle.WEST)
+
+    for o in orients:
+        o_h = (o == WireOrientation.HORIZONTAL)
+        if o_h == entry_h:
+            # параллельно — конфликт
+            return f"wire {foreign_net} parallel entry"
+    return None
+
+
+# =========================================================
+# Публичные проверки
+# =========================================================
 
 def in_bounds(bounds, cell: Cell) -> bool:
     """Лежит ли клетка внутри поля."""
@@ -24,136 +115,110 @@ def in_bounds(bounds, cell: Cell) -> bool:
 
 
 def can_enter(map_, bounds, cell: Cell, net: str,
-              entry_angle: WireAngle) -> Tuple[bool, Optional[str]]:
+              entry_angle: WireAngle,
+              entry_is_endpoint: bool = False
+              ) -> Tuple[bool, Optional[str]]:
     """Можно ли войти в клетку.
 
-    Returns:
-        (True, None) — можно;
-        (False, описание блокера) — нельзя.
+    Args:
+        map_: карта занятости.
+        bounds: границы поля.
+        cell: клетка входа.
+        net: имя нашей сети.
+        entry_angle: направление входа (EAST/WEST/NORTH/SOUTH).
+        entry_is_endpoint: True, если наша клетка — endpoint
+            (пин, T-врезка, конец path). Тогда любая чужая usage
+            в клетке блокирует вход.
     """
     if not in_bounds(bounds, cell):
         return False, f"out of bounds {cell}"
 
     occ = map_.get((cell.col, cell.row))
-
     if occ is None:
-        if has_parallel_foreign_wire(map_, cell, net, entry_angle):
-            return False, f"parallel wire near {cell}"
         return True, None
 
     if isinstance(occ, ComponentBody):
         return False, f"box {occ.component.designator}"
 
-    # if isinstance(occ, PinCell):
-    #     if occ.pin.net_ref == net:
-    #         return True, None
-    #     return False, f"pin {occ.component.designator}.{occ.pin.number}"
+    if isinstance(occ, PinCell):
+        if occ.pin.net_ref == net:
+            return True, None
+        return False, f"pin {occ.component.designator}.{occ.pin.number}"
 
     if isinstance(occ, WireCell):
-        if occ.wire.net_name == net:
-            return True, None
-        # чужой провод: вход только перпендикулярно
-        if is_perpendicular(occ.wire, cell, entry_angle):
-            return True, None
-        return False, f"wire {occ.wire.net_name} parallel entry"
+        for w in occ.wires:
+            if w.net_name == net:
+                continue
+            orients = _orientations_at(w, cell)
+            is_endpoint = _is_endpoint_at(w, cell)
+            reason = _check_entry(orients, is_endpoint,
+                                  entry_angle, entry_is_endpoint,
+                                  w.net_name)
+            if reason is not None:
+                return False, reason
+        return True, None
 
     return True, None
 
 
 def can_leave(map_, cell: Cell, net: str,
               entry_angle: Optional[WireAngle],
-              exit_angle: WireAngle) -> Tuple[bool, Optional[str]]:
+              exit_angle: WireAngle,
+              exit_is_endpoint: bool = False
+              ) -> Tuple[bool, Optional[str]]:
     """Можно ли выйти из клетки в направлении exit_angle.
 
-    Если клетка — чужой WireCell, и мы вошли в неё
-    перпендикулярно чужому проводу, то выход параллельно
-    чужому проводу запрещён: нельзя «въехать» в чужой провод
-    и поехать вдоль него.
-
-    Если клетка свободна или принадлежит своему проводу —
-    выход всегда разрешён.
-
-    Если entry_angle is None (стартовая клетка) — проверка
-    выхода не делается.
+    Симметрично can_enter: если клетка содержит чужой транзитный
+    провод, выход должен быть перпендикулярен ему.
     """
     occ = map_.get((cell.col, cell.row))
     if not isinstance(occ, WireCell):
         return True, None
-    if occ.wire.net_name == net:
-        return True, None
 
-    # вошли перпендикулярно? тогда выход параллельно запрещён
-    if entry_angle is not None and is_perpendicular(
-            occ.wire, cell, entry_angle):
-        if is_parallel(occ.wire, cell, exit_angle):
-            return False, f"wire {occ.wire.net_name} parallel exit"
+    for w in occ.wires:
+        if w.net_name == net:
+            continue
+        orients = _orientations_at(w, cell)
+        is_endpoint = _is_endpoint_at(w, cell)
+        reason = _check_entry(orients, is_endpoint,
+                              exit_angle, exit_is_endpoint,
+                              w.net_name)
+        if reason is not None:
+            return False, f"exit: {reason}"
     return True, None
 
 
-def is_perpendicular(wire, cell: Cell, angle: WireAngle) -> bool:
-    """Перпендикулярно ли направление angle проводу wire в клетке.
+# =========================================================
+# Совместимость со старым API
+# =========================================================
 
-    Провод может проходить через клетку несколькими сегментами
-    (в клетке поворота). Возвращает True, если хотя бы один
-    сегмент перпендикулярен заданному направлению.
+def is_perpendicular(wire, cell: Cell, angle: WireAngle) -> bool:
+    """Перпендикулярен ли angle ориентации провода в клетке.
+
+    True, если хотя бы одна ориентация провода в клетке
+    перпендикулярна angle. Для угла (H+V) — да, для любой angle
+    одна из ориентаций окажется параллельной, а другая
+    перпендикулярной.
     """
-    for seg in wire.segments():
-        if cell not in seg.cells():
-            continue
-        seg_h = seg.angle in (WireAngle.EAST, WireAngle.WEST)
-        ang_h = angle in (WireAngle.EAST, WireAngle.WEST)
-        if seg_h != ang_h:
+    orients = _orientations_at(wire, cell)
+    if not orients or WireOrientation.DIAGONAL in orients:
+        return False
+    ang_h = angle in (WireAngle.EAST, WireAngle.WEST)
+    for o in orients:
+        o_h = (o == WireOrientation.HORIZONTAL)
+        if o_h != ang_h:
             return True
     return False
 
 
 def is_parallel(wire, cell: Cell, angle: WireAngle) -> bool:
-    """Параллельно ли направление angle проводу wire в клетке.
-
-    Провод может проходить через клетку несколькими сегментами
-    (в клетке поворота). Возвращает True, если хотя бы один
-    сегмент параллелен заданному направлению.
-    """
-    for seg in wire.segments():
-        if cell not in seg.cells():
-            continue
-        seg_h = seg.angle in (WireAngle.EAST, WireAngle.WEST)
-        ang_h = angle in (WireAngle.EAST, WireAngle.WEST)
-        if seg_h == ang_h:
+    """Параллелен ли angle ориентации провода в клетке."""
+    orients = _orientations_at(wire, cell)
+    if not orients or WireOrientation.DIAGONAL in orients:
+        return False
+    ang_h = angle in (WireAngle.EAST, WireAngle.WEST)
+    for o in orients:
+        o_h = (o == WireOrientation.HORIZONTAL)
+        if o_h == ang_h:
             return True
-    return False
-
-
-def has_parallel_foreign_wire(map_, cell: Cell, net: str,
-                              entry_angle: WireAngle) -> bool:
-    """Есть ли рядом чужой провод, ПАРАЛЛЕЛЬНЫЙ возможному повороту.
-
-    Если чужой провод в соседней клетке делает ПОВОРОТ (есть и
-    горизонтальный, и вертикальный сегменты), он блокирует вход:
-    любой поворот из нашей клетки наложится на соответствующую
-    часть чужого поворота.
-
-    is_parallel перебирает ВСЕ сегменты провода в клетке — так
-    что поворот учитывается автоматически: вертикальный сегмент
-    даст True при проверке вертикального поворота, горизонтальный —
-    при проверке горизонтального.
-    """
-    if entry_angle in (WireAngle.EAST, WireAngle.WEST):
-        neighbors = [Cell(cell.col, cell.row - 1),
-                     Cell(cell.col, cell.row + 1)]
-        turn_dirs = (WireAngle.NORTH, WireAngle.SOUTH)
-    else:
-        neighbors = [Cell(cell.col - 1, cell.row),
-                     Cell(cell.col + 1, cell.row)]
-        turn_dirs = (WireAngle.EAST, WireAngle.WEST)
-
-    for c in neighbors:
-        occ = map_.get((c.col, c.row))
-        if not isinstance(occ, WireCell):
-            continue
-        if occ.wire.net_name == net:
-            continue
-        for d in turn_dirs:
-            if is_parallel(occ.wire, c, d):
-                return True
     return False

@@ -19,7 +19,7 @@ from typing import Dict, List, Optional, Tuple
 
 from cell import Cell
 from component import Component
-from constants import PathSearch
+from constants import PathSearch, WireOrientation
 from logging_setup import ctx, get_logger
 from netlist import Netlist
 from occupant import WireCell
@@ -30,7 +30,7 @@ from wire import Wire
 
 from router_impl import router_pathfind
 from router_impl.router_logging import RouterLogMixin
-from router_impl.router_rules import in_bounds
+from router_impl.router_rules import in_bounds,  _orientations_at, _is_endpoint_at, _check_entry
 from router_impl.router_types import RouteAttempt
 
 log = get_logger(__name__)
@@ -414,26 +414,61 @@ class Router(RouterLogMixin):
     # =========================================================
 
     def _occupy(self, wire: Wire) -> None:
-        """Помечает все клетки провода как WireCell.
-
-        Не перезаписывает чужой WireCell: если клетка уже занята
-        проводом другой сети, это OVERLAP — короткое замыкание.
-        Логируем и пропускаем, чтобы карта не теряла старый провод.
-        """
         for cell in wire.all_cells():
             key = (cell.col, cell.row)
             existing = self.map.get(key)
-            if (isinstance(existing, WireCell)
-                    and existing.wire.net_name != wire.net_name):
-                log.warning(
-                    "%s OCCUPY_OVERLAP cell=%s existing_net=%s "
-                    "new_net=%s existing_wire=%s new_wire=%s",
-                    ctx(page=self.page, net=wire.net_name),
-                    cell, existing.wire.net_name, wire.net_name,
-                    existing.wire.key, wire.key,
-                )
+            if existing is None:
+                self.map[key] = WireCell(wires=[wire])
                 continue
-            self.map[key] = WireCell(wire=wire)
+
+            if isinstance(existing, WireCell):
+                # своя сеть — просто добавляем, если объект ещё не в списке
+                if any(w.net_name == wire.net_name for w in existing.wires):
+                    existing.add_wire(wire)
+                    continue
+
+                # чужая сеть: проверяем совместимость с уже занятыми
+                ok, reason = self._check_cross(cell, wire, existing)
+                if ok:
+                    existing.add_wire(wire)
+                else:
+                    log.error(
+                        "%s OCCUPY_CONFLICT cell=%s net=%s reason=%s "
+                        "existing_nets=%s",
+                        ctx(page=self.page, net=wire.net_name),
+                        cell, wire.net_name, reason,
+                        existing.net_names(),
+                    )
+                continue
+                # ComponentBody / PinCell — стена, не перезаписываем
+    
+    def _check_cross(self, cell, new_wire, wire_cell):
+        new_orients = _orientations_at(new_wire, cell)
+        new_endpoint = _is_endpoint_at(new_wire, cell)
+
+        for w in wire_cell.wires:
+            orients = _orientations_at(w, cell)
+            endpoint = _is_endpoint_at(w, cell)
+            reason = _check_entry(orients, endpoint,
+                                entry_angle=...,
+                                entry_is_endpoint=new_endpoint,
+                                foreign_net=w.net_name)
+            if reason:
+                return False, reason
+        return True, None
+
+    def _compatible_cross(new_orients, new_endpoint,
+                      old_orients, old_endpoint) -> Optional[str]:
+        if new_endpoint or old_endpoint:
+            return "endpoint in shared cell"
+        if WireOrientation.DIAGONAL in new_orients \
+                or WireOrientation.DIAGONAL in old_orients:
+            return "diagonal in shared cell"
+        for no in new_orients:
+            for oo in old_orients:
+                if no == oo:
+                    return f"parallel orientations {no}"
+        return None
 
     # =========================================================
     # Метки fallback — пишутся в Sheet, не в Router
