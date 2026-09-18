@@ -1,26 +1,22 @@
-* Ngspice тест: SEN_HEAT (порт-интерфейс из KiCad)
-
-
-
-
-
-
+* Ngspice тест: SEN_HEAT / SEN_HEAT_HOT
+* Труба отопителя горячая, температура 60°C.
+* R_NTC ≈ 2.49 кОм, делитель с R25 = 10к.
+* NTC_HEAT ≈ 0.66В — низкий уровень АЦП.
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/ntc_models.lib
 .INCLUDE spice/SEN_HEAT.sub
-.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
-.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
-.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
-.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
 
-* Порты: GND NTC_HEAT NTC_HEAT_W VCC_3V3
-XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W VCC_3V3 SEN_HEAT
+* Порты: GND NTC_HEAT NTC_HEAT_W
 
-VS VCC_3V3 0 DC 3.3
-VN NTC_HEAT_W 0 DC 0.6
+* V1: Питание делителя +3,3В
+V1 VCC_3V3 0 DC 3.3
+
+* XRT2: Внешний NTC патрубка отопителя при 60°C (R ≈ 2,49 кОм)
+XRT2 NTC_HEAT_W 0 NTC_10K_3435 T=60
+XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W SEN_HEAT
+
 .op
-* PASS: NTC_HEAT < 1.5В (труба горячая)
 .control
-op
-print V(NTC_HEAT)
 run
+print v(ntc_heat)
 .endc
 .end

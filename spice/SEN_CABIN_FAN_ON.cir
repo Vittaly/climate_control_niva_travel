@@ -1,0 +1,26 @@
+* Ngspice тест: SEN_CABIN / SEN_CABIN_FAN_ON
+* Мини-вентилятор продувки включён.
+* M_FAN_CTL = 3.3В → Q2 открыт, SENS_FAN_SW прижат к GND.
+* Через вентилятор (R_FAN = 100 Ом) идёт ток ~144 мА.
+.INCLUDE spice/SEN_CABIN.sub
+
+* Порты: GND M_FAN_CTL NTC_CABIN
+
+* V1: Бортовая сеть +14,4В
+V1 VCC_12V 0 DC 14.4
+
+* V2: Управление вентилятором: ВКЛ
+V2 M_FAN_CTL 0 DC 3.3
+
+* R_FAN: Эквивалент обмотки вентилятора (R = 100 Ом, ток ~140 мА)
+R_FAN VCC_12V SENS_FAN_SW 100
+XSEN_CABIN 0 M_FAN_CTL NTC_CABIN SEN_CABIN
+
+.op
+.control
+run
+let vsw  = v(SENS_FAN_SW)
+let ifan = (v(VCC_12V) - v(SENS_FAN_SW)) / 100
+print vsw ifan
+.endc
+.end

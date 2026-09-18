@@ -1,0 +1,18 @@
+* Ngspice тест: BACKLIGHT / BACKLIGHT_OFF
+* Габариты выключены, ILLUM_IN_RAW = 0.
+* LED не светятся, ток через каналы ≈ 0.
+.INCLUDE spice/BACKLIGHT.sub
+
+* Порты: GND NET_SCALE_CH2_C NET_SCALE_CH3_C NET_SCALE_CH5_C NET_SCALE_CH6_C NET_SCALE_CH7_C NET_SCALE_CH8_A NET_SCALE_CH8_C
+
+* V1: Габариты выключены
+V1 ILLUM_IN_RAW 0 DC 0.0
+XBACKLIGHT 0 NET_SCALE_CH2_C NET_SCALE_CH3_C NET_SCALE_CH5_C NET_SCALE_CH6_C NET_SCALE_CH7_C NET_SCALE_CH8_A NET_SCALE_CH8_C BACKLIGHT
+
+.op
+.control
+run
+let itot = -i(V1)
+print itot
+.endc
+.end

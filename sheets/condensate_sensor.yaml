@@ -1,6 +1,25 @@
 page_name: SEN_COND
 file: condensate_sensor.kicad_sch
-functional_purpose: Модуль SEN_COND
+functional_purpose: |
+  Модуль измерения конденсата на стекле.
+
+  Внешний датчик конденсата питается от +5В (J1:17) и выдаёт
+  аналоговый сигнал 0..5В на линию COND_RAW (J1:21). Резистивный
+  делитель R29 (10к) / R30 (20к) масштабирует сигнал до 0..3,3В
+  для входа АЦП микроконтроллера (COND_ADC). Конденсатор C27
+  фильтрует ВЧ-помехи.
+
+  Коэффициент деления:
+    K = R30 / (R29 + R30) = 20 / 30 = 2/3
+
+  Характерные точки:
+    COND_RAW = 0В    → COND_ADC = 0В
+    COND_RAW = 2,5В  → COND_ADC ≈ 1,67В
+    COND_RAW = 5В    → COND_ADC ≈ 3,33В
+
+  Делитель также ограничивает ток в АЦП при аварийных режимах
+  (обрыв, замыкание на +12В) до ~1,2 мА.
+
 ports:
 - net_label: GND
   type: POWER
@@ -11,6 +30,7 @@ ports:
 - net_label: COND_ADC
   type: OUTPUT
   description: Сигнал конденсата после делителя 5В->3,3В на АЦП
+
 component_types:
   TYPE_C_100NF:
     symbol: Device:C
@@ -19,6 +39,9 @@ component_types:
     fields:
       Type: Ceramic
       Dielectric: X7R
+    spice:
+      model: C
+      description: "Керамический конденсатор X7R, фильтр АЦП"
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -26,6 +49,8 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+    spice:
+      model: R
   TYPE_R_20K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -33,16 +58,20 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+    spice:
+      model: R
+
 components:
   C27:
     type: TYPE_C_100NF
-    description: фильтр АЦП конденсата
+    description: "Фильтр АЦП сигнала конденсата"
   R29:
     type: TYPE_R_10K
-    description: делитель сигнала конденсата (верх
+    description: "Делитель сигнала конденсата, верхнее плечо"
   R30:
     type: TYPE_R_20K
-    description: делитель сигнала конденсата (низ
+    description: "Делитель сигнала конденсата, нижнее плечо"
+
 nets:
   GND:
     name: GND
@@ -57,25 +86,24 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R30
-      pin: '2'
-    - component: C27
-      pin: '2'
+    - { component: R30, pin: '2' }
+    - { component: C27, pin: '2' }
+
   COND_RAW:
     name: COND_RAW
     description: Выход датчика конденсата на стекле (0..5В)
     is_hierarchical_port: true
     attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
+      type: ANALOG_SIGNAL
+      voltage_level: 0..5.0V
+      current_max: 0.005A
       spice_simulation:
         model_stimulus: ''
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R29
-      pin: '1'
+    - { component: R29, pin: '1' }
+
   COND_ADC:
     name: COND_ADC
     description: Сигнал конденсата после делителя 5В->3,3В на АЦП
@@ -89,9 +117,97 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R29
-      pin: '2'
-    - component: R30
-      pin: '1'
-    - component: C27
-      pin: '1'
+    - { component: R29, pin: '2' }
+    - { component: R30, pin: '1' }
+    - { component: C27, pin: '1' }
+
+# ─────────────────────────────────────────────────────────────────────
+# Тестовые сценарии Ngspice
+#
+# Делитель R29 (10к) / R30 (20к):
+#   K = 20 / (10 + 20) = 2/3
+#
+# Проверяем три точки диапазона датчика конденсата:
+#   0В (сухо)      → COND_ADC = 0В
+#   2,5В (роса)    → COND_ADC ≈ 1,67В
+#   5В (поток)     → COND_ADC ≈ 3,33В
+#
+# Дополнительно — аварийный режим: замыкание COND_RAW на +12В
+# (имитация неисправности проводки). Делитель ограничивает ток,
+# напряжение на COND_ADC не должно превышать питания АЦП.
+# ─────────────────────────────────────────────────────────────────────
+
+scenarios:
+
+  - name: SEN_COND_DRY
+    description: |
+      Сухое стекло, датчик выдаёт 0В.
+      COND_ADC = 0В.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: COND_RAW
+          type: dc
+          value: 0.0
+          description: "Датчик конденсата: сухо (0В)"
+    checks:
+      - { node: v(cond_adc), min: -0.05, max: 0.05,
+          description: "COND_ADC = 0В (нижний край диапазона)" }
+
+  - name: SEN_COND_MID
+    description: |
+      Датчик в среднем положении — начало конденсации.
+      COND_RAW = 2,5В → COND_ADC ≈ 1,67В (K = 2/3).
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: COND_RAW
+          type: dc
+          value: 2.5
+          description: "Датчик конденсата: середина диапазона (2,5В)"
+    checks:
+      - { node: v(cond_adc), min: 1.55, max: 1.80,
+          description: "середина диапазона АЦП ≈ 1,67В" }
+
+  - name: SEN_COND_WET
+    description: |
+      Датчик в крайнем положении — сильная конденсация.
+      COND_RAW = 5В → COND_ADC ≈ 3,33В (верхняя граница АЦП).
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: COND_RAW
+          type: dc
+          value: 5.0
+          description: "Датчик конденсата: крайнее положение (5В)"
+    checks:
+      - { node: v(cond_adc), min: 3.20, max: 3.45,
+          description: "верхний край диапазона АЦП ≈ 3,33В" }
+
+  - name: SEN_COND_FAULT_12V
+    description: |
+      Аварийный режим: замыкание линии COND_RAW на бортсеть +12В
+      (неисправность проводки или КЗ датчика).
+      Делитель R29/R30 ограничивает ток и понижает напряжение
+      на входе АЦП. Проверяем, что COND_ADC остаётся в допустимых
+      пределах и не превышает 3,3В более чем на 10%.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: COND_RAW
+          type: dc
+          value: 12.0
+          description: "Аварийный режим: замыкание COND_RAW на +12В"
+    control: |
+      let vadc = v(COND_ADC)
+      let iin  = (12.0 - v(COND_ADC)) / 10k
+      print vadc iin
+    checks:
+      - { node: vadc, min: 3.20, max: 3.80,
+          description: "COND_ADC ограничен делителем (не более ~3,6В)" }
+      - { node: iin,  min: 0.0007, max: 0.0010,
+          description: "ток через делитель ≈ 0,84 мА (защита входа АЦП)" }

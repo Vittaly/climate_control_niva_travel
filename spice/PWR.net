@@ -1,19 +1,19 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_03_pwr.kicad_sch")
-		(date "2026-09-12T18:45:12")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/power_supply.kicad_sch")
+		(date "2026-09-18T10:57:31")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title "PWR")
+				(title)
 				(company)
 				(rev)
 				(date)
-				(source "cc_03_pwr.kicad_sch")
+				(source "power_supply.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -56,8 +56,10 @@
 	(components
 		(comp
 			(ref "C1")
-			(value "470uF 25В")
+			(value "470uF")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -74,12 +76,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -93,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "7b3b3f95-a353-4cd3-b136-178507381a4a")
+			(tstamps "f7a2b424-dd20-4faa-bcd4-542afd80707c")
 			(units
 				(unit
 					(name "A")
@@ -113,6 +119,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -128,12 +136,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -147,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "8a584cfc-90ad-494c-80ea-1aa7cdcd5456")
+			(tstamps "8bc95de9-9538-4693-a1c3-8ebccf08c851")
 			(units
 				(unit
 					(name "A")
@@ -164,8 +176,10 @@
 		)
 		(comp
 			(ref "C3")
-			(value "10uF 35В")
+			(value "10uF")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -182,12 +196,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -201,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "09ccefa4-aa1a-4faf-8766-b7be3f53de62")
+			(tstamps "084123ec-55fb-4ef6-964d-e515522a2acc")
 			(units
 				(unit
 					(name "A")
@@ -218,8 +236,10 @@
 		)
 		(comp
 			(ref "C4")
-			(value "10uF 10В")
+			(value "10uF")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -236,12 +256,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -255,7 +279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ab06eed9-0fcd-4d5a-b97a-c70801e29be5")
+			(tstamps "23899645-c67b-45fe-bae3-ff023f7e0053")
 			(units
 				(unit
 					(name "A")
@@ -272,8 +296,10 @@
 		)
 		(comp
 			(ref "C11")
-			(value "100uF 25В")
+			(value "100uF")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -290,12 +316,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -309,7 +339,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "02467af8-d76b-4f04-a1ea-cc3b7fb9a3ad")
+			(tstamps "e602ac67-7cd0-4e1f-8921-c29894bd3ce0")
 			(units
 				(unit
 					(name "A")
@@ -329,6 +359,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -344,12 +376,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -363,7 +399,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "9e103d1f-7892-44a9-a2ee-956214a96aea")
+			(tstamps "5bfd0ea8-9d93-438c-bc82-f83043b57824")
 			(units
 				(unit
 					(name "A")
@@ -383,6 +419,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -398,12 +436,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -417,7 +459,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "690adb66-b736-48b0-8ec8-47f1deafa935")
+			(tstamps "ef72e8ba-bbeb-40e5-be21-8bae4b1d194a")
 			(units
 				(unit
 					(name "A")
@@ -437,6 +479,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -452,12 +496,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -471,7 +519,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "83259c89-aa6a-47fd-a680-55a688544aea")
+			(tstamps "c23007b3-707f-44f0-a42a-502f73e46191")
 			(units
 				(unit
 					(name "A")
@@ -491,6 +539,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -506,12 +556,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -525,7 +579,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e76bdff6-f46f-4060-b28d-a50755198071")
+			(tstamps "67bfe5f4-5530-4336-b067-dd0e5488e921")
 			(units
 				(unit
 					(name "A")
@@ -542,8 +596,10 @@
 		)
 		(comp
 			(ref "C20")
-			(value "1uF 25В")
+			(value "1uF")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -560,12 +616,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -579,7 +639,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f2499270-142b-4614-b1bb-009c15cd915b")
+			(tstamps "671baf62-3be2-43ba-bb1c-14fd53f88d51")
 			(units
 				(unit
 					(name "A")
@@ -599,6 +659,8 @@
 			(value "SS54")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -614,12 +676,16 @@
 				(description "Schottky diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -633,7 +699,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2a57f082-e307-482b-925c-f7c6bc9b65e2")
+			(tstamps "82474736-3dd3-47e1-8374-ed43a4931166")
 			(units
 				(unit
 					(name "A")
@@ -653,6 +719,8 @@
 			(value "SMBJ15A TVS")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -668,12 +736,16 @@
 				(description "Zener diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -687,7 +759,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ae884294-b7f0-4c12-8429-64dbaf6ff0ae")
+			(tstamps "2ad31c56-1cad-4430-8fc0-249d61810fd5")
 			(units
 				(unit
 					(name "A")
@@ -707,6 +779,8 @@
 			(value "SS14")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -722,12 +796,16 @@
 				(description "Schottky diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -741,7 +819,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3aa7dcdf-5d5c-4e55-bb07-4af242ad6f17")
+			(tstamps "82c414cf-2bb4-422f-8e1f-1c1c872c0aeb")
 			(units
 				(unit
 					(name "A")
@@ -761,6 +839,8 @@
 			(value "SMBJ5.0A / 5,6В")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -776,12 +856,16 @@
 				(description "Zener diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -795,7 +879,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d74cb036-8506-4922-b296-1a46f334f769")
+			(tstamps "451071cc-9542-46bb-9790-38b544edc1a4")
 			(units
 				(unit
 					(name "A")
@@ -815,6 +899,8 @@
 			(value "Разъём к автомобилю 2x16 (32 конт.)")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -830,12 +916,16 @@
 				(description "Generic connector, double row, 02x16, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -849,7 +939,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "dec197c9-ccb5-47a9-8ad0-dbd6f17cfced")
+			(tstamps "01f62b09-f09d-45b1-84f1-f62c02bc4510")
 			(units
 				(unit
 					(name "A")
@@ -959,6 +1049,8 @@
 			(value "Феррит/дроссель по входу +12В (помехи)")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -974,12 +1066,16 @@
 				(description "Inductor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -993,7 +1089,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "fdbd1e4e-3d47-4cfa-846e-cb79c7664dd4")
+			(tstamps "2299e11b-a2af-45a2-9b17-ecaad1899770")
 			(units
 				(unit
 					(name "A")
@@ -1013,6 +1109,8 @@
 			(value "MC78M05CDTG")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1028,12 +1126,16 @@
 				(description "Positive 500mA 35V Linear Regulator, Fixed Output 5V, TO-252 (D-PAK)")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1047,7 +1149,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "89e67688-00d2-41e6-8e5d-409bf8b406c4")
+			(tstamps "bc52b8cd-c574-482b-8a20-9d096cb69f45")
 			(units
 				(unit
 					(name "A")
@@ -1070,6 +1172,8 @@
 			(value "AMS1117-3.3")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1085,12 +1189,16 @@
 				(description "1A Low Dropout regulator, positive, 1.5V fixed output, SOT-223")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_03_pwr.kicad_sch")
+				(value "power_supply.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1104,7 +1212,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e3b09c4e-a1f9-4c2e-ba9d-5294cd64e218")
+			(tstamps "1040b139-31b3-4d70-be85-3b4531a1c8b4")
 			(units
 				(unit
 					(name "A")
@@ -1549,99 +1657,41 @@
 	(nets
 		(net
 			(code "1")
-			(name "/AC_REQ_OUT")
+			(name "/V5_SENS")
 			(class "Default")
 			(node
-				(ref "J1")
-				(pin "24")
-				(pinfunction "Pin_24_24")
+				(ref "C16")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C17")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C19")
+				(pin "1")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "2")
-			(name "/CANH")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "25")
-				(pinfunction "Pin_25_25")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "3")
-			(name "/CANL")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "26")
-				(pinfunction "Pin_26_26")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "4")
-			(name "/COND_RAW")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "21")
-				(pinfunction "Pin_21_21")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "5")
-			(name "/FB_M1_RAW")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "7")
-				(pinfunction "Pin_7_7")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "6")
-			(name "/FB_M2_RAW")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "10")
-				(pinfunction "Pin_10_10")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "7")
-			(name "/FB_M3_RAW")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "13")
-				(pinfunction "Pin_13_13")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "8")
-			(name "/FB_M4_RAW")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "16")
-				(pinfunction "Pin_16_16")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "9")
-			(name "/GND")
+			(name "/VBAT_IN")
 			(class "Default")
 			(node
 				(ref "C1")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C1")
 				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C11")
+				(pin "1")
 				(pintype "passive")
 			)
 			(node
@@ -1661,6 +1711,11 @@
 			)
 			(node
 				(ref "C18")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C18")
 				(pin "2")
 				(pintype "passive")
 			)
@@ -1671,7 +1726,17 @@
 			)
 			(node
 				(ref "C2")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C2")
 				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C20")
+				(pin "1")
 				(pintype "passive")
 			)
 			(node
@@ -1681,7 +1746,17 @@
 			)
 			(node
 				(ref "C3")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C3")
 				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "C4")
+				(pin "1")
 				(pintype "passive")
 			)
 			(node
@@ -1690,9 +1765,45 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "D1")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D1")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D2")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
 				(ref "D2")
 				(pin "2")
 				(pinfunction "A_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D4")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D4")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D5")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
@@ -1703,8 +1814,116 @@
 			)
 			(node
 				(ref "J1")
+				(pin "1")
+				(pinfunction "Pin_1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "10")
+				(pinfunction "Pin_10_10")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "11")
+				(pinfunction "Pin_11_11")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "12")
+				(pinfunction "Pin_12_12")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "13")
+				(pinfunction "Pin_13_13")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "14")
+				(pinfunction "Pin_14_14")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "15")
+				(pinfunction "Pin_15_15")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "16")
+				(pinfunction "Pin_16_16")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "17")
+				(pinfunction "Pin_17_17")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
 				(pin "18")
 				(pinfunction "Pin_18_18")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "19")
+				(pinfunction "Pin_19_19")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "2")
+				(pinfunction "Pin_2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "20")
+				(pinfunction "Pin_20_20")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "21")
+				(pinfunction "Pin_21_21")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "22")
+				(pinfunction "Pin_22_22")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "23")
+				(pinfunction "Pin_23_23")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "24")
+				(pinfunction "Pin_24_24")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "25")
+				(pinfunction "Pin_25_25")
+				(pintype "passive")
+			)
+			(node
+				(ref "J1")
+				(pin "26")
+				(pinfunction "Pin_26_26")
 				(pintype "passive")
 			)
 			(node
@@ -1720,289 +1939,39 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "U6")
-				(pin "2")
-				(pinfunction "GND_2")
-				(pintype "power_in")
-			)
-			(node
-				(ref "U7")
-				(pin "2")
-				(pinfunction "VO_2")
-				(pintype "power_out")
-			)
-		)
-		(net
-			(code "10")
-			(name "/ILLUM_IN_RAW")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "22")
-				(pinfunction "Pin_22_22")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "11")
-			(name "/MOTOR_1_A")
-			(class "Default")
-			(node
 				(ref "J1")
 				(pin "5")
 				(pinfunction "Pin_5_5")
 				(pintype "passive")
 			)
-		)
-		(net
-			(code "12")
-			(name "/MOTOR_1_B")
-			(class "Default")
 			(node
 				(ref "J1")
 				(pin "6")
 				(pinfunction "Pin_6_6")
 				(pintype "passive")
 			)
-		)
-		(net
-			(code "13")
-			(name "/MOTOR_2_A")
-			(class "Default")
+			(node
+				(ref "J1")
+				(pin "7")
+				(pinfunction "Pin_7_7")
+				(pintype "passive")
+			)
 			(node
 				(ref "J1")
 				(pin "8")
 				(pinfunction "Pin_8_8")
 				(pintype "passive")
 			)
-		)
-		(net
-			(code "14")
-			(name "/MOTOR_2_B")
-			(class "Default")
 			(node
 				(ref "J1")
 				(pin "9")
 				(pinfunction "Pin_9_9")
 				(pintype "passive")
 			)
-		)
-		(net
-			(code "15")
-			(name "/MOTOR_3_A")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "11")
-				(pinfunction "Pin_11_11")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "16")
-			(name "/MOTOR_3_B")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "12")
-				(pinfunction "Pin_12_12")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "17")
-			(name "/MOTOR_4_A")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "14")
-				(pinfunction "Pin_14_14")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "18")
-			(name "/MOTOR_4_B")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "15")
-				(pinfunction "Pin_15_15")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "19")
-			(name "/NTC_HEAT_W")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "19")
-				(pinfunction "Pin_19_19")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "20")
-			(name "/SOLAR_RAW")
-			(class "Default")
-			(node
-				(ref "J1")
-				(pin "20")
-				(pinfunction "Pin_20_20")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "21")
-			(name "/V5_SENS")
-			(class "Default")
-			(node
-				(ref "C16")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C17")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C18")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C19")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "D4")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "D5")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "J1")
-				(pin "17")
-				(pinfunction "Pin_17_17")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "22")
-			(name "/VBAT_IN")
-			(class "Default")
-			(node
-				(ref "D1")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "D1")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-			(node
-				(ref "J1")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "J1")
-				(pin "2")
-				(pinfunction "Pin_2_2")
-				(pintype "passive")
-			)
 			(node
 				(ref "L1")
 				(pin "1")
 				(pinfunction "1_1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "23")
-			(name "/VCC_3V3")
-			(class "Default")
-			(node
-				(ref "U7")
-				(pin "3")
-				(pinfunction "VI_3")
-				(pintype "power_in")
-			)
-		)
-		(net
-			(code "24")
-			(name "/VCC_5V")
-			(class "Default")
-			(node
-				(ref "C4")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "D4")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-			(node
-				(ref "U6")
-				(pin "3")
-				(pinfunction "VO_3")
-				(pintype "power_out")
-			)
-			(node
-				(ref "U7")
-				(pin "1")
-				(pinfunction "GND_1")
-				(pintype "power_in")
-			)
-		)
-		(net
-			(code "25")
-			(name "/VCC_12V")
-			(class "Default")
-			(node
-				(ref "C1")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C11")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C2")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C20")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C3")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "D2")
-				(pin "1")
-				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
@@ -2017,20 +1986,39 @@
 				(pinfunction "VI_1")
 				(pintype "power_in")
 			)
-		)
-		(net
-			(code "26")
-			(name "unconnected-(J1-Pin_23-Pad23)")
-			(class "Default")
 			(node
-				(ref "J1")
-				(pin "23")
-				(pinfunction "Pin_23_23")
-				(pintype "passive")
+				(ref "U6")
+				(pin "2")
+				(pinfunction "GND_2")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U6")
+				(pin "3")
+				(pinfunction "VO_3")
+				(pintype "power_out")
+			)
+			(node
+				(ref "U7")
+				(pin "1")
+				(pinfunction "GND_1")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U7")
+				(pin "2")
+				(pinfunction "VO_2")
+				(pintype "power_out")
+			)
+			(node
+				(ref "U7")
+				(pin "3")
+				(pinfunction "VI_3")
+				(pintype "power_in")
 			)
 		)
 		(net
-			(code "27")
+			(code "3")
 			(name "unconnected-(J1-Pin_27-Pad27)")
 			(class "Default")
 			(node
@@ -2041,7 +2029,7 @@
 			)
 		)
 		(net
-			(code "28")
+			(code "4")
 			(name "unconnected-(J1-Pin_28-Pad28)")
 			(class "Default")
 			(node
@@ -2052,7 +2040,7 @@
 			)
 		)
 		(net
-			(code "29")
+			(code "5")
 			(name "unconnected-(J1-Pin_29-Pad29)")
 			(class "Default")
 			(node
@@ -2063,7 +2051,7 @@
 			)
 		)
 		(net
-			(code "30")
+			(code "6")
 			(name "unconnected-(J1-Pin_30-Pad30)")
 			(class "Default")
 			(node
@@ -2074,7 +2062,7 @@
 			)
 		)
 		(net
-			(code "31")
+			(code "7")
 			(name "unconnected-(J1-Pin_31-Pad31)")
 			(class "Default")
 			(node
@@ -2085,7 +2073,7 @@
 			)
 		)
 		(net
-			(code "32")
+			(code "8")
 			(name "unconnected-(J1-Pin_32-Pad32)")
 			(class "Default")
 			(node

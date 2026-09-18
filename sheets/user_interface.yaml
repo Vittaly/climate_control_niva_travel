@@ -1,6 +1,41 @@
 page_name: UI
 file: user_interface.kicad_sch
-functional_purpose: Модуль UI
+functional_purpose: |
+  Модуль пользовательского интерфейса: шесть тактовых кнопок,
+  шесть светодиодов-индикаторов режимов, входы АЦП задания
+  температуры, скорости вентилятора, температуры салона
+  и детектор включения габаритов.
+
+  Галлетник скорости вентилятора (J4):
+    * Внешний 5-позиционный переключатель с общим проводом.
+    * С галлетника идут ТОЛЬКО сигнальные провода — по одному
+      на каждую скорость (1..4) плюс общий на GND.
+    * Резисторы ступеней R_SEL_1..R_SEL_4 находятся на плате.
+    * Каждый резистор через свой контакт галлетника замыкается
+      на GND, формируя делитель с подтяжкой R23 (10к к +3,3В).
+    * AUTO — положение, при котором ни один контакт не замкнут,
+      FAN_SEL_ADC = 3,3В через R23.
+
+  Кодировка напряжений на FAN_SEL_ADC:
+    AUTO (все разомкнуты)          → 3,30 В
+    Позиция 1 (R_SEL_1 = 20к)      → 2,20 В
+    Позиция 2 (R_SEL_2 = 10к)      → 1,65 В
+    Позиция 3 (R_SEL_3 = 4,7к)     → 1,05 В
+    Позиция 4 (R_SEL_4 = 1к)       → 0,30 В
+
+  Детектор габаритов:
+    * Делитель R39 (47к) / R40 (10к) от ILLUM_IN_RAW (1..14,4В)
+      к GND даёт ILLUM_SENSE ≈ 0,175 · V_ILLUM.
+    * Порог срабатывания задаётся прошивкой МК.
+
+  Задание температуры:
+    * J3 — внешний потенциометр. R22 (10к) — подтяжка к +3,3В.
+
+  Кнопки и индикаторы:
+    * SW1..SW6 — тактовые, замыкают BTN_* на GND (подтяжка на МК).
+    * R7..R12 (1к) + LED1..LED6 — индикаторы через VCC_3V3,
+      катоды управляются с МК активным низким уровнем.
+
 ports:
 - net_label: VCC_3V3
   type: POWER
@@ -27,182 +62,243 @@ ports:
   type: OUTPUT
   description: 'Кнопка: рециркуляция'
 - net_label: LED_DEFROST_GLASS_DRV
-  type: OUTPUT
-  description: 'Индикатор кнопки: воздух на стекло (управление, активный низкий уровень)'
+  type: INPUT
+  description: 'Индикатор кнопки: воздух на стекло (активный низкий уровень)'
 - net_label: LED_FACE_DRV
-  type: OUTPUT
-  description: 'Индикатор кнопки: воздух в лицо (управление, активный низкий уровень)'
+  type: INPUT
+  description: 'Индикатор кнопки: воздух в лицо (активный низкий уровень)'
 - net_label: LED_FEET_DRV
-  type: OUTPUT
-  description: 'Индикатор кнопки: воздух в ноги (управление, активный низкий уровень)'
+  type: INPUT
+  description: 'Индикатор кнопки: воздух в ноги (активный низкий уровень)'
 - net_label: LED_DRY_GLASS_DRV
-  type: OUTPUT
-  description: 'Индикатор кнопки: сушка стекла (управление, активный низкий уровень)'
+  type: INPUT
+  description: 'Индикатор кнопки: сушка стекла (активный низкий уровень)'
 - net_label: LED_AC_DRV
-  type: OUTPUT
-  description: 'Индикатор кнопки: кондиционер (управление, активный низкий уровень)'
+  type: INPUT
+  description: 'Индикатор кнопки: кондиционер (активный низкий уровень)'
 - net_label: LED_RECIRC_DRV
-  type: OUTPUT
-  description: 'Индикатор кнопки: рециркуляция (управление, активный низкий уровень)'
+  type: INPUT
+  description: 'Индикатор кнопки: рециркуляция (активный низкий уровень)'
 - net_label: TEMP_SET_ADC
   type: OUTPUT
-  description: АЦП задания температуры (потенциометр, 2-проводное включение, внутренний
-    коннектор J_POT)
+  description: АЦП задания температуры (внешний потенциометр, 2-проводное включение)
 - net_label: FAN_SEL_ADC
   type: OUTPUT
-  description: АЦП выбора режима/скорости вентилятора (галлетник AUTO,0..4, резисторный
-    код)
+  description: АЦП скорости вентилятора (кодировка резисторами R_SEL_1..4 на плате)
+- net_label: GALLET_POS_1
+  type: INPUT
+  description: |
+    Контакт галлетника — позиция 1 скорости.
+    При замыкании на GALLET_COM/общий провод замыкает R_SEL_1
+    на GND. В остальных положениях — разомкнут.
+- net_label: GALLET_POS_2
+  type: INPUT
+  description: 'Контакт галлетника — позиция 2 скорости'
+- net_label: GALLET_POS_3
+  type: INPUT
+  description: 'Контакт галлетника — позиция 3 скорости'
+- net_label: GALLET_POS_4
+  type: INPUT
+  description: 'Контакт галлетника — позиция 4 скорости'
 - net_label: NTC_CABIN
   type: INPUT
   description: Температура воздуха в салоне (NTC на плате в трубе продувки)
 - net_label: ILLUM_IN_RAW
-  type: INPUT
-  description: Вход внешней подсветки прибора (+12В габаритов)
-- net_label: ILLUM_SENSE
   type: POWER
-  description: Сигнал подсветки после делителя на вход МК
+  description: |
+    Аналоговое питание подсветки прибора с выхода внешнего
+    регулятора яркости (диммера), J1:22. Диапазон 1..14,4В.
+    На этом листе используется только для детектора габаритов
+    через делитель R39/R40.
+- net_label: ILLUM_SENSE
+  type: OUTPUT
+  description: Сигнал подсветки после делителя на вход АЦП МК
+
 component_types:
   TYPE_C_100NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
     value: 100nF
-    fields:
-      Type: Ceramic
-      Dielectric: X7R
-  TYPE_CONN01X02_ВНУТРPКОННЕКТОРПОТЕНЦИОМЕТРА(2П,XH):
+    fields: { Type: Ceramic, Dielectric: X7R }
+    spice: { model: C }
+  TYPE_CONN01X02_ПОТЕНЦИОМЕТР:
     symbol: Connector_Generic:Conn_01x02
     footprint: Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical
     value: Внутр. коннектор потенциометра (2п, XH)
     fields: {}
-  TYPE_CONN01X02_ВНУТРPКОННЕКТОРГАЛЛЕТНИКА(2П,XH):
-    symbol: Connector_Generic:Conn_01x02
-    footprint: Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical
-    value: Внутр. коннектор галлетника (2п, XH)
+  TYPE_CONN01X05_ГАЛЛЕТНИК:
+    symbol: Connector_Generic:Conn_01x05
+    footprint: Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical
+    value: Внутр. коннектор галлетника (5п, XH)
     fields: {}
-  TYPE_LED_ИНДИКАТОРЗЕЛЁНЫЙ1206:
+    description: |
+      Разъём для подключения внешнего 5-позиционного галлетника
+      скорости вентилятора. Pin 1 — общий провод (GND),
+      pin 2..5 — сигнальные контакты позиций 1..4.
+  TYPE_LED_GREEN_1206:
     symbol: Device:LED
     footprint: LED_SMD:LED_1206_3216Metric
     value: Индикатор зелёный 1206
-    fields: {}
-  TYPE_LED_ИНДИКАТОРЯНТАРНЫЙ1206:
+    fields: { Color: Green }
+    spice:
+      model: LED_GREEN
+      description: "Зелёный индикатор 1206, Vf ≈ 2,1В при 10 мА"
+  TYPE_LED_AMBER_1206:
     symbol: Device:LED
     footprint: LED_SMD:LED_1206_3216Metric
     value: Индикатор янтарный 1206
-    fields: {}
+    fields: { Color: Amber }
+    spice:
+      model: LED_AMBER
+      description: "Янтарный индикатор 1206, Vf ≈ 2,0В при 10 мА"
   TYPE_R_1K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 1k
-    fields:
-      Power: 0.1W
-      Tolerance: 1%
+    fields: { Power: 0.1W, Tolerance: 1% }
+    spice: { model: R }
+  TYPE_R_4K7:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 4.7k
+    fields: { Power: 0.1W, Tolerance: 1% }
+    spice: { model: R }
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 10k
-    fields:
-      Power: 0.1W
-      Tolerance: 1%
+    fields: { Power: 0.1W, Tolerance: 1% }
+    spice: { model: R }
+  TYPE_R_20K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 20k
+    fields: { Power: 0.1W, Tolerance: 1% }
+    spice: { model: R }
   TYPE_R_47K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 47k
-    fields:
-      Power: 0.1W
-      Tolerance: 1%
-  TYPE_SWPUSH_КНОПКАТАКТОВАЯ6X6БЕЗФИКСАЦИИ:
+    fields: { Power: 0.1W, Tolerance: 1% }
+    spice: { model: R }
+  TYPE_SWPUSH_6X6:
     symbol: Switch:SW_Push
     footprint: Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm
     value: Кнопка тактовая 6x6 без фиксации
     fields: {}
+
 components:
   C22:
     type: TYPE_C_100NF
-    description: фильтр АЦП температуры
+    description: "Фильтр АЦП задания температуры"
   C23:
     type: TYPE_C_100NF
-    description: фильтр АЦП галлетника
+    description: "Фильтр АЦП скорости вентилятора"
   C24:
     type: TYPE_C_100NF
-    description: фильтр АЦП салона
+    description: "Фильтр АЦП температуры салона"
   C32:
     type: TYPE_C_100NF
-    description: фильтр входа подсветки
+    description: "Фильтр входа детектора габаритов"
   J3:
-    type: TYPE_CONN01X02_ВНУТРPКОННЕКТОРПОТЕНЦИОМЕТРА(2П,XH)
-    description: Внутр. коннектор потенциометра (2п, XH)
+    type: TYPE_CONN01X02_ПОТЕНЦИОМЕТР
+    description: "Внутренний коннектор потенциометра задания температуры"
   J4:
-    type: TYPE_CONN01X02_ВНУТРPКОННЕКТОРГАЛЛЕТНИКА(2П,XH)
-    description: Внутр. коннектор галлетника (2п, XH)
+    type: TYPE_CONN01X05_ГАЛЛЕТНИК
+    description: |
+      Внутренний коннектор галлетника скорости вентилятора.
+      Pin 1 — общий (GND), pin 2..5 — сигналы позиций 1..4.
   LED1:
-    type: TYPE_LED_ИНДИКАТОРЗЕЛЁНЫЙ1206
-    description: Индикатор зелёный 1206
+    type: TYPE_LED_GREEN_1206
+    description: "Индикатор кнопки SW1 (DEFROST_GLASS)"
   LED2:
-    type: TYPE_LED_ИНДИКАТОРЗЕЛЁНЫЙ1206
-    description: Индикатор зелёный 1206
+    type: TYPE_LED_GREEN_1206
+    description: "Индикатор кнопки SW2 (FACE)"
   LED3:
-    type: TYPE_LED_ИНДИКАТОРЗЕЛЁНЫЙ1206
-    description: Индикатор зелёный 1206
+    type: TYPE_LED_GREEN_1206
+    description: "Индикатор кнопки SW3 (FEET)"
   LED4:
-    type: TYPE_LED_ИНДИКАТОРЯНТАРНЫЙ1206
-    description: Индикатор янтарный 1206
+    type: TYPE_LED_AMBER_1206
+    description: "Индикатор кнопки SW4 (DRY_GLASS)"
   LED5:
-    type: TYPE_LED_ИНДИКАТОРЗЕЛЁНЫЙ1206
-    description: Индикатор зелёный 1206
+    type: TYPE_LED_GREEN_1206
+    description: "Индикатор кнопки SW5 (AC)"
   LED6:
-    type: TYPE_LED_ИНДИКАТОРЗЕЛЁНЫЙ1206
-    description: Индикатор зелёный 1206
-  R10:
-    type: TYPE_R_1K
-    description: токоограничение индикатора
-  R11:
-    type: TYPE_R_1K
-    description: токоограничение индикатора
-  R12:
-    type: TYPE_R_1K
-    description: токоограничение индикатора
-  R22:
-    type: TYPE_R_10K
-    description: подтяжка потенциометра температуры
-  R23:
-    type: TYPE_R_10K
-    description: подтяжка галлетника
-  R24:
-    type: TYPE_R_10K
-    description: подтяжка NTC салона
-  R39:
-    type: TYPE_R_47K
-    description: делитель входа подсветки (верх
-  R40:
-    type: TYPE_R_10K
-    description: делитель входа подсветки (низ
+    type: TYPE_LED_GREEN_1206
+    description: "Индикатор кнопки SW6 (RECIRC)"
   R7:
     type: TYPE_R_1K
-    description: токоограничение индикатора
+    description: "Токоограничение индикатора LED1"
   R8:
     type: TYPE_R_1K
-    description: токоограничение индикатора
+    description: "Токоограничение индикатора LED2"
   R9:
     type: TYPE_R_1K
-    description: токоограничение индикатора
+    description: "Токоограничение индикатора LED3"
+  R10:
+    type: TYPE_R_1K
+    description: "Токоограничение индикатора LED4"
+  R11:
+    type: TYPE_R_1K
+    description: "Токоограничение индикатора LED5"
+  R12:
+    type: TYPE_R_1K
+    description: "Токоограничение индикатора LED6"
+  R22:
+    type: TYPE_R_10K
+    description: "Подтяжка потенциометра задания температуры"
+  R23:
+    type: TYPE_R_10K
+    description: "Подтяжка FAN_SEL_ADC к VCC_3V3 (верхнее плечо делителя галлетника)"
+  R24:
+    type: TYPE_R_10K
+    description: "Подтяжка NTC салона (верхнее плечо, сам NTC — на SEN_CABIN)"
+  R39:
+    type: TYPE_R_47K
+    description: "Делитель входа детектора габаритов, верхнее плечо"
+  R40:
+    type: TYPE_R_10K
+    description: "Делитель входа детектора габаритов, нижнее плечо"
+  R_SEL_1:
+    type: TYPE_R_20K
+    description: |
+      Резистор ступени галлетника, позиция 1.
+      Замыкается на GND через контакт GALLET_POS_1.
+      Даёт FAN_SEL_ADC ≈ 2,20В.
+  R_SEL_2:
+    type: TYPE_R_10K
+    description: |
+      Резистор ступени галлетника, позиция 2.
+      Даёт FAN_SEL_ADC ≈ 1,65В.
+  R_SEL_3:
+    type: TYPE_R_4K7
+    description: |
+      Резистор ступени галлетника, позиция 3.
+      Даёт FAN_SEL_ADC ≈ 1,05В.
+  R_SEL_4:
+    type: TYPE_R_1K
+    description: |
+      Резистор ступени галлетника, позиция 4 (максимум).
+      Даёт FAN_SEL_ADC ≈ 0,30В.
   SW1:
-    type: TYPE_SWPUSH_КНОПКАТАКТОВАЯ6X6БЕЗФИКСАЦИИ
-    description: Кнопка тактовая 6x6 без фиксации
+    type: TYPE_SWPUSH_6X6
+    description: "Кнопка «воздух на стекло»"
   SW2:
-    type: TYPE_SWPUSH_КНОПКАТАКТОВАЯ6X6БЕЗФИКСАЦИИ
-    description: Кнопка тактовая 6x6 без фиксации
+    type: TYPE_SWPUSH_6X6
+    description: "Кнопка «воздух в лицо»"
   SW3:
-    type: TYPE_SWPUSH_КНОПКАТАКТОВАЯ6X6БЕЗФИКСАЦИИ
-    description: Кнопка тактовая 6x6 без фиксации
+    type: TYPE_SWPUSH_6X6
+    description: "Кнопка «воздух в ноги»"
   SW4:
-    type: TYPE_SWPUSH_КНОПКАТАКТОВАЯ6X6БЕЗФИКСАЦИИ
-    description: Кнопка тактовая 6x6 без фиксации
+    type: TYPE_SWPUSH_6X6
+    description: "Кнопка «сушка стекла»"
   SW5:
-    type: TYPE_SWPUSH_КНОПКАТАКТОВАЯ6X6БЕЗФИКСАЦИИ
-    description: Кнопка тактовая 6x6 без фиксации
+    type: TYPE_SWPUSH_6X6
+    description: "Кнопка «кондиционер»"
   SW6:
-    type: TYPE_SWPUSH_КНОПКАТАКТОВАЯ6X6БЕЗФИКСАЦИИ
-    description: Кнопка тактовая 6x6 без фиксации
+    type: TYPE_SWPUSH_6X6
+    description: "Кнопка «рециркуляция»"
+
 nets:
   VCC_3V3:
     name: VCC_3V3
@@ -217,24 +313,16 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R22
-      pin: '1'
-    - component: R23
-      pin: '1'
-    - component: R24
-      pin: '1'
-    - component: R7
-      pin: '1'
-    - component: R8
-      pin: '1'
-    - component: R9
-      pin: '1'
-    - component: R10
-      pin: '1'
-    - component: R11
-      pin: '1'
-    - component: R12
-      pin: '1'
+    - { component: R22, pin: '1' }
+    - { component: R23, pin: '1' }
+    - { component: R24, pin: '1' }
+    - { component: R7,  pin: '1' }
+    - { component: R8,  pin: '1' }
+    - { component: R9,  pin: '1' }
+    - { component: R10, pin: '1' }
+    - { component: R11, pin: '1' }
+    - { component: R12, pin: '1' }
+
   GND:
     name: GND
     description: Общий провод (кузов автомобиля)
@@ -248,403 +336,421 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: SW1
-      pin: '2'
-    - component: SW2
-      pin: '2'
-    - component: SW3
-      pin: '2'
-    - component: SW4
-      pin: '2'
-    - component: SW5
-      pin: '2'
-    - component: SW6
-      pin: '2'
-    - component: J3
-      pin: '2'
-    - component: J4
-      pin: '2'
-    - component: C22
-      pin: '2'
-    - component: C23
-      pin: '2'
-    - component: C24
-      pin: '2'
-    - component: R40
-      pin: '2'
-    - component: C32
-      pin: '2'
+    - { component: SW1, pin: '2' }
+    - { component: SW2, pin: '2' }
+    - { component: SW3, pin: '2' }
+    - { component: SW4, pin: '2' }
+    - { component: SW5, pin: '2' }
+    - { component: SW6, pin: '2' }
+    - { component: J3,  pin: '2' }
+    - { component: J4,  pin: '1' }    # общий провод галлетника
+    - { component: C22, pin: '2' }
+    - { component: C23, pin: '2' }
+    - { component: C24, pin: '2' }
+    - { component: R40, pin: '2' }
+    - { component: C32, pin: '2' }
+
+  # ─── Кнопки ────────────────────────────────────────────────────
   BTN_DEFROST_GLASS:
     name: BTN_DEFROST_GLASS
     description: 'Кнопка: воздух на стекло'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
-    - component: SW1
-      pin: '1'
+    - { component: SW1, pin: '1' }
   BTN_FACE:
     name: BTN_FACE
-    description: 'Кнопка: воздух в лицо'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
-    - component: SW2
-      pin: '1'
+    - { component: SW2, pin: '1' }
   BTN_FEET:
     name: BTN_FEET
-    description: 'Кнопка: воздух в ноги'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
-    - component: SW3
-      pin: '1'
+    - { component: SW3, pin: '1' }
   BTN_DRY_GLASS:
     name: BTN_DRY_GLASS
-    description: 'Кнопка: сушка стекла'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
-    - component: SW4
-      pin: '1'
+    - { component: SW4, pin: '1' }
   BTN_AC:
     name: BTN_AC
-    description: 'Кнопка: кондиционер'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
-    - component: SW5
-      pin: '1'
+    - { component: SW5, pin: '1' }
   BTN_RECIRC:
     name: BTN_RECIRC
-    description: 'Кнопка: рециркуляция'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
-    - component: SW6
-      pin: '1'
+    - { component: SW6, pin: '1' }
+
+  # ─── Индикаторы режимов ────────────────────────────────────────
   LED_DEFROST_GLASS_A:
     name: LED_DEFROST_GLASS_A
-    description: 'Индикатор кнопки: воздух на стекло (анодная шина)'
     is_hierarchical_port: false
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
-    - component: R7
-      pin: '2'
-    - component: LED1
-      pin: '1'
+    - { component: R7,   pin: '2' }
+    - { component: LED1, pin: '1' }
   LED_DEFROST_GLASS_DRV:
     name: LED_DEFROST_GLASS_DRV
-    description: 'Индикатор кнопки: воздух на стекло (управление, активный низкий
-      уровень)'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: LED1
-      pin: '2'
+    - { component: LED1, pin: '2' }
+
   LED_FACE_A:
     name: LED_FACE_A
-    description: 'Индикатор кнопки: воздух в лицо (анодная шина)'
     is_hierarchical_port: false
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
-    - component: R8
-      pin: '2'
-    - component: LED2
-      pin: '1'
+    - { component: R8,   pin: '2' }
+    - { component: LED2, pin: '1' }
   LED_FACE_DRV:
     name: LED_FACE_DRV
-    description: 'Индикатор кнопки: воздух в лицо (управление, активный низкий уровень)'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: LED2
-      pin: '2'
+    - { component: LED2, pin: '2' }
+
   LED_FEET_A:
     name: LED_FEET_A
-    description: 'Индикатор кнопки: воздух в ноги (анодная шина)'
     is_hierarchical_port: false
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
-    - component: R9
-      pin: '2'
-    - component: LED3
-      pin: '1'
+    - { component: R9,   pin: '2' }
+    - { component: LED3, pin: '1' }
   LED_FEET_DRV:
     name: LED_FEET_DRV
-    description: 'Индикатор кнопки: воздух в ноги (управление, активный низкий уровень)'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: LED3
-      pin: '2'
+    - { component: LED3, pin: '2' }
+
   LED_DRY_GLASS_A:
     name: LED_DRY_GLASS_A
-    description: 'Индикатор кнопки: сушка стекла (анодная шина)'
     is_hierarchical_port: false
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
-    - component: R10
-      pin: '2'
-    - component: LED4
-      pin: '1'
+    - { component: R10,  pin: '2' }
+    - { component: LED4, pin: '1' }
   LED_DRY_GLASS_DRV:
     name: LED_DRY_GLASS_DRV
-    description: 'Индикатор кнопки: сушка стекла (управление, активный низкий уровень)'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: LED4
-      pin: '2'
+    - { component: LED4, pin: '2' }
+
   LED_AC_A:
     name: LED_AC_A
-    description: 'Индикатор кнопки: кондиционер (анодная шина)'
     is_hierarchical_port: false
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
-    - component: R11
-      pin: '2'
-    - component: LED5
-      pin: '1'
+    - { component: R11,  pin: '2' }
+    - { component: LED5, pin: '1' }
   LED_AC_DRV:
     name: LED_AC_DRV
-    description: 'Индикатор кнопки: кондиционер (управление, активный низкий уровень)'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: LED5
-      pin: '2'
+    - { component: LED5, pin: '2' }
+
   LED_RECIRC_A:
     name: LED_RECIRC_A
-    description: 'Индикатор кнопки: рециркуляция (анодная шина)'
     is_hierarchical_port: false
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
-    - component: R12
-      pin: '2'
-    - component: LED6
-      pin: '1'
+    - { component: R12,  pin: '2' }
+    - { component: LED6, pin: '1' }
   LED_RECIRC_DRV:
     name: LED_RECIRC_DRV
-    description: 'Индикатор кнопки: рециркуляция (управление, активный низкий уровень)'
     is_hierarchical_port: true
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: LED6
-      pin: '2'
+    - { component: LED6, pin: '2' }
+
+  # ─── АЦП-входы ─────────────────────────────────────────────────
   TEMP_SET_ADC:
     name: TEMP_SET_ADC
-    description: АЦП задания температуры (потенциометр, 2-проводное включение, внутренний
-      коннектор J_POT)
+    description: АЦП задания температуры (внешний потенциометр)
     is_hierarchical_port: true
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..3.3V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: J3
-      pin: '1'
-    - component: R22
-      pin: '2'
-    - component: C22
-      pin: '1'
+    - { component: J3,  pin: '1' }
+    - { component: R22, pin: '2' }
+    - { component: C22, pin: '1' }
+
+  # ─── Галлетник скорости вентилятора ────────────────────────────
+  GALLET_POS_1:
+    name: GALLET_POS_1
+    description: Контакт галлетника — позиция 1 скорости
+    is_hierarchical_port: true
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
+    nodes:
+    - { component: J4,      pin: '2' }
+    - { component: R_SEL_1, pin: '1' }
+
+  GALLET_POS_2:
+    name: GALLET_POS_2
+    description: Контакт галлетника — позиция 2 скорости
+    is_hierarchical_port: true
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
+    nodes:
+    - { component: J4,      pin: '3' }
+    - { component: R_SEL_2, pin: '1' }
+
+  GALLET_POS_3:
+    name: GALLET_POS_3
+    description: Контакт галлетника — позиция 3 скорости
+    is_hierarchical_port: true
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
+    nodes:
+    - { component: J4,      pin: '4' }
+    - { component: R_SEL_3, pin: '1' }
+
+  GALLET_POS_4:
+    name: GALLET_POS_4
+    description: Контакт галлетника — позиция 4 скорости
+    is_hierarchical_port: true
+    attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
+    nodes:
+    - { component: J4,      pin: '5' }
+    - { component: R_SEL_4, pin: '1' }
+
   FAN_SEL_ADC:
     name: FAN_SEL_ADC
-    description: АЦП выбора режима/скорости вентилятора (галлетник AUTO,0..4, резисторный
-      код)
+    description: |
+      АЦП скорости вентилятора. Кодировка через резисторы ступеней:
+      R_SEL_1..4 на плате, замыкаются контактами галлетника на GND.
+      Подтяжка R23 (10к) к +3,3В, фильтр C23.
     is_hierarchical_port: true
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..3.3V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: J4
-      pin: '1'
-    - component: R23
-      pin: '2'
-    - component: C23
-      pin: '1'
+    - { component: R23,     pin: '2' }
+    - { component: R_SEL_1, pin: '2' }
+    - { component: R_SEL_2, pin: '2' }
+    - { component: R_SEL_3, pin: '2' }
+    - { component: R_SEL_4, pin: '2' }
+    - { component: C23,     pin: '1' }
+
   NTC_CABIN:
     name: NTC_CABIN
-    description: Температура воздуха в салоне (NTC на плате в трубе продувки)
+    description: Температура воздуха в салоне (верхнее плечо R24, NTC — на SEN_CABIN)
     is_hierarchical_port: true
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..3.3V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - component: R24
-      pin: '2'
-    - component: C24
-      pin: '1'
+    - { component: R24, pin: '2' }
+    - { component: C24, pin: '1' }
+
+  # ─── Детектор габаритов ────────────────────────────────────────
   ILLUM_IN_RAW:
     name: ILLUM_IN_RAW
-    description: Вход внешней подсветки прибора (+12В габаритов)
+    description: |
+      Аналоговое питание подсветки с внешнего регулятора яркости
+      (J1:22). Диапазон 1..14,4В. Используется только для
+      детектора габаритов через делитель R39/R40.
     is_hierarchical_port: true
     attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
+      type: POWER
+      voltage_level: 1.0..14.4V
+      current_max: 0.5A
       spice_simulation:
         model_stimulus: ''
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R39
-      pin: '1'
+    - { component: R39, pin: '1' }
+
   ILLUM_SENSE:
     name: ILLUM_SENSE
-    description: Сигнал подсветки после делителя на вход МК
+    description: Сигнал подсветки после делителя R39/R40 на вход АЦП МК
     is_hierarchical_port: true
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..3.3V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
+    attributes: { type: ANALOG_SIGNAL, voltage_level: 0..2.6V, current_max: 0.005A }
     nodes:
-    - component: R39
-      pin: '2'
-    - component: R40
-      pin: '1'
-    - component: C32
-      pin: '1'
+    - { component: R39, pin: '2' }
+    - { component: R40, pin: '1' }
+    - { component: C32, pin: '1' }
+
+spice:
+  models:
+    - "LED_GREEN D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)"
+    - "LED_AMBER D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)"
+    - "SW_GP    SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)"
+
+# ─────────────────────────────────────────────────────────────────────
+# Тестовые сценарии Ngspice
+#
+# Галлетник эмулируется замыканием соответствующего контакта
+# GALLET_POS_N на GND (V-источник 0В). Резисторы ступеней R_SEL_*
+# уже внутри .sub.
+#
+# Кодировка FAN_SEL_ADC:
+#   AUTO (все разомкнуты)      → 3,30В (только R23)
+#   Позиция 1 (R_SEL_1 = 20к)  → 2,20В
+#   Позиция 2 (R_SEL_2 = 10к)  → 1,65В
+#   Позиция 3 (R_SEL_3 = 4,7к) → 1,05В
+#   Позиция 4 (R_SEL_4 = 1к)   → 0,30В
+# ─────────────────────────────────────────────────────────────────────
+
+scenarios:
+
+  # ─── Галлетник ─────────────────────────────────────────────────
+
+  - name: UI_FAN_AUTO
+    description: |
+      Галлетник в положении AUTO — ни один контакт не замкнут.
+      FAN_SEL_ADC подтянут к +3,3В через R23.
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3,
+                  description: "Питание подтяжки R23" }
+    checks:
+      - { node: v(fan_sel_adc), min: 3.20, max: 3.40,
+          description: "AUTO → 3,3В (все контакты разомкнуты)" }
+
+  - name: UI_FAN_POS_1
+    description: |
+      Галлетник в позиции 1 — замкнут GALLET_POS_1 на GND.
+      Делитель R23 (10к) / R_SEL_1 (20к) → 2,20В.
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3,
+                  description: "Питание подтяжки" }
+      - source: { ref: V_G1, net: GALLET_POS_1, type: dc, value: 0.0,
+                  description: "Галлетник в позиции 1: замкнут POS_1" }
+    checks:
+      - { node: v(fan_sel_adc), min: 2.10, max: 2.30,
+          description: "позиция 1 → 2,20В" }
+
+  - name: UI_FAN_POS_2
+    description: |
+      Галлетник в позиции 2 — замкнут GALLET_POS_2.
+      Делитель R23 / R_SEL_2 (10к) → 1,65В.
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - source: { ref: V_G2, net: GALLET_POS_2, type: dc, value: 0.0,
+                  description: "Галлетник в позиции 2: замкнут POS_2" }
+    checks:
+      - { node: v(fan_sel_adc), min: 1.55, max: 1.75,
+          description: "позиция 2 → 1,65В" }
+
+  - name: UI_FAN_POS_3
+    description: |
+      Галлетник в позиции 3. R_SEL_3 (4,7к) → 1,05В.
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - source: { ref: V_G3, net: GALLET_POS_3, type: dc, value: 0.0,
+                  description: "Галлетник в позиции 3: замкнут POS_3" }
+    checks:
+      - { node: v(fan_sel_adc), min: 0.95, max: 1.15,
+          description: "позиция 3 → 1,05В" }
+
+  - name: UI_FAN_POS_4
+    description: |
+      Галлетник в позиции 4 (максимум). R_SEL_4 (1к) → 0,30В.
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - source: { ref: V_G4, net: GALLET_POS_4, type: dc, value: 0.0,
+                  description: "Галлетник в позиции 4: замкнут POS_4" }
+    checks:
+      - { node: v(fan_sel_adc), min: 0.25, max: 0.40,
+          description: "позиция 4 → 0,30В" }
+
+  # ─── Детектор габаритов ────────────────────────────────────────
+
+  - name: UI_ILLUM_OFF
+    description: Диммер на минимуме (1В) → ILLUM_SENSE ≈ 0,18В (ниже порога)
+    analysis: op
+    deck:
+      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 1.0 }
+    checks:
+      - { node: v(illum_sense), min: 0.0, max: 0.30 }
+
+  - name: UI_ILLUM_MID
+    description: Средняя яркость (5В) → ILLUM_SENSE ≈ 0,88В
+    analysis: op
+    deck:
+      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 5.0 }
+    checks:
+      - { node: v(illum_sense), min: 0.75, max: 1.00 }
+
+  - name: UI_ILLUM_ON
+    description: Номинальная яркость (12В) → ILLUM_SENSE ≈ 2,11В
+    analysis: op
+    deck:
+      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 12.0 }
+    checks:
+      - { node: v(illum_sense), min: 1.95, max: 2.25 }
+
+  - name: UI_ILLUM_HIGH
+    description: Максимум при генераторе (14,4В) → ILLUM_SENSE ≈ 2,53В
+    analysis: op
+    deck:
+      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 14.4 }
+    checks:
+      - { node: v(illum_sense), min: 2.40, max: 2.65 }
+
+  # ─── Задание температуры ───────────────────────────────────────
+
+  - name: UI_TEMP_OPEN
+    description: Потенциометр отключён, R22 подтягивает к 3,3В
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+    checks:
+      - { node: v(temp_set_adc), min: 3.20, max: 3.40 }
+
+  - name: UI_TEMP_MID
+    description: Потенциометр в середине (10к) → 1,65В
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - resistor: { ref: R_POT, net_pos: TEMP_SET_ADC, net_neg: "0",
+                    value: 10k }
+    checks:
+      - { node: v(temp_set_adc), min: 1.55, max: 1.75 }
+
+  - name: UI_TEMP_MIN
+    description: Потенциометр на минимуме (100Ω) → ~0В
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - resistor: { ref: R_POT, net_pos: TEMP_SET_ADC, net_neg: "0",
+                    value: 100 }
+    checks:
+      - { node: v(temp_set_adc), min: 0.0, max: 0.10 }
+
+  # ─── Индикаторы режимов ────────────────────────────────────────
+
+  - name: UI_LED_ON
+    description: Индикатор LED1 включён (катод прижат МК к GND)
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - source: { ref: V2, net: LED_DEFROST_GLASS_DRV, type: dc, value: 0.0 }
+    control: |
+      let icc = -i(V1)
+      print icc
+    checks:
+      - { node: icc, min: 0.0008, max: 0.0015,
+          description: "ток через LED1 ≈ 1,2 мА" }
+
+  - name: UI_LED_OFF
+    description: Индикатор LED1 выключен (катод на 3,3В с МК)
+    analysis: op
+    deck:
+      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - source: { ref: V2, net: LED_DEFROST_GLASS_DRV, type: dc, value: 3.3 }
+    control: |
+      let icc = -i(V1)
+      print icc
+    checks:
+      - { node: icc, min: -0.0001, max: 0.0001 }

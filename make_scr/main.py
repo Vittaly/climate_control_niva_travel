@@ -34,7 +34,6 @@ if str(_HERE) not in sys.path:
 
 from logging_setup import add_router_log, setup
 from project import Project
-from constants import DEFAULT_GRID_MM
 
 
 def main() -> None:
@@ -60,7 +59,7 @@ def main() -> None:
 
     # ---------- проект ----------
     project = (
-        Project(root_yaml, grid_mm=DEFAULT_GRID_MM)
+        Project(root_yaml)
         .load()
         .place_and_route()
     )
@@ -71,7 +70,7 @@ def main() -> None:
     print(f"Компонентов: {total}")
     print(f"Листов: {len(project.sheets)}")
     for ref, sheet in project.sheets.items():
-        print(f"  {ref or 'root'}: {sheet.name} → {sheet.out_file}")
+        print(f"  {ref or 'root'}: {sheet.page} → {sheet.out_file}")
 
 
 if __name__ == "__main__":

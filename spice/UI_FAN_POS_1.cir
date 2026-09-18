@@ -1,0 +1,23 @@
+* Ngspice тест: UI / UI_FAN_POS_1
+* Галлетник в позиции 1 — замкнут GALLET_POS_1 на GND.
+* Делитель R23 (10к) / R_SEL_1 (20к) → 2,20В.
+LED_GREEN D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)
+LED_AMBER D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)
+SW_GP    SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
+.INCLUDE spice/UI.sub
+
+* Порты: BTN_DRY_GLASS BTN_FACE BTN_FEET FAN_SEL_ADC GND LED_AC_DRV LED_DEFROST_GLASS_DRV LED_DRY_GLASS_DRV LED_FACE_DRV LED_FEET_DRV LED_RECIRC_DRV
+
+* V1: Питание подтяжки
+V1 VCC_3V3 0 DC 3.3
+
+* V_G1: Галлетник в позиции 1: замкнут POS_1
+V_G1 GALLET_POS_1 0 DC 0.0
+XUI BTN_DRY_GLASS BTN_FACE BTN_FEET FAN_SEL_ADC 0 LED_AC_DRV LED_DEFROST_GLASS_DRV LED_DRY_GLASS_DRV LED_FACE_DRV LED_FEET_DRV LED_RECIRC_DRV UI
+
+.op
+.control
+run
+print v(fan_sel_adc)
+.endc
+.end

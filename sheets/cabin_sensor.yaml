@@ -1,6 +1,28 @@
 page_name: SEN_CABIN
 file: cabin_sensor.kicad_sch
-functional_purpose: Модуль SEN_CABIN
+functional_purpose: |
+  Модуль измерения температуры воздуха в салоне и управления
+  мини-вентилятором продувки датчика.
+
+  Схема:
+    * NTC RT1 (10к B3435) между NTC_CABIN и GND — термистор
+      в трубе продувки. Верхнее плечо делителя (R24 10к на VCC_3V3)
+      находится на листе UI. АЦП МК читает NTC_CABIN.
+    * Мини-вентилятор продувки подключён к J5: +12В на контакт 1,
+      коммутируемая земля на контакт 2. N-канальный MOSFET Q2 (AO3400)
+      замыкает контакт 2 на GND. Управление — M_FAN_CTL с МК через
+      R16 (1к), R17 (10к) подтягивает затвор к GND.
+    * Обратный диод D3 (1N4148W) шунтирует обмотку вентилятора,
+      защищая Q2 от индуктивного выброса при выключении.
+
+  В SPICE:
+    * RT1 — параметризованный инстанс NTC_10K_3435 (см.
+      main.yaml.spice.component_models.Thermistor_NTC),
+      температура задаётся через overrides сценария;
+    * вентилятор и R24 подаются в стенде сценария —
+      они физически на других листах (вентилятор — внешний,
+      R24 — на UI).
+
 ports:
 - net_label: VCC_12V
   type: POWER
@@ -14,22 +36,36 @@ ports:
 - net_label: M_FAN_CTL
   type: INPUT
   description: Управление мини-вентилятором продувки датчика
+
 component_types:
   TYPE_D_1N4148W:
     symbol: Device:D
     footprint: Diode_SMD:D_SOD-123
     value: 1N4148W
     fields: {}
+    spice:
+      model: D_1N4148
+      description: "Малосигнальный кремниевый диод 100В/300мА"
+
   TYPE_CONN01X02_ВНУТРPКОННЕКТОРВЕНТИЛЯТОРАПРОДУВКИ(2П,XH):
     symbol: Connector_Generic:Conn_01x02
     footprint: Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical
     value: Внутр. коннектор вентилятора продувки (2п, XH)
     fields: {}
+
   TYPE_QNMOS_AO3400:
     symbol: Transistor_FET:AO3400A
     footprint: Package_TO_SOT_SMD:SOT-23
     value: AO3400
     fields: {}
+    spice:
+      model: SW_GP
+      description: |
+        N-канальный MOSFET логического уровня 30В/5.7А.
+        Rds_on ≈ 30 мОм при Vgs = 4.5В. В модели — упрощённый
+        ключ SW_GP (Ron=0.1 Ом), достаточный для проверки
+        вкл/выкл.
+
   TYPE_R_1K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -37,6 +73,9 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+    spice:
+      model: R
+
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -44,6 +83,9 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+    spice:
+      model: R
+
   TYPE_THERMISTORNTC_10K:
     symbol: Device:Thermistor_NTC
     footprint: Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal
@@ -51,25 +93,33 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+    spice:
+      model: Thermistor_NTC
+      description: |
+        NTC 10к B3435, длинные ножки, в трубе продувки.
+        Модель NTC_10K_3435 из ntc_models.lib.
+        Температура задаётся через overrides сценария.
+
 components:
   D3:
     type: TYPE_D_1N4148W
-    description: обратный диод вентилятора
+    description: "Обратный диод вентилятора продувки"
   J5:
     type: TYPE_CONN01X02_ВНУТРPКОННЕКТОРВЕНТИЛЯТОРАПРОДУВКИ(2П,XH)
-    description: Внутр. коннектор вентилятора продувки (2п, XH)
+    description: "Внутренний коннектор вентилятора продувки (2п, XH)"
   Q2:
     type: TYPE_QNMOS_AO3400
-    description: ключ мини-вентилятора (логич. уровень, 5,7А
+    description: "Ключ мини-вентилятора продувки датчика"
   R16:
     type: TYPE_R_1K
-    description: затвор Q_MFAN
+    description: "Защитный резистор затвора Q2"
   R17:
     type: TYPE_R_10K
-    description: подтяжка затвора Q_MFAN к GND
+    description: "Подтяжка затвора Q2 к GND"
   RT1:
     type: TYPE_THERMISTORNTC_10K
-    description: длинные ножки, в трубе продувки
+    description: "NTC 10к B3435 в трубе продувки"
+
 nets:
   VCC_12V:
     name: VCC_12V
@@ -84,10 +134,9 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: J5
-      pin: '1'
-    - component: D3
-      pin: '2'
+    - { component: J5, pin: '1' }
+    - { component: D3, pin: '2' }
+
   GND:
     name: GND
     description: Общий провод (кузов автомобиля)
@@ -101,12 +150,10 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: Q2
-      pin: '3'
-    - component: RT1
-      pin: '2'
-    - component: R17
-      pin: '2'
+    - { component: Q2,  pin: '3' }
+    - { component: R17, pin: '2' }
+    - { component: RT1, pin: '2' }
+
   NTC_CABIN:
     name: NTC_CABIN
     description: Температура воздуха в салоне (NTC на плате в трубе продувки)
@@ -120,8 +167,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: RT1
-      pin: '1'
+    - { component: RT1, pin: '1' }
+
   M_FAN_CTL:
     name: M_FAN_CTL
     description: Управление мини-вентилятором продувки датчика
@@ -135,8 +182,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R16
-      pin: '1'
+    - { component: R16, pin: '1' }
+
   M_FAN_GATE:
     name: M_FAN_GATE
     description: Затвор MOSFET мини-вентилятора
@@ -150,28 +197,194 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R16
-      pin: '2'
-    - component: Q2
-      pin: '1'
-    - component: R17
-      pin: '1'
+    - { component: R16, pin: '2' }
+    - { component: Q2,  pin: '1' }
+    - { component: R17, pin: '1' }
+
   SENS_FAN_SW:
     name: SENS_FAN_SW
     description: Коммутируемая линия питания мини-вентилятора
     is_hierarchical_port: false
     attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
+      type: PWM_POWER
+      voltage_level: 0..12V
+      current_max: 0.5A
       spice_simulation:
         model_stimulus: ''
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: Q2
-      pin: '2'
-    - component: J5
-      pin: '2'
-    - component: D3
-      pin: '1'
+    - { component: Q2, pin: '2' }
+    - { component: J5, pin: '2' }
+    - { component: D3, pin: '1' }
+
+# ─────────────────────────────────────────────────────────────────────
+# Тестовые сценарии Ngspice
+#
+# Что проверяем:
+#   1. Ключ Q2 вкл/выкл, ток через вентилятор.
+#   2. Делитель NTC + R24 при двух температурах (0°C и 60°C).
+#
+# Стенд в каждом сценарии:
+#   - источники V1 (VCC_12V или VCC_3V3_EXT) и V2 (M_FAN_CTL);
+#   - R_FAN — эквивалент обмотки вентилятора (100 Ом);
+#   - R_PU — верхнее плечо делителя R24 (10к), физически на UI.
+#
+# Температура NTC передаётся через overrides на компонент RT1.
+# Генератор .cir превращает это в .param T_NTC = <значение>
+# и пробрасывает в .sub.
+#
+# Расчёт NTC:
+#   R(T) = 10000 · exp(3435 · (1/(273.15+T) − 1/298.15))
+#     T =  0°C  → R ≈ 27.2 кОм → V_NTC = 3.3·27.2/(10+27.2) ≈ 2.41В
+#     T = 25°C  → R = 10 кОм  → V_NTC = 1.65В
+#     T = 60°C  → R ≈ 2.49 кОм → V_NTC = 3.3·2.49/(10+2.49) ≈ 0.66В
+# ─────────────────────────────────────────────────────────────────────
+
+scenarios:
+
+  - name: SEN_CABIN_FAN_ON
+    description: |
+      Мини-вентилятор продувки включён.
+      M_FAN_CTL = 3.3В → Q2 открыт, SENS_FAN_SW прижат к GND.
+      Через вентилятор (R_FAN = 100 Ом) идёт ток ~144 мА.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_12V
+          type: dc
+          value: 14.4
+          description: "Бортовая сеть +14,4В"
+      - source:
+          ref: V2
+          net: M_FAN_CTL
+          type: dc
+          value: 3.3
+          description: "Управление вентилятором: ВКЛ"
+      - resistor:
+          ref: R_FAN
+          net_pos: VCC_12V
+          net_neg: SENS_FAN_SW
+          value: 100
+          description: "Эквивалент обмотки вентилятора (R = 100 Ом, ток ~140 мА)"
+    control: |
+      let vsw  = v(SENS_FAN_SW)
+      let ifan = (v(VCC_12V) - v(SENS_FAN_SW)) / 100
+      print vsw ifan
+    checks:
+      - { node: vsw,  min: 0.0,  max: 0.5,  description: "SENS_FAN_SW прижат к GND (Q2 открыт)" }
+      - { node: ifan, min: 0.10, max: 0.18, description: "ток вентилятора ≈ 140 мА" }
+
+  - name: SEN_CABIN_FAN_OFF
+    description: |
+      Мини-вентилятор продувки выключен.
+      M_FAN_CTL = 0В → Q2 закрыт. SENS_FAN_SW подтягивается
+      к VCC_12V через обмотку вентилятора (R_FAN = 100 Ом),
+      ток через вентилятор ≈ 0.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_12V
+          type: dc
+          value: 14.4
+          description: "Бортовая сеть +14,4В"
+      - source:
+          ref: V2
+          net: M_FAN_CTL
+          type: dc
+          value: 0.0
+          description: "Управление вентилятором: ВЫКЛ"
+      - resistor:
+          ref: R_FAN
+          net_pos: VCC_12V
+          net_neg: SENS_FAN_SW
+          value: 100
+          description: "Эквивалент обмотки вентилятора"
+    control: |
+      let vsw  = v(SENS_FAN_SW)
+      let ifan = (v(VCC_12V) - v(SENS_FAN_SW)) / 100
+      print vsw ifan
+    checks:
+      - { node: vsw,  min: 13.0,   max: 14.5,   description: "SENS_FAN_SW подтянут к 14,4В (Q2 закрыт)" }
+      - { node: ifan, min: -0.0001, max: 0.001, description: "ток через вентилятор ≈ 0" }
+
+  - name: SEN_CABIN_NTC_HOT
+    description: |
+      Термистор RT1 прогрет до 60°C (труба продувки прогрета).
+      R_NTC ≈ 2.49 кОм.
+      Делитель: R_PU = 10к (R24 с листа UI), питание 3,3В.
+      NTC_CABIN = 3.3 · 2.49/(10 + 2.49) ≈ 0.66В.
+    analysis: op
+    overrides:
+      RT1:
+        T: 60
+    deck:
+      - source:
+          ref: V1
+          net: VCC_3V3_EXT
+          type: dc
+          value: 3.3
+          description: "Опорное питание АЦП (эмуляция VCC_3V3 с листа UI)"
+      - resistor:
+          ref: R_PU
+          net_pos: VCC_3V3_EXT
+          net_neg: NTC_CABIN
+          value: 10k
+          description: "R24 (10к) — верхнее плечо делителя, физически на UI"
+    checks:
+      - { node: v(ntc_cabin), min: 0.55, max: 0.78,
+          description: "горячий NTC (60°C): NTC_CABIN ≈ 0,66В" }
+
+  - name: SEN_CABIN_NTC_COLD
+    description: |
+      Термистор RT1 охлаждён до 0°C (труба продувки холодная).
+      R_NTC ≈ 27.2 кОм.
+      NTC_CABIN = 3.3 · 27.2/(10 + 27.2) ≈ 2.41В.
+    analysis: op
+    overrides:
+      RT1:
+        T: 0
+    deck:
+      - source:
+          ref: V1
+          net: VCC_3V3_EXT
+          type: dc
+          value: 3.3
+          description: "Опорное питание АЦП"
+      - resistor:
+          ref: R_PU
+          net_pos: VCC_3V3_EXT
+          net_neg: NTC_CABIN
+          value: 10k
+          description: "R24 (10к) — верхнее плечо делителя"
+    checks:
+      - { node: v(ntc_cabin), min: 2.30, max: 2.55,
+          description: "холодный NTC (0°C): NTC_CABIN ≈ 2,41В" }
+
+  - name: SEN_CABIN_NTC_MID
+    description: |
+      Термистор RT1 при комнатной температуре 25°C.
+      R_NTC = 10 кОм.
+      NTC_CABIN = 3.3 · 10/(10 + 10) = 1.65В.
+    analysis: op
+    overrides:
+      RT1:
+        T: 25
+    deck:
+      - source:
+          ref: V1
+          net: VCC_3V3_EXT
+          type: dc
+          value: 3.3
+          description: "Опорное питание АЦП"
+      - resistor:
+          ref: R_PU
+          net_pos: VCC_3V3_EXT
+          net_neg: NTC_CABIN
+          value: 10k
+          description: "R24 (10к) — верхнее плечо делителя"
+    checks:
+      - { node: v(ntc_cabin), min: 1.55, max: 1.75,
+          description: "25°C: NTC_CABIN ≈ 1,65В (середина диапазона)" }

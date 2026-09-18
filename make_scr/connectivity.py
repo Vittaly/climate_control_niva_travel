@@ -1,17 +1,18 @@
 # make_scr/connectivity.py
 """Граф связности компонентов страницы.
 
-Строится из Netlist: для каждой сети с >= 2 пинами добавляются рёбра
-между всеми парами компонентов этой сети. Вес ребра — сколько раз два
-компонента встречаются в одной сети.
+Строится из sheet.netlist: для каждой сети с >= 2 пинами добавляются
+рёбра между всеми парами компонентов этой сети. Вес ребра — сколько
+раз два компонента встречаются в одной сети.
+
+Нетлист — атрибут страницы, поэтому функция принимает только Sheet.
 """
 from __future__ import annotations
 
 from collections import defaultdict
 from typing import Dict, List
 
-from logging_setup import get_logger
-from netlist import Netlist
+from logging_setup import ctx, get_logger
 from sheet import Sheet
 
 log = get_logger(__name__)
@@ -20,19 +21,19 @@ log = get_logger(__name__)
 Adjacency = Dict[str, Dict[str, int]]
 
 
-def build_component_graph(netlist: Netlist, sheet: Sheet) -> Adjacency:
+def build_component_graph(sheet: Sheet) -> Adjacency:
     """Строит граф связности компонентов одной страницы.
 
     Args:
-        netlist: нетлист проекта (FQN-ключи пинов).
-        sheet:   страница, для которой строим граф.
+        sheet: страница; источник — sheet.netlist (FQN-ключи пинов)
+               и sheet.local_key для отсечения чужих страниц.
 
     Returns:
         Словарь смежности: adj[a][b] = вес (число общих сетей).
     """
     adj: Adjacency = defaultdict(lambda: defaultdict(int))
 
-    for net_name, net in netlist.nets.items():
+    for net_name, net in sheet.netlist.nets.items():
         # оставляем только пины этой страницы
         local_components: List[str] = []
         seen: set[str] = set()
@@ -57,9 +58,12 @@ def build_component_graph(netlist: Netlist, sheet: Sheet) -> Adjacency:
                 adj[b][a] += 1
 
     result: Adjacency = {k: dict(v) for k, v in adj.items()}
-    log.debug("[%s] граф связности: вершин %d, рёбер %d",
-              sheet.sheet_path or "root", len(result),
-              sum(len(v) for v in result.values()) // 2)
+    log.debug(
+        "%s graph vertices=%d edges=%d",
+        ctx(page=sheet.page),
+        len(result),
+        sum(len(v) for v in result.values()) // 2,
+    )
     return result
 
 

@@ -1,0 +1,21 @@
+* Ngspice тест: SEN_HEAT / SEN_HEAT_OPEN
+* Обрыв линии датчика (NTC отключён или провод перебит).
+* Линия NTC_HEAT_W подтягивается к VCC_3V3 через R25,
+* ток через R26 отсутствует, вход АЦП видит 3,3В.
+* Прошивка должна распознать это как ошибку датчика.
+.INCLUDE spice/SEN_HEAT.sub
+
+* Порты: GND NTC_HEAT NTC_HEAT_W
+
+* V1: Питание делителя +3,3В
+V1 VCC_3V3 0 DC 3.3
+XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W SEN_HEAT
+
+.op
+.control
+run
+let vw = v(NTC_HEAT_W)
+let va = v(NTC_HEAT)
+print vw va
+.endc
+.end

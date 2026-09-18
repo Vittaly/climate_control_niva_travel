@@ -1,0 +1,17 @@
+* Ngspice тест: SEN_SOLAR / SEN_SOLAR_BRIGHT
+* Яркое солнце, датчик на верхнем пределе.
+* SOLAR_RAW = 5В → SOLAR_ADC ≈ 3,33В (граница АЦП).
+.INCLUDE spice/SEN_SOLAR.sub
+
+* Порты: GND SOLAR_ADC SOLAR_RAW
+
+* V1: Датчик солнечной радиации: максимум (5В)
+V1 SOLAR_RAW 0 DC 5.0
+XSEN_SOLAR 0 SOLAR_ADC SOLAR_RAW SEN_SOLAR
+
+.op
+.control
+run
+print v(solar_adc)
+.endc
+.end

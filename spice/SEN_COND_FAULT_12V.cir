@@ -1,0 +1,22 @@
+* Ngspice тест: SEN_COND / SEN_COND_FAULT_12V
+* Аварийный режим: замыкание линии COND_RAW на бортсеть +12В
+* (неисправность проводки или КЗ датчика).
+* Делитель R29/R30 ограничивает ток и понижает напряжение
+* на входе АЦП. Проверяем, что COND_ADC остаётся в допустимых
+* пределах и не превышает 3,3В более чем на 10%.
+.INCLUDE spice/SEN_COND.sub
+
+* Порты: COND_ADC COND_RAW GND
+
+* V1: Аварийный режим: замыкание COND_RAW на +12В
+V1 COND_RAW 0 DC 12.0
+XSEN_COND COND_ADC COND_RAW 0 SEN_COND
+
+.op
+.control
+run
+let vadc = v(COND_ADC)
+let iin  = (12.0 - v(COND_ADC)) / 10k
+print vadc iin
+.endc
+.end

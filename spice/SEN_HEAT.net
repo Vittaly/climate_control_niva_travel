@@ -1,19 +1,19 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_06_sen_heat.kicad_sch")
-		(date "2026-09-12T18:45:13")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/heating_sensor.kicad_sch")
+		(date "2026-09-18T10:57:31")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title "SEN_HEAT")
+				(title)
 				(company)
 				(rev)
 				(date)
-				(source "cc_06_sen_heat.kicad_sch")
+				(source "heating_sensor.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -59,6 +59,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -74,12 +76,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_06_sen_heat.kicad_sch")
+				(value "heating_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -93,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3386acb6-73a5-4804-b991-e18b54589f69")
+			(tstamps "6690de6e-a4d7-4b07-8637-f8fed59333b8")
 			(units
 				(unit
 					(name "A")
@@ -113,6 +119,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -128,12 +136,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_06_sen_heat.kicad_sch")
+				(value "heating_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -147,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3d286716-fe6b-473d-b243-533753b315af")
+			(tstamps "56b6faa7-ae3f-44a9-b78b-43bd6b2b78fb")
 			(units
 				(unit
 					(name "A")
@@ -167,6 +179,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -182,12 +196,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_06_sen_heat.kicad_sch")
+				(value "heating_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -201,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "22dad779-2fcd-45a9-809e-51e7213f944a")
+			(tstamps "3febf391-72d5-4478-98b6-ca939772dec2")
 			(units
 				(unit
 					(name "A")
@@ -327,21 +345,16 @@
 			)
 			(node
 				(ref "R25")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R25")
 				(pin "2")
 				(pintype "passive")
 			)
 			(node
 				(ref "R26")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "4")
-			(name "/VCC_3V3")
-			(class "Default")
-			(node
-				(ref "R25")
 				(pin "1")
 				(pintype "passive")
 			)

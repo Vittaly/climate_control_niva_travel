@@ -3,284 +3,465 @@
 """
 kicad_to_spice.py — генерация Ngspice-тестов из нетлиста KiCad.
 
-Каждая страница -> .sub (субсхема, порты = пины листа) + по одному .cir на сценарий.
+Источник данных:
+  * нетлист KiCad (для pin-маппинга и состава компонентов);
+  * main.yaml → spice.component_models (сложные .SUBCKT);
+  * <sheet>.yaml → component_types, components, nets, scenarios, spice.
+
+Каждая страница → .sub + по одному .cir на сценарий.
+
 Запуск:  python3 kicad_to_spice.py <netlist.net> <sheet> [port1 ... portN]
 """
+import os
 import re
 import sys
+import yaml
+
+PROJ = os.path.dirname(os.path.abspath(__file__))
+MAIN_YAML = os.path.join(PROJ, "main.yaml")
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Загрузка YAML
+# ─────────────────────────────────────────────────────────────────────
+
+def load_main():
+    return yaml.safe_load(open(MAIN_YAML, encoding="utf-8"))["root_page"]
+
+
+def load_sheet_yaml(sheet):
+    """Найти yaml по page_name (перебор components.X_* в main.yaml)."""
+    root = load_main()
+    for comp_name, comp in root.get("components", {}).items():
+        if comp.get("symbol") != "Core:Hierarchical_Sheet":
+            continue
+        if comp_name != "X_" + sheet and comp_name[2:] != sheet:
+            continue
+        yml_path = os.path.splitext(comp["value_sch"])[0] + ".yaml"
+        return yaml.safe_load(open(os.path.join(PROJ, yml_path), encoding="utf-8"))
+    # если не нашли в components — попробовать одноимённый yaml в sheets/
+    guess = os.path.join(PROJ, "sheets", sheet.lower() + ".yaml")
+    if os.path.exists(guess):
+        return yaml.safe_load(open(guess, encoding="utf-8"))
+    return {}
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Парсинг нетлиста
+# ─────────────────────────────────────────────────────────────────────
 
 def parse_netlist(text):
     comps = {}
-    for m in re.finditer(r'\(comp\s+\(ref "([^"]+)"\).*?\(value "([^"]*)"\).*?\(libsource\s+\(lib "([^"]+)"\)\s+\(part "([^"]+)"\)', text, re.S):
+    for m in re.finditer(
+        r'\(comp\s+\(ref "([^"]+)"\).*?\(value "([^"]*)"\).*?'
+        r'\(libsource\s+\(lib "([^"]+)"\)\s+\(part "([^"]+)"\)',
+        text, re.S):
         ref, value, lib, part = m.groups()
         comps[ref] = {"value": value, "lib": lib, "part": part}
     nets = {}
-    for m in re.finditer(r'\(net\s+\(code "\d+"\)\s+\(name "([^"]+)"\)(.*?)\n\t\t\)', text, re.S):
+    for m in re.finditer(r'\(net\s+\(code "\d+"\)\s+\(name "([^"]+)"\)(.*?)\n\t\t\)',
+                         text, re.S):
         name = m.group(1).lstrip('/')
-        nodes = re.findall(r'\(ref "([^"]+)"\)\s+\(pin "([^"]+)"\)(?:\s+\(pinfunction "([^"]*)"\))?', m.group(2))
+        nodes = re.findall(
+            r'\(ref "([^"]+)"\)\s+\(pin "([^"]+)"\)(?:\s+\(pinfunction "([^"]*)"\))?',
+            m.group(2))
         nets[name] = nodes
     return comps, nets
 
+
 def parse_val(v):
-    v = re.sub(r"[А-Яа-яВ ].*$", "", v.strip())
+    v = re.sub(r"[А-Яа-яЁё ].*$", "", str(v).strip())
     v = v.replace(",", ".")
-    m = re.match(r"([\d.]+)\s*(u|n|p|k|m|M)?", v)
+    m = re.match(r"([\d.]+)\s*(u|n|p|k|meg|m|M|G)?", v)
     return m.group(0) if m else "1"
 
-def pin_map(ref, nets):
-    pm, pf = {}, {}
+
+def net_of(nets, ref, pin):
     for nm, nds in nets.items():
         for nd in nds:
-            r, p = nd[0], nd[1]
-            if r == ref:
-                pm[p] = nm
-                pf.setdefault(p, "").join(nd[2] if len(nd) > 2 else "")
-    return pm, pf
+            if nd[0] == ref and nd[1] == pin:
+                return "GND" if nm == "GND" else nm
+    return None
 
-def diode_nodes(ref, nets):
-    anode = cathode = None
-    for nm, nds in nets.items():
-        for nd in nds:
-            if nd[0] != ref:
-                continue
-            f = nd[2] if len(nd) > 2 else ""
-            if f.lower().startswith("a"):
-                anode = nm
-            elif f.lower().startswith("k"):
-                cathode = nm
-    def c(nm):
-        return "GND" if nm == "GND" else nm
-    return c(anode), c(cathode)
 
-def spice_el(ref, comp, nets):
-    lib, part = comp["lib"], comp["part"]
-    v = parse_val(comp["value"])
-    pm, _pf = pin_map(ref, nets)
-    def cname(nm):
-        return "GND" if nm == "GND" else nm
-    p1 = cname(pm.get("1", "GND"))
-    p2 = cname(pm.get("2", "GND"))
+def cname(nm):
+    return "GND" if nm == "GND" else nm
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Генерация элементов .sub
+# ─────────────────────────────────────────────────────────────────────
+
+def component_type(sheet_yaml, comp):
+    """Вернуть описание типа (component_types[type]) или {}."""
+    return sheet_yaml.get("component_types", {}).get(comp.get("_type", ""), {})
+
+
+def spice_el(ref, comp, nets, sheet_yaml, main_cfg):
+    """SPICE-строка одного компонента внутри .sub."""
+    part = comp["part"]
+    cm = main_cfg.get("spice", {}).get("component_models", {})
+    ctype = component_type(sheet_yaml, comp)
+    spice_meta = ctype.get("spice", {})
+
+    # 1. Сложный компонент из component_models (DRV8871, MCP2562, NTC, DC_MOTOR, BTS141, …)
+    if part in cm:
+        model = cm[part]
+        nodes = model.get("nodes", {})
+        args = []
+        params = []
+        for spice_port, spec in nodes.items():
+            pin = spec["pin"] if isinstance(spec, dict) else spec
+            net = net_of(nets, ref, pin) or "GND"
+            args.append(cname(net))
+        # параметры из required_params — оставляем ссылки на переменные
+        # верхнего уровня (передаются через PARAMS: субсхемы)
+        for p in model.get("required_params", []):
+            pname = p["name"]
+            params.append(f"{pname}={{{ref}_{pname}}}")
+        line = f'X{ref} {" ".join(args)} {model["subckt"]}'
+        if params:
+            line += " " + " ".join(params)
+        return line
+
+    # 2. Резистор / конденсатор / индуктивность
     if part in ("R", "C", "L"):
+        # тип определяем по символу — в KiCad обычно Device:R → part == "R"
+        v = parse_val(comp["value"])
+        p1 = cname(net_of(nets, ref, "1") or "GND")
+        p2 = cname(net_of(nets, ref, "2") or "GND")
         return f'{ref} {p1} {p2} {v}'
-    if part in ("D_Schottky", "D_Zener", "D"):
-        a, k = diode_nodes(ref, nets)
-        if part == "D_Zener":
-            mdl = "TVS5" if "5.0" in comp["value"] else "TVS24"
-        else:
-            mdl = "MyD"
+
+    # 3. Диод
+    if part in ("D", "D_Schottky", "D_Zener"):
+        a = cname(net_of(nets, ref, "1") or "GND")
+        k = cname(net_of(nets, ref, "2") or "GND")
+        mdl = spice_meta.get("model", "MyD")
         return f'{ref} {a} {k} {mdl}'
+
+    # 4. Транзистор NMOS / NPN / PNP
+    if part in ("Q_NMOS", "Q_NMOS_GSD", "Q_NPN", "Q_PNP"):
+        # порядок портов KiCad для Q_NMOS_GSD: 1=G, 2=D, 3=S
+        g = cname(net_of(nets, ref, "1") or "GND")
+        d = cname(net_of(nets, ref, "2") or "GND")
+        s = cname(net_of(nets, ref, "3") or "GND")
+        mdl = spice_meta.get("model", "SW_GP")
+        if part in ("Q_NPN", "Q_PNP"):
+            # BJT: 1=B, 2=C, 3=E — порядок в .model NPN/PNP: C B E
+            b = g; c = d; e = s
+            return f'Q{ref} {c} {b} {e} {mdl}'
+        return f'M{ref} {d} {g} {s} {s} {mdl}'
+
+    # 5. NTC (если не описан в component_models — упрощённый случай)
     if part == "Thermistor_NTC":
-        return f'* {ref}: NTC (R задаётся в сценарии)'
-    if part in ("Q_NMOS", "Q_NPN", "Q_PNP"):
-        node = {}
-        for nm, nds in nets.items():
-            for nd in nds:
-                if nd[0] == ref and len(nd) > 2:
-                    node[nd[2].split("_")[0].lower()] = nm if nm != "GND" else "GND"
-        g = node.get("g", node.get("b", "GND"))
-        d = node.get("d", node.get("c", "GND"))
-        s_ = node.get("s", node.get("e", "GND"))
-        if part == "Q_NMOS" and comp["value"].strip().upper().startswith("HYG"):
-            return f'X{ref} {d} {g} {s_} HYG012N03'
-        return f'S{ref} {d} {s_} {g} 0 SW_GP'
-    if part == "DRV8871DDA":
-        order = ["IN1", "IN2", "OUT1", "OUT2", "VM", "GND"]
-        node = {}
-        for nm, nds in nets.items():
-            for nd in nds:
-                if nd[0] == ref and len(nd) > 2:
-                    f = nd[2].split("_")[0]
-                    node[f] = nm if nm != "GND" else "GND"
-        args = " ".join(node.get(k, "GND") for k in order)
-        return f'X{ref} {args} DRV8871'
-    if part == "MCP2562-E-SN":
-        order = ["TXD", "RXD", "CANH", "CANL", "STBY", "VDD", "VIO", "GND"]
-        node = {}
-        for nm, nds in nets.items():
-            for nd in nds:
-                if nd[0] == ref and len(nd) > 2:
-                    node[nd[2].split("_")[0].lower()] = nm if nm != "GND" else "GND"
-        args = " ".join(node.get(k.lower(), "GND") for k in order)
-        return f'X{ref} {args} MCP2562'
-    if part in ("LM78M05_TO252", "AP1117-15"):
-        mdl = "MC78M05" if part == "LM78M05_TO252" else "AMS1117_33"
-        node = {}
-        for nm, nds in nets.items():
-            for nd in nds:
-                if nd[0] == ref and len(nd) > 2:
-                    node[nd[2].split("_")[0].lower()] = nm if nm != "GND" else "GND"
-        i = node.get("vi", node.get("in", "GND"))
-        g = node.get("gnd", "GND")
-        o = node.get("vo", node.get("out", "GND"))
-        return f'X{ref} {i} {g} {o} {mdl}'
-    return f'* {ref}: {lib}:{part} (не моделируется)'
+        a = cname(net_of(nets, ref, "1") or "GND")
+        b = cname(net_of(nets, ref, "2") or "GND")
+        return f'X{ref} {a} {b} NTC_10K_3435'
 
-def scenarios_for(sheet):
-    if sheet == "PWR":
-        return scenarios_pwr
-    return {
-        "UI": [
-            {"name": "UI_TEMP", "deck": ["VS VCC_3V3 0 DC 3.3", ".op",
-              "* PASS: TEMP_SET_ADC ~3.3В (потенциометр выкручен/обрыв)"], "print": "V(TEMP_SET_ADC)"},
-            {"name": "UI_FAN", "deck": ["VS VCC_3V3 0 DC 3.3", ".op",
-              "* PASS: FAN_SEL_ADC в рабочем окне (AUTO)"], "print": "V(FAN_SEL_ADC)"},
-            {"name": "UI_ILLUM", "deck": ["VS ILLUM_IN_RAW 0 DC 12", ".op",
-              "* PASS: ILLUM_SENSE ~2,1В (делитель 47k/10k, подсветка включена)"], "print": "V(ILLUM_SENSE)"},
-        ],
-        "SEN_HEAT": [
-            {"name": "SEN_HEAT_HOT", "deck": ["VS VCC_3V3 0 DC 3.3", "VN NTC_HEAT_W 0 DC 0.6", ".op",
-              "* PASS: NTC_HEAT < 1.5В (труба горячая)"], "print": "V(NTC_HEAT)"},
-            {"name": "SEN_HEAT_COLD", "deck": ["VS VCC_3V3 0 DC 3.3", "VN NTC_HEAT_W 0 DC 3.0", ".op",
-              "* PASS: NTC_HEAT > 2.0В (труба холодная)"], "print": "V(NTC_HEAT)"},
-        ],
-        "SEN_SOLAR": [
-            {"name": "SEN_SOLAR_MID", "deck": ["VS SOLAR_RAW 0 DC 2.5", ".op",
-              "* PASS: SOLAR_ADC ~1.6В (делитель 5->3,3)"], "print": "V(SOLAR_ADC)"},
-        ],
-        "SEN_COND": [
-            {"name": "SEN_COND_MID", "deck": ["VS COND_RAW 0 DC 2.5", ".op",
-              "* PASS: COND_ADC ~1.6В (делитель 5->3,3)"], "print": "V(COND_ADC)"},
-        ],
-        "ACT": [
-            {"name": "ACT_M1_FWD", "deck": ["VS VCC_12V 0 DC 14.4", "V1 M1_IN1 0 DC 3.3", "V2 M1_IN2 0 DC 0", ".op",
-              "* PASS: MOTOR_1_A ~12В (H-мост, прямое вращение)"], "print": "V(MOTOR_1_A)"},
-        ],
-        "OUT": [
-            {"name": "OUT_FAN_ON", "deck": ["VS VCC_12V 0 DC 14.4", "V1 FAN_PWM_CTL 0 DC 3.3", ".op",
-              "* PASS: FAN_PWM_OUT низкий (буфер Q1 открыт)"],
-             "print": "V(FAN_PWM_OUT)"},
-            {"name": "OUT_FAN_OFF", "deck": ["VS VCC_12V 0 DC 14.4", "V1 FAN_PWM_CTL 0 DC 0", ".op",
-              "* PASS: FAN_PWM_OUT ~12В (буфер закрыт)"],
-             "print": "V(FAN_PWM_OUT)"},
-        ],
-        "FAN_KEY": [
-            {"name": "FAN_KEY_STEADY", "deck": ["VB VBAT_SRC 0 DC 13.5",
-              "VPWM FAN_PWM_OUT 0 DC 12", ".op",
-              "* PASS: I(VB)~15А (мотор на скорости, ключ открыт)"],
-             "analysis": "op",
-             "control": "let ifan = -i(VB)\nprint ifan"},
-            {"name": "FAN_KEY_STARTUP", "deck": ["VPWM FAN_PWM_OUT 0 DC 12",
-              "VB VBAT_SRC 0 DC 0 PULSE(0 13.5 0.5u 0.1u 0.1u 1 1)",
-              ".measure TRAN isurge MIN i(VB)",
-              "* PASS: пусковой бросок ~30А (ротор заторможен)"],
-             "analysis": "tran 0.1m 0.5",
-             "control": "* startup tran"},
-            {"name": "FAN_KEY_PWM", "deck": [
-              "VB VBAT_SRC 0 DC 13.5",
-              "* Источник ШИМ с импедансом выхода модуля контроля (R14 4.7k + R15 1k):",
-              "* слабая подтяжка -> медленный фронт затвора (завал) на 4кГц",
-              "RSRC FAN_PWM_OUT FAN_PWM_SRC 5.7k",
-              "VDRV FAN_PWM_SRC 0 PULSE(12 0 0 0.5u 0.5u 125u 250u)",
-              ".measure TRAN vdmax MAX v(FAN_LOAD_LO)",
-              "* PASS: 4кГц ШИМ: завал фронтов затвора, сток на freewheel-диоде ~14В"],
-             "analysis": "tran 2u 1m",
-             "control": "set maxstep=5u\n"
-                        "let vg = v(FAN_GATE_EXT)\n"
-                        "let n = length(vg)\n"
-                        "let vgsmax = vg[n-1]\n"
-                        "let ig = v(FAN_PWM_SRC,FAN_GATE_EXT)/5.7k\n"
-                        "let igavg = mean(ig)\n"
-                        "print vgsmax igavg"},
-        ],
-        "CAN": [
-            {"name": "CAN_RECESSIVE", "deck": ["VS VCC_5V 0 DC 5", "V1 CAN_TX 0 DC 5", ".op",
-              "* PASS: CANH ~2,5В (рецессивный уровень)"], "print": "V(CANH)"},
-            {"name": "CAN_DOMINANT", "deck": ["VS VCC_5V 0 DC 5", "V1 CAN_TX 0 DC 0", ".op",
-              "* PASS: CANH подтянут к ~4В (доминантный)"], "print": "V(CANH)"},
-        ],
-        "SEN_CABIN": [
-            {"name": "SEN_CABIN_FAN", "deck": ["VS VCC_12V 0 DC 14.4", "V1 M_FAN_CTL 0 DC 3.3", ".op",
-              "* PASS: SENS_FAN_SW ~0 (вентилятор включён)"], "print": "V(SENS_FAN_SW)"},
-        ],
-    }.get(sheet, [])
+    # 6. Разъёмы и прочее — не моделируется
+    return f'* {ref}: {part} ({comp["value"]}) — не моделируется'
 
-def scenarios_pwr(nets, comps):
-    return [
-        {"name": "PWR_P1", "deck": ["VIN VBAT_IN 0 DC -14", ".op",
-            "* PASS: V(VBAT_PROT)~0 и I(VIN)~0 (переполюсовка)"], "print": "V(VBAT_PROT)"},
-        {"name": "PWR_P2", "deck": ["VIN VBAT_IN 0 DC 40", ".op",
-            "* PASS: V(VCC_12V)<=24 (TVS D2, load-dump)"], "print": "V(VCC_12V)"},
-        {"name": "PWR_P3", "deck": ["VIN VBAT_IN 0 DC 14.4 SIN(1M 2)", ".tran 0.02u 10u",
-            "* PASS: размах VCC_5V в допуске (L1+C20 фильтр)"], "print": "V(VCC_5V)"},
-        {"name": "PWR_P4", "deck": ["VIN VBAT_IN 0 DC 14.4", "Rshort VCC_12V 0 0.01", ".op",
-            "* PASS: ток ограничен, защита держит (КЗ шины)"], "print": "V(VCC_12V)"},
-        {"name": "PWR_P6", "deck": ["VIN VBAT_IN 0 DC 14.4", "VSENS V5_SENS 0 DC 12", ".op",
-            "* PASS: V5_SENS<=5.6 (D5), D4 закрыт (обратный +12В)"], "print": "V(V5_SENS) V(VCC_5V)"},
-    ]
+
+# ─────────────────────────────────────────────────────────────────────
+# Сборка .sub
+# ─────────────────────────────────────────────────────────────────────
+
+def collect_subckt_params(comps, sheet_yaml, main_cfg):
+    """Найти все параметры сложных компонентов, которые нужно вынести в PARAMS: субсхемы."""
+    cm = main_cfg.get("spice", {}).get("component_models", {})
+    params = []  # список (subckt_param_name, default_value)
+    for ref, comp in comps.items():
+        part = comp["part"]
+        if part not in cm:
+            continue
+        for p in cm[part].get("required_params", []):
+            name = p["name"]
+            default = p.get("default", "")
+            params.append((f"{ref}_{name}", default))
+    return params
+
+
+def build_subckt(sheet, comps, nets, sheet_yaml, main_cfg, ports):
+    params = collect_subckt_params(comps, sheet_yaml, main_cfg)
+    header = f".subckt {sheet} {' '.join(ports)}"
+    if params:
+        # переносим параметры на отдельную строку с продолжением
+        header += " PARAMS:"
+        for pname, pval in params:
+            header += f" {pname}={pval}" if pval != "" else f" {pname}"
+
+    lines = [f"* {sheet} — субсхема из нетлиста KiCad + YAML"]
+    lines.append(header)
+    for ref in sorted(comps):
+        lines.append("  " + spice_el(ref, comps[ref], nets, sheet_yaml, main_cfg))
+    lines.append(f".ends {sheet}")
+    return lines
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Разбор deck из YAML-сценария
+# ─────────────────────────────────────────────────────────────────────
+
+def emit_source(body):
+    ref = body["ref"]
+    net = body["net"]
+    t = body["type"]
+    if t == "dc":
+        return [f'{ref} {net} 0 DC {body["value"]}']
+    if t == "pulse":
+        p = body["pulse"]
+        return [f'{ref} {net} 0 PULSE({p["v1"]} {p["v2"]} {p["td"]} '
+                f'{p["tr"]} {p["tf"]} {p["pw"]} {p["per"]})']
+    if t == "sin":
+        return [f'{ref} {net} 0 SIN({body["offset"]} {body["ampl"]} {body["freq"]})']
+    if t == "ac":
+        return [f'{ref} {net} 0 AC {body["value"]}']
+    raise ValueError(f"source type: {t}")
+
+
+def emit_deck_entry(entry, main_cfg):
+    """Один элемент deck → список SPICE-строк (+ комментарий из description)."""
+    lines = []
+    for kind, body in entry.items():
+        ref = body.get("ref", "?")
+        desc = body.get("description", "")
+        if desc:
+            lines.append(f"* {ref}: {desc.strip().splitlines()[0]}")
+
+        if kind == "source":
+            lines += emit_source(body)
+
+        elif kind == "resistor":
+            lines.append(f'{ref} {body["net_pos"]} {body["net_neg"]} {body["value"]}')
+
+        elif kind == "inductor":
+            lines.append(f'{ref} {body["net_pos"]} {body["net_neg"]} {body["value"]}')
+
+        elif kind == "capacitor":
+            lines.append(f'{ref} {body["net_pos"]} {body["net_neg"]} {body["value"]}')
+
+        elif kind == "diode":
+            lines.append(f'{ref} {body["net_a"]} {body["net_k"]} {body["model"]}')
+
+        elif kind == "motor":
+            model = body["model"]
+            cm = main_cfg["spice"]["component_models"][model]
+            sub = cm["subckt"]
+            # порядок портов: In+ In- Speed
+            nets = [body["net_pos"], body["net_neg"], body.get("net_speed", "0")]
+            params = body.get("params", {})
+            pstr = " ".join(f"{k}={v}" for k, v in params.items())
+            line = f'{ref} {" ".join(nets)} {sub}'
+            if pstr:
+                line += " " + pstr
+            lines.append(line)
+
+        elif kind == "subckt":
+            model = body["model"]
+            cm = main_cfg["spice"]["component_models"][model]
+            sub = cm["subckt"]
+            args = []
+            for spice_port, spec in cm["nodes"].items():
+                # соединяем по именам из body["connect"]
+                kicad_key = spice_port
+                target = body.get("connect", {}).get(kicad_key, "0")
+                args.append(str(target))
+            params = body.get("params", {})
+            pstr = " ".join(f"{k}={v}" for k, v in params.items())
+            line = f'{ref} {" ".join(args)} {sub}'
+            if pstr:
+                line += " " + pstr
+            lines.append(line)
+
+        elif kind == "raw":
+            lines.append(body["line"])
+
+        else:
+            raise ValueError(f"deck: неизвестный тип {kind}")
+
+    return lines
+
+
+def emit_deck(deck, main_cfg):
+    lines = []
+    for entry in deck or []:
+        lines += emit_deck_entry(entry, main_cfg)
+        lines.append("")
+    if lines and lines[-1] == "":
+        lines.pop()
+    return lines
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Сборка .cir
+# ─────────────────────────────────────────────────────────────────────
+
+def collect_includes(sheet_yaml, main_cfg, has_override_models=None):
+    """Собрать .INCLUDE из component_models и spice.models листа."""
+    lib_dir = os.path.join(PROJ, main_cfg.get("spice", {}).get("lib_dir", "spice/lib"))
+    includes = []
+
+    # модели, использованные в deck (по имени .subckt)
+    used_models = set(has_override_models or [])
+
+    cm = main_cfg.get("spice", {}).get("component_models", {})
+    for name, model in cm.items():
+        if name in used_models or model.get("include") in sheet_yaml.get("spice", {}).get("includes", []):
+            inc = os.path.join(lib_dir, model["include"])
+            if inc not in includes:
+                includes.append(inc)
+
+    # явные includes из spice.models листа (если заданы строкой с include:)
+    for inc in sheet_yaml.get("spice", {}).get("includes", []):
+        inc_path = os.path.join(lib_dir, inc)
+        if inc_path not in includes:
+            includes.append(inc_path)
+
+    return includes
+
+
+def collect_model_defs(sheet_yaml):
+    """Собрать .model-строки из component_types[].spice.model_def и spice.models."""
+    defs = []
+    seen = set()
+
+    # из component_types
+    for ct in sheet_yaml.get("component_types", {}).values():
+        md = ct.get("spice", {}).get("model_def")
+        if md and md not in seen:
+            defs.append(md)
+            seen.add(md)
+
+    # из spice.models (список строк)
+    for line in sheet_yaml.get("spice", {}).get("models", []):
+        if line not in seen:
+            defs.append(line)
+            seen.add(line)
+
+    return defs
+
+
+def build_cir(sheet, sc, sheet_yaml, main_cfg, ports):
+    """Полный .cir для одного сценария."""
+    lines = [f"* Ngspice тест: {sheet} / {sc['name']}"]
+    if sc.get("description"):
+        for dl in sc["description"].strip().splitlines():
+            lines.append(f"* {dl}")
+
+    # определить, какие сложные компоненты использованы в deck
+    used_models = set()
+    for entry in sc.get("deck", []):
+        for kind, body in entry.items():
+            if kind in ("motor", "subckt") and "model" in body:
+                used_models.add(body["model"])
+
+    for inc in collect_includes(sheet_yaml, main_cfg, used_models):
+        lines.append(f".INCLUDE {inc}")
+
+    for md in collect_model_defs(sheet_yaml):
+        lines.append(md)
+
+    lines.append(f".INCLUDE spice/{sheet}.sub")
+    lines.append("")
+    lines.append("* Порты: " + " ".join(ports))
+    lines.append("")
+
+    # deck из YAML
+    lines += emit_deck(sc.get("deck"), main_cfg)
+
+    # инстанс субсхемы
+    cargs = " ".join("0" if p == "GND" else p for p in ports)
+    xinst = f"X{sheet} {cargs} {sheet}"
+
+    # overrides — передаём параметрами в субсхему
+    ovr = sc.get("overrides") or {}
+    if ovr:
+        pstr = []
+        for ref, params in ovr.items():
+            for pname, pval in params.items():
+                pstr.append(f"{ref}_{pname}={pval}")
+        if pstr:
+            xinst += " " + " ".join(pstr)
+    lines.append(xinst)
+    lines.append("")
+
+    # measures
+    for m in sc.get("measures", []):
+        lines.append("." + m)
+
+    # анализ
+    an = sc.get("analysis", "op")
+    if an == "op":
+        lines.append(".op")
+    elif an == "tran":
+        lines.append(".tran " + sc["tran"])
+    elif an == "ac":
+        lines.append(".ac " + sc["ac"])
+    elif an == "dc":
+        lines.append(".dc " + sc["dc"])
+
+    # control
+    lines.append(".control")
+    lines.append("run")
+    if sc.get("control"):
+        lines += sc["control"].strip().splitlines()
+    else:
+        # печатаем все проверяемые узлы
+        check_nodes = [c["node"] for c in sc.get("checks", []) if "node" in c]
+        if check_nodes:
+            lines.append("print " + " ".join(check_nodes))
+    lines += [".endc", ".end"]
+    return lines
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Точка входа
+# ─────────────────────────────────────────────────────────────────────
 
 def main():
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)
     path, sheet = sys.argv[1], sys.argv[2]
-    ports = [p for p in sys.argv[3:]]
+    ports = list(sys.argv[3:])
     if "GND" not in ports:
         ports.append("GND")
+
+    os.makedirs(os.path.join(PROJ, "spice"), exist_ok=True)
+
+    main_cfg = load_main()
+    sheet_yaml = load_sheet_yaml(sheet)
+    if not sheet_yaml:
+        print(f"WARN: не найден YAML для листа {sheet}, генерирую только .sub")
+
     text = open(path, encoding="utf-8").read()
     comps, nets = parse_netlist(text)
 
-    lib = ["* %s (субсхема из нетлиста KiCad)" % sheet]
-    lib.append(".subckt %s %s" % (sheet, " ".join(ports)))
-    for ref in sorted(comps):
-        lib.append("  " + spice_el(ref, comps[ref], nets))
-    lib.append(".ends %s" % sheet)
-    libfile = "spice/%s.sub" % sheet
-    with open(libfile, "w", encoding="utf-8") as f:
-        f.write("\n".join(lib) + "\n")
+    # 1. .sub
+    sub_lines = build_subckt(sheet, comps, nets, sheet_yaml, main_cfg, ports)
+    with open(os.path.join(PROJ, "spice", f"{sheet}.sub"), "w", encoding="utf-8") as f:
+        f.write("\n".join(sub_lines) + "\n")
 
-    has_drv = any(c["part"] == "DRV8871DDA" for c in comps.values())
-    has_mcp = any(c["part"] == "MCP2562-E-SN" for c in comps.values())
-    has_mc78 = any(c["part"] == "LM78M05_TO252" for c in comps.values())
-    has_ams = any(c["part"] == "AP1117-15" for c in comps.values())
-    has_hyg = any(c["part"] == "Q_NMOS" and c["value"].strip().upper().startswith("HYG")
-                  for c in comps.values())
-    base = ["* Ngspice тест: %s (порт-интерфейс из KiCad)" % sheet,
-            ".INCLUDE drv8871_ngspice.lib" if has_drv else "",
-            ".INCLUDE mcp2562_ngspice.lib" if has_mcp else "",
-            ".INCLUDE mc78m05_ngspice.lib" if has_mc78 else "",
-            ".INCLUDE ams1117_33_ngspice.lib" if has_ams else "",
-            ".INCLUDE hyg012n03_ngspice.lib" if has_hyg else "",
-            ".INCLUDE motor_model.lab" if sheet == "FAN_KEY" else "",
-            ".INCLUDE spice/%s.sub" % sheet,
-            ".model MyD D(IS=1e-6 RS=0.01 CJ=2n BV=60)" if sheet == "FAN_KEY" else
-            ".model MyD D(IS=4.35e-9 RS=0.64 BV=110)",
-            ".model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)",
-            ".model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)\n.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)",
-            "",
-            "* Порты: " + " ".join(ports)]
-    cargs = " ".join("0" if p == "GND" else p for p in ports)
-    if sheet == "FAN_KEY":
-        # Отдельный виртуальный стенд ШИМ-ключа: GND ключа отделён от батарейного
-        # узла, чтобы в деке добавить обратный провод (R34/L4). Мотор с проводами
-        # подключается ТОЛЬКО здесь (модельный уровень), на схеме его нет.
-        cargs = " ".join("XGND" if p == "GND" else p for p in ports)
-        base.append("X%s %s %s" % (sheet, cargs, sheet))
-        base.append("* мотор (motor_model.lab) + паразитные провода — только в тесте:")
-        base.append("XMOT VBAT_FAN MOTOR_TERM SPEED DC_MOTOR_ADVANCED")
-        base.append("R33 VBAT_SRC VBAT_FAN 0.015")
-        base.append("L3  VBAT_SRC VBAT_FAN 1.5u")
-        base.append("R34 XGND 0 0.015")
-        base.append("L4  XGND 0 1.5u")
-        base.append("")
+    # 2. .cir на каждый сценарий
+    scenarios = sheet_yaml.get("scenarios") or []
+    if not scenarios:
+        stub = [
+            f"* Ngspice тест: {sheet} (заглушка)",
+            f".INCLUDE spice/{sheet}.sub",
+            "* (сценарии для этого листа ещё не описаны)",
+            ".control", "run", ".endc", ".end",
+        ]
+        with open(os.path.join(PROJ, "spice", f"{sheet}.cir"), "w", encoding="utf-8") as f:
+            f.write("\n".join(stub) + "\n")
     else:
-        base.append("X%s %s %s" % (sheet, cargs, sheet))
-        base.append("")
+        for sc in scenarios:
+            cir_lines = build_cir(sheet, sc, sheet_yaml, main_cfg, ports)
+            with open(os.path.join(PROJ, "spice", f"{sc['name']}.cir"),
+                      "w", encoding="utf-8") as f:
+                f.write("\n".join(cir_lines) + "\n")
 
-    scns = scenarios_for(sheet)(nets, comps) if sheet == "PWR" else scenarios_for(sheet)
-    if not scns:
-        S = base + ["* (сценарии для этого листа - в TODO)",
-                    ".control", "run", ".endc", ".end"]
-        with open("spice/%s.cir" % sheet, "w", encoding="utf-8") as f:
-            f.write("\n".join(S) + "\n")
-    else:
-        for sc in scns:
-            an = sc.get("analysis", "op")
-            body = sc.get("control") or ("print " + sc["print"])
-            S = base + sc["deck"] + [".control", an, body, "run",
-                                     ".endc", ".end"]
-            with open("spice/%s.cir" % sc["name"], "w", encoding="utf-8") as f:
-                f.write("\n".join(S) + "\n")
-    print("OK -> spice/%s.sub + %d сценариев" % (sheet, len(scns)))
+    print("OK -> spice/%s.sub + %d сценариев" % (sheet, len(scenarios)))
+
 
 if __name__ == "__main__":
     main()

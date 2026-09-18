@@ -1,4 +1,4 @@
-* SEN_SOLAR (субсхема из нетлиста KiCad)
+* SEN_SOLAR — субсхема из нетлиста KiCad + YAML
 .subckt SEN_SOLAR GND SOLAR_ADC SOLAR_RAW
   C26 SOLAR_ADC GND 100n
   R27 SOLAR_RAW SOLAR_ADC 10k

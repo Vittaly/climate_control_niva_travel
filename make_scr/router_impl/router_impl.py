@@ -54,20 +54,23 @@ class Router(RouterLogMixin):
     """
     MAX_VISITS = 200_000
 
-    def __init__(self, map_: RouterMap, placer,
-                 components: Dict[str, Component],
-                 search: PathSearch = PathSearch.BFS):
+    def __init__(self, map_: RouterMap, placer, search=PathSearch.BFS):
         self.map = map_
         self.placer = placer
-        self.components = components
-        self.grid_mm = placer.grid_step
+        self.sheet = placer.sheet                # ← единственная страница
+        self.components = self.sheet.components  # ← тот же набор, что у Sheet
+        self.netlist = self.sheet.netlist        # ← нетлист страницы
+        self.grid_mm = placer.grid_step          # = sheet.grid_mm
         self.search = search
+        self.frontier = set()
+        self.page = self.sheet.page              # "root" или имя файла
+        self.bounds = self._compute_bounds(pad_div=3)
 
         # блокеры, встреченные за весь прогон (для отчёта)
         self.frontier = set()
 
         # страница, к которой привязан роутер (ставится в route_all)
-        self.page = "root"
+        self.page = self.sheet.page               # сразу, не в route_all
 
         # границы поля: bbox компонентов + 1/3 размера с каждой стороны
         self.bounds = self._compute_bounds(pad_div=3)
@@ -117,69 +120,64 @@ class Router(RouterLogMixin):
         return in_bounds(self.bounds, cell)
 
     @classmethod
-    def from_placer(cls, placer, components,
+    def from_placer(cls, placer,
                     search: PathSearch = PathSearch.BFS) -> "Router":
-        """Строит Router из карты, которую подготовил Placer."""
         m = placer.build_router_map()
         log.info("%s router created cells=%d search=%s",
-                 ctx(page=getattr(placer, "page", "root")),
-                 len(m), search)
-        return cls(m, placer, components, search=search)
+                ctx(page=placer.page_name), len(m), search)
+        return cls(m, placer, search=search)
 
     # =========================================================
     # Публичная точка входа
     # =========================================================
 
-    def route_all(self, netlist: Netlist, sheet) -> List[Wire]:
+    def route_all(self) -> List[Wire]:
         """Трассирует все сети одной страницы.
 
         Метки и T-врезки пишутся в sheet и у роутера не сохраняются.
-        В начале прогона накопители sheet сбрасываются — повторный
-        прогон даёт чистый результат.
+        В начале прогона накопители sheet сбрасываются.
         """
-        self.page = sheet.sheet_path or "root"
         log.info("%s routing nets=%d",
-                 ctx(page=self.page), len(netlist.nets))
+                ctx(page=self.page), len(self.netlist.nets))
 
-        sheet.reset_routing_marks()
+        self.sheet.reset_routing_marks()
 
         all_wires: List[Wire] = []
 
-        for net_name, net in netlist.nets.items():
-            endpoints = self._collect_endpoints(net, sheet)
+        for net_name, net in self.netlist.nets.items():
+            endpoints = self._collect_endpoints(net)
             if len(endpoints) < 2:
                 log.debug("%s net_pins_lt2 skip",
-                          ctx(page=self.page, net=net_name))
+                        ctx(page=self.page, net=net_name))
                 continue
 
             log.debug("%s pins=%s",
-                      ctx(page=self.page, net=net_name),
-                      ", ".join(p.local_key for _, p in endpoints))
+                    ctx(page=self.page, net=net_name),
+                    ", ".join(p.local_key for _, p in endpoints))
 
-            net_wires = self._route_net(net_name, endpoints, sheet)
+            net_wires = self._route_net(net_name, endpoints)
             for w in net_wires:
-                netlist.register_wire(w)
+                self.netlist.register_wire(w)
                 all_wires.append(w)
             log.debug("%s rss=%.1f net_wires=%d total_wires=%d",
-                      ctx(page=self.page, net=net_name),
-                      _rss_mb(), len(net_wires), len(all_wires))
+                    ctx(page=self.page, net=net_name),
+                    _rss_mb(), len(net_wires), len(all_wires))
 
         log.info("%s routing_done wires=%d labels=%d t_junctions=%d",
-                 ctx(page=self.page),
-                 len(all_wires),
-                 len(sheet.labels), len(sheet.t_junctions))
+                ctx(page=self.page),
+                len(all_wires),
+                len(self.sheet.labels), len(self.sheet.t_junctions))
         return all_wires
 
     # =========================================================
     # Сбор пинов сети
     # =========================================================
 
-    def _collect_endpoints(self, net, sheet
-                           ) -> List[Tuple[Cell, "Pin"]]:
+    def _collect_endpoints(self, net) -> List[Tuple[Cell, "Pin"]]:
         """Собирает пины сети на этой странице с абсолютными клетками."""
         endpoints: List[Tuple[Cell, "Pin"]] = []
         for fqn in net.pins:
-            local = sheet.local_key(fqn)
+            local = self.sheet.local_key(fqn)
             if local is None:
                 continue
             designator, num = local.split(":", 1)
@@ -198,23 +196,11 @@ class Router(RouterLogMixin):
     # =========================================================
 
     def _route_net(self, net_name: str,
-               endpoints: List[Tuple[Cell, "Pin"]],
-               sheet) -> List[Wire]:
-        """Трассирует одну сеть.
-
-        1. Пробуем ВСЕ пары (i, j) как первую пару — в порядке
-        возрастания манхэттенского расстояния между пинами.
-        Первая успешная пара становится затравкой.
-        2. Оставшиеся пины присоединяем T-врезками к уже
-        проложенным проводам.
-        3. Если ни одна пара не соединилась — метим ВСЕ пины
-        FallbackLabel'ами.
-        """
+                endpoints: List[Tuple[Cell, "Pin"]]) -> List[Wire]:
         wires: List[Wire] = []
         n = len(endpoints)
         used: set = set()
 
-        # --- 1. перебираем пары как первые, по возрастанию расстояния ---
         pairs = []
         for i in range(n):
             for j in range(i + 1, n):
@@ -228,7 +214,7 @@ class Router(RouterLogMixin):
         for _, i, j in pairs:
             ca, pa = endpoints[i]
             cb, pb = endpoints[j]
-            w = self._route_pair(net_name, ca, pa, cb, pb, sheet)
+            w = self._route_pair(net_name, ca, pa, cb, pb)
             if w is not None:
                 wires.append(w)
                 used.add(i)
@@ -239,20 +225,17 @@ class Router(RouterLogMixin):
                         pa.local_key, pb.local_key)
                 break
 
-        # --- 2. ничего не соединилось — метим все пины и выходим ---
         if seed is None:
             log.warning("%s no_seed_pair endpoints=%d",
                         ctx(page=self.page, net=net_name), n)
             for cell, pin in endpoints:
-                self._mark_fallback(sheet, net_name, pin, cell,
-                                    "route failed")
+                self._mark_fallback(net_name, pin, cell, "route failed")
             return wires
 
-        # --- 3. T-врезки для оставшихся пинов ---
         for k, (cell, pin) in enumerate(endpoints):
             if k in used:
                 continue
-            w = self._route_t_junction(net_name, cell, pin, wires, sheet)
+            w = self._route_t_junction(net_name, cell, pin, wires)
             if w:
                 wires.append(w)
                 used.add(k)
@@ -276,17 +259,12 @@ class Router(RouterLogMixin):
 
     def _route_pair(self, net_name: str,
                     cell_a: Cell, pin_a: "Pin",
-                    cell_b: Cell, pin_b: "Pin",
-                    sheet) -> Optional[Wire]:
-        """Соединяет два пина: stub → Dijkstra → stub.
-
-        При провале пишет FallbackLabel на оба пина в sheet.labels.
-        """
+                    cell_b: Cell, pin_b: "Pin") -> Optional[Wire]:
         log.info("%s connect %s → %s",
-                 ctx(page=self.page, net=net_name,
-                     comp=self._designator(pin_a),
-                     pin=self._pin_num(pin_a)),
-                 pin_a.local_key, pin_b.local_key)
+                ctx(page=self.page, net=net_name,
+                    comp=self._designator(pin_a),
+                    pin=self._pin_num(pin_a)),
+                pin_a.local_key, pin_b.local_key)
 
         stub_a = plan_stub(pin_a, self.placer, self.map)
         stub_b = plan_stub(pin_b, self.placer, self.map)
@@ -302,10 +280,8 @@ class Router(RouterLogMixin):
             self._log_frontier(net_name, attempt)
             self.frontier.update(attempt.frontier)
 
-            self._mark_fallback(sheet, net_name, pin_a, cell_a,
-                                "route failed")
-            self._mark_fallback(sheet, net_name, pin_b, cell_b,
-                                "route failed")
+            self._mark_fallback(net_name, pin_a, cell_a, "route failed")
+            self._mark_fallback(net_name, pin_b, cell_b, "route failed")
             log.warning("%s fallback labels_on=%s,%s",
                         ctx(page=self.page, net=net_name),
                         pin_a.local_key, pin_b.local_key)
@@ -328,52 +304,34 @@ class Router(RouterLogMixin):
     # =========================================================
 
     def _route_t_junction(self, net_name: str,
-                          cell_c: Cell, pin_c: "Pin",
-                          existing_wires: List[Wire],
-                          sheet) -> Optional[Wire]:
-        """Присоединяет новый пин к существующей сети врезкой T.
-
-        При удаче пишет TJunction в sheet.t_junctions.
-        При провале пишет FallbackLabel в sheet.labels.
-        """
+                      cell_c: Cell, pin_c: "Pin",
+                      existing_wires: List[Wire]) -> Optional[Wire]:
         log.info("%s t_connect",
-                 ctx(page=self.page, net=net_name,
-                     comp=self._designator(pin_c),
-                     pin=self._pin_num(pin_c)))
+                ctx(page=self.page, net=net_name,
+                    comp=self._designator(pin_c),
+                    pin=self._pin_num(pin_c)))
 
         stub_c = plan_stub(pin_c, self.placer, self.map)
 
-        # кандидаты — все клетки всех сегментов уже проложенных проводов
         candidates: List[Cell] = []
         for w in existing_wires:
             for seg in w.segments():
                 candidates.extend(seg.cells())
 
         candidates.sort(key=lambda c: abs(c.col - stub_c.tip.col) +
-                                       abs(c.row - stub_c.tip.row))
+                                    abs(c.row - stub_c.tip.row))
 
         max_tries = 5
-        log.debug("%s t_connect candidates=%d tries=%d",
-                  ctx(page=self.page, net=net_name,
-                      comp=self._designator(pin_c),
-                      pin=self._pin_num(pin_c)),
-                  len(candidates), min(len(candidates), max_tries))
-
         for i, target in enumerate(candidates[:max_tries]):
-            log.trace("%s t_connect_try=%d target=%s",
-                      ctx(page=self.page, net=net_name,
-                          comp=self._designator(pin_c),
-                          pin=self._pin_num(pin_c)),
-                      i + 1, target)
             attempt = self._find_path(net_name, stub_c.tip, target)
             if not attempt.success:
                 continue
 
             log.info("%s t_junction target=%s try=%d",
-                     ctx(page=self.page, net=net_name,
-                         comp=self._designator(pin_c),
-                         pin=self._pin_num(pin_c)),
-                     target, i + 1)
+                    ctx(page=self.page, net=net_name,
+                        comp=self._designator(pin_c),
+                        pin=self._pin_num(pin_c)),
+                    target, i + 1)
             wire = Wire(
                 net_name=net_name,
                 start=pin_c,
@@ -387,28 +345,25 @@ class Router(RouterLogMixin):
             self._log_wire_full(net_name, wire)
 
             host = self._find_host_wire(target, existing_wires)
-            sheet.t_junctions.append(TJunction(
+            self.sheet.t_junctions.append(TJunction(
                 net_name=net_name,
                 target=target,
                 source=stub_c.tip,
                 wire_key=host.key if host else "",
             ))
             log.info("%s t_junction recorded net=%s target=%s host=%s",
-                     ctx(page=self.page,
-                         comp=self._designator(pin_c),
-                         pin=self._pin_num(pin_c)),
-                     net_name, target,
-                     host.key if host else "?")
+                    ctx(page=self.page,
+                        comp=self._designator(pin_c),
+                        pin=self._pin_num(pin_c)),
+                    net_name, target, host.key if host else "?")
             return wire
 
         log.warning("%s fail %s → net tries=%d",
                     ctx(page=self.page, net=net_name,
                         comp=self._designator(pin_c),
                         pin=self._pin_num(pin_c)),
-                    pin_c.local_key,
-                    min(len(candidates), max_tries))
-        self._mark_fallback(sheet, net_name, pin_c, cell_c,
-                            "T-junction failed")
+                    pin_c.local_key, min(len(candidates), max_tries))
+        self._mark_fallback(net_name, pin_c, cell_c, "T-junction failed")
         log.warning("%s fallback label_on=%s",
                     ctx(page=self.page, net=net_name),
                     pin_c.local_key)
@@ -462,24 +417,24 @@ class Router(RouterLogMixin):
     # Метки fallback — пишутся в Sheet, не в Router
     # =========================================================
 
-    def _mark_fallback(self, sheet, net_name: str, pin, cell: Cell,
-                       reason: str) -> None:
+    def _mark_fallback(self, net_name: str, pin, cell: Cell,
+                   reason: str) -> None:
         """Ставит метку на пин, если её ещё нет на странице.
 
         Идемпотентность — по local_key в пределах страницы.
         """
         key = pin.local_key
-        for lbl in sheet.labels:
+        for lbl in self.sheet.labels:
             if lbl.local_key == key:
                 return
-        sheet.labels.append(FallbackLabel(
+        self.sheet.labels.append(FallbackLabel(
             net_name=net_name,
             local_key=key,
             cell=cell,
             reason=reason,
         ))
         log.info("%s label net=%s reason=%s",
-                 ctx(page=self.page, net=net_name,
-                     comp=self._designator(pin),
-                     pin=self._pin_num(pin)),
-                 net_name, reason)
+                ctx(page=self.page, net=net_name,
+                    comp=self._designator(pin),
+                    pin=self._pin_num(pin)),
+                net_name, reason)

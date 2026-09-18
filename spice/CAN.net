@@ -1,19 +1,19 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_02_can.kicad_sch")
-		(date "2026-09-12T18:45:14")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/can_bus.kicad_sch")
+		(date "2026-09-18T10:57:34")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title "CAN")
+				(title)
 				(company)
 				(rev)
 				(date)
-				(source "cc_02_can.kicad_sch")
+				(source "can_bus.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -59,6 +59,8 @@
 			(value "MCP2562-E-SN")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -74,12 +76,16 @@
 				(description "High-Speed CAN Transceiver, 1Mbps, 5V supply, Vio pin, -40C to +125C, SOIC-8")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_02_can.kicad_sch")
+				(value "can_bus.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -93,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2c000c80-6fa6-42bf-9575-e142d43bc03c")
+			(tstamps "a51d6009-5af3-403b-9c90-a7fc8cd0347f")
 			(units
 				(unit
 					(name "A")
@@ -203,17 +209,6 @@
 	(nets
 		(net
 			(code "1")
-			(name "/CANH")
-			(class "Default")
-			(node
-				(ref "U8")
-				(pin "7")
-				(pinfunction "CANH_7")
-				(pintype "bidirectional")
-			)
-		)
-		(net
-			(code "2")
 			(name "/CANL")
 			(class "Default")
 			(node
@@ -224,7 +219,7 @@
 			)
 		)
 		(net
-			(code "3")
+			(code "2")
 			(name "/CAN_RX")
 			(class "Default")
 			(node
@@ -235,7 +230,7 @@
 			)
 		)
 		(net
-			(code "4")
+			(code "3")
 			(name "/CAN_TX")
 			(class "Default")
 			(node
@@ -244,28 +239,12 @@
 				(pinfunction "TXD_1")
 				(pintype "input")
 			)
-		)
-		(net
-			(code "5")
-			(name "/GND")
-			(class "Default")
 			(node
 				(ref "U8")
 				(pin "2")
 				(pinfunction "VSS_2")
 				(pintype "power_in")
 			)
-			(node
-				(ref "U8")
-				(pin "8")
-				(pinfunction "STBY_8")
-				(pintype "input")
-			)
-		)
-		(net
-			(code "6")
-			(name "/VCC_5V")
-			(class "Default")
 			(node
 				(ref "U8")
 				(pin "3")
@@ -277,6 +256,18 @@
 				(pin "5")
 				(pinfunction "Vio_5")
 				(pintype "power_in")
+			)
+			(node
+				(ref "U8")
+				(pin "7")
+				(pinfunction "CANH_7")
+				(pintype "bidirectional")
+			)
+			(node
+				(ref "U8")
+				(pin "8")
+				(pinfunction "STBY_8")
+				(pintype "input")
 			)
 		)
 	)

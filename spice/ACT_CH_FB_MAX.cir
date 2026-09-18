@@ -1,0 +1,17 @@
+* Ngspice тест: ACTUATOR_CHANNEL / ACT_CH_FB_MAX
+* Делитель ОС при максимальном положении потенциометра.
+* 5В на FB_RAW → ~3,33В на FB.
+.INCLUDE spice/ACTUATOR_CHANNEL.sub
+
+* Порты: GND IN2
+
+* V1: Потенциометр заслонки в крайнем положении (5В)
+V1 FB_RAW 0 DC 5.0
+XACTUATOR_CHANNEL 0 IN2 ACTUATOR_CHANNEL
+
+.op
+.control
+run
+print v(fb)
+.endc
+.end

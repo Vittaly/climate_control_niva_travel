@@ -1,6 +1,41 @@
 page_name: SEN_HEAT
 file: heating_sensor.kicad_sch
-functional_purpose: Модуль SEN_HEAT
+functional_purpose: |
+  Модуль измерения температуры патрубка радиатора печки.
+
+  Внешний NTC 10к B3435 прикручен к патрубку отопителя и
+  подключается через J1:19 (линия NTC_HEAT_W). Схема листа
+  содержит:
+    * R25 (10к) — верхнее плечо делителя от VCC_3V3,
+      задаёт ток через NTC;
+    * C25 (100nF) — фильтр линии датчика;
+    * R26 (10к) — последовательный защитный резистор
+      между линией разъёма и входом АЦП (NTC_HEAT).
+
+  Топология делителя:
+    VCC_3V3 ── R25 ── NTC_HEAT_W ── [внешний NTC] ── GND
+                          │
+                        C25
+                          │
+                         GND
+                          │
+                        R26 (10к)
+                          │
+                      NTC_HEAT (АЦП МК)
+
+  Напряжение на входе АЦП (при отсутствии тока в R26 в DC):
+    V(NTC_HEAT) = 3.3 · R_NTC / (R25 + R_NTC)
+
+  Характерные точки (для NTC 10к B3435):
+    труба горячая, 60°C:  R ≈ 2.49к  → V ≈ 0.66В
+    середина,      25°C:  R = 10к    → V ≈ 1.65В
+    труба холодная, 0°C:  R ≈ 27.2к  → V ≈ 2.41В
+    обрыв датчика:       R = ∞       → V ≈ 3.3В (линия подтянута)
+
+  В SPICE внешний NTC подключается в сценарии (deck) как
+  параметризованный инстанс Thermistor_NTC из main.yaml.
+  Температура задаётся через параметр T.
+
 ports:
 - net_label: VCC_3V3
   type: POWER
@@ -10,10 +45,11 @@ ports:
   description: Общий провод (кузов автомобиля)
 - net_label: NTC_HEAT_W
   type: OUTPUT
-  description: 'Датчик патрубка отопителя: узел линии на разъёме'
+  description: 'Датчик патрубка отопителя: узел линии на разъёме (J1:19)'
 - net_label: NTC_HEAT
   type: OUTPUT
-  description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора)'
+  description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора R26)'
+
 component_types:
   TYPE_C_100NF:
     symbol: Device:C
@@ -22,6 +58,9 @@ component_types:
     fields:
       Type: Ceramic
       Dielectric: X7R
+    spice:
+      model: C
+      description: "Керамический конденсатор X7R, фильтр линии датчика"
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -29,16 +68,20 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+    spice:
+      model: R
+
 components:
   C25:
     type: TYPE_C_100NF
-    description: фильтр АЦП ОЖ
+    description: "Фильтр линии NTC патрубка отопителя"
   R25:
     type: TYPE_R_10K
-    description: подтяжка NTC патрубка отопителя
+    description: "Верхнее плечо делителя: подтяжка NTC патрубка к VCC_3V3"
   R26:
     type: TYPE_R_10K
-    description: защитный резистор линии NTC патрубка перед АЦП (J1:25
+    description: "Последовательный защитный резистор между NTC_HEAT_W и входом АЦП NTC_HEAT"
+
 nets:
   VCC_3V3:
     name: VCC_3V3
@@ -53,8 +96,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R25
-      pin: '1'
+    - { component: R25, pin: '1' }
+
   GND:
     name: GND
     description: Общий провод (кузов автомобиля)
@@ -68,11 +111,11 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: C25
-      pin: '2'
+    - { component: C25, pin: '2' }
+
   NTC_HEAT_W:
     name: NTC_HEAT_W
-    description: 'Датчик патрубка отопителя: узел линии на разъёме'
+    description: 'Датчик патрубка отопителя: узел линии на разъёме (J1:19)'
     is_hierarchical_port: true
     attributes:
       type: ANALOG_SIGNAL
@@ -83,15 +126,13 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R25
-      pin: '2'
-    - component: C25
-      pin: '1'
-    - component: R26
-      pin: '1'
+    - { component: R25, pin: '2' }
+    - { component: C25, pin: '1' }
+    - { component: R26, pin: '1' }
+
   NTC_HEAT:
     name: NTC_HEAT
-    description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора)'
+    description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора R26)'
     is_hierarchical_port: true
     attributes:
       type: ANALOG_SIGNAL
@@ -102,5 +143,134 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: R26
-      pin: '2'
+    - { component: R26, pin: '2' }
+
+# ─────────────────────────────────────────────────────────────────────
+# Тестовые сценарии Ngspice
+#
+# Внешний NTC не входит в .sub — он подключается в стенде сценария
+# как XRT2 (инстанс Thermistor_NTC из main.yaml).
+#
+# В каждом сценарии:
+#   V1 задаёт питание делителя VCC_3V3 (или эмуляцию);
+#   XRT2 с параметром T моделирует NTC при заданной температуре;
+#   R25, C25, R26 уже внутри .sub.
+#
+# Напряжение АЦП:
+#   V(NTC_HEAT) = 3.3 · R_NTC(T) / (10к + R_NTC(T))
+#   (при отсутствии тока в R26 — вход АЦП высокоомный)
+#
+# Характерные значения R_NTC(T):
+#   T =  0°C  →  R ≈ 27.2 кОм  →  V ≈ 2.41В
+#   T = 25°C  →  R = 10 кОм    →  V = 1.65В
+#   T = 60°C  →  R ≈ 2.49 кОм  →  V ≈ 0.66В
+#   T = 85°C  →  R ≈ 1.27 кОм  →  V ≈ 0.37В
+# ─────────────────────────────────────────────────────────────────────
+
+scenarios:
+
+  - name: SEN_HEAT_HOT
+    description: |
+      Труба отопителя горячая, температура 60°C.
+      R_NTC ≈ 2.49 кОм, делитель с R25 = 10к.
+      NTC_HEAT ≈ 0.66В — низкий уровень АЦП.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+          description: "Питание делителя +3,3В"
+
+      - subckt:
+          ref: XRT2
+          model: Thermistor_NTC
+          connect:
+            A: NTC_HEAT_W
+            B: "0"
+          params:
+            T: 60
+          description: "Внешний NTC патрубка отопителя при 60°C (R ≈ 2,49 кОм)"
+    checks:
+      - { node: v(ntc_heat), min: 0.55, max: 0.80,
+          description: "горячая труба (60°C): NTC_HEAT ≈ 0,66В" }
+
+  - name: SEN_HEAT_MID
+    description: |
+      Комнатная температура 25°C.
+      R_NTC = 10 кОм, делитель 1:1 с R25.
+      NTC_HEAT = 1,65В — середина диапазона АЦП.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+          description: "Питание делителя +3,3В"
+
+      - subckt:
+          ref: XRT2
+          model: Thermistor_NTC
+          connect:
+            A: NTC_HEAT_W
+            B: "0"
+          params:
+            T: 25
+          description: "Внешний NTC патрубка отопителя при 25°C (R = 10 кОм)"
+    checks:
+      - { node: v(ntc_heat), min: 1.55, max: 1.75,
+          description: "25°C: NTC_HEAT ≈ 1,65В" }
+
+  - name: SEN_HEAT_COLD
+    description: |
+      Труба отопителя холодная, 0°C.
+      R_NTC ≈ 27.2 кОм, делитель даёт высокий уровень.
+      NTC_HEAT ≈ 2.41В.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+          description: "Питание делителя +3,3В"
+
+      - subckt:
+          ref: XRT2
+          model: Thermistor_NTC
+          connect:
+            A: NTC_HEAT_W
+            B: "0"
+          params:
+            T: 0
+          description: "Внешний NTC патрубка отопителя при 0°C (R ≈ 27,2 кОм)"
+    checks:
+      - { node: v(ntc_heat), min: 2.30, max: 2.55,
+          description: "холодная труба (0°C): NTC_HEAT ≈ 2,41В" }
+
+  - name: SEN_HEAT_OPEN
+    description: |
+      Обрыв линии датчика (NTC отключён или провод перебит).
+      Линия NTC_HEAT_W подтягивается к VCC_3V3 через R25,
+      ток через R26 отсутствует, вход АЦП видит 3,3В.
+      Прошивка должна распознать это как ошибку датчика.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+          description: "Питание делителя +3,3В"
+      # XRT2 отсутствует — это и есть обрыв
+    control: |
+      let vw = v(NTC_HEAT_W)
+      let va = v(NTC_HEAT)
+      print vw va
+    checks:
+      - { node: vw, min: 3.25, max: 3.35,
+          description: "NTC_HEAT_W подтянут к VCC_3V3 (R25, нет нагрузки)" }
+      - { node: va, min: 3.25, max: 3.35,
+          description: "NTC_HEAT = 3,3В (обрыв датчика на входе АЦП)" }

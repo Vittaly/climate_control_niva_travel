@@ -1,19 +1,19 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_09_out.kicad_sch")
-		(date "2026-09-12T18:45:14")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/power_outputs.kicad_sch")
+		(date "2026-09-18T10:57:33")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title "OUT")
+				(title)
 				(company)
 				(rev)
 				(date)
-				(source "cc_09_out.kicad_sch")
+				(source "power_outputs.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -59,6 +59,8 @@
 			(value "BSS138")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -69,9 +71,13 @@
 				)
 			)
 			(libsource
-				(lib "Device")
-				(part "Q_NMOS")
-				(description "N-MOSFET transistor")
+				(lib "Transistor_FET")
+				(part "BSS138")
+				(description "50V Vds, 0.22A Id, N-Channel MOSFET, SOT-23")
+			)
+			(property
+				(name "mirror")
+				(value "None")
 			)
 			(property
 				(name "Sheetname")
@@ -79,29 +85,33 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
-				(value "NMOS N-MOS")
+				(value "N-Channel MOSFET")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "SOT?23*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "55a9d646-0db7-4be2-af0a-76fc94177565")
+			(tstamps "0e9480cf-6dfa-48fa-9d46-e465084fdb27")
 			(units
 				(unit
 					(name "A")
 					(pins
 						(pin
-							(num "G")
+							(num "1")
 						)
 						(pin
-							(num "D")
+							(num "3")
 						)
 						(pin
-							(num "S")
+							(num "2")
 						)
 					)
 				)
@@ -112,6 +122,8 @@
 			(value "MMBT3904")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -122,9 +134,13 @@
 				)
 			)
 			(libsource
-				(lib "Device")
-				(part "Q_NPN")
-				(description "NPN bipolar junction transistor")
+				(lib "Transistor_BJT")
+				(part "MMBT3904")
+				(description "0.2A Ic, 40V Vce, Small Signal NPN Transistor, SOT-23")
+			)
+			(property
+				(name "mirror")
+				(value "None")
 			)
 			(property
 				(name "Sheetname")
@@ -132,29 +148,33 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
-				(value "BJT")
+				(value "NPN Transistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "SOT?23*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f523c82d-e97d-4b80-a21c-fabb452fd929")
+			(tstamps "5bd80540-af39-41e8-a15f-da36feb076c9")
 			(units
 				(unit
 					(name "A")
 					(pins
 						(pin
-							(num "B")
+							(num "1")
 						)
 						(pin
-							(num "C")
+							(num "3")
 						)
 						(pin
-							(num "E")
+							(num "2")
 						)
 					)
 				)
@@ -165,6 +185,8 @@
 			(value "MMBT3906")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -175,9 +197,13 @@
 				)
 			)
 			(libsource
-				(lib "Device")
-				(part "Q_PNP")
-				(description "PNP bipolar junction transistor")
+				(lib "Transistor_BJT")
+				(part "MMBT3906")
+				(description "-0.2A Ic, -40V Vce, Small Signal PNP Transistor, SOT-23")
+			)
+			(property
+				(name "mirror")
+				(value "None")
 			)
 			(property
 				(name "Sheetname")
@@ -185,29 +211,33 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
-				(value "BJT")
+				(value "PNP Transistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "SOT?23*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4c1df554-1e13-4627-a953-1f86de541558")
+			(tstamps "ca19e0ab-1256-4d1b-906e-2c67c776ae86")
 			(units
 				(unit
 					(name "A")
 					(pins
 						(pin
-							(num "B")
+							(num "1")
 						)
 						(pin
-							(num "C")
+							(num "3")
 						)
 						(pin
-							(num "E")
+							(num "2")
 						)
 					)
 				)
@@ -217,6 +247,8 @@
 			(ref "R13")
 			(value "1k")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -233,12 +265,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -252,7 +288,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6e55299f-a323-479e-b581-74fd395597f5")
+			(tstamps "d372eae0-6ac7-4b0a-9ae7-f455f39e1146")
 			(units
 				(unit
 					(name "A")
@@ -272,6 +308,8 @@
 			(value "4.7k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -287,12 +325,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -306,7 +348,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "cbe4c1e1-5b3b-4122-82cd-afe3db74d6cb")
+			(tstamps "af1ac09e-6f63-4724-91e1-09414ce30721")
 			(units
 				(unit
 					(name "A")
@@ -326,6 +368,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -341,12 +385,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -360,7 +408,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "847a7ec5-3d2d-4f78-82b2-b1384f4375c8")
+			(tstamps "0fdc8cf5-5be0-47cd-bfbf-47cbdcd0daaa")
 			(units
 				(unit
 					(name "A")
@@ -380,6 +428,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -395,12 +445,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -414,7 +468,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4e5ab968-1695-4c8b-a9dc-a061b487057c")
+			(tstamps "ae138428-6774-42a6-a1f5-85c8a649f22c")
 			(units
 				(unit
 					(name "A")
@@ -434,6 +488,8 @@
 			(value "100k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -449,12 +505,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -468,7 +528,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f9336748-6a44-4238-88c0-479f6c9cfb00")
+			(tstamps "9d739e50-6415-4f31-8275-c649ca39c90e")
 			(units
 				(unit
 					(name "A")
@@ -488,6 +548,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -503,12 +565,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -522,7 +588,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0292570e-b5c6-4bf8-80d1-a5115f57ee44")
+			(tstamps "4e47d6c3-5e62-4a8b-8045-552a41185c77")
 			(units
 				(unit
 					(name "A")
@@ -542,6 +608,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -557,12 +625,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_09_out.kicad_sch")
+				(value "power_outputs.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -576,7 +648,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "b3ce53f5-2b2a-4217-acb2-7f76f7686d2c")
+			(tstamps "90a00271-8599-4cb6-83cd-36811153e4a8")
 			(units
 				(unit
 					(name "A")
@@ -595,114 +667,6 @@
 	(groups)
 	(variants)
 	(libparts
-		(libpart
-			(lib "Device")
-			(part "Q_NMOS")
-			(description "N-MOSFET transistor")
-			(fields
-				(field
-					(name "Reference") "Q")
-				(field
-					(name "Value") "Q_NMOS")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description") "N-MOSFET transistor")
-			)
-			(pins
-				(pin
-					(num "D")
-					(name "D")
-					(type "passive")
-				)
-				(pin
-					(num "G")
-					(name "G")
-					(type "input")
-				)
-				(pin
-					(num "S")
-					(name "S")
-					(type "passive")
-				)
-			)
-		)
-		(libpart
-			(lib "Device")
-			(part "Q_NPN")
-			(description "NPN bipolar junction transistor")
-			(fields
-				(field
-					(name "Reference") "Q")
-				(field
-					(name "Value") "Q_NPN")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description") "NPN bipolar junction transistor")
-			)
-			(pins
-				(pin
-					(num "B")
-					(name "B")
-					(type "input")
-				)
-				(pin
-					(num "C")
-					(name "C")
-					(type "passive")
-				)
-				(pin
-					(num "E")
-					(name "E")
-					(type "passive")
-				)
-			)
-		)
-		(libpart
-			(lib "Device")
-			(part "Q_PNP")
-			(description "PNP bipolar junction transistor")
-			(fields
-				(field
-					(name "Reference") "Q")
-				(field
-					(name "Value") "Q_PNP")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description") "PNP bipolar junction transistor")
-			)
-			(pins
-				(pin
-					(num "B")
-					(name "B")
-					(type "input")
-				)
-				(pin
-					(num "C")
-					(name "C")
-					(type "passive")
-				)
-				(pin
-					(num "E")
-					(name "E")
-					(type "passive")
-				)
-			)
-		)
 		(libpart
 			(lib "Device")
 			(part "R")
@@ -737,23 +701,228 @@
 				)
 			)
 		)
+		(libpart
+			(lib "Transistor_BJT")
+			(part "MMBT3904")
+			(description "0.2A Ic, 40V Vce, Small Signal NPN Transistor, SOT-23")
+			(docs "https://www.onsemi.com/pdf/datasheet/pzt3904-d.pdf")
+			(footprints
+				(fp "SOT?23*")
+			)
+			(fields
+				(field
+					(name "Reference") "Q")
+				(field
+					(name "Value") "MMBT3904")
+				(field
+					(name "Footprint") "Package_TO_SOT_SMD:SOT-23")
+				(field
+					(name "Datasheet") "https://www.onsemi.com/pdf/datasheet/pzt3904-d.pdf")
+				(field
+					(name "Description") "0.2A Ic, 40V Vce, Small Signal NPN Transistor, SOT-23")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "B")
+					(type "input")
+				)
+				(pin
+					(num "2")
+					(name "E")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "C")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "Transistor_BJT")
+			(part "MMBT3906")
+			(description "-0.2A Ic, -40V Vce, Small Signal PNP Transistor, SOT-23")
+			(docs "https://www.onsemi.com/pdf/datasheet/pzt3906-d.pdf")
+			(footprints
+				(fp "SOT?23*")
+			)
+			(fields
+				(field
+					(name "Reference") "Q")
+				(field
+					(name "Value") "MMBT3906")
+				(field
+					(name "Footprint") "Package_TO_SOT_SMD:SOT-23")
+				(field
+					(name "Datasheet") "https://www.onsemi.com/pdf/datasheet/pzt3906-d.pdf")
+				(field
+					(name "Description") "-0.2A Ic, -40V Vce, Small Signal PNP Transistor, SOT-23")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "B")
+					(type "input")
+				)
+				(pin
+					(num "2")
+					(name "E")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "C")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "Transistor_FET")
+			(part "BSS138")
+			(description "50V Vds, 0.22A Id, N-Channel MOSFET, SOT-23")
+			(docs "https://www.onsemi.com/pub/Collateral/BSS138-D.PDF")
+			(footprints
+				(fp "SOT?23*")
+			)
+			(fields
+				(field
+					(name "Reference") "Q")
+				(field
+					(name "Value") "BSS138")
+				(field
+					(name "Footprint") "Package_TO_SOT_SMD:SOT-23")
+				(field
+					(name "Datasheet") "https://www.onsemi.com/pub/Collateral/BSS138-D.PDF")
+				(field
+					(name "Description") "50V Vds, 0.22A Id, N-Channel MOSFET, SOT-23")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "G")
+					(type "input")
+				)
+				(pin
+					(num "2")
+					(name "S")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "D")
+					(type "passive")
+				)
+			)
+		)
 	)
 	(libraries
 		(library
 			(logical "Device")
 			(uri "${KICAD10_SYMBOL_DIR}/Device.kicad_sym")
 		)
+		(library
+			(logical "Transistor_BJT")
+			(uri "${KICAD10_SYMBOL_DIR}/Transistor_BJT.kicad_sym")
+		)
+		(library
+			(logical "Transistor_FET")
+			(uri "${KICAD10_SYMBOL_DIR}/Transistor_FET.kicad_sym")
+		)
 	)
 	(nets
 		(net
 			(code "1")
-			(name "/AC_BASE")
+			(name "/AC_CTL")
 			(class "Default")
 			(node
-				(ref "Q3")
-				(pin "B")
-				(pinfunction "B_B")
+				(ref "Q1")
+				(pin "1")
+				(pinfunction "G_1")
 				(pintype "input")
+			)
+			(node
+				(ref "Q1")
+				(pin "2")
+				(pinfunction "S_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q1")
+				(pin "3")
+				(pinfunction "D_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q3")
+				(pin "1")
+				(pinfunction "B_1")
+				(pintype "input")
+			)
+			(node
+				(ref "Q3")
+				(pin "2")
+				(pinfunction "E_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q3")
+				(pin "3")
+				(pinfunction "C_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q4")
+				(pin "1")
+				(pinfunction "B_1")
+				(pintype "input")
+			)
+			(node
+				(ref "Q4")
+				(pin "2")
+				(pinfunction "E_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q4")
+				(pin "3")
+				(pinfunction "C_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "R13")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R13")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R14")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R14")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R15")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R15")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R18")
+				(pin "1")
+				(pintype "passive")
 			)
 			(node
 				(ref "R18")
@@ -762,164 +931,36 @@
 			)
 			(node
 				(ref "R19")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R19")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R20")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R20")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R21")
 				(pin "1")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "2")
-			(name "/AC_CTL")
-			(class "Default")
-			(node
-				(ref "R18")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "3")
-			(name "/AC_PNP_BASE")
-			(class "Default")
-			(node
-				(ref "Q3")
-				(pin "C")
-				(pinfunction "C_C")
-				(pintype "passive")
-			)
-			(node
-				(ref "Q4")
-				(pin "B")
-				(pinfunction "B_B")
-				(pintype "input")
-			)
-			(node
-				(ref "R20")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "4")
-			(name "/AC_REQ")
-			(class "Default")
-			(node
-				(ref "Q4")
-				(pin "C")
-				(pinfunction "C_C")
-				(pintype "passive")
-			)
-			(node
-				(ref "R21")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "5")
 			(name "/AC_REQ_OUT")
 			(class "Default")
 			(node
 				(ref "R21")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "6")
-			(name "/FAN_GATE")
-			(class "Default")
-			(node
-				(ref "Q1")
-				(pin "G")
-				(pinfunction "G_G")
-				(pintype "input")
-			)
-			(node
-				(ref "R13")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "7")
-			(name "/FAN_PWM_CTL")
-			(class "Default")
-			(node
-				(ref "R13")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "8")
-			(name "/FAN_PWM_NODE")
-			(class "Default")
-			(node
-				(ref "Q1")
-				(pin "D")
-				(pinfunction "D_D")
-				(pintype "passive")
-			)
-			(node
-				(ref "R14")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R15")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "9")
-			(name "/GND")
-			(class "Default")
-			(node
-				(ref "Q1")
-				(pin "S")
-				(pinfunction "S_S")
-				(pintype "passive")
-			)
-			(node
-				(ref "Q3")
-				(pin "E")
-				(pinfunction "E_E")
-				(pintype "passive")
-			)
-			(node
-				(ref "R19")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "10")
-			(name "/VCC_12V")
-			(class "Default")
-			(node
-				(ref "Q4")
-				(pin "E")
-				(pinfunction "E_E")
-				(pintype "passive")
-			)
-			(node
-				(ref "R14")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R20")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "11")
-			(name "unconnected-(R15-Pad2)")
-			(class "Default")
-			(node
-				(ref "R15")
 				(pin "2")
 				(pintype "passive")
 			)

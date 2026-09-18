@@ -1,0 +1,29 @@
+* Ngspice тест: CAN / CAN_SHORT
+* Проверка поведения при КЗ CANH на CANL через низкоомный
+* шунт (имитация повреждения шины).
+* Драйвер активен, но ток ограничен внутренней защитой.
+* Проверяем, что CANH не проваливается к нулю мгновенно,
+* а Vdiff остаётся в разумных пределах.
+.INCLUDE spice/CAN.sub
+
+* Порты: CANL CAN_RX CAN_TX GND
+
+* V1: Питание трансивера
+V1 VCC_5V 0 DC 5.0
+
+* V2: TXD = 0 (драйвер активен)
+V2 CAN_TX 0 DC 0.0
+
+* R_SHORT: Имитация КЗ CANH-CANL (1 Ом)
+R_SHORT CANH CANL 1
+XCAN CANL CAN_RX CAN_TX 0 CAN
+
+.op
+.control
+run
+let vh    = v(CANH)
+let vl    = v(CANL)
+let ish   = (v(CANH) - v(CANL)) / 1
+print vh vl ish
+.endc
+.end

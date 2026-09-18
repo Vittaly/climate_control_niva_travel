@@ -1,26 +1,32 @@
-* Ngspice тест: PWR (порт-интерфейс из KiCad)
-
-
-.INCLUDE mc78m05_ngspice.lib
-.INCLUDE ams1117_33_ngspice.lib
-
-
+* Ngspice тест: PWR / PWR_P6
+* Обратная подача +12В на линию датчиков V5_SENS (J1:17).
+* Штатно V5_SENS питается через D4 (SS14) от VCC_5V.
+* Аварийный случай: снаружи через разъём приходит +12В.
+* Проверяем, что D4 заперт и обратный ток не поднимает
+* питание внутренней +5В шины.
+D_SS54 D(IS=4.35e-9 RS=0.05 BV=40)
+D_SS14 D(IS=4.35e-9 RS=0.05 BV=40)
+TVS24 D(IS=4.35e-9 RS=0.64 BV=24)
+TVS5  D(IS=4.35e-9 RS=0.64 BV=5.6)
 .INCLUDE spice/PWR.sub
-.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
-.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
-.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
-.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
 
-* Порты: AC_REQ_OUT CANH CANL COND_RAW FB_M1_RAW FB_M2_RAW FB_M3_RAW FB_M4_RAW GND ILLUM_IN_RAW MOTOR_1_A MOTOR_1_B MOTOR_2_A MOTOR_2_B MOTOR_3_A MOTOR_3_B MOTOR_4_A MOTOR_4_B NTC_HEAT_W SOLAR_RAW V5_SENS VBAT_IN VCC_12V VCC_3V3 VCC_5V
-XPWR AC_REQ_OUT CANH CANL COND_RAW FB_M1_RAW FB_M2_RAW FB_M3_RAW FB_M4_RAW 0 ILLUM_IN_RAW MOTOR_1_A MOTOR_1_B MOTOR_2_A MOTOR_2_B MOTOR_3_A MOTOR_3_B MOTOR_4_A MOTOR_4_B NTC_HEAT_W SOLAR_RAW V5_SENS VBAT_IN VCC_12V VCC_3V3 VCC_5V PWR
+* Порты: GND V5_SENS VBAT_IN
 
-VIN VBAT_IN 0 DC 14.4
-VSENS V5_SENS 0 DC 12
+* V1: Номинальная бортсеть
+V1 VBAT_IN 0 DC 14.4
+
+* V2: Аварийная обратная подача +12В через J1:17
+V2 V5_SENS 0 DC 12.0
+
+* R_L5V: Нагрузка на +5В
+R_L5V VCC_5V 0 100
+XPWR 0 V5_SENS VBAT_IN PWR
+
 .op
-* PASS: V5_SENS<=5.6 (D5), D4 закрыт (обратный +12В)
 .control
-op
-print V(V5_SENS) V(VCC_5V)
 run
+let v5   = v(VCC_5V)
+let vsen = v(V5_SENS)
+print v5 vsen
 .endc
 .end

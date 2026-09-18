@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
-	(uuid "b382185b-2995-4a21-abb0-ec2b84311d6e")
+	(uuid "96a8192d-f339-430d-a0df-5a5e4e037b8c")
 	(paper "A4")
 	(lib_symbols
 		(symbol "Device:C"
@@ -310,7 +310,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "aa179fca-683d-446b-9000-e76eedc8f005")
+		(uuid "d0af2c0a-fb44-40c3-b1e1-6b48cfb96d5b")
 		(property "Reference" "C26"
 			(at 18.415 21.59 0.0000)
 			(effects
@@ -339,14 +339,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "065df418-8621-47b0-a1d0-dba427f0f2ff")
+			(uuid "f8bd17db-ccbd-49d2-87cd-ab32933e7800")
 		)
 		(pin "2"
-			(uuid "41d78970-2d96-4753-bf7b-fb63f9d46f07")
+			(uuid "ae893468-6cd7-4a3a-9b52-06b956a85429")
 		)
 		(instances
 			(project "Untitled"
-				(path "/b382185b-2995-4a21-abb0-ec2b84311d6e"
+				(path "/96a8192d-f339-430d-a0df-5a5e4e037b8c"
 					(reference "C26")
 					(unit 1)
 				)
@@ -362,7 +362,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "42ea3ad0-7459-4808-a35c-20e163ad8940")
+		(uuid "9aa33c0c-d682-475f-828d-48d8f9905f20")
 		(property "Reference" "R27"
 			(at 19.812 17.78 90)
 			(effects
@@ -391,14 +391,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "1cec8a84-efa3-48e9-881c-cb9947598c80")
+			(uuid "b6081d9c-c9d1-4fe5-8e00-7bf792ea86db")
 		)
 		(pin "2"
-			(uuid "918b6811-3f14-4fb8-87fb-634061f24f03")
+			(uuid "a92e62da-8771-43b8-8421-285534239b12")
 		)
 		(instances
 			(project "Untitled"
-				(path "/b382185b-2995-4a21-abb0-ec2b84311d6e"
+				(path "/96a8192d-f339-430d-a0df-5a5e4e037b8c"
 					(reference "R27")
 					(unit 1)
 				)
@@ -414,7 +414,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "9e49119b-10ae-406f-b10d-65f57b38bc5d")
+		(uuid "4bb57b0d-a7be-4464-aeba-99859516ec40")
 		(property "Reference" "R28"
 			(at 18.542 17.78 90)
 			(effects
@@ -443,14 +443,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "58d75867-0ab9-4bd3-95de-4129c09f86af")
+			(uuid "a0ff7775-2077-42b7-979a-6d7f8e97fb30")
 		)
 		(pin "2"
-			(uuid "9a218943-fdfd-4848-9879-4fd101d8a363")
+			(uuid "e3896118-223f-4d10-93d0-e075a43eddb8")
 		)
 		(instances
 			(project "Untitled"
-				(path "/b382185b-2995-4a21-abb0-ec2b84311d6e"
+				(path "/96a8192d-f339-430d-a0df-5a5e4e037b8c"
 					(reference "R28")
 					(unit 1)
 				)
@@ -465,7 +465,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "343022bc-ae5b-4575-b4bd-867af0aec8db")
+		(uuid "07b37068-7aa6-4cab-8d61-00eb4653be40")
 	)
 	(wire
 		(pts
@@ -475,7 +475,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "a4bc24dd-1a3d-497e-9bab-05cf38b12a94")
+		(uuid "b2409486-bbe1-469a-a825-f8f58a4b00b3")
 	)
 	(wire
 		(pts
@@ -485,7 +485,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "cfb29e86-b630-4602-a0f2-e01df02aa5e6")
+		(uuid "1edff383-f9f9-4353-a14c-7f3b8794487f")
 	)
 	(wire
 		(pts
@@ -495,7 +495,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "d3722191-2e73-4e2b-99ac-3fb03f150ff7")
+		(uuid "134a3393-3221-4d38-bcac-eeba08e7bf9c")
 	)
 	(wire
 		(pts
@@ -505,7 +505,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "ca421a8d-96d2-4992-8ba1-590d33c12b4c")
+		(uuid "d50484e4-5d24-4a0c-a50c-5c8c5b3a5158")
 	)
 	(wire
 		(pts
@@ -515,7 +515,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "7aef9f80-b55d-4b56-9dc8-02bf6a533e07")
+		(uuid "946258eb-48f2-4f02-a926-e790ff26706c")
 	)
 	(wire
 		(pts
@@ -525,7 +525,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "6fc964f6-a74c-4a89-bfbd-ac28c92b341d")
+		(uuid "ad6273cd-f7ab-4bb7-84d9-3918f55860ef")
 	)
 	(wire
 		(pts
@@ -535,7 +535,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "97f57ed7-c9f4-4728-84f4-3924966dced1")
+		(uuid "0d123bee-ad79-4452-aa2e-f2f1c39e2ad1")
 	)
 	(wire
 		(pts
@@ -545,7 +545,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "2f2ccc1d-0bc0-44b5-aa5c-de0137a660c8")
+		(uuid "db6abf33-265e-4e45-99b7-c53a9d9ee970")
 	)
 	(wire
 		(pts
@@ -555,7 +555,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "086cd5b4-2b87-4756-a4a9-13f0704368e6")
+		(uuid "d569b5a5-acc3-43c2-b20f-59030adac3a7")
 	)
 	(wire
 		(pts
@@ -565,7 +565,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "13dab487-f406-4ea9-bc52-a1620c821155")
+		(uuid "eb3827a9-db31-4cb9-8a7b-52489ffba23b")
 	)
 	(label "GND"
 		(at 16.51 21.59 0)
@@ -575,7 +575,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "408954ca-09d8-4eeb-865b-d28cc3725d47")
+		(uuid "9ba6fdca-f76f-4d9a-9a2b-1e5c068e9201")
 	)
 	(label "GND"
 		(at 17.78 22.86 0)
@@ -585,7 +585,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "aac7b434-e3c1-4c04-a791-942fabecb395")
+		(uuid "acd2daca-e1a9-45aa-9c5c-2683f6af434b")
 	)
 	(label "GND"
 		(at 19.05 16.51 0)
@@ -595,7 +595,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "a098d1a5-875b-4328-8209-ac2802811bb0")
+		(uuid "5649a573-6bb7-48f7-a723-5c04b41165b5")
 	)
 	(label "SOLAR_RAW"
 		(at 17.78 13.97 0)
@@ -605,7 +605,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "61dab003-d303-40b6-979f-05c372ae9bd4")
+		(uuid "e521b3b3-01e6-48b9-b008-187f38673271")
 	)
 	(label "SOLAR_RAW"
 		(at 24.13 12.7 0)
@@ -615,7 +615,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "7a7476ba-d2e6-4148-b6d7-a7132936d391")
+		(uuid "ea117d1c-d494-407d-8648-e6aecf56027b")
 	)
 	(label "SOLAR_ADC"
 		(at 16.51 13.97 0)
@@ -625,7 +625,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0cc5ddbb-b254-41d9-b44a-300e23254566")
+		(uuid "bf942aa4-7ec4-4a81-9406-6a336c5f333d")
 	)
 	(label "SOLAR_ADC"
 		(at 17.78 15.24 0)
@@ -635,7 +635,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "c852d1e7-62ce-4a29-ae9d-ac5fd2d4a684")
+		(uuid "6ecba0e1-2898-4d3f-a5d8-cf9584a9f1fe")
 	)
 	(label "SOLAR_ADC"
 		(at 16.51 16.51 0)
@@ -645,7 +645,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "4ed11f5f-983b-4ec8-8e52-3bcb76a2f35a")
+		(uuid "20012402-af5d-42b2-8029-468db9108097")
 	)
 	(label "SOLAR_ADC"
 		(at 17.78 21.59 0)
@@ -655,7 +655,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "f09d7d9f-a398-431f-9ced-05858dde57cf")
+		(uuid "7c79b5ea-fe5f-4796-8c6d-dc8febc746e6")
 	)
 	(hierarchical_label "GND"
 		(shape input)
@@ -666,7 +666,7 @@
 			)
 			(justify left)
 		)
-		(uuid "d20c1189-ef67-410c-8436-8c6bccf9a053")
+		(uuid "ef6dbee2-123f-46ef-968c-88001feff6a6")
 	)
 	(hierarchical_label "SOLAR_RAW"
 		(shape input)
@@ -677,7 +677,7 @@
 			)
 			(justify left)
 		)
-		(uuid "0a9f8fde-48fd-46b1-9759-2203503d3a12")
+		(uuid "c769c249-a15a-46d0-9ad9-6503010ea55f")
 	)
 	(hierarchical_label "SOLAR_ADC"
 		(shape input)
@@ -688,7 +688,7 @@
 			)
 			(justify left)
 		)
-		(uuid "d520420a-c615-4ba8-bb06-ccee89f24807")
+		(uuid "47cae39a-41f3-48f5-994a-147f14fa0453")
 	)
 	(sheet_instances
 		(path "/"

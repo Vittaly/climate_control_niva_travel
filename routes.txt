@@ -1,1 +1,302 @@
+# sheet=root
 # cell_size_mm=1.27
+# components=25
+# labels=34
+# t_junctions=44
+C10: 100nF anchor_mm=(120.65,397.51) 3x7 cells rot=0 mirror=None
+C21: 100nF anchor_mm=(298.45,111.76) 3x7 cells rot=0 mirror=None
+C5: 10uF anchor_mm=(22.86,397.51) 3x7 cells rot=0 mirror=None
+C6: 10uF anchor_mm=(396.24,262.89) 3x7 cells rot=0 mirror=None
+C7: 100nF anchor_mm=(339.09,262.89) 3x7 cells rot=0 mirror=None
+C8: 100nF anchor_mm=(298.45,262.89) 3x7 cells rot=0 mirror=None
+C9: 100nF anchor_mm=(262.89,262.89) 3x7 cells rot=0 mirror=None
+FB1: Феррит 600Ом@100МГц по питанию VDDA anchor_mm=(262.89,397.51) 3x7 cells rot=0 mirror=None
+J2: SWD-отладка 1x04 anchor_mm=(224.79,261.62) 3x7 cells rot=0 mirror=None
+R1: 10k anchor_mm=(219.71,397.51) 3x7 cells rot=0 mirror=None
+R2: 10k anchor_mm=(262.89,111.76) 3x7 cells rot=0 mirror=None
+U1: STM32F103RCT6 anchor_mm=(120.65,262.89) 29x77 cells rot=0 mirror=None
+X_CAN: X_CAN anchor_mm=(210.82,106.68) 16x10 cells rot=0 mirror=None
+X_PWR: X_PWR anchor_mm=(3.81,245.11) 32x28 cells rot=0 mirror=None
+X_UI: X_UI anchor_mm=(370.84,92.71) 42x32 cells rot=0 mirror=None
+X_SEN_CABIN: X_SEN_CABIN anchor_mm=(110.49,105.41) 16x12 cells rot=0 mirror=None
+X_SEN_HEAT: X_SEN_HEAT anchor_mm=(326.39,107.95) 21x8 cells rot=0 mirror=None
+X_SEN_SOLAR: X_SEN_SOLAR anchor_mm=(10.16,107.95) 22x8 cells rot=0 mirror=None
+X_SEN_COND: X_SEN_COND anchor_mm=(384.81,7.62) 20x8 cells rot=0 mirror=None
+X_OUT: X_OUT anchor_mm=(320.04,5.08) 31x12 cells rot=0 mirror=None
+X_BACKLIGHT: X_BACKLIGHT anchor_mm=(289.56,7.62) 16x8 cells rot=0 mirror=None
+X_M1: X_M1 anchor_mm=(252.73,3.81) 18x14 cells rot=0 mirror=None
+X_M2: X_M2 anchor_mm=(209.55,3.81) 18x14 cells rot=0 mirror=None
+X_M3: X_M3 anchor_mm=(109.22,3.81) 18x14 cells rot=0 mirror=None
+X_M4: X_M4 anchor_mm=(12.70,3.81) 18x14 cells rot=0 mirror=None
+# sheet=can_bus.kicad_sch
+# cell_size_mm=1.27
+# components=7
+# labels=6
+# t_junctions=2
+U8: MCP2562-E-SN anchor_mm=(35.56,24.13) 21x17 cells rot=0 mirror=None
+PORT_VCC_5V: VCC_5V anchor_mm=(21.59,12.70) 6x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(21.59,15.24) 4x2 cells rot=0 mirror=None
+PORT_CAN_TX: CAN_TX anchor_mm=(22.86,12.70) 6x2 cells rot=0 mirror=None
+PORT_CAN_RX: CAN_RX anchor_mm=(22.86,15.24) 6x2 cells rot=0 mirror=None
+PORT_CANH: CANH anchor_mm=(24.13,12.70) 5x2 cells rot=0 mirror=None
+PORT_CANL: CANL anchor_mm=(24.13,15.24) 5x2 cells rot=0 mirror=None
+# sheet=power_supply.kicad_sch
+# cell_size_mm=1.27
+# components=42
+# labels=0
+# t_junctions=32
+C1: 470uF anchor_mm=(41.91,161.29) 3x7 cells rot=0 mirror=None
+C11: 100uF anchor_mm=(11.43,161.29) 3x7 cells rot=0 mirror=None
+C16: 100nF anchor_mm=(11.43,182.88) 3x7 cells rot=0 mirror=None
+C17: 100nF anchor_mm=(171.45,161.29) 3x7 cells rot=0 mirror=None
+C18: 100nF anchor_mm=(123.19,161.29) 3x7 cells rot=0 mirror=None
+C19: 100nF anchor_mm=(95.25,161.29) 3x7 cells rot=0 mirror=None
+C2: 100nF anchor_mm=(171.45,134.62) 3x7 cells rot=0 mirror=None
+C20: 1uF anchor_mm=(123.19,134.62) 3x7 cells rot=0 mirror=None
+C3: 10uF anchor_mm=(95.25,134.62) 3x7 cells rot=0 mirror=None
+C4: 10uF anchor_mm=(71.12,134.62) 3x7 cells rot=0 mirror=None
+D1: SS54 anchor_mm=(11.43,5.08) 7x3 cells rot=0 mirror=None
+D2: SMBJ15A TVS anchor_mm=(41.91,134.62) 7x3 cells rot=0 mirror=None
+D4: SS14 anchor_mm=(71.12,182.88) 7x3 cells rot=0 mirror=None
+D5: SMBJ5.0A / 5,6В anchor_mm=(71.12,161.29) 7x3 cells rot=0 mirror=None
+J1: Разъём к автомобилю 2x16 (32 конт.) anchor_mm=(170.18,76.20) 11x31 cells rot=0 mirror=None
+L1: Феррит/дроссель по входу +12В (помехи) anchor_mm=(95.25,77.47) 3x7 cells rot=0 mirror=None
+U6: MC78M05CDTG anchor_mm=(11.43,130.81) 13x7 cells rot=0 mirror=None
+U7: AMS1117-3.3 anchor_mm=(123.19,179.07) 13x7 cells rot=0 mirror=None
+PORT_VCC_12V: VCC_12V anchor_mm=(119.38,76.20) 7x2 cells rot=0 mirror=None
+PORT_VCC_5V: VCC_5V anchor_mm=(91.44,181.61) 6x2 cells rot=0 mirror=None
+PORT_VCC_3V3: VCC_3V3 anchor_mm=(167.64,181.61) 7x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(40.64,181.61) 4x2 cells rot=0 mirror=None
+PORT_NTC_HEAT_W: NTC_HEAT_W anchor_mm=(66.04,76.20) 10x2 cells rot=0 mirror=None
+PORT_SOLAR_RAW: SOLAR_RAW anchor_mm=(36.83,76.20) 9x2 cells rot=0 mirror=None
+PORT_COND_RAW: COND_RAW anchor_mm=(6.35,76.20) 8x2 cells rot=0 mirror=None
+PORT_MOTOR_1_A: MOTOR_1_A anchor_mm=(166.37,30.48) 9x2 cells rot=0 mirror=None
+PORT_MOTOR_1_B: MOTOR_1_B anchor_mm=(118.11,30.48) 9x2 cells rot=0 mirror=None
+PORT_FB_M1_RAW: FB_M1_RAW anchor_mm=(90.17,30.48) 9x2 cells rot=0 mirror=None
+PORT_MOTOR_2_A: MOTOR_2_A anchor_mm=(66.04,30.48) 9x2 cells rot=0 mirror=None
+PORT_MOTOR_2_B: MOTOR_2_B anchor_mm=(36.83,30.48) 9x2 cells rot=0 mirror=None
+PORT_FB_M2_RAW: FB_M2_RAW anchor_mm=(6.35,30.48) 9x2 cells rot=0 mirror=None
+PORT_MOTOR_3_A: MOTOR_3_A anchor_mm=(166.37,17.78) 9x2 cells rot=0 mirror=None
+PORT_MOTOR_3_B: MOTOR_3_B anchor_mm=(118.11,17.78) 9x2 cells rot=0 mirror=None
+PORT_FB_M3_RAW: FB_M3_RAW anchor_mm=(90.17,17.78) 9x2 cells rot=0 mirror=None
+PORT_MOTOR_4_A: MOTOR_4_A anchor_mm=(66.04,17.78) 9x2 cells rot=0 mirror=None
+PORT_MOTOR_4_B: MOTOR_4_B anchor_mm=(36.83,17.78) 9x2 cells rot=0 mirror=None
+PORT_FB_M4_RAW: FB_M4_RAW anchor_mm=(6.35,17.78) 9x2 cells rot=0 mirror=None
+PORT_AC_REQ_OUT: AC_REQ_OUT anchor_mm=(165.10,3.81) 10x2 cells rot=0 mirror=None
+PORT_ILLUM_IN_RAW: ILLUM_IN_RAW anchor_mm=(116.84,3.81) 11x2 cells rot=0 mirror=None
+PORT_CANH: CANH anchor_mm=(92.71,3.81) 5x2 cells rot=0 mirror=None
+PORT_CANL: CANL anchor_mm=(68.58,3.81) 5x2 cells rot=0 mirror=None
+PORT_HEAT_FAN_PWM_CTL: HEAT_FAN_PWM_CTL anchor_mm=(34.29,3.81) 14x2 cells rot=0 mirror=None
+# sheet=user_interface.kicad_sch
+# cell_size_mm=1.27
+# components=56
+# labels=7
+# t_junctions=33
+C22: 100nF anchor_mm=(161.29,138.43) 3x7 cells rot=0 mirror=None
+C23: 100nF anchor_mm=(10.16,138.43) 3x7 cells rot=0 mirror=None
+C24: 100nF anchor_mm=(130.81,138.43) 3x7 cells rot=0 mirror=None
+C32: 100nF anchor_mm=(102.87,138.43) 3x7 cells rot=0 mirror=None
+J3: Внутр. коннектор потенциометра (2п, XH) anchor_mm=(76.20,137.16) 3x3 cells rot=0 mirror=None
+J4: Внутр. коннектор галлетника (5п, XH) anchor_mm=(209.55,114.30) 3x9 cells rot=0 mirror=None
+LED1: Индикатор зелёный 1206 anchor_mm=(130.81,21.59) 7x3 cells rot=0 mirror=None
+LED2: Индикатор зелёный 1206 anchor_mm=(102.87,21.59) 7x3 cells rot=0 mirror=None
+LED3: Индикатор зелёный 1206 anchor_mm=(71.12,21.59) 7x3 cells rot=0 mirror=None
+LED4: Индикатор янтарный 1206 anchor_mm=(38.10,21.59) 7x3 cells rot=0 mirror=None
+LED5: Индикатор зелёный 1206 anchor_mm=(10.16,21.59) 7x3 cells rot=0 mirror=None
+LED6: Индикатор зелёный 1206 anchor_mm=(204.47,5.08) 7x3 cells rot=0 mirror=None
+R7: 1k anchor_mm=(130.81,41.91) 3x7 cells rot=0 mirror=None
+R8: 1k anchor_mm=(102.87,41.91) 3x7 cells rot=0 mirror=None
+R9: 1k anchor_mm=(71.12,41.91) 3x7 cells rot=0 mirror=None
+R10: 1k anchor_mm=(38.10,41.91) 3x7 cells rot=0 mirror=None
+R11: 1k anchor_mm=(10.16,41.91) 3x7 cells rot=0 mirror=None
+R12: 1k anchor_mm=(204.47,21.59) 3x7 cells rot=0 mirror=None
+R22: 10k anchor_mm=(204.47,91.44) 3x7 cells rot=0 mirror=None
+R23: 10k anchor_mm=(102.87,66.04) 3x7 cells rot=0 mirror=None
+R24: 10k anchor_mm=(130.81,91.44) 3x7 cells rot=0 mirror=None
+R39: 47k anchor_mm=(71.12,91.44) 3x7 cells rot=0 mirror=None
+R40: 10k anchor_mm=(38.10,138.43) 3x7 cells rot=0 mirror=None
+R_SEL_1: 20k anchor_mm=(10.16,91.44) 3x7 cells rot=0 mirror=None
+R_SEL_2: 10k anchor_mm=(204.47,66.04) 3x7 cells rot=0 mirror=None
+R_SEL_3: 4.7k anchor_mm=(161.29,66.04) 3x7 cells rot=0 mirror=None
+R_SEL_4: 1k anchor_mm=(130.81,66.04) 3x7 cells rot=0 mirror=None
+SW1: Кнопка тактовая 6x6 без фиксации anchor_mm=(161.29,157.48) 9x3 cells rot=0 mirror=None
+SW2: Кнопка тактовая 6x6 без фиксации anchor_mm=(102.87,157.48) 9x3 cells rot=0 mirror=None
+SW3: Кнопка тактовая 6x6 без фиксации anchor_mm=(71.12,157.48) 9x3 cells rot=0 mirror=None
+SW4: Кнопка тактовая 6x6 без фиксации anchor_mm=(38.10,157.48) 9x3 cells rot=0 mirror=None
+SW5: Кнопка тактовая 6x6 без фиксации anchor_mm=(10.16,157.48) 9x3 cells rot=0 mirror=None
+SW6: Кнопка тактовая 6x6 без фиксации anchor_mm=(204.47,138.43) 9x3 cells rot=0 mirror=None
+PORT_VCC_3V3: VCC_3V3 anchor_mm=(157.48,40.64) 7x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(128.27,156.21) 4x2 cells rot=0 mirror=None
+PORT_BTN_DEFROST_GLASS: BTN_DEFROST_GLASS anchor_mm=(195.58,156.21) 15x2 cells rot=0 mirror=None
+PORT_BTN_FACE: BTN_FACE anchor_mm=(157.48,113.03) 8x2 cells rot=0 mirror=None
+PORT_BTN_FEET: BTN_FEET anchor_mm=(125.73,113.03) 8x2 cells rot=0 mirror=None
+PORT_BTN_DRY_GLASS: BTN_DRY_GLASS anchor_mm=(96.52,113.03) 12x2 cells rot=0 mirror=None
+PORT_BTN_AC: BTN_AC anchor_mm=(67.31,113.03) 6x2 cells rot=0 mirror=None
+PORT_BTN_RECIRC: BTN_RECIRC anchor_mm=(31.75,113.03) 10x2 cells rot=0 mirror=None
+PORT_LED_DEFROST_GLASS_DRV: LED_DEFROST_GLASS_DRV anchor_mm=(151.13,3.81) 18x2 cells rot=0 mirror=None
+PORT_LED_FACE_DRV: LED_FACE_DRV anchor_mm=(124.46,3.81) 11x2 cells rot=0 mirror=None
+PORT_LED_FEET_DRV: LED_FEET_DRV anchor_mm=(96.52,3.81) 11x2 cells rot=0 mirror=None
+PORT_LED_DRY_GLASS_DRV: LED_DRY_GLASS_DRV anchor_mm=(62.23,3.81) 15x2 cells rot=0 mirror=None
+PORT_LED_AC_DRV: LED_AC_DRV anchor_mm=(31.75,3.81) 10x2 cells rot=0 mirror=None
+PORT_LED_RECIRC_DRV: LED_RECIRC_DRV anchor_mm=(3.81,3.81) 12x2 cells rot=0 mirror=None
+PORT_TEMP_SET_ADC: TEMP_SET_ADC anchor_mm=(3.81,113.03) 11x2 cells rot=0 mirror=None
+PORT_FAN_SEL_ADC: FAN_SEL_ADC anchor_mm=(31.75,90.17) 10x2 cells rot=0 mirror=None
+PORT_GALLET_POS_1: GALLET_POS_1 anchor_mm=(64.77,64.77) 11x2 cells rot=0 mirror=None
+PORT_GALLET_POS_2: GALLET_POS_2 anchor_mm=(31.75,64.77) 11x2 cells rot=0 mirror=None
+PORT_GALLET_POS_3: GALLET_POS_3 anchor_mm=(3.81,64.77) 11x2 cells rot=0 mirror=None
+PORT_GALLET_POS_4: GALLET_POS_4 anchor_mm=(198.12,40.64) 11x2 cells rot=0 mirror=None
+PORT_NTC_CABIN: NTC_CABIN anchor_mm=(156.21,90.17) 9x2 cells rot=0 mirror=None
+PORT_ILLUM_IN_RAW: ILLUM_IN_RAW anchor_mm=(154.94,20.32) 11x2 cells rot=0 mirror=None
+PORT_ILLUM_SENSE: ILLUM_SENSE anchor_mm=(97.79,90.17) 10x2 cells rot=0 mirror=None
+# sheet=cabin_sensor.kicad_sch
+# cell_size_mm=1.27
+# components=10
+# labels=0
+# t_junctions=5
+D3: 1N4148W anchor_mm=(63.50,7.62) 7x3 cells rot=0 mirror=None
+J5: Внутр. коннектор вентилятора продувки (2п, XH) anchor_mm=(50.80,6.35) 3x3 cells rot=0 mirror=None
+Q2: AO3400 anchor_mm=(8.89,29.21) 7x9 cells rot=0 mirror=None
+R16: 1k anchor_mm=(83.82,7.62) 3x7 cells rot=0 mirror=None
+R17: 10k anchor_mm=(27.94,29.21) 3x7 cells rot=0 mirror=None
+RT1: 10k anchor_mm=(63.50,29.21) 3x7 cells rot=0 mirror=None
+PORT_VCC_12V: VCC_12V anchor_mm=(3.81,6.35) 7x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(44.45,27.94) 4x2 cells rot=0 mirror=None
+PORT_NTC_CABIN: NTC_CABIN anchor_mm=(78.74,27.94) 9x2 cells rot=0 mirror=None
+PORT_M_FAN_CTL: M_FAN_CTL anchor_mm=(22.86,6.35) 9x2 cells rot=0 mirror=None
+# sheet=heating_sensor.kicad_sch
+# cell_size_mm=1.27
+# components=7
+# labels=9
+# t_junctions=0
+C25: 100nF anchor_mm=(17.78,17.78) 3x7 cells rot=0 mirror=None
+R25: 10k anchor_mm=(16.51,19.05) 3x7 cells rot=0 mirror=None
+R26: 10k anchor_mm=(17.78,16.51) 3x7 cells rot=0 mirror=None
+PORT_VCC_3V3: VCC_3V3 anchor_mm=(13.97,11.43) 7x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(15.24,12.70) 4x2 cells rot=0 mirror=None
+PORT_NTC_HEAT_W: NTC_HEAT_W anchor_mm=(16.51,15.24) 10x2 cells rot=0 mirror=None
+PORT_NTC_HEAT: NTC_HEAT anchor_mm=(13.97,16.51) 8x2 cells rot=0 mirror=None
+# sheet=solar_sensor.kicad_sch
+# cell_size_mm=1.27
+# components=6
+# labels=9
+# t_junctions=0
+C26: 100nF anchor_mm=(17.78,19.05) 3x7 cells rot=0 mirror=None
+R27: 10k anchor_mm=(17.78,17.78) 3x7 cells rot=0 mirror=None
+R28: 20k anchor_mm=(16.51,17.78) 3x7 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(15.24,16.51) 4x2 cells rot=0 mirror=None
+PORT_SOLAR_RAW: SOLAR_RAW anchor_mm=(13.97,12.70) 9x2 cells rot=0 mirror=None
+PORT_SOLAR_ADC: SOLAR_ADC anchor_mm=(16.51,16.51) 9x2 cells rot=0 mirror=None
+# sheet=condensate_sensor.kicad_sch
+# cell_size_mm=1.27
+# components=6
+# labels=9
+# t_junctions=0
+C27: 100nF anchor_mm=(16.51,19.05) 3x7 cells rot=0 mirror=None
+R29: 10k anchor_mm=(16.51,17.78) 3x7 cells rot=0 mirror=None
+R30: 20k anchor_mm=(15.24,17.78) 3x7 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(13.97,16.51) 4x2 cells rot=0 mirror=None
+PORT_COND_RAW: COND_RAW anchor_mm=(12.70,12.70) 8x2 cells rot=0 mirror=None
+PORT_COND_ADC: COND_ADC anchor_mm=(15.24,16.51) 8x2 cells rot=0 mirror=None
+# sheet=power_outputs.kicad_sch
+# cell_size_mm=1.27
+# components=16
+# labels=0
+# t_junctions=7
+Q1: BSS138 anchor_mm=(35.56,58.42) 7x9 cells rot=0 mirror=None
+Q3: MMBT3904 anchor_mm=(59.69,33.02) 7x9 cells rot=0 mirror=None
+Q4: MMBT3906 anchor_mm=(80.01,8.89) 7x9 cells rot=0 mirror=None
+R13: 1k anchor_mm=(58.42,58.42) 3x7 cells rot=0 mirror=None
+R14: 4.7k anchor_mm=(78.74,33.02) 3x7 cells rot=0 mirror=None
+R15: 1k anchor_mm=(8.89,58.42) 3x7 cells rot=0 mirror=None
+R18: 10k anchor_mm=(8.89,33.02) 3x7 cells rot=0 mirror=None
+R19: 100k anchor_mm=(97.79,33.02) 3x7 cells rot=0 mirror=None
+R20: 10k anchor_mm=(97.79,8.89) 3x7 cells rot=0 mirror=None
+R21: 1k anchor_mm=(34.29,8.89) 3x7 cells rot=0 mirror=None
+PORT_VCC_12V: VCC_12V anchor_mm=(110.49,7.62) 7x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(111.76,31.75) 4x2 cells rot=0 mirror=None
+PORT_FAN_PWM_CTL: FAN_PWM_CTL anchor_mm=(73.66,57.15) 10x2 cells rot=0 mirror=None
+PORT_AC_CTL: AC_CTL anchor_mm=(54.61,7.62) 6x2 cells rot=0 mirror=None
+PORT_AC_REQ_OUT: AC_REQ_OUT anchor_mm=(3.81,7.62) 10x2 cells rot=0 mirror=None
+PORT_HEAT_FAN_PWM_CTL: HEAT_FAN_PWM_CTL anchor_mm=(26.67,31.75) 14x2 cells rot=0 mirror=None
+# sheet=backlight.kicad_sch
+# cell_size_mm=1.27
+# components=58
+# labels=18
+# t_junctions=26
+R1: 130R anchor_mm=(36.83,128.27) 3x7 cells rot=0 mirror=None
+R2: 130R anchor_mm=(201.93,100.33) 3x7 cells rot=0 mirror=None
+R3: 130R anchor_mm=(177.80,100.33) 3x7 cells rot=0 mirror=None
+R4: 130R anchor_mm=(152.40,100.33) 3x7 cells rot=0 mirror=None
+R5: 130R anchor_mm=(127.00,100.33) 3x7 cells rot=0 mirror=None
+R6: 130R anchor_mm=(97.79,100.33) 3x7 cells rot=0 mirror=None
+R7: 130R anchor_mm=(67.31,100.33) 3x7 cells rot=0 mirror=None
+R8: 130R anchor_mm=(36.83,100.33) 3x7 cells rot=0 mirror=None
+LED11: Белый SMD 0805 anchor_mm=(97.79,128.27) 7x3 cells rot=0 mirror=None
+LED12: Белый SMD 0805 anchor_mm=(67.31,128.27) 7x3 cells rot=0 mirror=None
+LED13: Белый SMD 0805 anchor_mm=(7.62,128.27) 7x3 cells rot=0 mirror=None
+LED21: Белый SMD 0805 anchor_mm=(201.93,33.02) 7x3 cells rot=0 mirror=None
+LED22: Белый SMD 0805 anchor_mm=(97.79,19.05) 7x3 cells rot=0 mirror=None
+LED23: Белый SMD 0805 anchor_mm=(67.31,67.31) 7x3 cells rot=0 mirror=None
+LED31: Белый SMD 0805 anchor_mm=(177.80,33.02) 7x3 cells rot=0 mirror=None
+LED32: Белый SMD 0805 anchor_mm=(67.31,19.05) 7x3 cells rot=0 mirror=None
+LED33: Белый SMD 0805 anchor_mm=(36.83,67.31) 7x3 cells rot=0 mirror=None
+LED41: Белый SMD 0805 anchor_mm=(152.40,33.02) 7x3 cells rot=0 mirror=None
+LED42: Белый SMD 0805 anchor_mm=(36.83,19.05) 7x3 cells rot=0 mirror=None
+LED43: Белый SMD 0805 anchor_mm=(7.62,67.31) 7x3 cells rot=0 mirror=None
+LED51: Белый SMD 0805 anchor_mm=(127.00,33.02) 7x3 cells rot=0 mirror=None
+LED52: Белый SMD 0805 anchor_mm=(7.62,19.05) 7x3 cells rot=0 mirror=None
+LED53: Белый SMD 0805 anchor_mm=(227.33,46.99) 7x3 cells rot=0 mirror=None
+LED61: Белый SMD 0805 anchor_mm=(97.79,33.02) 7x3 cells rot=0 mirror=None
+LED62: Белый SMD 0805 anchor_mm=(227.33,5.08) 7x3 cells rot=0 mirror=None
+LED63: Белый SMD 0805 anchor_mm=(201.93,46.99) 7x3 cells rot=0 mirror=None
+LED71: Белый SMD 0805 anchor_mm=(67.31,33.02) 7x3 cells rot=0 mirror=None
+LED72: Белый SMD 0805 anchor_mm=(201.93,5.08) 7x3 cells rot=0 mirror=None
+LED73: Белый SMD 0805 anchor_mm=(177.80,46.99) 7x3 cells rot=0 mirror=None
+LED81: Белый SMD 0805 anchor_mm=(36.83,33.02) 7x3 cells rot=0 mirror=None
+LED82: Белый SMD 0805 anchor_mm=(177.80,5.08) 7x3 cells rot=0 mirror=None
+LED83: Белый SMD 0805 anchor_mm=(152.40,46.99) 7x3 cells rot=0 mirror=None
+R_BTN1: 130R anchor_mm=(7.62,100.33) 3x7 cells rot=0 mirror=None
+R_BTN2: 130R anchor_mm=(227.33,67.31) 3x7 cells rot=0 mirror=None
+LED_BTN_1: Белый SMD 1206 anchor_mm=(7.62,33.02) 7x3 cells rot=0 mirror=None
+LED_BTN_2: Белый SMD 1206 anchor_mm=(152.40,5.08) 7x3 cells rot=0 mirror=None
+LED_BTN_3: Белый SMD 1206 anchor_mm=(127.00,46.99) 7x3 cells rot=0 mirror=None
+LED_BTN_4: Белый SMD 1206 anchor_mm=(227.33,19.05) 7x3 cells rot=0 mirror=None
+LED_BTN_5: Белый SMD 1206 anchor_mm=(127.00,5.08) 7x3 cells rot=0 mirror=None
+LED_BTN_6: Белый SMD 1206 anchor_mm=(97.79,46.99) 7x3 cells rot=0 mirror=None
+R_PTR1: 130R anchor_mm=(201.93,67.31) 3x7 cells rot=0 mirror=None
+R_PTR2: 130R anchor_mm=(177.80,67.31) 3x7 cells rot=0 mirror=None
+R_PTR3: 130R anchor_mm=(152.40,67.31) 3x7 cells rot=0 mirror=None
+R_PTR4: 130R anchor_mm=(127.00,67.31) 3x7 cells rot=0 mirror=None
+LED_PTR_1: Белый SMD 0603 anchor_mm=(201.93,19.05) 7x3 cells rot=0 mirror=None
+LED_PTR_2: Белый SMD 0603 anchor_mm=(97.79,5.08) 7x3 cells rot=0 mirror=None
+LED_PTR_3: Белый SMD 0603 anchor_mm=(67.31,46.99) 7x3 cells rot=0 mirror=None
+LED_PTR_4: Белый SMD 0603 anchor_mm=(177.80,19.05) 7x3 cells rot=0 mirror=None
+LED_PTR_5: Белый SMD 0603 anchor_mm=(67.31,5.08) 7x3 cells rot=0 mirror=None
+LED_PTR_6: Белый SMD 0603 anchor_mm=(36.83,46.99) 7x3 cells rot=0 mirror=None
+LED_PTR_7: Белый SMD 0603 anchor_mm=(152.40,19.05) 7x3 cells rot=0 mirror=None
+LED_PTR_8: Белый SMD 0603 anchor_mm=(36.83,5.08) 7x3 cells rot=0 mirror=None
+LED_PTR_9: Белый SMD 0603 anchor_mm=(7.62,46.99) 7x3 cells rot=0 mirror=None
+LED_PTR_10: Белый SMD 0603 anchor_mm=(127.00,19.05) 7x3 cells rot=0 mirror=None
+LED_PTR_11: Белый SMD 0603 anchor_mm=(7.62,5.08) 7x3 cells rot=0 mirror=None
+LED_PTR_12: Белый SMD 0603 anchor_mm=(227.33,33.02) 7x3 cells rot=0 mirror=None
+PORT_ILLUM_IN_RAW: ILLUM_IN_RAW anchor_mm=(220.98,99.06) 11x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(95.25,66.04) 4x2 cells rot=0 mirror=None
+# sheet=actuator_channel.kicad_sch
+# cell_size_mm=1.27
+# components=14
+# labels=1
+# t_junctions=6
+U: DRV8871 H-мост anchor_mm=(48.26,57.15) 17x17 cells rot=0 mirror=None
+C_VM: 100nF anchor_mm=(7.62,26.67) 3x7 cells rot=0 mirror=None
+R_ILIM: 33k anchor_mm=(48.26,26.67) 3x7 cells rot=0 mirror=None
+R_TOP: 10k anchor_mm=(24.13,7.62) 3x7 cells rot=0 mirror=None
+R_BOT: 20k anchor_mm=(92.71,7.62) 3x7 cells rot=0 mirror=None
+C_FB: 100nF anchor_mm=(73.66,7.62) 3x7 cells rot=0 mirror=None
+PORT_VCC_12V: VCC_12V anchor_mm=(69.85,25.40) 7x2 cells rot=0 mirror=None
+PORT_GND: GND anchor_mm=(22.86,25.40) 4x2 cells rot=0 mirror=None
+PORT_IN1: IN1 anchor_mm=(71.12,55.88) 4x2 cells rot=0 mirror=None
+PORT_IN2: IN2 anchor_mm=(22.86,55.88) 4x2 cells rot=0 mirror=None
+PORT_MOTOR_A: MOTOR_A anchor_mm=(3.81,55.88) 7x2 cells rot=0 mirror=None
+PORT_MOTOR_B: MOTOR_B anchor_mm=(88.90,25.40) 7x2 cells rot=0 mirror=None
+PORT_FB_RAW: FB_RAW anchor_mm=(3.81,6.35) 6x2 cells rot=0 mirror=None
+PORT_FB: FB anchor_mm=(45.72,6.35) 4x2 cells rot=0 mirror=None

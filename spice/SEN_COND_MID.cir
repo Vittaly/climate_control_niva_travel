@@ -1,25 +1,17 @@
-* Ngspice тест: SEN_COND (порт-интерфейс из KiCad)
-
-
-
-
-
-
+* Ngspice тест: SEN_COND / SEN_COND_MID
+* Датчик в среднем положении — начало конденсации.
+* COND_RAW = 2,5В → COND_ADC ≈ 1,67В (K = 2/3).
 .INCLUDE spice/SEN_COND.sub
-.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
-.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
-.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
-.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
 
 * Порты: COND_ADC COND_RAW GND
+
+* V1: Датчик конденсата: середина диапазона (2,5В)
+V1 COND_RAW 0 DC 2.5
 XSEN_COND COND_ADC COND_RAW 0 SEN_COND
 
-VS COND_RAW 0 DC 2.5
 .op
-* PASS: COND_ADC ~1.6В (делитель 5->3,3)
 .control
-op
-print V(COND_ADC)
 run
+print v(cond_adc)
 .endc
 .end

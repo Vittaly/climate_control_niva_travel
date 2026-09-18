@@ -1,0 +1,35 @@
+* BACKLIGHT — субсхема из нетлиста KiCad + YAML
+.subckt BACKLIGHT GND NET_SCALE_CH2_C NET_SCALE_CH3_C NET_SCALE_CH5_C NET_SCALE_CH6_C NET_SCALE_CH7_C NET_SCALE_CH8_A NET_SCALE_CH8_C
+  * LED11: LED (Белый SMD 0805) — не моделируется
+  * LED12: LED (Белый SMD 0805) — не моделируется
+  * LED13: LED (Белый SMD 0805) — не моделируется
+  * LED21: LED (Белый SMD 0805) — не моделируется
+  * LED22: LED (Белый SMD 0805) — не моделируется
+  * LED23: LED (Белый SMD 0805) — не моделируется
+  * LED31: LED (Белый SMD 0805) — не моделируется
+  * LED32: LED (Белый SMD 0805) — не моделируется
+  * LED33: LED (Белый SMD 0805) — не моделируется
+  * LED41: LED (Белый SMD 0805) — не моделируется
+  * LED42: LED (Белый SMD 0805) — не моделируется
+  * LED43: LED (Белый SMD 0805) — не моделируется
+  * LED51: LED (Белый SMD 0805) — не моделируется
+  * LED52: LED (Белый SMD 0805) — не моделируется
+  * LED53: LED (Белый SMD 0805) — не моделируется
+  * LED61: LED (Белый SMD 0805) — не моделируется
+  * LED62: LED (Белый SMD 0805) — не моделируется
+  * LED63: LED (Белый SMD 0805) — не моделируется
+  * LED71: LED (Белый SMD 0805) — не моделируется
+  * LED72: LED (Белый SMD 0805) — не моделируется
+  * LED73: LED (Белый SMD 0805) — не моделируется
+  * LED81: LED (Белый SMD 0805) — не моделируется
+  * LED82: LED (Белый SMD 0805) — не моделируется
+  * LED83: LED (Белый SMD 0805) — не моделируется
+  R1 GND Net-(LED11-K) 130
+  R2 GND GND 130
+  R3 GND GND 130
+  R4 GND GND 130
+  R5 GND GND 130
+  R6 GND GND 130
+  R7 GND GND 130
+  R8 GND NET_SCALE_CH8_A 130
+.ends BACKLIGHT

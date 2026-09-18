@@ -1,8 +1,14 @@
 # make_scr/writer.py
 """Сохранение проекта: .kicad_sch для каждой страницы.
 
-Провода берутся из Net.wires (как и во всей новой модели),
-фильтруются по странице через pin.component.sheet.
+Writer привязан к одной Sheet — как Placer и Router:
+    - Writer(sheet)   — конструктор;
+    - self.cell_size_mm = sheet.grid_mm;
+    - self.netlist      = sheet.netlist;
+    - write_sheet(out_path) — пишет .kicad_sch этой страницы.
+
+Провода берутся из self.netlist (Net.wires), фильтруются по странице
+через pin.component.sheet is self.sheet.
 
 Порты страницы (PortComponent) рисуются как hierarchical_label.
 Вложенные листы (SheetRefComponent) — через add_sheet + sheet_pin.
@@ -14,21 +20,6 @@ T-врезки пишутся через sch.junctions.add.
     Writer передаёт её в (at x y angle) для symbol и использует
     для листов/портов.
     Никаких placer.positions — они временные.
-
-Логирование координат:
-    Writer логирует РЕАЛЬНЫЕ координаты, куда записал компонент
-    (anchor_mm, rotation, mirror) и провод (a_mm, b_mm). Это
-    позволяет сравнить с тем, что рассчитал placer.
-
-Логирование проводов:
-    Каждый сегмент провода логируется в контексте того пина,
-    к которому он относится:
-        - start_stub  — в контексте wire.start;
-        - end_stub    — в контексте wire.end;
-        - path        — дублируется в контексте обоих пинов
-                        (если end есть и это не T-врезка).
-    Формат контекста: [page] [net] [comp] [pin] — только значения,
-    без префиксов page=, net= и т.д.
 
 Логирование:
     Все лог-строки — одна строка, префикс ctx():
@@ -43,19 +34,19 @@ from constants import Axis
 from logging_setup import get_logger, ctx
 
 if TYPE_CHECKING:
-    from netlist import Netlist
     from sheet import Sheet
-    from component import Component
 
 log = get_logger(__name__)
 
 
 class Writer:
-    """Пишет результат роутинга в .kicad_sch и текстовый отчёт."""
+    """Пишет .kicad_sch и текстовый отчёт для одной страницы."""
 
-    def __init__(self, cell_size_mm: float):
-        """cell_size_mm — размер клетки в мм (для перевода в мм KiCad)."""
-        self.cell_size_mm = cell_size_mm
+    def __init__(self, sheet: "Sheet"):
+        """Sheet — страница; сетка и нетлист берутся из неё."""
+        self.sheet = sheet
+        self.cell_size_mm = sheet.grid_mm
+        self.netlist = sheet.netlist
 
     # =========================================================
     # Координаты
@@ -70,12 +61,26 @@ class Writer:
         return (cell.col * self.cell_size_mm,
                 cell.row * self.cell_size_mm)
 
-    def write_text(self, paths: List[List[Cell]]) -> str:
-        """Текстовое представление путей (отладочный формат)."""
-        lines = [f"# cell_size_mm={self.cell_size_mm}"]
-        for i, path in enumerate(paths):
-            pts = " ".join(f"{p.col},{p.row}" for p in path)
-            lines.append(f"path_{i}={pts}")
+    def write_text(self) -> str:
+        """Текстовая сводка по странице (для routes.txt / отладки)."""
+        lines = [
+            f"# sheet={self.sheet.page}",
+            f"# cell_size_mm={self.cell_size_mm}",
+            f"# components={len(self.sheet.components)}",
+            f"# labels={len(self.sheet.labels)}",
+            f"# t_junctions={len(self.sheet.t_junctions)}",
+        ]
+        for designator, comp in self.sheet.components.items():
+            anchor = comp.anchor_page_mm
+            if anchor is None:
+                lines.append(f"{designator}: {comp.name} no_anchor")
+                continue
+            lines.append(
+                f"{designator}: {comp.name} "
+                f"anchor_mm=({anchor[Axis.X]:.2f},{anchor[Axis.Y]:.2f}) "
+                f"{comp.bbox_cols}x{comp.bbox_rows} cells "
+                f"rot={comp.rotation} mirror={comp.mirror}"
+            )
         return "\n".join(lines)
 
     # =========================================================
@@ -126,10 +131,10 @@ class Writer:
     # Главная точка входа
     # =========================================================
 
-    def write_sheet(self, out_path: Path, sheet: "Sheet",
-                    netlist: Optional["Netlist"] = None) -> None:
-        """Сохраняет .kicad_sch для одной страницы."""
-        label = sheet.sheet_path or "root"
+    def write_sheet(self, out_path: Path) -> None:
+        """Сохраняет .kicad_sch для этой страницы."""
+        sheet = self.sheet
+        label = sheet.page
         out_path = Path(out_path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -139,7 +144,7 @@ class Writer:
         except ImportError:
             log.warning("%s kicad_sch_api unavailable text_fallback",
                         ctx(page=label))
-            self._write_text_fallback(out_path, label, sheet)
+            self._write_text_fallback(out_path)
             return
 
         sch = ksa.create_schematic()
@@ -244,9 +249,7 @@ class Writer:
                 sch, sobj, comp, x_mm, y_mm, w_mm, h_mm, label)
 
         # ---------- 4. Провода ----------
-        n_wires = 0
-        if netlist is not None:
-            n_wires = self._emit_all_wires(sch, netlist, sheet, label)
+        n_wires = self._emit_all_wires(sch, label)
 
         # ---------- 5. T-врезки ----------
         n_junctions = 0
@@ -392,18 +395,17 @@ class Writer:
     # Провода
     # =========================================================
 
-    def _emit_all_wires(self, sch, netlist, sheet, label: str) -> int:
+    def _emit_all_wires(self, sch, label: str) -> int:
         """Пишет провода всех сетей, отфильтрованных по странице."""
         total = 0
-        for net_name, net in netlist.nets.items():
+        for net_name, net in self.netlist.nets.items():
             for wire in getattr(net, "wires", []) or []:
-                if not self._wire_belongs_to(wire, sheet):
+                if not self._wire_belongs_to(wire):
                     continue
                 total += self._emit_wire(sch, wire, label, net_name)
         return total
 
-    @staticmethod
-    def _wire_belongs_to(wire, sheet) -> bool:
+    def _wire_belongs_to(self, wire) -> bool:
         """Провод относится к странице, если start/end пины — её."""
         for attr in ("start", "end"):
             pin = getattr(wire, attr, None)
@@ -412,7 +414,7 @@ class Writer:
             comp = getattr(pin, "component", None)
             if comp is None:
                 continue
-            if comp.sheet is sheet:
+            if comp.sheet is self.sheet:
                 return True
         return False
 
@@ -549,24 +551,9 @@ class Writer:
     # Текстовый fallback
     # =========================================================
 
-    def _write_text_fallback(self, out_path: Path, label: str,
-                             sheet: "Sheet") -> None:
+    def _write_text_fallback(self, out_path: Path) -> None:
         """Текстовый отчёт, если kicad_sch_api недоступен."""
         txt = out_path.with_suffix(".txt")
-        lines = [f"# sheet={label}",
-                 f"# components={len(sheet.components)}"]
-        for designator, comp in sheet.components.items():
-            anchor_mm = comp.anchor_page_mm
-            if anchor_mm is None:
-                lines.append(f"{designator}: {comp.name} no_anchor")
-                continue
-            x_mm, y_mm = anchor_mm
-            lines.append(
-                f"{designator}: {comp.name} "
-                f"anchor_mm=({x_mm:.2f},{y_mm:.2f}) "
-                f"{comp.bbox_cols}x{comp.bbox_rows} cells "
-                f"rot={comp.rotation} mirror={comp.mirror}"
-            )
-        txt.write_text("\n".join(lines), encoding="utf-8")
+        txt.write_text(self.write_text(), encoding="utf-8")
         log.info("%s text_fallback file=%s",
-                 ctx(page=label), txt.name)
+                 ctx(page=self.sheet.page), txt.name)

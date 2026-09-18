@@ -1,0 +1,17 @@
+* Ngspice тест: ACTUATOR_CHANNEL / ACT_CH_FB_MID
+* Делитель ОС в среднем положении.
+* 2,5В на FB_RAW → ~1,67В на FB (K = 2/3).
+.INCLUDE spice/ACTUATOR_CHANNEL.sub
+
+* Порты: GND IN2
+
+* V1: Потенциометр заслонки в среднем положении (2,5В)
+V1 FB_RAW 0 DC 2.5
+XACTUATOR_CHANNEL 0 IN2 ACTUATOR_CHANNEL
+
+.op
+.control
+run
+print v(fb)
+.endc
+.end

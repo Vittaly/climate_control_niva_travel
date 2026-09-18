@@ -1,0 +1,24 @@
+* Ngspice тест: SEN_SOLAR / SEN_SOLAR_FAULT_12V
+* Аварийный режим: замыкание линии SOLAR_RAW на бортсеть +12В
+* (неисправность проводки или КЗ датчика). Делитель R27/R28
+* ограничивает ток через линию до ~1,2 мА. В реальности
+* вход АЦП МК дополнительно защищён внутренним диодом на
+* VDDA — в модели без МК напряжение на SOLAR_ADC ограничено
+* только делителем (~8В), что показывает: для полной защиты
+* нужен внешний TVS или верхний резистор большего номинала.
+.INCLUDE spice/SEN_SOLAR.sub
+
+* Порты: GND SOLAR_ADC SOLAR_RAW
+
+* V1: Аварийная подача +12В на вход датчика
+V1 SOLAR_RAW 0 DC 12.0
+XSEN_SOLAR 0 SOLAR_ADC SOLAR_RAW SEN_SOLAR
+
+.op
+.control
+run
+let vadc = v(SOLAR_ADC)
+let iin  = (12.0 - v(SOLAR_ADC)) / 10k
+print vadc iin
+.endc
+.end

@@ -1,0 +1,29 @@
+* Ngspice тест: CAN / CAN_RX_PATH
+* Проверка приёмного тракта.
+* Подаём на CANH/CANL внешнее дифференциальное напряжение
+* (имитация чужого передатчика на шине), проверяем RXD.
+* При Vdiff > порога приёмника RXD = 0.
+.INCLUDE spice/CAN.sub
+
+* Порты: CANL CAN_RX CAN_TX GND
+
+* V1: Питание трансивера +5В
+V1 VCC_5V 0 DC 5.0
+
+* V2: TXD = 1 (свой драйвер выключен, слушаем шину)
+V2 CAN_TX 0 DC 5.0
+
+* V3: Внешний передатчик: CANH = 3,5В
+V3 CANH 0 DC 3.5
+
+* V4: Внешний передатчик: CANL = 1,5В
+V4 CANL 0 DC 1.5
+XCAN CANL CAN_RX CAN_TX 0 CAN
+
+.op
+.control
+run
+let vrxd = v(CAN_RX)
+print vrxd
+.endc
+.end

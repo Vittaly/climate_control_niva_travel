@@ -1,0 +1,16 @@
+* Ngspice тест: SEN_SOLAR / SEN_SOLAR_OPEN
+* Обрыв линии датчика (провод перебит, датчик отключён).
+* Линия SOLAR_RAW висит в воздухе, ток через делитель = 0,
+* SOLAR_ADC подтягивается к GND через R28 = 20к.
+.INCLUDE spice/SEN_SOLAR.sub
+
+* Порты: GND SOLAR_ADC SOLAR_RAW
+
+XSEN_SOLAR 0 SOLAR_ADC SOLAR_RAW SEN_SOLAR
+
+.op
+.control
+run
+print v(solar_adc)
+.endc
+.end

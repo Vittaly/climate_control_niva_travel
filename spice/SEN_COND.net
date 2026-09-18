@@ -1,19 +1,19 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_08_sen_cond.kicad_sch")
-		(date "2026-09-12T18:45:13")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/condensate_sensor.kicad_sch")
+		(date "2026-09-18T10:57:32")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title "SEN_COND")
+				(title)
 				(company)
 				(rev)
 				(date)
-				(source "cc_08_sen_cond.kicad_sch")
+				(source "condensate_sensor.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -59,6 +59,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -74,12 +76,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_08_sen_cond.kicad_sch")
+				(value "condensate_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -93,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "78fc18d0-996a-4844-815c-c9b52c3123fd")
+			(tstamps "5aea17ec-3b74-4dca-95bb-ae843bef77db")
 			(units
 				(unit
 					(name "A")
@@ -113,6 +119,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -128,12 +136,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_08_sen_cond.kicad_sch")
+				(value "condensate_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -147,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "43db74ce-e3e0-4488-b57c-d1f53b9e5f35")
+			(tstamps "c5a31033-9e09-460a-bcf1-fd865e161aef")
 			(units
 				(unit
 					(name "A")
@@ -167,6 +179,8 @@
 			(value "20k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -182,12 +196,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_08_sen_cond.kicad_sch")
+				(value "condensate_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -201,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6fa9b952-5d8e-4f89-891c-b68f29f0419b")
+			(tstamps "43f5f811-5f88-4a7c-9ced-3495ad3a4c94")
 			(units
 				(unit
 					(name "A")

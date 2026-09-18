@@ -1,0 +1,18 @@
+* Ngspice тест: BACKLIGHT / BACKLIGHT_HIGH
+* Повышенное питание 14,4В (бортовая сеть с генератором).
+* Ток канала растёт, но остаётся в пределах нормы LED (не более 30 мА).
+.INCLUDE spice/BACKLIGHT.sub
+
+* Порты: GND NET_SCALE_CH2_C NET_SCALE_CH3_C NET_SCALE_CH5_C NET_SCALE_CH6_C NET_SCALE_CH7_C NET_SCALE_CH8_A NET_SCALE_CH8_C
+
+* V1: Напряжение генератора +14,4В
+V1 ILLUM_IN_RAW 0 DC 14.4
+XBACKLIGHT 0 NET_SCALE_CH2_C NET_SCALE_CH3_C NET_SCALE_CH5_C NET_SCALE_CH6_C NET_SCALE_CH7_C NET_SCALE_CH8_A NET_SCALE_CH8_C BACKLIGHT
+
+.op
+.control
+run
+let ich = -i(V1) / 14
+print ich
+.endc
+.end

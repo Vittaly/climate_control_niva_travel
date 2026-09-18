@@ -43,6 +43,11 @@
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sheet import Sheet
+
 import math
 from collections import deque
 from dataclasses import dataclass
@@ -51,9 +56,8 @@ from typing import Dict, Iterator, List, Optional, Tuple
 
 from cell import Cell
 from component import Component
-from constants import Axis, DEFAULT_GRID_MM
+from constants import Axis
 from logging_setup import get_logger, ctx
-from netlist import Netlist
 
 log = get_logger(__name__)
 
@@ -92,16 +96,14 @@ class Placer:
     Работает ТОЛЬКО В КЛЕТКАХ. Не знает про мм, anchor, pin_mm.
     """
 
-    def __init__(self, netlist: Netlist, grid_step: float = DEFAULT_GRID_MM):
-        self.netlist = netlist
-        self.grid_step = grid_step
+    def __init__(self, sheet: "Sheet"):
+        self.sheet = sheet
+        self.netlist = sheet.netlist           # транслируется через страницу
+        self.grid_step = sheet.grid_mm         # ← единственный источник
+        self.page_name = sheet.page            # "root" или имя файла
         self.components: Dict[str, Component] = {}
-        self.positions: Dict[str, Cell] = {}   # bbox_origin (клетки)
+        self.positions: Dict[str, Cell] = {}
         self.last_strategy: Optional[_Strategy] = None
-        self.page: str = "root"
-
-        # sheet для _wires_between_components (ставится в auto_place)
-        self._sheet = None
 
     # =========================================================
     # Регистрация
@@ -111,7 +113,7 @@ class Placer:
         """Добавляет компонент в пул размещения (ещё без координат)."""
         self.components[comp.designator] = comp
         log.debug("%s size=%dx%d cells",
-                  ctx(page=self.page, comp=comp.designator),
+                  ctx(page=self.page_name, comp=comp.designator),
                   comp.bbox_cols, comp.bbox_rows)
 
     def place(self, designator: str, col: int, row: int) -> None:
@@ -133,7 +135,7 @@ class Placer:
         log.debug(
             "%s place bbox_origin=(%d,%d) anchor_mm=(%.2f,%.2f) "
             "rotation=%d mirror=%s size=%dx%d cells",
-            ctx(page=self.page, comp=designator),
+            ctx(page=self.page_name, comp=designator),
             col, row,
             anchor_mm[Axis.X], anchor_mm[Axis.Y],
             comp.rotation, comp.mirror,
@@ -145,7 +147,7 @@ class Placer:
             pc = comp.abs_pin_cell(pin)
             log.trace(
                 "%s offset_mm=(%.2f,%.2f) abs_mm=(%.2f,%.2f) abs=(%d,%d)",
-                ctx(page=self.page, comp=designator, pin=pin.local_key),
+                ctx(page=self.page_name, comp=designator, pin=pin.local_key),
                 pin.offset_mm[Axis.X], pin.offset_mm[Axis.Y],
                 pm[Axis.X], pm[Axis.Y],
                 pc.col, pc.row,
@@ -155,19 +157,17 @@ class Placer:
     # Единственная публичная точка входа
     # =========================================================
 
-    def auto_place(self, netlist: Netlist, sheet) -> str:
+    def auto_place(self) -> str:
         """Размещает компоненты, сам выбирая алгоритм."""
         from connectivity import build_component_graph
 
-        self.page = sheet.sheet_path or "root"
-        self._sheet = sheet
-
-        adj = build_component_graph(netlist, sheet)
+        adj = build_component_graph(self.sheet)
         strategy = self._choose_strategy(adj)
+
         self.last_strategy = strategy
 
         log.info("%s placement components=%d strategy=%s",
-                 ctx(page=self.page),
+                 ctx(page=self.page_name),
                  len(self.components), strategy)
 
         if strategy == _Strategy.ROWS:
@@ -200,7 +200,7 @@ class Placer:
         has_hub = self._has_hub(adj, n)
 
         log.debug("%s features n=%d density=%.2f aspect=%.2f has_hub=%s",
-                  ctx(page=self.page),
+                  ctx(page=self.page_name),
                   n, density, aspect, has_hub)
 
         if density <= _DENSITY_LOW:
@@ -244,7 +244,7 @@ class Placer:
 
     def _place_rows(self, margin: int = 2, max_cols: int = 6) -> None:
         log.debug("%s strategy=rows margin=%d max_cols=%d",
-                  ctx(page=self.page), margin, max_cols)
+                  ctx(page=self.page_name), margin, max_cols)
         col, row = margin, margin
         row_height = 0
         placed = 0
@@ -258,7 +258,7 @@ class Placer:
             row_height = max(row_height, comp.bbox_rows)
             placed += 1
         log.debug("%s strategy=rows done placed=%d",
-                  ctx(page=self.page), placed)
+                  ctx(page=self.page_name), placed)
         self._log_positions("rows_placed")
 
     # =========================================================
@@ -273,7 +273,7 @@ class Placer:
     ) -> None:
         from connectivity import graph_summary
         log.debug("%s strategy=connectivity top=%s",
-                  ctx(page=self.page), graph_summary(adj))
+                  ctx(page=self.page_name), graph_summary(adj))
 
         self._seed_by_bfs(adj, margin=seed_margin)
         self._refine_by_force(adj, iterations=refine_iters)
@@ -288,7 +288,7 @@ class Placer:
             self.components.keys(),
             key=lambda d: sum(adj.get(d, {}).values()),
         )
-        log.debug("%s connectivity hub=%s", ctx(page=self.page), hub)
+        log.debug("%s connectivity hub=%s", ctx(page=self.page_name), hub)
 
         avg_w = sum(c.bbox_cols for c in self.components.values()) / len(self.components)
         avg_h = sum(c.bbox_rows for c in self.components.values()) / len(self.components)
@@ -329,7 +329,7 @@ class Placer:
         orphans = [d for d in self.components if d not in visited]
         if orphans:
             log.debug("%s connectivity orphans=%s",
-                      ctx(page=self.page), orphans)
+                      ctx(page=self.page_name), orphans)
             self._pack_orphans(orphans, margin=margin)
 
     @staticmethod
@@ -372,12 +372,12 @@ class Placer:
                          iterations: int = 30) -> None:
         if not adj:
             log.debug("%s connectivity no_graph refine_skipped",
-                      ctx(page=self.page))
+                      ctx(page=self.page_name))
             return
 
         cost = self._target_cost(adj)
         log.debug("%s connectivity cost_start=%.1f",
-                  ctx(page=self.page), cost)
+                  ctx(page=self.page_name), cost)
 
         improved_total = 0
         for it in range(iterations):
@@ -413,13 +413,13 @@ class Placer:
 
             improved_total += improved_this_round
             log.debug("%s connectivity iter=%d improved=%d cost=%.1f",
-                      ctx(page=self.page),
+                      ctx(page=self.page_name),
                       it, improved_this_round, cost)
             if improved_this_round == 0:
                 break
 
         log.debug("%s connectivity refine_done improved=%d cost=%.1f",
-                  ctx(page=self.page), improved_total, cost)
+                  ctx(page=self.page_name), improved_total, cost)
 
     def _target_cost(self, adj: Dict[str, Dict[str, int]]) -> float:
         total = 0.0
@@ -478,7 +478,7 @@ class Placer:
     ) -> None:
         from connectivity import graph_summary
         log.debug("%s strategy=matrix top=%s",
-                  ctx(page=self.page), graph_summary(adj))
+                  ctx(page=self.page_name), graph_summary(adj))
 
         positions = self._matrix_layout(adj, cfg)
 
@@ -490,7 +490,7 @@ class Placer:
             pos = self.positions[d]
             log.trace(
                 "%s matrix_pos origin=(%d,%d)",
-                ctx(page=self.page, comp=d),
+                ctx(page=self.page_name, comp=d),
                 pos.col, pos.row,
             )
         self._log_positions("matrix_placed")
@@ -571,7 +571,7 @@ class Placer:
 
         result.reverse()
         log.debug("%s matrix rcm_first8=%s",
-                  ctx(page=self.page),
+                  ctx(page=self.page_name),
                   [order[i] for i in result[:8]])
         return result
 
@@ -604,7 +604,7 @@ class Placer:
             rows.append(current)
 
         log.debug("%s matrix rows=%d cols=%d",
-                  ctx(page=self.page), len(rows), est_cols)
+                  ctx(page=self.page_name), len(rows), est_cols)
         return rows
 
     # =========================================================
@@ -732,14 +732,14 @@ class Placer:
             for i in range(max(0, n_rows - 1))
         ]
 
-        log.debug("%s matrix cross_col=%s", ctx(page=self.page), cross_col)
-        log.debug("%s matrix cross_row=%s", ctx(page=self.page), cross_row)
-        log.debug("%s matrix col_local=%s", ctx(page=self.page), col_local)
-        log.debug("%s matrix row_local=%s", ctx(page=self.page), row_local)
+        log.debug("%s matrix cross_col=%s", ctx(page=self.page_name), cross_col)
+        log.debug("%s matrix cross_row=%s", ctx(page=self.page_name), cross_row)
+        log.debug("%s matrix col_local=%s", ctx(page=self.page_name), col_local)
+        log.debug("%s matrix row_local=%s", ctx(page=self.page_name), row_local)
         log.debug("%s matrix divisor_col=%d divisor_row=%d",
-                  ctx(page=self.page), divisor_col, divisor_row)
-        log.debug("%s matrix street_cols=%s", ctx(page=self.page), street_cols)
-        log.debug("%s matrix street_rows=%s", ctx(page=self.page), street_rows)
+                  ctx(page=self.page_name), divisor_col, divisor_row)
+        log.debug("%s matrix street_cols=%s", ctx(page=self.page_name), street_cols)
+        log.debug("%s matrix street_rows=%s", ctx(page=self.page_name), street_rows)
         return street_rows, street_cols
 
     # =========================================================
@@ -784,16 +784,16 @@ class Placer:
         """
         result: Dict[Tuple[str, str], int] = {}
 
-        if self.netlist is None or self._sheet is None:
+        if self.netlist is None or self.sheet is None:
             return result
 
         for net_name, net in self.netlist.nets.items():
             # собираем пины по компонентам
             comp_pins: Dict[str, list] = {}
             for fqn in net.pins:
-                local = self._sheet.local_key(fqn)
+                local = self.sheet.local_key(fqn)   # теперь всегда срабатывает
                 if local is None:
-                    continue
+                    continue                         # ← стало просто страховкой
                 designator, num = local.split(":", 1)
                 comp = self.components.get(designator)
                 if comp is None:
@@ -863,7 +863,7 @@ class Placer:
                 result[d] = Cell(col_x[j] + offset_c, row_y[i] + offset_r)
 
         log.debug("%s matrix done components=%d rows=%d cols=%d size=%dx%d",
-                  ctx(page=self.page),
+                  ctx(page=self.page_name),
                   len(result), len(rows), n_cols, x, y)
         return result
 
@@ -874,11 +874,11 @@ class Placer:
     def _log_positions(self, title: str = "placed") -> None:
         if not self.positions:
             log.warning("%s %s no_positions",
-                        ctx(page=self.page), title)
+                        ctx(page=self.page_name), title)
             return
 
         log.info("%s %s components=%d",
-                 ctx(page=self.page), title, len(self.positions))
+                 ctx(page=self.page_name), title, len(self.positions))
 
         for d in sorted(self.positions):
             pos = self.positions[d]
@@ -888,7 +888,7 @@ class Placer:
             log.info(
                 "%s %s bbox_origin=(%d,%d) anchor_mm=(%.2f,%.2f) "
                 "rotation=%d mirror=%s size=%dx%d cells",
-                ctx(page=self.page, comp=d),
+                ctx(page=self.page_name, comp=d),
                 title,
                 pos.col, pos.row,
                 anchor_mm[Axis.X] if anchor_mm else 0.0,
@@ -902,7 +902,7 @@ class Placer:
                 pc = comp.abs_pin_cell(pin)
                 log.info(
                     "%s %s offset_mm=(%.2f,%.2f) abs_mm=(%.2f,%.2f) abs=(%d,%d)",
-                    ctx(page=self.page, comp=d, pin=pin.local_key),
+                    ctx(page=self.page_name, comp=d, pin=pin.local_key),
                     title,
                     pin.offset_mm[Axis.X], pin.offset_mm[Axis.Y],
                     pm[Axis.X], pm[Axis.Y],
@@ -939,7 +939,7 @@ class Placer:
                     overlaps.append((keys[i], keys[j]))
         if overlaps:
             log.warning("%s overlaps=%d pairs=%s",
-                        ctx(page=self.page),
+                        ctx(page=self.page_name),
                         len(overlaps), overlaps)
         return overlaps
 
@@ -970,6 +970,6 @@ class Placer:
         #         pin_count += 1
 
         log.info("%s router_map components=%d pin_cells=%d total=%d",
-                 ctx(page=self.page),
+                 ctx(page=self.page_name),
                  len(self.positions), pin_count, len(m))
         return m

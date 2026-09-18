@@ -1,0 +1,542 @@
+page_name: ACTUATOR_CHANNEL
+file: actuator_channel.kicad_sch
+functional_purpose: |
+  Универсальный канал управления моторедуктором заслонки климатической
+  системы. Содержит H-мост DRV8871, развязку по питанию и делитель ОС
+  потенциометра положения.
+
+  Переиспользуется 4 раза на корневой странице проекта — по одному
+  экземпляру на каждую заслонку (X_M1..X_M4 в main.yaml). Конкретные
+  имена цепей задаются сопоставлением портов при инстанцировании,
+  внутри листа используются обобщённые имена: IN1, IN2, MOTOR_A,
+  MOTOR_B, FB_RAW, FB.
+
+ports:
+  - net_label: VCC_12V
+    type: POWER
+    description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+  - net_label: GND
+    type: POWER
+    description: Общий провод (кузов автомобиля)
+  - net_label: IN1
+    type: INPUT
+    description: Логический вход IN1 драйвера H-моста
+  - net_label: IN2
+    type: INPUT
+    description: Логический вход IN2 драйвера H-моста
+  - net_label: MOTOR_A
+    type: OUTPUT
+    description: Выход A H-моста к моторедуктору заслонки
+  - net_label: MOTOR_B
+    type: OUTPUT
+    description: Выход B H-моста к моторедуктору заслонки
+  - net_label: FB_RAW
+    type: INPUT
+    description: Выход потенциометра положения (0..5В) с разъёма
+  - net_label: FB
+    type: OUTPUT
+    description: Сигнал ОС после делителя 5В->3,3В на вход АЦП
+
+component_types:
+  TYPE_C_100NF:
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    value: 100nF
+    fields:
+      Type: Ceramic
+      Dielectric: X7R
+  TYPE_R_33K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 33k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_20K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 20k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_R_10K:
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    value: 10k
+    fields:
+      Power: 0.1W
+      Tolerance: 1%
+  TYPE_DRV8871DDA:
+    symbol: Driver_Motor:DRV8871DDA
+    footprint: Package_SO:SOIC-8_3.9x4.9mm_P1.27mm
+    value: DRV8871 H-мост
+    fields: {}
+
+components:
+  U:
+    type: TYPE_DRV8871DDA
+    description: "H-мост драйвера моторедуктора заслонки"
+  C_VM:
+    type: TYPE_C_100NF
+    description: "Развязка питания драйвера по VM"
+  R_ILIM:
+    type: TYPE_R_33K
+    description: "Резистор установки токоограничения драйвера (подобрать)"
+  R_TOP:
+    type: TYPE_R_10K
+    description: "Верхнее плечо делителя ОС потенциометра положения"
+  R_BOT:
+    type: TYPE_R_20K
+    description: "Нижнее плечо делителя ОС потенциометра положения"
+  C_FB:
+    type: TYPE_C_100NF
+    description: "Фильтр АЦП сигнала ОС"
+
+nets:
+  VCC_12V:
+    name: VCC_12V
+    description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
+    is_hierarchical_port: true
+    attributes:
+      type: POWER
+      voltage_level: 12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: DC 12.0
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: U
+        pin: '5'
+      - component: C_VM
+        pin: '1'
+
+  GND:
+    name: GND
+    description: Общий провод (кузов автомобиля)
+    is_hierarchical_port: true
+    attributes:
+      type: GND
+      voltage_level: 0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: U
+        pin: '1'
+      - component: U
+        pin: '7'
+      - component: C_VM
+        pin: '2'
+      - component: R_ILIM
+        pin: '2'
+      - component: R_BOT
+        pin: '2'
+      - component: C_FB
+        pin: '2'
+
+  IN1:
+    name: IN1
+    description: Логический вход IN1 драйвера H-моста
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: U
+        pin: '3'
+
+  IN2:
+    name: IN2
+    description: Логический вход IN2 драйвера H-моста
+    is_hierarchical_port: true
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: U
+        pin: '2'
+
+  MOTOR_A:
+    name: MOTOR_A
+    description: Выход A H-моста к моторедуктору заслонки
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: U
+        pin: '6'
+
+  MOTOR_B:
+    name: MOTOR_B
+    description: Выход B H-моста к моторедуктору заслонки
+    is_hierarchical_port: true
+    attributes:
+      type: PWM_POWER
+      voltage_level: 0..12.0V
+      current_max: 5.0A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: U
+        pin: '8'
+
+  FB_RAW:
+    name: FB_RAW
+    description: Выход потенциометра положения (0..5В) с разъёма
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..5.0V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: R_TOP
+        pin: '1'
+
+  FB:
+    name: FB
+    description: Сигнал ОС после делителя 5В->3,3В на вход АЦП
+    is_hierarchical_port: true
+    attributes:
+      type: ANALOG_SIGNAL
+      voltage_level: 0..3.3V
+      current_max: 0.005A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: R_TOP
+        pin: '2'
+      - component: R_BOT
+        pin: '1'
+      - component: C_FB
+        pin: '1'
+
+  ILIM:
+    name: ILIM
+    description: Установка токоограничения драйвера (внутренний узел)
+    is_hierarchical_port: false
+    attributes:
+      type: DIGITAL_SIGNAL
+      voltage_level: 3.3V
+      current_max: 0.02A
+      spice_simulation:
+        model_stimulus: ''
+        parasitic_r_ohm: 0.05
+        parasitic_l_h: 10n
+    nodes:
+      - component: U
+        pin: '4'
+      - component: R_ILIM
+        pin: '1'
+
+# ─────────────────────────────────────────────────────────────────────
+# Тестовые сценарии Ngspice для канала заслонки
+#
+# Драйвер DRV8871 (U), пины:
+#   1 GND, 2 IN2, 3 IN1, 4 ILIM, 5 VM, 6 OUT1 (=MOTOR_A), 7 PGND, 8 OUT2 (=MOTOR_B)
+#
+# Логика H-моста:
+#   IN1=H, IN2=L  → MOTOR_A ≈ VCC_12V, MOTOR_B ≈ GND  (прямое)
+#   IN1=L, IN2=H  → MOTOR_A ≈ GND,     MOTOR_B ≈ VCC  (обратное)
+#
+# Делитель ОС:
+#   FB_RAW → R_TOP (10k) → FB → R_BOT (20k) → GND
+#   K = R_BOT / (R_TOP + R_BOT) = 20 / 30 = 2/3
+#   При FB_RAW = 5В   → FB = 3,333В
+#   При FB_RAW = 2,5В → FB = 1,667В
+#
+# Мотор: модель DC_MOTOR из motor_model.lib, все параметры заданы
+# явно в каждом сценарии (в .lib дефолтов нет). Параметры выбраны
+# под типовой моторедуктор заслонки климатической системы:
+#   R_arm      = 30 Ω       (пусковой ток 400 мА при 12В)
+#   Ke         = 40 В/В     (back-EMF на 1В узла Speed)
+#   Kt         = 0.05       (момент на 1А, согласован с R_friction)
+#   C_inertia  = 1e-4       (лёгкий ротор, быстрый разгон)
+#   R_friction = 30 Ω       (нагрузка на валу)
+#
+# Расчёт рабочей точки при 14,4В:
+#   I = 14.4 / (R_arm + Ke·Kt·R_friction) = 14.4 / (30 + 60) = 0.16 А
+#   Speed = I·Kt·R_friction = 0.16·0.05·30 = 0.24 В
+# ─────────────────────────────────────────────────────────────────────
+
+scenarios:
+
+  # ─── Электрика H-моста ────────────────────────────────────────────
+
+  - name: ACT_CH_FWD
+    description: |
+      Канал в прямом направлении.
+      IN1 = H (3.3В), IN2 = L (0В) → MOTOR_A ≈ VCC, MOTOR_B ≈ GND.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_12V
+          type: dc
+          value: 14.4
+          description: "Питание H-моста (бортовая сеть под нагрузкой)"
+
+      - source:
+          ref: V2
+          net: IN1
+          type: dc
+          value: 3.3
+          description: "Логический вход IN1 = лог. 1"
+
+      - source:
+          ref: V3
+          net: IN2
+          type: dc
+          value: 0.0
+          description: "Логический вход IN2 = лог. 0"
+
+      - motor:
+          ref: XM
+          model: DC_MOTOR
+          net_pos: MOTOR_A
+          net_neg: MOTOR_B
+          net_speed: SPEED
+          params:
+            R_arm:      30
+            L_arm:      50m
+            Ke:         40
+            Kt:         0.05
+            C_inertia:  1e-4
+            R_friction: 30
+          description: |
+            Моторедуктор заслонки, типовые параметры.
+            Калибровка:
+              R_arm      = 12 / 0.4 = 30 Ω         (пуск 400 мА при 12В)
+              Ke         ≈ (12 − 30·0.133)/0.2 = 40 (back-EMF на 1В Speed)
+              Kt         = 0.05                    (согласование с R_friction)
+              R_friction = 30 Ω                    (нагрузка на валу)
+    checks:
+      - { node: v(motor_a), min: 13.0, max: 14.5,
+          description: "OUT1 под напряжением (прямое плечо)" }
+      - { node: v(motor_b), min:  0.0, max:  0.5,
+          description: "OUT2 прижат к GND (обратное плечо)" }
+      - { node: v(speed),   min:  0.15, max:  0.30,
+          description: "мотор вращается вперёд, Speed ≈ 200 об/мин" }
+
+  - name: ACT_CH_REV
+    description: |
+      Канал в обратном направлении.
+      IN1 = L, IN2 = H → MOTOR_A ≈ GND, MOTOR_B ≈ VCC.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_12V
+          type: dc
+          value: 14.4
+          description: "Питание H-моста"
+
+      - source:
+          ref: V2
+          net: IN1
+          type: dc
+          value: 0.0
+          description: "Логический вход IN1 = лог. 0"
+
+      - source:
+          ref: V3
+          net: IN2
+          type: dc
+          value: 3.3
+          description: "Логический вход IN2 = лог. 1"
+
+      - motor:
+          ref: XM
+          model: DC_MOTOR
+          net_pos: MOTOR_A
+          net_neg: MOTOR_B
+          net_speed: SPEED
+          params:
+            R_arm:      30
+            L_arm:      50m
+            Ke:         40
+            Kt:         0.05
+            C_inertia:  1e-4
+            R_friction: 30
+          description: |
+            Тот же моторедуктор заслонки, что и в ACT_CH_FWD.
+            Полярность питания инвертирована, поэтому Speed
+            ожидается отрицательный.
+    checks:
+      - { node: v(motor_a), min:  0.0, max:  0.5,
+          description: "OUT1 прижат к GND" }
+      - { node: v(motor_b), min: 13.0, max: 14.5,
+          description: "OUT2 под напряжением" }
+      - { node: v(speed),   min: -0.30, max: -0.15,
+          description: "мотор вращается назад" }
+
+  - name: ACT_CH_COAST
+    description: |
+      Выбег. IN1 = L, IN2 = L — оба плеча Hi-Z, на моторедуктор
+      питание не подаётся. Выходы должны прижиматься к GND через
+      утечки драйвера (в идеальной модели — 0В).
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_12V
+          type: dc
+          value: 14.4
+          description: "Питание H-моста"
+
+      - source:
+          ref: V2
+          net: IN1
+          type: dc
+          value: 0.0
+          description: "IN1 = лог. 0"
+
+      - source:
+          ref: V3
+          net: IN2
+          type: dc
+          value: 0.0
+          description: "IN2 = лог. 0"
+
+      - motor:
+          ref: XM
+          model: DC_MOTOR
+          net_pos: MOTOR_A
+          net_neg: MOTOR_B
+          net_speed: SPEED
+          params:
+            R_arm:      30
+            L_arm:      50m
+            Ke:         40
+            Kt:         0.05
+            C_inertia:  1e-4
+            R_friction: 30
+          description: "Тот же моторедуктор, без питания"
+    checks:
+      - { node: v(motor_a), min: -0.5, max: 1.0,
+          description: "OUT1 Hi-Z (нет питания)" }
+      - { node: v(motor_b), min: -0.5, max: 1.0,
+          description: "OUT2 Hi-Z (нет питания)" }
+
+  - name: ACT_CH_BRAKE
+    description: |
+      Тормоз. IN1 = H, IN2 = H — оба плеча low-side, мотор
+      замкнут через нижние ключи. Выходы прижаты к GND.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_12V
+          type: dc
+          value: 14.4
+          description: "Питание H-моста"
+
+      - source:
+          ref: V2
+          net: IN1
+          type: dc
+          value: 3.3
+          description: "IN1 = лог. 1"
+
+      - source:
+          ref: V3
+          net: IN2
+          type: dc
+          value: 3.3
+          description: "IN2 = лог. 1"
+
+      - motor:
+          ref: XM
+          model: DC_MOTOR
+          net_pos: MOTOR_A
+          net_neg: MOTOR_B
+          net_speed: SPEED
+          params:
+            R_arm:      30
+            L_arm:      50m
+            Ke:         40
+            Kt:         0.05
+            C_inertia:  1e-4
+            R_friction: 30
+          description: "Тот же моторедуктор, обе клеммы на GND"
+    checks:
+      - { node: v(motor_a), min: -0.5, max: 0.5,
+          description: "OUT1 прижат к GND" }
+      - { node: v(motor_b), min: -0.5, max: 0.5,
+          description: "OUT2 прижат к GND" }
+
+  # ─── Делитель ОС потенциометра ────────────────────────────────────
+
+  - name: ACT_CH_FB_MIN
+    description: |
+      Делитель ОС при минимальном положении потенциометра.
+      0В на FB_RAW → 0В на FB.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: FB_RAW
+          type: dc
+          value: 0.0
+          description: "Потенциометр заслонки в крайнем положении (0В)"
+    checks:
+      - { node: v(fb), min: -0.05, max: 0.05,
+          description: "нижний край диапазона АЦП" }
+
+  - name: ACT_CH_FB_MID
+    description: |
+      Делитель ОС в среднем положении.
+      2,5В на FB_RAW → ~1,67В на FB (K = 2/3).
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: FB_RAW
+          type: dc
+          value: 2.5
+          description: "Потенциометр заслонки в среднем положении (2,5В)"
+    checks:
+      - { node: v(fb), min: 1.55, max: 1.80,
+          description: "середина диапазона АЦП" }
+
+  - name: ACT_CH_FB_MAX
+    description: |
+      Делитель ОС при максимальном положении потенциометра.
+      5В на FB_RAW → ~3,33В на FB.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: FB_RAW
+          type: dc
+          value: 5.0
+          description: "Потенциометр заслонки в крайнем положении (5В)"
+    checks:
+      - { node: v(fb), min: 3.20, max: 3.45,
+          description: "верхний край диапазона АЦП" }

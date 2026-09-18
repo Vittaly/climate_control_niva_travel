@@ -1,0 +1,20 @@
+* Ngspice тест: UI / UI_FAN_AUTO
+* Галлетник в положении AUTO — ни один контакт не замкнут.
+* FAN_SEL_ADC подтянут к +3,3В через R23.
+LED_GREEN D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)
+LED_AMBER D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)
+SW_GP    SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
+.INCLUDE spice/UI.sub
+
+* Порты: BTN_DRY_GLASS BTN_FACE BTN_FEET FAN_SEL_ADC GND LED_AC_DRV LED_DEFROST_GLASS_DRV LED_DRY_GLASS_DRV LED_FACE_DRV LED_FEET_DRV LED_RECIRC_DRV
+
+* V1: Питание подтяжки R23
+V1 VCC_3V3 0 DC 3.3
+XUI BTN_DRY_GLASS BTN_FACE BTN_FEET FAN_SEL_ADC 0 LED_AC_DRV LED_DEFROST_GLASS_DRV LED_DRY_GLASS_DRV LED_FACE_DRV LED_FEET_DRV LED_RECIRC_DRV UI
+
+.op
+.control
+run
+print v(fan_sel_adc)
+.endc
+.end

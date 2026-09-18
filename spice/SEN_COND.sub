@@ -1,4 +1,4 @@
-* SEN_COND (субсхема из нетлиста KiCad)
+* SEN_COND — субсхема из нетлиста KiCad + YAML
 .subckt SEN_COND COND_ADC COND_RAW GND
   C27 COND_ADC GND 100n
   R29 COND_RAW COND_ADC 10k

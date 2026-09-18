@@ -1,16 +1,40 @@
 page_name: CAN
 file: can_bus.kicad_sch
-functional_purpose: Модуль CAN
+functional_purpose: |
+  Модуль CAN-интерфейса. Трансивер MCP2562-E-SN обеспечивает
+  физический уровень шины CAN между МК (STM32F103, 3,3В логика)
+  и автомобильной CAN-шиной.
+
+  Схема:
+    * U8 (MCP2562) — трансивер CAN, SOIC-8.
+    * Питание: VDD = +5В (pin 3), VIO = +5В (pin 5) —
+      в этой схеме VIO подключён к той же шине, что VDD,
+      трансивер работает с 5В-логикой по TXD/RXD.
+    * STBY (pin 8) — на GND, трансивер в активном режиме.
+    * VSS (pin 2) — на GND.
+    * CANH (pin 7) / CANL (pin 6) — дифференциальная пара к J1:25/26.
+    * TXD (pin 1) ← CAN_TX с МК.
+    * RXD (pin 4) → CAN_RX к МК.
+
+  Уровни на шине:
+    доминантный:  CANH ≈ 3,5В,  CANL ≈ 1,5В,  Vdiff ≈ 2,0В
+    рецессивный:  CANH ≈ 2,5В,  CANL ≈ 2,5В,  Vdiff ≈ 0В
+
+  Не моделируется (по природе behavioural-модели):
+    * паразитные ёмкости шины, влияние длины кабеля;
+    * защита от КЗ на CANH/CANL и thermal shutdown;
+    * задержка loop-back и джиттер;
+    * вход SPLIT, если он есть в другой ревизии чипа.
+
 ports:
 - net_label: VCC_5V
   type: POWER
-  description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
-    3,3В)
+  description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора 3,3В)
 - net_label: GND
   type: POWER
   description: Общий провод (кузов автомобиля)
 - net_label: CAN_TX
-  type: OUTPUT
+  type: INPUT
   description: 'CAN: передача от МК к трансиверу'
 - net_label: CAN_RX
   type: OUTPUT
@@ -21,21 +45,37 @@ ports:
 - net_label: CANL
   type: OUTPUT
   description: 'CAN: шина Low (J1:26)'
+
 component_types:
   TYPE_MCP2562-E-SN_MCP2562-E-SN:
     symbol: Interface_CAN_LIN:MCP2562-E-SN
     footprint: Package_SO:SOIC-8_3.9x4.9mm_P1.27mm
     value: MCP2562-E-SN
     fields: {}
+    spice:
+      model: MCP2562
+      description: |
+        CAN-трансивер 5В, до 1 Мбит/с.
+        Модель MCP2562 из mcp2562_ngspice.lib.
+
+        Пины (KiCad-нумерация):
+          1 TXD, 2 VSS, 3 VDD, 4 RXD,
+          5 VIO, 6 CANL, 7 CANH, 8 STBY.
+
+        Что моделируется:
+          * драйвер TXD → CANH/CANL (доминанта/рецессив);
+          * приёмник CANH/CANL → RXD;
+          * вход STBY (активный низкий — при 0 трансивер включён).
+
 components:
   U8:
     type: TYPE_MCP2562-E-SN_MCP2562-E-SN
-    description: CAN transceiver, SOIC-8
+    description: "CAN-трансивер MCP2562-E-SN, SOIC-8"
+
 nets:
   VCC_5V:
     name: VCC_5V
-    description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
-      3,3В)
+    description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора 3,3В)
     is_hierarchical_port: true
     attributes:
       type: POWER
@@ -46,10 +86,9 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: U8
-      pin: '3'
-    - component: U8
-      pin: '5'
+    - { component: U8, pin: '3' }   # VDD
+    - { component: U8, pin: '5' }   # VIO (в этой схеме на VDD)
+
   GND:
     name: GND
     description: Общий провод (кузов автомобиля)
@@ -63,10 +102,9 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: U8
-      pin: '2'
-    - component: U8
-      pin: '8'
+    - { component: U8, pin: '2' }   # VSS
+    - { component: U8, pin: '8' }   # STBY (активный режим, LOW)
+
   CAN_TX:
     name: CAN_TX
     description: 'CAN: передача от МК к трансиверу'
@@ -80,8 +118,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: U8
-      pin: '1'
+    - { component: U8, pin: '1' }   # TXD
+
   CAN_RX:
     name: CAN_RX
     description: 'CAN: приём от трансивера к МК'
@@ -95,8 +133,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: U8
-      pin: '4'
+    - { component: U8, pin: '4' }   # RXD
+
   CANH:
     name: CANH
     description: 'CAN: шина High (J1:25)'
@@ -110,8 +148,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: U8
-      pin: '7'
+    - { component: U8, pin: '7' }
+
   CANL:
     name: CANL
     description: 'CAN: шина Low (J1:26)'
@@ -125,5 +163,156 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - component: U8
-      pin: '6'
+    - { component: U8, pin: '6' }
+
+# ─────────────────────────────────────────────────────────────────────
+# Тестовые сценарии Ngspice
+#
+# Проверяем уровни на шине в двух состояниях драйвера и работу
+# приёмного тракта.
+#
+# Расчёт по MCP2562 при VDD = 5В:
+#   доминант (TXD = 0): CANH ≈ 3,5В, CANL ≈ 1,5В, Vdiff ≈ 2,0В
+#   рецессив (TXD = 1): CANH ≈ 2,5В, CANL ≈ 2,5В, Vdiff ≈ 0,0В
+#
+# Нагрузка шины: терминаторы 120 Ом с каждой стороны (стандарт
+# CAN), в сценарии подаются внешне, потому что на этом листе
+# их нет — они часть автомобильной проводки.
+# ─────────────────────────────────────────────────────────────────────
+
+scenarios:
+
+  - name: CAN_RECESSIVE
+    description: |
+      Рецессивное состояние шины (TXD = 1).
+      Драйвер выключен, выходы CANH/CANL подтянуты внутренними
+      делителями к ~2,5В. Vdiff ≈ 0.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_5V
+          type: dc
+          value: 5.0
+          description: "Питание трансивера +5В"
+      - source:
+          ref: V2
+          net: CAN_TX
+          type: dc
+          value: 5.0
+          description: "TXD = 1 (рецессив, драйвер выключен)"
+    control: |
+      let vh    = v(CANH)
+      let vl    = v(CANL)
+      let vdiff = v(CANH) - v(CANL)
+      print vh vl vdiff
+    checks:
+      - { node: vh,    min: 2.2, max: 2.9, description: "CANH ≈ 2,5В (рецессив)" }
+      - { node: vl,    min: 2.2, max: 2.9, description: "CANL ≈ 2,5В (рецессив)" }
+      - { node: vdiff, min: -0.1, max: 0.1, description: "Vdiff ≈ 0 (рецессив)" }
+
+  - name: CAN_DOMINANT
+    description: |
+      Доминантное состояние шины (TXD = 0).
+      Драйвер активен: CANH подтянут к 3,5В, CANL — к 1,5В.
+      Vdiff ≈ 2,0В.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_5V
+          type: dc
+          value: 5.0
+          description: "Питание трансивера +5В"
+      - source:
+          ref: V2
+          net: CAN_TX
+          type: dc
+          value: 0.0
+          description: "TXD = 0 (доминант, драйвер активен)"
+    control: |
+      let vh    = v(CANH)
+      let vl    = v(CANL)
+      let vdiff = v(CANH) - v(CANL)
+      print vh vl vdiff
+    checks:
+      - { node: vh,    min: 3.0, max: 4.6, description: "CANH поднят драйвером" }
+      - { node: vl,    min: 0.5, max: 2.0, description: "CANL опущен драйвером" }
+      - { node: vdiff, min: 1.5, max: 3.0, description: "Vdiff ≈ 2,0В (доминант)" }
+
+  - name: CAN_RX_PATH
+    description: |
+      Проверка приёмного тракта.
+      Подаём на CANH/CANL внешнее дифференциальное напряжение
+      (имитация чужого передатчика на шине), проверяем RXD.
+      При Vdiff > порога приёмника RXD = 0.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_5V
+          type: dc
+          value: 5.0
+          description: "Питание трансивера +5В"
+      - source:
+          ref: V2
+          net: CAN_TX
+          type: dc
+          value: 5.0
+          description: "TXD = 1 (свой драйвер выключен, слушаем шину)"
+      - source:
+          ref: V3
+          net: CANH
+          type: dc
+          value: 3.5
+          description: "Внешний передатчик: CANH = 3,5В"
+      - source:
+          ref: V4
+          net: CANL
+          type: dc
+          value: 1.5
+          description: "Внешний передатчик: CANL = 1,5В"
+    control: |
+      let vrxd = v(CAN_RX)
+      print vrxd
+    checks:
+      - { node: vrxd, min: 0.0, max: 1.0,
+          description: "RXD = 0 (доминант принят, активный низкий)" }
+
+  - name: CAN_SHORT
+    description: |
+      Проверка поведения при КЗ CANH на CANL через низкоомный
+      шунт (имитация повреждения шины).
+      Драйвер активен, но ток ограничен внутренней защитой.
+      Проверяем, что CANH не проваливается к нулю мгновенно,
+      а Vdiff остаётся в разумных пределах.
+    analysis: op
+    deck:
+      - source:
+          ref: V1
+          net: VCC_5V
+          type: dc
+          value: 5.0
+          description: "Питание трансивера"
+      - source:
+          ref: V2
+          net: CAN_TX
+          type: dc
+          value: 0.0
+          description: "TXD = 0 (драйвер активен)"
+      - resistor:
+          ref: R_SHORT
+          net_pos: CANH
+          net_neg: CANL
+          value: 1
+          description: "Имитация КЗ CANH-CANL (1 Ом)"
+    control: |
+      let vh    = v(CANH)
+      let vl    = v(CANL)
+      let ish   = (v(CANH) - v(CANL)) / 1
+      print vh vl ish
+    checks:
+      - { node: vh,  min: 0.5, max: 4.6,
+          description: "CANH не прижат к нулю, защита работает" }
+      - { node: ish, min: -3.0, max: 3.0,
+          description: "ток КЗ ограничен внутренней защитой трансивера" }

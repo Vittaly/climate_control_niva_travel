@@ -1,5 +1,16 @@
 # make_scr/project.py
-"""Корневая сущность: YAML -> компоненты/нетлист -> размещение -> трассы -> файлы."""
+"""Корневая сущность: YAML -> компоненты/нетлист -> размещение -> трассы -> файлы.
+
+Модель:
+    - Sheet  — страница KiCad (.kicad_sch): components, netlist, grid_mm.
+    - Placer — размещает на одной Sheet; читает sheet.netlist/grid_mm.
+    - Router — трассирует одну Sheet; пишет в sheet.labels/t_junctions.
+    - Writer — пишет .kicad_sch одной Sheet; читает sheet.grid_mm/netlist.
+    - Project — оркестратор: грузит YAML, гоняет Placer/Router, сохраняет.
+
+YAML живёт только внутри загрузки. Sheet о YAML не знает.
+Нетлист — поле Sheet, у каждой страницы свой.
+"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -10,8 +21,7 @@ import yaml
 from component import Component
 from constants import Axis, DEFAULT_GRID_MM, DEFAULT_NET_TYPE, Symbol
 from kicad_source import KiCadSource
-from logging_setup import get_logger
-from netlist import Netlist
+from logging_setup import ctx, get_logger
 from placer import Placer
 from router import Router
 from sheet import Sheet
@@ -24,26 +34,30 @@ log = get_logger(__name__)
 class Project:
     """Точка входа: загрузка, размещение, роутинг, сохранение."""
 
-    def __init__(self, root_yaml: str | Path,
-                 grid_mm: float = DEFAULT_GRID_MM):
+    def __init__(self, root_yaml: str | Path):
         """
         Args:
             root_yaml: путь к main.yaml.
-            grid_mm:   шаг сетки в мм.
         """
         self.root_path = Path(root_yaml)
         self.base_dir = self.root_path.parent
-        self.grid_mm = grid_mm
 
         self.source = KiCadSource()
-        self.netlist = Netlist()
 
         self.root_sheet: Optional[Sheet] = None
-        self.sheets: Dict[str, Sheet] = {}
+        self.sheets: Dict[str, Sheet] = {}       # key = имя .kicad_sch
         self.root_data: dict = {}
+        # yaml_rel -> sheet_path: не грузим один YAML дважды
+        self._loaded_yaml: Dict[str, str] = {}
 
-        log.info("Project создан: %s (grid=%.2f мм)",
-                 self.root_path, grid_mm)
+        log.info(
+            "Project создан: %s", self.root_path,
+            extra={
+                "stage": "init",
+                "event": "project_created",
+                "path":  str(self.root_path),
+            },
+        )
 
     # =========================================================
     # Загрузка
@@ -51,27 +65,47 @@ class Project:
 
     def load(self) -> "Project":
         """Полный цикл загрузки: main.yaml + рекурсивно все листы."""
-        log.info("Загрузка %s", self.root_path)
+        log.info(
+            "Загрузка %s", self.root_path,
+            extra={
+                "stage": "load",
+                "event": "load_start",
+                "path":  str(self.root_path),
+            },
+        )
         self._read_root()
 
-        self.root_sheet = Sheet(
-            designator="",
-            sheet_path="",
-            yaml_path=self.root_path,
-            data=self.root_data,
-        )
+        grid_mm = float(self.root_data.get("grid_mm", DEFAULT_GRID_MM))
+        self.root_sheet = Sheet(sheet_path="", grid_mm=grid_mm)
         self.sheets[""] = self.root_sheet
 
-        self._load_components(self.root_sheet, self.root_data)
+        self._load_components(self.root_sheet, self.root_data,
+                              self.root_path)
         self._load_nets(self.root_sheet, self.root_data)
         self._log_components_with_nets(self.root_sheet)
         self._discover_sheets(self.root_sheet, self.root_data)
 
+        total_components = sum(len(s.components) for s in self.sheets.values())
+        total_pins = sum(
+            len(c.pins)
+            for s in self.sheets.values()
+            for c in s.components.values()
+        )
+        total_nets = sum(len(s.netlist.nets) for s in self.sheets.values())
         log.info(
             "Загрузка завершена: листов %d, компонентов %d, сетей %d",
-            len(self.sheets),
-            sum(len(s.components) for s in self.sheets.values()),
-            len(self.netlist.nets),
+            len(self.sheets), total_components, total_nets,
+            extra={
+                "stage":   "load",
+                "event":   "load_done",
+                "project": self.root_data.get("project"),
+                "counts": {
+                    "sheets":     len(self.sheets),
+                    "components": total_components,
+                    "pins":       total_pins,
+                    "nets":       total_nets,
+                },
+            },
         )
         return self
 
@@ -80,13 +114,23 @@ class Project:
         with open(self.root_path, encoding="utf-8") as f:
             doc = yaml.safe_load(f)
         self.root_data = doc["root_page"]
-        log.debug("root_page: project=%s, version=%s",
-                  self.root_data.get("project"),
-                  self.root_data.get("version"))
+        log.debug(
+            "root_page: project=%s, version=%s",
+            self.root_data.get("project"),
+            self.root_data.get("version"),
+            extra={
+                "stage":   "load",
+                "event":   "root_page_read",
+                "project": self.root_data.get("project"),
+                "version": self.root_data.get("version"),
+                "path":    str(self.root_path),
+            },
+        )
 
     # ---------- компоненты и сети ----------
 
-    def _load_components(self, sheet: Sheet, data: dict) -> None:
+    def _load_components(self, sheet: Sheet, data: dict,
+                         yaml_path: Path) -> None:
         """Строит Component для всех записей data['components'].
 
         X_* (Core:Hierarchical_Sheet) не пропускаются — они создаются
@@ -95,6 +139,12 @@ class Project:
 
         После обычных компонентов добавляет PortComponent для каждой
         записи data['ports'] (порты страницы).
+
+        Args:
+            sheet:     страница, в которую добавляются компоненты.
+            data:      распарсенный YAML (локальный для загрузчика).
+            yaml_path: путь к YAML — нужен SheetRefComponent, чтобы
+                       найти дочерний YAML.
         """
         types = data.get("component_types", {})
         for designator, cdef in data.get("components", {}).items():
@@ -104,12 +154,21 @@ class Project:
                 ref = SheetRefComponent.create(
                     designator=designator,
                     sheet_file=sheet_file,
-                    parent_yaml_path=sheet.yaml_path,
+                    parent_yaml_path=yaml_path,
                 )
                 sheet.add_component(ref)
-                log.debug("[%s] добавлен SheetRef %s (%s, портов %d)",
-                          sheet.sheet_path or "root",
-                          designator, sheet_file, len(ref.pins))
+                log.debug(
+                    "%s sheetref_added des=%s file=%s pins=%d",
+                    ctx(page=sheet.page), designator, sheet_file,
+                    len(ref.pins),
+                    extra={
+                        "stage":     "load",
+                        "event":     "sheetref_added",
+                        "component": designator,
+                        "value":     sheet_file,
+                        "counts":    {"pins": len(ref.pins)},
+                    },
+                )
                 continue
 
             comp = Component.from_yaml(
@@ -117,7 +176,7 @@ class Project:
                 cdef=cdef,
                 types=types,
                 source=self.source,
-                grid_mm=self.grid_mm,
+                grid_mm=sheet.grid_mm,
             )
             if comp:
                 sheet.add_component(comp)
@@ -153,20 +212,30 @@ class Project:
                 side=side,
             )
             sheet.add_component(port)
-            log.debug("[%s] добавлен порт %s (side=%s shape=%s)",
-                      sheet.sheet_path or "root",
-                      port.designator, side, shape)
+            log.debug(
+                "%s port_added des=%s side=%s shape=%s",
+                ctx(page=sheet.page), port.designator, side, shape,
+                extra={
+                    "stage":     "load",
+                    "event":     "port_added",
+                    "component": port.designator,
+                    "net":       net_label,
+                    "side":      side,
+                    "shape":     shape,
+                    "port_type": ptype,
+                },
+            )
 
     def _load_nets(self, sheet: Sheet, data: dict) -> None:
         """Регистрирует сети листа и привязывает их FQN-пины.
 
         Здесь же — регистрация пинов портов и пинов SheetRef
         (вложенных листов): к этому моменту все сети уже добавлены
-        в netlist, и FQN можно безопасно привязать.
+        в sheet.netlist, и FQN можно безопасно привязать.
         """
         for net_name, ndef in data.get("nets", {}).items():
             attrs = ndef.get("attributes", {})
-            self.netlist.add_net(
+            sheet.netlist.add_net(
                 net_name,
                 attrs.get("type", DEFAULT_NET_TYPE),
                 list(attrs.keys()),
@@ -188,19 +257,37 @@ class Project:
         for comp in sheet.components.values():
             if not isinstance(comp, PortComponent):
                 continue
-            net = self.netlist.nets.get(comp.net_name)
+            net = sheet.netlist.nets.get(comp.net_name)
             if net is None:
-                log.warning("[%s] порт %s: сети %r нет в нетлисте",
-                            sheet.sheet_path or "root",
-                            comp.designator, comp.net_name)
+                log.warning(
+                    "%s net_missing port=%s net=%s",
+                    ctx(page=sheet.page), comp.designator, comp.net_name,
+                    extra={
+                        "stage":     "load",
+                        "event":     "net_missing",
+                        "component": comp.designator,
+                        "net":       comp.net_name,
+                    },
+                )
                 continue
             pin = comp.pins[0]
             fqn = f"{sheet.fqn(comp.designator)}:{pin.number}"
-            self.netlist.assign_pin_to_net(fqn, comp.net_name, pin=pin)
+            sheet.netlist.assign_pin_to_net(fqn, comp.net_name, pin=pin)
 
-            log.debug("[%s] порт %s: пин %s привязан к сети %s",
-                      sheet.sheet_path or "root",
-                      comp.designator, fqn, comp.net_name)
+            log.debug(
+                "%s pin_bound port=%s pin=%s net=%s fqn=%s",
+                ctx(page=sheet.page), comp.designator, pin.number,
+                comp.net_name, fqn,
+                extra={
+                    "stage":     "load",
+                    "event":     "pin_bound",
+                    "component": comp.designator,
+                    "pin":       pin.number,
+                    "fqn":       fqn,
+                    "net":       comp.net_name,
+                    "kind":      "port",
+                },
+            )
 
     def _bind_sheet_refs_to_nets(self, sheet: Sheet, data: dict) -> None:
         """Привязывает FQN пинов SheetRef-ов к их сетям."""
@@ -210,22 +297,41 @@ class Project:
 
             for pin in comp.pins:
                 net_name = pin.number  # для SheetRef номер = имя порта
-                net = self.netlist.nets.get(net_name)
+                net = sheet.netlist.nets.get(net_name)
                 if net is None:
                     log.debug(
-                        "[%s] SheetRef %s: сеть %r не найдена, пин %s "
-                        "оставлен без привязки",
-                        sheet.sheet_path or "root",
-                        comp.designator, net_name, pin.number,
+                        "%s pin_unbound sheetref=%s pin=%s net=%s",
+                        ctx(page=sheet.page), comp.designator,
+                        pin.number, net_name,
+                        extra={
+                            "stage":     "load",
+                            "event":     "pin_unbound",
+                            "component": comp.designator,
+                            "pin":       pin.number,
+                            "net":       net_name,
+                            "kind":      "sheet_ref",
+                            "reason":    "net_not_found",
+                        },
                     )
                     continue
 
                 fqn = f"{sheet.fqn(comp.designator)}:{pin.number}"
-                self.netlist.assign_pin_to_net(fqn, net_name, pin=pin)
+                sheet.netlist.assign_pin_to_net(fqn, net_name, pin=pin)
 
-                log.debug("[%s] SheetRef %s: пин %s привязан к сети %s",
-                          sheet.sheet_path or "root",
-                          comp.designator, fqn, net_name)
+                log.debug(
+                    "%s pin_bound sheetref=%s pin=%s net=%s fqn=%s",
+                    ctx(page=sheet.page), comp.designator, pin.number,
+                    net_name, fqn,
+                    extra={
+                        "stage":     "load",
+                        "event":     "pin_bound",
+                        "component": comp.designator,
+                        "pin":       pin.number,
+                        "fqn":       fqn,
+                        "net":       net_name,
+                        "kind":      "sheet_ref",
+                    },
+                )
 
     def _bind_node(self, sheet: Sheet, net_name: str, node: dict) -> None:
         """Привязывает пин из YAML-узла к сети через FQN страницы."""
@@ -234,40 +340,128 @@ class Project:
 
         comp = sheet.get_component(designator)
         if comp is None:
-            log.debug("[%s] Узел %s:%s — не компонент страницы, пропуск",
-                      sheet.sheet_path or "root", designator, pin_no)
+            log.debug(
+                "%s node_skipped des=%s pin=%s net=%s reason=no_component",
+                ctx(page=sheet.page), designator, pin_no, net_name,
+                extra={
+                    "stage":     "load",
+                    "event":     "node_skipped",
+                    "component": designator,
+                    "pin":       pin_no,
+                    "net":       net_name,
+                    "reason":    "component_not_on_sheet",
+                },
+            )
             return
 
         pin = comp.pin_by_number(pin_no)
         if pin is None:
-            log.debug("[%s] Пин %s:%s не найден, пропуск",
-                      sheet.sheet_path or "root", designator, pin_no)
+            log.debug(
+                "%s node_skipped des=%s pin=%s net=%s reason=no_pin",
+                ctx(page=sheet.page), designator, pin_no, net_name,
+                extra={
+                    "stage":     "load",
+                    "event":     "node_skipped",
+                    "component": designator,
+                    "pin":       pin_no,
+                    "net":       net_name,
+                    "reason":    "pin_not_found",
+                },
+            )
             return
 
         fqn = pin.fqn
         try:
-            self.netlist.assign_pin_to_net(fqn, net_name, pin=pin)
+            sheet.netlist.assign_pin_to_net(fqn, net_name, pin=pin)
         except ValueError:
-            log.warning("Сеть %s не зарегистрирована при привязке %s",
-                        net_name, fqn)
+            log.warning(
+                "%s net_missing net=%s fqn=%s",
+                ctx(page=sheet.page), net_name, fqn,
+                extra={
+                    "stage":     "load",
+                    "event":     "net_missing",
+                    "component": designator,
+                    "pin":       pin_no,
+                    "fqn":       fqn,
+                    "net":       net_name,
+                },
+            )
+        else:
+            log.debug(
+                "%s pin_bound des=%s pin=%s net=%s fqn=%s",
+                ctx(page=sheet.page), designator, pin_no, net_name, fqn,
+                extra={
+                    "stage":     "load",
+                    "event":     "pin_bound",
+                    "component": designator,
+                    "pin":       pin_no,
+                    "fqn":       fqn,
+                    "net":       net_name,
+                    "kind":      "node",
+                },
+            )
 
     # ---------- сводка пинов с сетями ----------
 
     def _log_components_with_nets(self, sheet: Sheet) -> None:
-        """Сводка: компоненты с пинами — смещение от якоря (мм) и сеть."""
-        label = sheet.sheet_path or "root"
+        """Сводка: один компонент — одна строка.
+
+        Пины идут inline в формате:
+            <des>.<pin> [<pin_name>] off=(x,y) net=<net>
+        Имя пина печатается только если оно непустое. Полный
+        структурированный список пинов уходит в extra["pins"].
+        """
         for designator, comp in sheet.components.items():
-            log.info("[%s] %s (%s) %dx%d, пинов %d",
-                     label, designator, comp.name,
-                     comp.bbox_cols, comp.bbox_rows, len(comp.pins))
-            for pin in comp.pins:
-                net = pin.net_ref if pin.net_ref else "-"
-                log.info(
-                    "    %s.%-3s %-8s offset_mm=(%7.2f,%7.2f)  net=%s",
-                    designator, pin.number, pin.name,
-                    pin.offset_mm[Axis.X], pin.offset_mm[Axis.Y],
-                    net,
+
+            def _fmt_pin(pin) -> str:
+                net = pin.net_ref or "-"
+                parts = [f"{designator}.{pin.number}"]
+                if pin.name:
+                    parts.append(f"[{pin.name}]")
+                parts.append(
+                    f"off=({pin.offset_mm[Axis.X]:.2f},"
+                    f"{pin.offset_mm[Axis.Y]:.2f})"
                 )
+                parts.append(f"net={net}")
+                return " ".join(parts)
+
+            pins_str = " | ".join(_fmt_pin(p) for p in comp.pins)
+            line = (
+                f"{designator} ({comp.name}) "
+                f"{comp.bbox_cols}x{comp.bbox_rows} (cols x rows), "
+                f"пинов {len(comp.pins)}"
+            )
+            if pins_str:
+                line = f"{line} | {pins_str}"
+
+            log.info(
+                "%s component_summary %s",
+                ctx(page=sheet.page), line,
+                extra={
+                    "stage":        "load",
+                    "event":        "component_summary",
+                    "component":    designator,
+                    "comp_name":    comp.name,
+                    "size": {
+                        "cols": comp.bbox_cols,
+                        "rows": comp.bbox_rows,
+                    },
+                    "counts":       {"pins": len(comp.pins)},
+                    "is_sheet_ref": bool(getattr(comp, "is_sheet_ref", False)),
+                    "pins": [
+                        {
+                            "number":    p.number,
+                            "name":      p.name or None,
+                            "offset_mm": {
+                                "x": p.offset_mm[Axis.X],
+                                "y": p.offset_mm[Axis.Y],
+                            },
+                            "net":       p.net_ref or None,
+                        }
+                        for p in comp.pins
+                    ],
+                },
+            )
 
     # ---------- иерархические страницы ----------
 
@@ -278,40 +472,81 @@ class Project:
         в _load_components. Здесь мы только читаем дочерние YAML
         и рекурсивно строим для них Sheet-объекты.
 
-        На родителя SheetRef уже лежит в parent.components — оттуда
-        Placer и Router его видят. Здесь — только содержимое дочки.
+        Ключ в self.sheets — имя выходного .kicad_sch. Один YAML
+        грузится ровно один раз: второй инстанс (X2 того же sub.yaml)
+        видит, что yaml_rel уже в _loaded_yaml, и пропускается.
         """
         for designator, cdef in data.get("components", {}).items():
             if cdef.get("symbol") != Symbol.HIERARCHICAL_SHEET:
                 continue
 
-            sheet_path = (f"{parent.sheet_path}/{designator}"
-                          if parent.sheet_path else designator)
+            yaml_rel = str(cdef["value"])
+            yaml_path = self.base_dir / yaml_rel
 
-            yaml_path = self.base_dir / cdef["value"]
+            # --- уже грузили этот YAML? просто пропускаем ---
+            if yaml_rel in self._loaded_yaml:
+                log.debug(
+                    "%s sheet_reused des=%s file=%s -> %s",
+                    ctx(page=parent.page), designator, yaml_rel,
+                    self._loaded_yaml[yaml_rel],
+                    extra={
+                        "stage":     "load",
+                        "event":     "sheet_reused",
+                        "component": designator,
+                        "child":     self._loaded_yaml[yaml_rel],
+                    },
+                )
+                continue
+
             if not yaml_path.exists():
-                log.warning("Лист %s: файл %s не найден, пропускаю",
-                            sheet_path, yaml_path)
+                log.warning(
+                    "%s sheet_missing des=%s file=%s path=%s",
+                    ctx(page=parent.page), designator, yaml_rel,
+                    str(yaml_path),
+                    extra={
+                        "stage":     "load",
+                        "event":     "sheet_missing",
+                        "component": designator,
+                        "path":      str(yaml_path),
+                    },
+                )
                 continue
 
             with open(yaml_path, encoding="utf-8") as f:
                 sub_data = yaml.safe_load(f)
 
-            sub_sheet = Sheet(
-                designator=designator,
-                sheet_path=sheet_path,
-                yaml_path=yaml_path,
-                data=sub_data,
-            )
-            self.sheets[sheet_path] = sub_sheet
+            # имя выходного .kicad_sch: data["file"] или <stem>.kicad_sch
+            sub_out = Path(
+                sub_data.get("file", f"{Path(yaml_rel).stem}.kicad_sch")
+            ).name
+            sub_grid = float(sub_data.get("grid_mm", DEFAULT_GRID_MM))
 
-            self._load_components(sub_sheet, sub_data)
+            sub_sheet = Sheet(sheet_path=sub_out, grid_mm=sub_grid)
+            self.sheets[sub_out] = sub_sheet
+            self._loaded_yaml[yaml_rel] = sub_out
+
+            self._load_components(sub_sheet, sub_data, yaml_path)
             self._load_nets(sub_sheet, sub_data)
             self._log_components_with_nets(sub_sheet)
             self._discover_sheets(sub_sheet, sub_data)
 
-            log.debug("Лист %s: компонентов %d",
-                      sheet_path, len(sub_sheet.components))
+            log.debug(
+                "%s sheet_loaded des=%s file=%s components=%d",
+                ctx(page=sub_sheet.page), designator, yaml_rel,
+                len(sub_sheet.components),
+                extra={
+                    "stage":     "load",
+                    "event":     "sheet_loaded",
+                    "component": designator,
+                    "path":      str(yaml_path),
+                    "counts": {
+                        "components": len(sub_sheet.components),
+                        "pins": sum(len(c.pins)
+                                    for c in sub_sheet.components.values()),
+                        "nets": len(sub_sheet.netlist.nets),
+                    },
+                },
+            )
 
     # =========================================================
     # Размещение и роутинг
@@ -319,7 +554,14 @@ class Project:
 
     def place_and_route(self) -> "Project":
         """Раскладывает и трассирует каждую страницу отдельно."""
-        log.info("Старт размещения и роутинга: страниц %d", len(self.sheets))
+        log.info(
+            "Старт размещения и роутинга: страниц %d", len(self.sheets),
+            extra={
+                "stage":  "place",
+                "event":  "place_start",
+                "counts": {"sheets": len(self.sheets)},
+            },
+        )
         for sheet in self.sheets.values():
             self._place_and_route_sheet(sheet)
         return self
@@ -331,27 +573,50 @@ class Project:
         компоненты: у них есть bbox_size и pins — Placer сам их
         разложит.
         """
-        label = sheet.sheet_path or "root"
-        log.info("[%s] размещение %d компонентов",
-                 label, len(sheet.components))
+        log.info(
+            "%s place_start components=%d",
+            ctx(page=sheet.page), len(sheet.components),
+            extra={
+                "stage":  "place",
+                "event":  "sheet_place_start",
+                "counts": {"components": len(sheet.components)},
+            },
+        )
 
-        placer = Placer(self.netlist, grid_step=self.grid_mm)
+        placer = Placer(sheet)
         for comp in sheet.components.values():
             placer.register_component(comp)
 
-        strategy_used = placer.auto_place(self.netlist, sheet)
-        log.info("[%s] стратегия размещения: %s", label, strategy_used)
+        strategy_used = placer.auto_place()
+        log.info(
+            "%s place_strategy strategy=%s",
+            ctx(page=sheet.page), strategy_used,
+            extra={
+                "stage":    "place",
+                "event":    "place_strategy",
+                "strategy": strategy_used,
+            },
+        )
 
         placer.all_overlaps()
 
-        router = Router.from_placer(placer, sheet.components)
-        wires = router.route_all(self.netlist, sheet)
+        router = Router.from_placer(placer)
+        wires = router.route_all()
 
-        sheet.placer = placer
-        sheet.router = router
-        log.info("[%s] готово: проводов %d, меток %d, T-врезок %d",
-                 label, len(wires),
-                 len(sheet.labels), len(sheet.t_junctions))
+        log.info(
+            "%s route_done wires=%d labels=%d t_junctions=%d",
+            ctx(page=sheet.page),
+            len(wires), len(sheet.labels), len(sheet.t_junctions),
+            extra={
+                "stage": "route",
+                "event": "route_done",
+                "counts": {
+                    "wires":       len(wires),
+                    "labels":      len(sheet.labels),
+                    "t_junctions": len(sheet.t_junctions),
+                },
+            },
+        )
 
     # =========================================================
     # Сохранение
@@ -361,21 +626,40 @@ class Project:
         """Сохраняет .kicad_sch для каждой страницы + routes.txt."""
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
-        writer = Writer(cell_size_mm=self.grid_mm)
 
         for sheet_path, sheet in self.sheets.items():
-            label = sheet_path or "root"
-            out_name = (Path(self.root_data.get("file", "root.kicad_sch")).name
-                        if sheet_path == "" else sheet.out_file)
-            writer.write_sheet(
-                out_dir / out_name,
-                sheet,
-                netlist=self.netlist,
-            )
-            log.info("[%s] сохранён %s", label, out_name)
+            if sheet_path == "":
+                out_name = Path(
+                    self.root_data.get("file", "root.kicad_sch")
+                ).name
+            else:
+                out_name = sheet.sheet_path
 
-        (out_dir / "routes.txt").write_text(
-            writer.write_text([]), encoding="utf-8",
+            writer = Writer(sheet)
+            writer.write_sheet(out_dir / out_name)
+            log.info(
+                "%s save_done out=%s",
+                ctx(page=sheet.page), out_name,
+                extra={
+                    "stage": "save",
+                    "event": "sheet_saved",
+                    "out":   str(out_dir / out_name),
+                },
+            )
+
+        # routes.txt — сводка по всем страницам, склеенная построчно.
+        routes = "\n".join(
+            Writer(sheet).write_text() for sheet in self.sheets.values()
+        )
+        (out_dir / "routes.txt").write_text(routes, encoding="utf-8")
+        log.info(
+            "Сохранение завершено: %s", out_dir,
+            extra={
+                "stage":  "save",
+                "event":  "save_done",
+                "out":    str(out_dir),
+                "counts": {"sheets": len(self.sheets)},
+            },
         )
         return out_dir
 

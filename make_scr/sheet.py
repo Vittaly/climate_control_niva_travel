@@ -1,5 +1,5 @@
 # sheet.py
-"""Иерархическая страница проекта.
+"""Иерархическая страница проекта — файл KiCad .kicad_sch.
 
 Двусторонняя связь: Sheet знает свои Component, Component знает свой Sheet.
 
@@ -16,6 +16,10 @@
         sheet.pin_cell(d, p)    → comp.abs_pin_cell(pin)
         sheet.component_bbox(d) → comp.bbox_page_cell()
         sheet.anchor_mm(d)      → comp.anchor_page_mm
+
+Сетка страницы (grid_mm) — атрибут Sheet. По умолчанию берётся
+из constants.DEFAULT_GRID_MM. Потребители (Placer, Router, Writer)
+читают её из самого объекта страницы — единая точка трансляции.
 """
 from __future__ import annotations
 
@@ -25,9 +29,10 @@ from typing import Dict, Iterator, List, Optional, Tuple
 
 from cell import Cell
 from component import Component
+from constants import DEFAULT_GRID_MM
 from logging_setup import get_logger
-from placer import Placer
-from router import Router
+from netlist import Netlist
+
 from routing_types import FallbackLabel, TJunction
 
 log = get_logger(__name__)
@@ -35,56 +40,68 @@ log = get_logger(__name__)
 
 @dataclass(eq=False)
 class Sheet:
-    """Одна иерархическая страница проекта.
+    """Одна страница проекта — файл .kicad_sch.
 
     Сравнение — по идентичности (eq=False). Хэш — по sheet_path.
 
     Attributes:
-        designator:  локальное имя листа ("X_ACT"); "" для корня.
-        sheet_path:  полный путь от корня ("" для корня, "X_ACT",
-                     "X_ACT/MOTOR_A" для вложенного).
-        yaml_path:   путь к YAML-описанию.
-        data:        распарсенный YAML.
+        sheet_path:  имя файла .kicad_sch ("" для корня, "sub.kicad_sch"
+                     для вложенной). Ключ страницы в словаре Project.
+        grid_mm:     шаг сетки страницы в мм. По умолчанию берётся
+                     из constants.DEFAULT_GRID_MM. Может быть переопределён
+                     при создании Sheet (например, из YAML в будущем).
         components:  локальный designator -> Component.
+        netlist:     фактический нетлист страницы (строится загрузчиком).
         placer:      Placer после place_and_route.
         router:      Router после place_and_route.
         paths:       трассы страницы.
         labels:      метки-заглушки (заполняет Router).
         t_junctions: T-врезки (заполняет Router).
     """
-    designator: str
+
+    # ---------- идентичность файла ----------
     sheet_path: str
-    yaml_path: Path
-    data: dict = field(default_factory=dict, repr=False)
+
+    # ---------- параметры страницы ----------
+    grid_mm: float = DEFAULT_GRID_MM
+
+    # ---------- рантайм: содержимое страницы ----------
     components: Dict[str, Component] = field(default_factory=dict, repr=False)
-    placer: Optional[Placer] = field(default=None, repr=False)
-    router: Optional[Router] = field(default=None, repr=False)
+    netlist: Netlist = field(default_factory=Netlist, repr=False)
+
+    # ---------- результаты трассировки ----------
+   
     paths: List[List[Cell]] = field(default_factory=list, repr=False)
 
     # ---------- накопители роутера ----------
     labels: List[FallbackLabel] = field(default_factory=list, repr=False)
     t_junctions: List[TJunction] = field(default_factory=list, repr=False)
 
-    # ---------- хэш / идентичность ----------
+    # =========================================================
+    # Хэш / идентичность
+    # =========================================================
 
     def __hash__(self) -> int:
         """Хэш по sheet_path — уникален в проекте, не меняется."""
         return hash(self.sheet_path)
 
-    # ---------- метаданные ----------
+    # =========================================================
+    # Метаданные страницы
+    # =========================================================
 
     @property
-    def name(self) -> str:
-        """Человекочитаемое имя страницы (page_name)."""
-        return self.data.get("page_name", self.designator or "root")
+    def page(self) -> str:
+        """Ярлык страницы для логов: 'root' или имя файла без каталога."""
+        return self.sheet_path or "root"
 
     @property
     def out_file(self) -> str:
-        """Имя выходного .kicad_sch."""
-        src = self.data.get("file", f"{self.designator or 'root'}.kicad_sch")
-        return Path(src).name
+        """Имя выходного .kicad_sch (совпадает с sheet_path)."""
+        return self.sheet_path or "root.kicad_sch"
 
-    # ---------- управление компонентами ----------
+    # =========================================================
+    # Управление компонентами
+    # =========================================================
 
     def add_component(self, comp: Component) -> None:
         """Добавляет компонент и проставляет обратную ссылку comp.sheet.
@@ -95,13 +112,15 @@ class Sheet:
         comp.sheet = self
         self.components[comp.designator] = comp
         log.debug("[%s] добавлен компонент %s",
-                  self.sheet_path or "root", comp.fqn)
+                  self.page, comp.fqn)
 
     def get_component(self, designator: str) -> Optional[Component]:
         """Возвращает компонент по локальному designator или None."""
         return self.components.get(designator)
 
-    # ---------- FQN ----------
+    # =========================================================
+    # FQN
+    # =========================================================
 
     def fqn(self, designator: str) -> str:
         """Полное имя компонента с префиксом страницы.
@@ -132,7 +151,9 @@ class Sheet:
         prefix = f"{self.sheet_path}/"
         return fqn[len(prefix):] if fqn.startswith(prefix) else None
 
-    # ---------- сброс накопителей роутера ----------
+    # =========================================================
+    # Сброс накопителей роутера
+    # =========================================================
 
     def reset_routing_marks(self) -> None:
         """Очищает метки и T-врезки перед новым прогоном роутера.
@@ -142,10 +163,11 @@ class Sheet:
         """
         self.labels.clear()
         self.t_junctions.clear()
-        log.debug("[%s] накопители роутера сброшены",
-                  self.sheet_path or "root")
+        log.debug("[%s] накопители роутера сброшены", self.page)
 
-    # ---------- делегирование геометрии в Component ----------
+    # =========================================================
+    # Делегирование геометрии в Component
+    # =========================================================
 
     def component_bbox(self, designator: str) -> Tuple[int, int, int, int]:
         """(col0, row0, col1, row1) — прямоугольник на странице (клетки).
@@ -164,8 +186,7 @@ class Sheet:
         """
         comp = self.components.get(designator)
         if comp is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"компонент не найден: {designator}")
+            raise KeyError(f"[{self.page}] компонент не найден: {designator}")
         return comp.bbox_page_cell()
 
     def bbox_origin_cell(self, designator: str) -> Cell:
@@ -175,8 +196,7 @@ class Sheet:
         """
         comp = self.components.get(designator)
         if comp is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"компонент не найден: {designator}")
+            raise KeyError(f"[{self.page}] компонент не найден: {designator}")
         return comp.bbox_origin_cell()
 
     def pin_mm(self, designator: str, pin_number: str) -> Tuple[float, float]:
@@ -186,12 +206,11 @@ class Sheet:
         """
         comp = self.components.get(designator)
         if comp is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"компонент не найден: {designator}")
+            raise KeyError(f"[{self.page}] компонент не найден: {designator}")
         pin = comp.pin_by_number(pin_number)
         if pin is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"пин не найден: {designator}:{pin_number}")
+            raise KeyError(f"[{self.page}] пин не найден: "
+                           f"{designator}:{pin_number}")
         return comp.abs_pin_mm(pin)
 
     def pin_cell(self, designator: str, pin_number: str) -> Cell:
@@ -201,12 +220,11 @@ class Sheet:
         """
         comp = self.components.get(designator)
         if comp is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"компонент не найден: {designator}")
+            raise KeyError(f"[{self.page}] компонент не найден: {designator}")
         pin = comp.pin_by_number(pin_number)
         if pin is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"пин не найден: {designator}:{pin_number}")
+            raise KeyError(f"[{self.page}] пин не найден: "
+                           f"{designator}:{pin_number}")
         return comp.abs_pin_cell(pin)
 
     def anchor_mm(self, designator: str) -> Tuple[float, float]:
@@ -216,11 +234,10 @@ class Sheet:
         """
         comp = self.components.get(designator)
         if comp is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"компонент не найден: {designator}")
+            raise KeyError(f"[{self.page}] компонент не найден: {designator}")
         if comp.anchor_page_mm is None:
             raise RuntimeError(
-                f"[{self.sheet_path or 'root'}] компонент {designator}: "
+                f"[{self.page}] компонент {designator}: "
                 f"anchor_page_mm не установлен"
             )
         return comp.anchor_page_mm
@@ -233,8 +250,7 @@ class Sheet:
         """
         comp = self.components.get(designator)
         if comp is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"компонент не найден: {designator}")
+            raise KeyError(f"[{self.page}] компонент не найден: {designator}")
         return comp.iter_occupied_cells()
 
     def iter_pin_cells(self, designator: str) -> Iterator[Tuple[int, int]]:
@@ -244,6 +260,5 @@ class Sheet:
         """
         comp = self.components.get(designator)
         if comp is None:
-            raise KeyError(f"[{self.sheet_path or 'root'}] "
-                           f"компонент не найден: {designator}")
+            raise KeyError(f"[{self.page}] компонент не найден: {designator}")
         return comp.iter_pin_cells()

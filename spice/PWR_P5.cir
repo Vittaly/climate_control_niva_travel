@@ -1,0 +1,28 @@
+* Ngspice тест: PWR / PWR_P5
+* Номинальный режим +3,3В.
+* VBAT_IN = 14,4В → U6 → VCC_5V → U7 (AMS1117-3.3) → VCC_3V3.
+* Нагрузка 100 Ом на +3,3В (33 мА).
+D_SS54 D(IS=4.35e-9 RS=0.05 BV=40)
+D_SS14 D(IS=4.35e-9 RS=0.05 BV=40)
+TVS24 D(IS=4.35e-9 RS=0.64 BV=24)
+TVS5  D(IS=4.35e-9 RS=0.64 BV=5.6)
+.INCLUDE spice/PWR.sub
+
+* Порты: GND V5_SENS VBAT_IN
+
+* V1: Номинальная бортсеть
+V1 VBAT_IN 0 DC 14.4
+
+* R_L5V: Нагрузка на +5В (для работы U7)
+R_L5V VCC_5V 0 200
+
+* R_L3V3: Нагрузка на +3,3В ≈ 33 мА
+R_L3V3 VCC_3V3 0 100
+XPWR 0 V5_SENS VBAT_IN PWR
+
+.op
+.control
+run
+print v(vcc_5v) v(vcc_3v3)
+.endc
+.end

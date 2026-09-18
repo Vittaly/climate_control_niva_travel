@@ -1,26 +1,24 @@
-* Ngspice тест: CAN (порт-интерфейс из KiCad)
-
-.INCLUDE mcp2562_ngspice.lib
-
-
-
-
+* Ngspice тест: CAN / CAN_RECESSIVE
+* Рецессивное состояние шины (TXD = 1).
+* Драйвер выключен, выходы CANH/CANL подтянуты внутренними
+* делителями к ~2,5В. Vdiff ≈ 0.
 .INCLUDE spice/CAN.sub
-.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
-.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
-.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
-.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
 
-* Порты: CANH CANL CAN_RX CAN_TX GND VCC_5V
-XCAN CANH CANL CAN_RX CAN_TX 0 VCC_5V CAN
+* Порты: CANL CAN_RX CAN_TX GND
 
-VS VCC_5V 0 DC 5
-V1 CAN_TX 0 DC 5
+* V1: Питание трансивера +5В
+V1 VCC_5V 0 DC 5.0
+
+* V2: TXD = 1 (рецессив, драйвер выключен)
+V2 CAN_TX 0 DC 5.0
+XCAN CANL CAN_RX CAN_TX 0 CAN
+
 .op
-* PASS: CANH ~2,5В (рецессивный уровень)
 .control
-op
-print V(CANH)
 run
+let vh    = v(CANH)
+let vl    = v(CANL)
+let vdiff = v(CANH) - v(CANL)
+print vh vl vdiff
 .endc
 .end

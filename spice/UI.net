@@ -1,19 +1,19 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cc_04_ui.kicad_sch")
-		(date "2026-09-12T18:45:34")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/user_interface.kicad_sch")
+		(date "2026-09-18T10:57:31")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title "UI")
+				(title)
 				(company)
 				(rev)
 				(date)
-				(source "cc_04_ui.kicad_sch")
+				(source "user_interface.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -59,6 +59,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -74,12 +76,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -93,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "910469cd-7159-47cd-ad3e-45ebad1100e2")
+			(tstamps "12866b13-911c-4345-8194-8f9f97212010")
 			(units
 				(unit
 					(name "A")
@@ -113,6 +119,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -128,12 +136,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -147,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "8bcf6165-9752-4255-8ff0-2dc316880973")
+			(tstamps "4d614612-9e39-49b6-bf60-61f7385255c6")
 			(units
 				(unit
 					(name "A")
@@ -167,6 +179,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -182,12 +196,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -201,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "543939ea-b301-4815-a50a-6119e8555ef6")
+			(tstamps "93532889-e9a6-47de-821d-1b5e450022be")
 			(units
 				(unit
 					(name "A")
@@ -221,6 +239,8 @@
 			(value "100nF")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -236,12 +256,16 @@
 				(description "Unpolarized capacitor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -255,7 +279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a17b2998-3564-4aed-a5f3-d0e896d2b6bb")
+			(tstamps "c9cc4288-7b32-49be-9f94-d59695309620")
 			(units
 				(unit
 					(name "A")
@@ -275,6 +299,8 @@
 			(value "Внутр. коннектор потенциометра (2п, XH)")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -290,12 +316,16 @@
 				(description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -309,7 +339,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "25a6daf9-c17f-44d1-b1fa-4c25052f8e11")
+			(tstamps "ef131590-6c3e-46b9-bbf9-6bbb7daed97c")
 			(units
 				(unit
 					(name "A")
@@ -326,8 +356,10 @@
 		)
 		(comp
 			(ref "J4")
-			(value "Внутр. коннектор галлетника (2п, XH)")
+			(value "Внутр. коннектор галлетника (5п, XH)")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -340,8 +372,12 @@
 			)
 			(libsource
 				(lib "Connector_Generic")
-				(part "Conn_01x02")
-				(description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
+				(part "Conn_01x05")
+				(description "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)")
+			)
+			(property
+				(name "mirror")
+				(value "None")
 			)
 			(property
 				(name "Sheetname")
@@ -349,7 +385,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -363,7 +399,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "eaed8a71-ebf2-4868-b1ea-743e56172a3e")
+			(tstamps "ea02cbf5-0b47-4485-8d49-853324899efe")
 			(units
 				(unit
 					(name "A")
@@ -374,6 +410,15 @@
 						(pin
 							(num "2")
 						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "4")
+						)
+						(pin
+							(num "5")
+						)
 					)
 				)
 			)
@@ -382,6 +427,8 @@
 			(ref "LED1")
 			(value "Индикатор зелёный 1206")
 			(fields
+				(field
+					(name "mirror") "None")
 				(field
 					(name "Footprint")
 				)
@@ -398,12 +445,16 @@
 				(description "Light emitting diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -417,7 +468,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "b4d665e9-3a04-41d4-8f10-e754299e529b")
+			(tstamps "8614c74a-3b5e-4c02-8171-430fed5dfc5b")
 			(units
 				(unit
 					(name "A")
@@ -437,6 +488,8 @@
 			(value "Индикатор зелёный 1206")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -452,12 +505,16 @@
 				(description "Light emitting diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -471,7 +528,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "05758c82-8c25-460e-be65-122bc371369d")
+			(tstamps "e086754b-537c-42be-9556-08901dd2641d")
 			(units
 				(unit
 					(name "A")
@@ -491,6 +548,8 @@
 			(value "Индикатор зелёный 1206")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -506,12 +565,16 @@
 				(description "Light emitting diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -525,7 +588,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4b78630c-b3d9-4881-b6dc-21393cde5db7")
+			(tstamps "9741d810-eb34-4ed0-bf12-02dfac8019a1")
 			(units
 				(unit
 					(name "A")
@@ -545,6 +608,8 @@
 			(value "Индикатор янтарный 1206")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -560,12 +625,16 @@
 				(description "Light emitting diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -579,7 +648,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "201a2413-c9cb-49b8-a86f-202dcc9aecda")
+			(tstamps "52ebea60-ce1a-4a43-bd54-d1c8e5c7a5c4")
 			(units
 				(unit
 					(name "A")
@@ -599,6 +668,8 @@
 			(value "Индикатор зелёный 1206")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -614,12 +685,16 @@
 				(description "Light emitting diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -633,7 +708,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "bc6af1b7-0acc-4d59-887f-68aac919e662")
+			(tstamps "20b835c2-6aa3-4f61-8c1c-9010210f2fa4")
 			(units
 				(unit
 					(name "A")
@@ -653,6 +728,8 @@
 			(value "Индикатор зелёный 1206")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -668,12 +745,16 @@
 				(description "Light emitting diode")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -687,7 +768,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "8ec350e5-d9b0-491e-b8d0-c345550213af")
+			(tstamps "aede8765-6723-4f95-ad52-517501d94f36")
 			(units
 				(unit
 					(name "A")
@@ -707,6 +788,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -722,12 +805,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -741,7 +828,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "549d2b6b-69fe-4b8b-995a-e80353fb4b27")
+			(tstamps "6c117c13-a5cc-408d-94b6-295a24a13118")
 			(units
 				(unit
 					(name "A")
@@ -761,6 +848,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -776,12 +865,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -795,7 +888,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "fdd025d2-5001-4376-952c-9ef35c14acfd")
+			(tstamps "96ef3702-86af-4b86-a07d-c18dbea866e7")
 			(units
 				(unit
 					(name "A")
@@ -815,6 +908,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -830,12 +925,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -849,7 +948,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "510be468-3eba-4ab4-9fc0-81e6fe04df02")
+			(tstamps "1a6b2137-db06-4021-a33b-c6cd1da12029")
 			(units
 				(unit
 					(name "A")
@@ -869,6 +968,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -884,12 +985,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -903,7 +1008,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e0c3d23c-7309-45a0-bd09-db7ec42350fe")
+			(tstamps "936852d2-03c7-4915-bbe1-c73df6acad2e")
 			(units
 				(unit
 					(name "A")
@@ -923,6 +1028,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -938,12 +1045,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -957,7 +1068,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "98d5cb32-7d96-4a45-8773-b8dfecb6400c")
+			(tstamps "d33eddfd-8b74-4741-a065-cb74907d0faa")
 			(units
 				(unit
 					(name "A")
@@ -977,6 +1088,8 @@
 			(value "1k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -992,12 +1105,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1011,7 +1128,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "84d039dc-4672-49a2-9cd7-5659f039e4f6")
+			(tstamps "35ad5f27-e9e5-4055-b9dd-0bdfdd1b5693")
 			(units
 				(unit
 					(name "A")
@@ -1031,6 +1148,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1046,12 +1165,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1065,7 +1188,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "cb1eccb3-ef9b-42bc-a58e-4d510284f041")
+			(tstamps "783104ad-8bf6-4316-9e03-dec984c8ede5")
 			(units
 				(unit
 					(name "A")
@@ -1085,6 +1208,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1100,12 +1225,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1119,7 +1248,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "94b7da52-fa4f-4cae-ae62-ec31e80b9101")
+			(tstamps "4d49a8b5-f725-4d2b-98dd-ed40df506188")
 			(units
 				(unit
 					(name "A")
@@ -1139,6 +1268,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1154,12 +1285,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1173,7 +1308,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "fd9cacfb-cc83-4db4-bc03-d8092f036211")
+			(tstamps "66ff1018-5a20-447c-a080-6f6bf5d98830")
 			(units
 				(unit
 					(name "A")
@@ -1193,6 +1328,8 @@
 			(value "47k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1208,12 +1345,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1227,7 +1368,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "1d8dd8f2-d9ce-4951-ad58-f67d49e8a83b")
+			(tstamps "b3748a34-40c1-425b-949f-a34dd03691b6")
 			(units
 				(unit
 					(name "A")
@@ -1247,6 +1388,8 @@
 			(value "10k")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1262,12 +1405,16 @@
 				(description "Resistor")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1281,7 +1428,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "96de9fb8-fcc4-4960-8a26-b8b254db3aeb")
+			(tstamps "81316f97-2128-4e85-b4e1-0855869ceff3")
 			(units
 				(unit
 					(name "A")
@@ -1301,6 +1448,8 @@
 			(value "Кнопка тактовая 6x6 без фиксации")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1316,12 +1465,16 @@
 				(description "Push button switch, generic, two pins")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1331,7 +1484,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "da50637a-6251-4df6-a5ed-01f2c606b644")
+			(tstamps "a1c5c773-daf3-490d-971c-31e4c16218b1")
 			(units
 				(unit
 					(name "A")
@@ -1351,6 +1504,8 @@
 			(value "Кнопка тактовая 6x6 без фиксации")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1366,12 +1521,16 @@
 				(description "Push button switch, generic, two pins")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1381,7 +1540,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d2866316-1910-4bcb-8523-2c9302444b0d")
+			(tstamps "05efd92b-f9a8-4bd2-92f0-62275e7a8979")
 			(units
 				(unit
 					(name "A")
@@ -1401,6 +1560,8 @@
 			(value "Кнопка тактовая 6x6 без фиксации")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1416,12 +1577,16 @@
 				(description "Push button switch, generic, two pins")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1431,7 +1596,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "03e60825-d3d8-483e-b5fb-d504521fc76e")
+			(tstamps "da44806f-2368-4808-af45-114d8e109e99")
 			(units
 				(unit
 					(name "A")
@@ -1451,6 +1616,8 @@
 			(value "Кнопка тактовая 6x6 без фиксации")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1466,12 +1633,16 @@
 				(description "Push button switch, generic, two pins")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1481,7 +1652,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3c768a7f-8132-4456-900f-3e7a0202c9a5")
+			(tstamps "85b814f6-9c4c-4f9a-b3d9-250573f0bd2b")
 			(units
 				(unit
 					(name "A")
@@ -1501,6 +1672,8 @@
 			(value "Кнопка тактовая 6x6 без фиксации")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1516,12 +1689,16 @@
 				(description "Push button switch, generic, two pins")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1531,7 +1708,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "70f353b5-cb87-4272-b765-fbe980cf6230")
+			(tstamps "5a07b352-de53-4ad0-98c7-af447de28266")
 			(units
 				(unit
 					(name "A")
@@ -1551,6 +1728,8 @@
 			(value "Кнопка тактовая 6x6 без фиксации")
 			(fields
 				(field
+					(name "mirror") "None")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -1566,12 +1745,16 @@
 				(description "Push button switch, generic, two pins")
 			)
 			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
 				(name "Sheetname")
 				(value "Root")
 			)
 			(property
 				(name "Sheetfile")
-				(value "cc_04_ui.kicad_sch")
+				(value "user_interface.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -1581,7 +1764,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "821291a0-ef4d-423e-b5bf-150b3948b3e0")
+			(tstamps "26b361d1-7dcb-4b87-9105-4baa6d218108")
 			(units
 				(unit
 					(name "A")
@@ -1630,6 +1813,55 @@
 				(pin
 					(num "2")
 					(name "Pin_2")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "Connector_Generic")
+			(part "Conn_01x05")
+			(description "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)")
+			(footprints
+				(fp "Connector*:*_1x??_*")
+			)
+			(fields
+				(field
+					(name "Reference") "J")
+				(field
+					(name "Value") "Conn_01x05")
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description") "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "Pin_1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "Pin_2")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "Pin_3")
+					(type "passive")
+				)
+				(pin
+					(num "4")
+					(name "Pin_4")
+					(type "passive")
+				)
+				(pin
+					(num "5")
+					(name "Pin_5")
 					(type "passive")
 				)
 			)
@@ -1789,28 +2021,6 @@
 	(nets
 		(net
 			(code "1")
-			(name "/BTN_AC")
-			(class "Default")
-			(node
-				(ref "SW5")
-				(pin "1")
-				(pinfunction "1_1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "2")
-			(name "/BTN_DEFROST_GLASS")
-			(class "Default")
-			(node
-				(ref "SW1")
-				(pin "1")
-				(pinfunction "1_1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "3")
 			(name "/BTN_DRY_GLASS")
 			(class "Default")
 			(node
@@ -1821,7 +2031,7 @@
 			)
 		)
 		(net
-			(code "4")
+			(code "2")
 			(name "/BTN_FACE")
 			(class "Default")
 			(node
@@ -1832,7 +2042,7 @@
 			)
 		)
 		(net
-			(code "5")
+			(code "3")
 			(name "/BTN_FEET")
 			(class "Default")
 			(node
@@ -1843,233 +2053,14 @@
 			)
 		)
 		(net
-			(code "6")
-			(name "/BTN_RECIRC")
-			(class "Default")
-			(node
-				(ref "SW6")
-				(pin "1")
-				(pinfunction "1_1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "7")
+			(code "4")
 			(name "/FAN_SEL_ADC")
 			(class "Default")
 			(node
-				(ref "C23")
+				(ref "C22")
 				(pin "1")
 				(pintype "passive")
 			)
-			(node
-				(ref "J4")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R23")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "8")
-			(name "/ILLUM_IN_RAW")
-			(class "Default")
-			(node
-				(ref "R39")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "9")
-			(name "/ILLUM_SENSE")
-			(class "Default")
-			(node
-				(ref "C32")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R39")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R40")
-				(pin "1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "10")
-			(name "/LED_AC_A")
-			(class "Default")
-			(node
-				(ref "LED5")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R11")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "11")
-			(name "/LED_AC_DRV")
-			(class "Default")
-			(node
-				(ref "LED5")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "12")
-			(name "/LED_DEFROST_GLASS_A")
-			(class "Default")
-			(node
-				(ref "LED1")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R7")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "13")
-			(name "/LED_DEFROST_GLASS_DRV")
-			(class "Default")
-			(node
-				(ref "LED1")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "14")
-			(name "/LED_DRY_GLASS_A")
-			(class "Default")
-			(node
-				(ref "LED4")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R10")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "15")
-			(name "/LED_DRY_GLASS_DRV")
-			(class "Default")
-			(node
-				(ref "LED4")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "16")
-			(name "/LED_FACE_A")
-			(class "Default")
-			(node
-				(ref "LED2")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R8")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "17")
-			(name "/LED_FACE_DRV")
-			(class "Default")
-			(node
-				(ref "LED2")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "18")
-			(name "/LED_FEET_A")
-			(class "Default")
-			(node
-				(ref "LED3")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R9")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "19")
-			(name "/LED_FEET_DRV")
-			(class "Default")
-			(node
-				(ref "LED3")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "20")
-			(name "/LED_RECIRC_A")
-			(class "Default")
-			(node
-				(ref "LED6")
-				(pin "1")
-				(pinfunction "K_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R12")
-				(pin "2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "21")
-			(name "/LED_RECIRC_DRV")
-			(class "Default")
-			(node
-				(ref "LED6")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "22")
-			(name "/NTC_CABIN")
-			(class "Default")
 			(node
 				(ref "C22")
 				(pin "2")
@@ -2077,6 +2068,11 @@
 			)
 			(node
 				(ref "C23")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C23")
 				(pin "2")
 				(pintype "passive")
 			)
@@ -2092,7 +2088,18 @@
 			)
 			(node
 				(ref "C32")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "C32")
 				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J3")
+				(pin "1")
+				(pinfunction "Pin_1_1")
 				(pintype "passive")
 			)
 			(node
@@ -2103,8 +2110,101 @@
 			)
 			(node
 				(ref "J4")
+				(pin "1")
+				(pinfunction "Pin_1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J4")
 				(pin "2")
 				(pinfunction "Pin_2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J4")
+				(pin "3")
+				(pinfunction "Pin_3_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "J4")
+				(pin "4")
+				(pinfunction "Pin_4_4")
+				(pintype "passive")
+			)
+			(node
+				(ref "J4")
+				(pin "5")
+				(pinfunction "Pin_5_5")
+				(pintype "passive")
+			)
+			(node
+				(ref "LED1")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "LED2")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "LED3")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "LED4")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R10")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R10")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R11")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R12")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R22")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R22")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R23")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R23")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R24")
+				(pin "1")
 				(pintype "passive")
 			)
 			(node
@@ -2113,8 +2213,59 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "R39")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R39")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R40")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
 				(ref "R40")
 				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R7")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R7")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R8")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R8")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R9")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R9")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "SW1")
+				(pin "1")
+				(pinfunction "1_1")
 				(pintype "passive")
 			)
 			(node
@@ -2143,8 +2294,20 @@
 			)
 			(node
 				(ref "SW5")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "SW5")
 				(pin "2")
 				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "SW6")
+				(pin "1")
+				(pinfunction "1_1")
 				(pintype "passive")
 			)
 			(node
@@ -2155,73 +2318,100 @@
 			)
 		)
 		(net
-			(code "23")
-			(name "/TEMP_SET_ADC")
+			(code "5")
+			(name "/LED_AC_DRV")
 			(class "Default")
 			(node
-				(ref "C22")
+				(ref "LED5")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "6")
+			(name "/LED_DEFROST_GLASS_DRV")
+			(class "Default")
+			(node
+				(ref "LED1")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "7")
+			(name "/LED_DRY_GLASS_DRV")
+			(class "Default")
+			(node
+				(ref "LED4")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "8")
+			(name "/LED_FACE_DRV")
+			(class "Default")
+			(node
+				(ref "LED2")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "9")
+			(name "/LED_FEET_DRV")
+			(class "Default")
+			(node
+				(ref "LED3")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "10")
+			(name "/LED_RECIRC_DRV")
+			(class "Default")
+			(node
+				(ref "LED6")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "11")
+			(name "Net-(LED5-K)")
+			(class "Default")
+			(node
+				(ref "LED5")
 				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
-				(ref "J3")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R22")
+				(ref "R11")
 				(pin "2")
 				(pintype "passive")
 			)
 		)
 		(net
-			(code "24")
-			(name "/VCC_3V3")
+			(code "12")
+			(name "Net-(LED6-K)")
 			(class "Default")
 			(node
-				(ref "R10")
+				(ref "LED6")
 				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R11")
-				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "R12")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R22")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R23")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R24")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R7")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R8")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R9")
-				(pin "1")
+				(pin "2")
 				(pintype "passive")
 			)
 		)

@@ -1,0 +1,17 @@
+* Ngspice тест: SEN_COND / SEN_COND_WET
+* Датчик в крайнем положении — сильная конденсация.
+* COND_RAW = 5В → COND_ADC ≈ 3,33В (верхняя граница АЦП).
+.INCLUDE spice/SEN_COND.sub
+
+* Порты: COND_ADC COND_RAW GND
+
+* V1: Датчик конденсата: крайнее положение (5В)
+V1 COND_RAW 0 DC 5.0
+XSEN_COND COND_ADC COND_RAW 0 SEN_COND
+
+.op
+.control
+run
+print v(cond_adc)
+.endc
+.end

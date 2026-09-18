@@ -1,0 +1,17 @@
+* Ngspice тест: SEN_SOLAR / SEN_SOLAR_DARK
+* Датчик в темноте, на выходе 0В.
+* SOLAR_ADC = 0В.
+.INCLUDE spice/SEN_SOLAR.sub
+
+* Порты: GND SOLAR_ADC SOLAR_RAW
+
+* V1: Датчик солнечной радиации: темнота (0В)
+V1 SOLAR_RAW 0 DC 0.0
+XSEN_SOLAR 0 SOLAR_ADC SOLAR_RAW SEN_SOLAR
+
+.op
+.control
+run
+print v(solar_adc)
+.endc
+.end

@@ -58,6 +58,12 @@ Alias-пины:
     По умолчанию rotation=0, mirror=None. Задаются Placer'ом при
     расстановке (или из YAML). Пересчёт bbox, координат пинов и
     клеток при не-дефолтных значениях — TODO (см. _apply_orientation).
+
+Логирование:
+    Префикс формируется через ctx(page, net, comp, pin) из
+    logging_setup. В from_yaml page передаётся вызывающим кодом
+    (Sheet / Project); во внутренних методах берётся из
+    self.sheet_path.
 """
 from __future__ import annotations
 
@@ -77,7 +83,7 @@ from constants import (
     opposite_direction,
     wire_angle_to_direction,
 )
-from logging_setup import get_logger
+from logging_setup import get_logger, ctx
 from pin import Pin
 
 if TYPE_CHECKING:
@@ -240,6 +246,7 @@ class Component:
         types: dict,
         source: "KiCadSource",
         grid_mm: float = DEFAULT_GRID_MM,
+        page: Optional[str] = None,
     ) -> Optional["Component"]:
         """Собирает компонент из описания типа в component_types.
 
@@ -264,14 +271,18 @@ class Component:
             types:      таблица component_types из YAML.
             source:     KiCadSource для доступа к библиотеке символов.
             grid_mm:    шаг сетки в мм.
+            page:       имя страницы-владельца (для контекста логов).
 
         Returns:
             Component либо None, если тип неизвестен или символ не найден.
         """
         tname = cdef.get("type")
         if not tname or tname not in types:
-            log.warning("Компонент %s: тип '%s' не описан, пропускаю",
-                        designator, tname)
+            log.warning(
+                "%s тип '%s' не описан, пропускаю",
+                ctx(page=page, comp=designator),
+                tname,
+            )
             return None
 
         tinfo = types[tname]
@@ -282,8 +293,11 @@ class Component:
         try:
             pins_raw = source.get_pins(lib_id)
         except KeyError:
-            log.error("Компонент %s: нет символа %s в библиотеке",
-                      designator, lib_id)
+            log.error(
+                "%s нет символа %s в библиотеке",
+                ctx(page=page, comp=designator),
+                lib_id,
+            )
             return None
 
         # --- 1. Сырые границы bbox по пинам (система СИМВОЛА, Y↑) ---
@@ -308,11 +322,6 @@ class Component:
             max_y += grid_mm
 
         # --- 3. Снап границ bbox к клеткам сетки ---
-        # Пин может стоять между линиями сетки. Чтобы его клетка
-        # (по round в abs_pin_cell) гарантированно попала в bbox,
-        # левая и нижняя границы снапаются к floor, правая и
-        # верхняя — к ceil. Размер bbox — диапазон [min .. max]
-        # включительно, то есть max - min + 1 клеток.
         min_col_sym = math.floor(min_x / grid_mm + _SNAP_EPS)
         max_col_sym = math.ceil(max_x / grid_mm - _SNAP_EPS)
         min_row_sym = math.floor(min_y / grid_mm + _SNAP_EPS)
@@ -327,9 +336,6 @@ class Component:
         anchor_y_sym = 0.0
 
         # --- 5. anchor_offset_mm (от левого-верхнего угла bbox, Y↓) ---
-        # Левый край bbox в системе символа = min_col_sym * grid_mm.
-        # Верхний край bbox в системе символа = max_row_sym * grid_mm.
-        # В системе страницы X не инвертируется, Y инвертируется.
         anchor_offset_x = anchor_x_sym - min_col_sym * grid_mm
         anchor_offset_y = max_row_sym * grid_mm - anchor_y_sym   # Y↓
         anchor_offset_mm = (anchor_offset_x, anchor_offset_y)
@@ -340,10 +346,12 @@ class Component:
             x_lib = float(p.get("x_mm", 0.0))
             y_lib = float(p.get("y_mm", 0.0))
 
+            pin_key = f"{designator}:{p['number']}"
+            pin_ctx = ctx(page=page, comp=designator, pin=pin_key)
+
             log.debug(
-                "  %s.%-3s %-8s sym_mm=(%7.2f,%7.2f) orient=%s",
-                designator, p["number"], p["name"],
-                x_lib, y_lib, p.get("orientation", 0),
+                "%s sym_mm=(%7.2f,%7.2f) name=%-8s orient=%s",
+                pin_ctx, x_lib, y_lib, p["name"], p.get("orientation", 0),
             )
 
             # смещение пина от якоря (система страницы, Y↓)
@@ -369,17 +377,16 @@ class Component:
 
             if lib_direction != expected_direction:
                 log.warning(
-                    "%s: пин %s — библиотечный orientation=%s "
-                    "(direction=%s), по геометрии ожидается "
-                    "direction=%s (outward=%s). Используем геометрию.",
-                    designator, p["number"],
-                    lib_orientation, lib_direction,
+                    "%s библиотечный orientation=%s (direction=%s), "
+                    "по геометрии ожидается direction=%s (outward=%s). "
+                    "Используем геометрию.",
+                    pin_ctx, lib_orientation, lib_direction,
                     expected_direction, outward,
                 )
             elif lib_direction == DEFAULT_DIRECTION and lib_orientation_int != 0:
                 log.warning(
-                    "%s: неизвестная ориентация %s, принято %s",
-                    designator, lib_orientation, DEFAULT_DIRECTION,
+                    "%s неизвестная ориентация %s, принято %s",
+                    pin_ctx, lib_orientation, DEFAULT_DIRECTION,
                 )
 
             pins.append(Pin(
@@ -391,10 +398,8 @@ class Component:
             ))
 
             log.debug(
-                "  %s.%-3s %-8s offset_mm=(%7.2f,%7.2f) dir=%s",
-                designator, p["number"], p["name"],
-                pin_offset_x, pin_offset_y,
-                expected_direction,
+                "%s offset_mm=(%7.2f,%7.2f) dir=%s",
+                pin_ctx, pin_offset_x, pin_offset_y, expected_direction,
             )
 
         comp = cls(
@@ -422,6 +427,7 @@ class Component:
 
     def _warn_duplicate_pin_positions(self) -> None:
         """Логирует группы пинов с одинаковыми координатами внутри компонента."""
+        page = self.sheet_path or None
         for i, pi in enumerate(self.pins):
             for j in range(i + 1, len(self.pins)):
                 pj = self.pins[j]
@@ -429,16 +435,17 @@ class Component:
                     continue
                 if pi.name == pj.name:
                     log.info(
-                        "%s: пины %s и %s на одной позиции, имя '%s' "
+                        "%s пины %s и %s на одной позиции, имя '%s' "
                         "(кандидаты на alias — схлопнёт Netlist)",
-                        self.designator, pi.local_key, pj.local_key, pi.name,
+                        ctx(page=page, comp=self.designator),
+                        pi.local_key, pj.local_key, pi.name,
                     )
                 else:
                     log.error(
-                        "%s: пины %s и %s на одной позиции, "
+                        "%s пины %s и %s на одной позиции, "
                         "но разные имена ('%s' vs '%s') — дефект библиотеки",
-                        self.designator, pi.local_key, pj.local_key,
-                        pi.name, pj.name,
+                        ctx(page=page, comp=self.designator),
+                        pi.local_key, pj.local_key, pi.name, pj.name,
                     )
 
     def _same_pin_position(self, a: Pin, b: Pin) -> bool:
@@ -500,8 +507,9 @@ class Component:
         if self.rotation == 0 and self.mirror is None:
             return
         log.warning(
-            "%s: rotation=%d mirror=%s — пересчёт геометрии не реализован",
-            self.designator, self.rotation, self.mirror,
+            "%s rotation=%d mirror=%s — пересчёт геометрии не реализован",
+            ctx(page=self.sheet_path or None, comp=self.designator),
+            self.rotation, self.mirror,
         )
 
     # ---------- геометрия ----------

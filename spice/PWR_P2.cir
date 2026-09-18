@@ -1,25 +1,23 @@
-* Ngspice тест: PWR (порт-интерфейс из KiCad)
-
-
-.INCLUDE mc78m05_ngspice.lib
-.INCLUDE ams1117_33_ngspice.lib
-
-
+* Ngspice тест: PWR / PWR_P2
+* Load-dump: на входе 40В (импульсный выброс от индуктивной
+* нагрузки). TVS D2 (SMBJ15A) клиппит шину VCC_12V до ~24В.
+D_SS54 D(IS=4.35e-9 RS=0.05 BV=40)
+D_SS14 D(IS=4.35e-9 RS=0.05 BV=40)
+TVS24 D(IS=4.35e-9 RS=0.64 BV=24)
+TVS5  D(IS=4.35e-9 RS=0.64 BV=5.6)
 .INCLUDE spice/PWR.sub
-.model MyD D(IS=4.35e-9 RS=0.64 BV=110)
-.model TVS24 D(IS=4.35e-9 RS=0.64 BV=8)
-.model TVS5 D(IS=4.35e-9 RS=0.64 BV=5.6)
-.model SW_GP SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)
 
-* Порты: AC_REQ_OUT CANH CANL COND_RAW FB_M1_RAW FB_M2_RAW FB_M3_RAW FB_M4_RAW GND ILLUM_IN_RAW MOTOR_1_A MOTOR_1_B MOTOR_2_A MOTOR_2_B MOTOR_3_A MOTOR_3_B MOTOR_4_A MOTOR_4_B NTC_HEAT_W SOLAR_RAW V5_SENS VBAT_IN VCC_12V VCC_3V3 VCC_5V
-XPWR AC_REQ_OUT CANH CANL COND_RAW FB_M1_RAW FB_M2_RAW FB_M3_RAW FB_M4_RAW 0 ILLUM_IN_RAW MOTOR_1_A MOTOR_1_B MOTOR_2_A MOTOR_2_B MOTOR_3_A MOTOR_3_B MOTOR_4_A MOTOR_4_B NTC_HEAT_W SOLAR_RAW V5_SENS VBAT_IN VCC_12V VCC_3V3 VCC_5V PWR
+* Порты: GND V5_SENS VBAT_IN
 
-VIN VBAT_IN 0 DC 40
+* V1: Аварийный выброс +40В
+V1 VBAT_IN 0 DC 40.0
+XPWR 0 V5_SENS VBAT_IN PWR
+
 .op
-* PASS: V(VCC_12V)<=24 (TVS D2, load-dump)
 .control
-op
-print V(VCC_12V)
 run
+let v12 = v(VCC_12V)
+let id2 = i(V1)
+print v12 id2
 .endc
 .end

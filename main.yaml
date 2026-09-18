@@ -1,7 +1,207 @@
 root_page:
   project: Climate Control Niva Travel
-  version: '2.2'
+  version: '2.5'
   file: climate_control_niva_travel.kicad_sch
+
+    # ─────────────────────────────────────────────────────────────────
+  # SPICE-конфигурация проекта
+  #
+  # lib_dir         — каталог с .lib/.model относительно корня проекта
+  #
+  # component_models — сложные компоненты со .SUBCKT. Каждый знает:
+  #     description   — что это и что моделируется
+  #     include       — файл .lib в lib_dir
+  #     subckt        — имя .SUBCKT внутри файла
+  #     nodes         — KiCad pin → SPICE port (порядок = порядок портов)
+  #     required_params — параметры, обязательные в каждом инстансе
+  #                       (передаются в deck сценария через params:)
+  #
+  # models          — переиспользуемые .model для пассивных компонентов.
+  #                   Подставляются в .cir при первом использовании.
+  # ─────────────────────────────────────────────────────────────────
+  spice:
+    lib_dir: "spice/lib"
+
+    component_models:
+
+      DRV8871DDA:
+        description: |
+          H-мост 3.6А с токоограничением и защитой от перегрузки/перегрева,
+          Texas Instruments DRV8871 (SOIC-8).
+
+          Моделируется: два полумоста OUT1/OUT2 с Rds_on ~0.5Ω;
+          логика IN1/IN2 (forward / reverse / coast / brake); порог
+          токоограничения по входу ILIM (pin 4).
+
+          Не моделируется: тепловой дрейф Rds_on и тока ограничения,
+          время переключения плеч, ток покоя по VM.
+        include: drv8871_ngspice.lib
+        subckt: DRV8871
+        nodes:
+          IN1:  { pin: "3" }
+          IN2:  { pin: "2" }
+          OUT1: { pin: "6" }
+          OUT2: { pin: "8" }
+          VM:   { pin: "5" }
+          GND:  { pin: "1" }
+        required_params: []
+
+      MCP2562-E-SN:
+        description: |
+          CAN-трансивер 5В, до 1 Мбит/с, Microchip MCP2562-E-SN (SOIC-8).
+
+          Моделируется: драйвер TXD → CANH/CANL (доминанта Vdiff ~2В,
+          рецессив ~0В); приёмник CANH/CANL → RXD; вход STBY.
+
+          Не моделируется: паразитные ёмкости шины, защита от КЗ
+          CANH/CANL, loop-back задержки, джиттер.
+        include: mcp2562_ngspice.lib
+        subckt: MCP2562
+        nodes:
+          TXD:  { pin: "1" }
+          RXD:  { pin: "4" }
+          CANH: { pin: "7" }
+          CANL: { pin: "6" }
+          STBY: { pin: "5" }
+          VDD:  { pin: "3" }
+          VIO:  { pin: "8" }
+          GND:  { pin: "2" }
+        required_params: []
+
+      LM78M05_TO252:
+        description: |
+          Линейный стабилизатор +5В, 0.5А, MC78M05CDTG (TO-252).
+
+          Моделируется: выход 5В ±2% в диапазоне 0..0.5А; падение
+          Vin−Vout ~2В при полной нагрузке; ограничение тока ~0.6А
+          (поведенческое, без тепловой обратной связи).
+
+          Не моделируется: thermal shutdown, гистерезис, шум,
+          PSRR по частоте.
+        include: mc78m05_ngspice.lib
+        subckt: MC78M05
+        nodes:
+          IN:  { pin: "1" }
+          GND: { pin: "2" }
+          OUT: { pin: "3" }
+        required_params: []
+
+      AP1117-15:
+        description: |
+          LDO +3.3В, 1А, AMS1117-3.3 (SOT-223).
+
+          Моделируется: выход 3.3В ±1% при 0..1А; падение Vin−Vout
+          ~1.1В при полной нагрузке; ограничение тока ~1.2А.
+
+          Не моделируется: thermal shutdown, частотная зависимость
+          PSRR и выходного импеданса.
+        include: ams1117_33_ngspice.lib
+        subckt: AMS1117_33
+        nodes:
+          IN:  { pin: "1" }
+          GND: { pin: "2" }
+          OUT: { pin: "3" }
+        required_params: []
+
+      BTS141:
+        description: |
+          Smart low-side switch, 12В / 40А, Infineon BTS141 (TO-252).
+
+          Моделируется: N-канальный MOSFET с Rds_on ~15 мОм; активный
+          уровень IN = лог. 1; защита от КЗ (порог ~40А, отключение);
+          защита от перегрева (~175°C, отключение); автоматическое
+          восстановление после снятия аварии.
+
+          Не моделируется: точная динамика тепловой модели кристалла;
+          конечное время реакции защиты.
+        include: bts141_ngspice.lib
+        subckt: BTS141
+        nodes:
+          IN:  { pin: "1" }
+          OUT: { pin: "2" }
+          GND: { pin: "3" }
+        required_params: []
+
+      Thermistor_NTC:
+        description: |
+          NTC-термистор 10к B3435.
+
+          R(T) = R25 · exp(BETA · (1/(273.15+T) − 1/298.15))
+          Характерные точки:
+            0°C   ≈ 27.2 кОм
+            25°C  = 10 кОм
+            60°C  ≈  2.49 кОм
+            85°C  ≈  1.27 кОм
+
+          Параметр T (температура) задаётся в deck сценария — это
+          позволяет одному и тому же .subckt давать разные результаты
+          в разных тестовых точках.
+        include: ntc_models.lib
+        subckt: NTC_10K_3435
+        nodes:
+          A: { pin: "1" }
+          B: { pin: "2" }
+        required_params:
+          - { name: T,    unit: "°C", description: "температура термистора" }
+          - { name: R25,  unit: "Ω",  description: "номинальное сопротивление при 25°C" }
+          - { name: BETA, unit: "K",  description: "коэффициент B" }
+
+      DC_MOTOR:
+        description: |
+          Универсальная электромеханическая модель коллекторного мотора.
+
+          Электрика:  R_arm (обмотка) + L_arm (индуктивность) + B_emf
+                      (back-EMF = Ke · V(Speed)).
+          Механика (электро-механическая аналогия):
+                      C_inertia (инерция ротора),
+                      R_friction (вязкое трение и нагрузка),
+                      B_torque = Kt·I_arm (нагнетает заряд в Speed).
+          Нормировка: 1В на узле Speed = 1000 об/мин.
+
+          Числовых дефолтов нет — все параметры обязательны в deck,
+          чтобы в сценарии всегда было явно видно, с каким мотором
+          ведётся прогон (мотор печки / заслонки / рециркуляции).
+        include: motor_model.lib
+        subckt: DC_MOTOR
+        nodes:
+          INP:   { pin: "In+" }
+          INN:   { pin: "In-" }
+          SPEED: { pin: "Speed" }
+        required_params:
+          - { name: R_arm,      unit: "Ω",  description: "сопротивление обмотки" }
+          - { name: L_arm,      unit: "H",  description: "индуктивность обмотки" }
+          - { name: Ke,         unit: "—",  description: "back-EMF на 1В Speed" }
+          - { name: Kt,         unit: "—",  description: "момент на 1А якоря" }
+          - { name: C_inertia,  unit: "—",  description: "инерция ротора" }
+          - { name: R_friction, unit: "Ω",  description: "вязкое трение и нагрузка" }
+
+    models:
+      LED_WHITE:
+        model_def: ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p)"
+        description: |
+          Белый светодиод 0805/1206/0603.
+          Vf ≈ 3.2В при 20 мА; 3 LED последовательно ≈ 9.6В.
+          Используется во всех каналах backlight и в индикаторах UI.
+
+      D_1N4148:
+        model_def: ".model D_1N4148 D(IS=2.52e-9 N=1.752 RS=0.568 CJO=4p BV=100)"
+        description: |
+          Малосигнальный кремниевый диод 100В / 300мА.
+          Используется в SEN_CABIN (D3) и как опорный диод.
+  
+  simulation_sheets:
+    - PWR
+    - UI
+    - SEN_HEAT
+    - SEN_SOLAR
+    - SEN_COND
+    - ACTUATOR_CHANNEL
+    - OUT
+    - CAN
+    - SEN_CABIN
+    - FAN_KEY
+    - BACKLIGHT
+
   mcu_pin_map:
     '1':
       signal: VBAT
@@ -216,6 +416,7 @@ root_page:
       signal: VDD_4
       net: VCC_3V3
       function: power_in
+
   j1_pinout:
     '1': +12В_БАТ вход питания
     '2': +12В_БАТ вход питания (дубль, снижение нагрузки)
@@ -249,7 +450,9 @@ root_page:
     '30': резерв
     '31': резерв
     '32': резерв
+
   symbol_pin_map: {}
+
   component_types:
     TYPE_C_100NF:
       symbol: Device:C
@@ -288,6 +491,7 @@ root_page:
       footprint: Package_QFP:LQFP-64_10x10mm_P0.5mm
       value: STM32F103RCT6
       fields: {}
+
   components:
     C10:
       type: TYPE_C_100NF
@@ -325,6 +529,7 @@ root_page:
     U1:
       type: TYPE_STM32F103RC-D-ETX_STM32F103RCT6
       description: LQFP-64
+
     X_CAN:
       symbol: Core:Hierarchical_Sheet
       value: sheets/can_bus.yaml
@@ -365,16 +570,74 @@ root_page:
       value: sheets/power_outputs.yaml
       description: Модуль OUT
       value_sch: sheets/power_outputs.kicad_sch
-    X_ACT:
-      symbol: Core:Hierarchical_Sheet
-      value: sheets/actuators.yaml
-      description: Модуль ACT
-      value_sch: sheets/actuators.kicad_sch
     X_BACKLIGHT:
       symbol: Core:Hierarchical_Sheet
       value: sheets/backlight.yaml
       description: Модуль радиальной фоновой подсветки шкал ручек управления
       value_sch: sheets/backlight.kicad_sch
+
+    # ─── 4 экземпляра универсального канала заслонки ───────────────
+    # Одна и та же подсхема sheets/actuator_channel.kicad_sch
+    # инстанцируется 4 раза. Конкретные имена цепей задаются
+    # сопоставлением портов; внутри листа имена обобщённые:
+    # IN1, IN2, MOTOR_A, MOTOR_B, FB_RAW, FB.
+    X_M1:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/actuator_channel.yaml
+      description: "Канал заслонки 1 (ТЕПЛО/ХОЛОД)"
+      value_sch: sheets/actuator_channel.kicad_sch
+      port_map:
+        VCC_12V: VCC_12V
+        GND:     GND
+        IN1:     M1_IN1
+        IN2:     M1_IN2
+        MOTOR_A: MOTOR_1_A
+        MOTOR_B: MOTOR_1_B
+        FB_RAW:  FB_M1_RAW
+        FB:      FB_M1
+    X_M2:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/actuator_channel.yaml
+      description: "Канал заслонки 2 (СТЕКЛО или ЛИЦО+НОГИ)"
+      value_sch: sheets/actuator_channel.kicad_sch
+      port_map:
+        VCC_12V: VCC_12V
+        GND:     GND
+        IN1:     M2_IN1
+        IN2:     M2_IN2
+        MOTOR_A: MOTOR_2_A
+        MOTOR_B: MOTOR_2_B
+        FB_RAW:  FB_M2_RAW
+        FB:      FB_M2
+    X_M3:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/actuator_channel.yaml
+      description: "Канал заслонки 3 (ЛИЦО или НОГИ)"
+      value_sch: sheets/actuator_channel.kicad_sch
+      port_map:
+        VCC_12V: VCC_12V
+        GND:     GND
+        IN1:     M3_IN1
+        IN2:     M3_IN2
+        MOTOR_A: MOTOR_3_A
+        MOTOR_B: MOTOR_3_B
+        FB_RAW:  FB_M3_RAW
+        FB:      FB_M3
+    X_M4:
+      symbol: Core:Hierarchical_Sheet
+      value: sheets/actuator_channel.yaml
+      description: "Канал заслонки 4 (РЕЦИРКУЛЯЦИЯ)"
+      value_sch: sheets/actuator_channel.kicad_sch
+      port_map:
+        VCC_12V: VCC_12V
+        GND:     GND
+        IN1:     M4_IN1
+        IN2:     M4_IN2
+        MOTOR_A: MOTOR_4_A
+        MOTOR_B: MOTOR_4_B
+        FB_RAW:  FB_M4_RAW
+        FB:      FB_M4
+
   nets:
     VCC_12V:
       name: VCC_12V
@@ -394,8 +657,15 @@ root_page:
         pin: VCC_12V
       - component: X_OUT
         pin: VCC_12V
-      - component: X_ACT
+      - component: X_M1
         pin: VCC_12V
+      - component: X_M2
+        pin: VCC_12V
+      - component: X_M3
+        pin: VCC_12V
+      - component: X_M4
+        pin: VCC_12V
+
     VCC_5V:
       name: VCC_5V
       description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора
@@ -413,6 +683,7 @@ root_page:
         pin: VCC_5V
       - component: X_PWR
         pin: VCC_5V
+
     VCC_3V3:
       name: VCC_3V3
       description: Логическое питание +3,3В микроконтроллера и фронт-панели
@@ -457,6 +728,7 @@ root_page:
         pin: '19'
       - component: U1
         pin: '32'
+
     VDDA_3V3:
       name: VDDA_3V3
       description: Аналоговое питание АЦП (через феррит FB1 от VCC_3V3)
@@ -475,6 +747,7 @@ root_page:
         pin: '1'
       - component: U1
         pin: '13'
+
     GND:
       name: GND
       description: Общий провод (кузов автомобиля)
@@ -527,7 +800,13 @@ root_page:
         pin: GND
       - component: X_OUT
         pin: GND
-      - component: X_ACT
+      - component: X_M1
+        pin: GND
+      - component: X_M2
+        pin: GND
+      - component: X_M3
+        pin: GND
+      - component: X_M4
         pin: GND
       - component: U1
         pin: '18'
@@ -535,6 +814,7 @@ root_page:
         pin: '31'
       - component: X_BACKLIGHT
         pin: GND
+
     NRST:
       name: NRST
       description: Сброс МК (RC-цепь)
@@ -553,6 +833,7 @@ root_page:
         pin: '2'
       - component: C21
         pin: '1'
+
     BOOT0:
       name: BOOT0
       description: 'Выбор режима загрузки: подтяжка к GND (загрузка из основной Flash)'
@@ -569,6 +850,7 @@ root_page:
         pin: '1'
       - component: U1
         pin: '60'
+
     SWDIO:
       name: SWDIO
       description: 'Отладочный интерфейс SWD: данные'
@@ -585,6 +867,7 @@ root_page:
         pin: '2'
       - component: U1
         pin: '46'
+
     SWCLK:
       name: SWCLK
       description: 'Отладочный интерфейс SWD: тактирование'
@@ -601,6 +884,7 @@ root_page:
         pin: '3'
       - component: U1
         pin: '49'
+
     BTN_DEFROST_GLASS:
       name: BTN_DEFROST_GLASS
       description: 'Кнопка: воздух на стекло'
@@ -617,6 +901,7 @@ root_page:
         pin: '29'
       - component: X_UI
         pin: BTN_DEFROST_GLASS
+
     BTN_FACE:
       name: BTN_FACE
       description: 'Кнопка: воздух в лицо'
@@ -633,6 +918,7 @@ root_page:
         pin: '30'
       - component: X_UI
         pin: BTN_FACE
+
     BTN_FEET:
       name: BTN_FEET
       description: 'Кнопка: воздух в ноги'
@@ -649,6 +935,7 @@ root_page:
         pin: '33'
       - component: X_UI
         pin: BTN_FEET
+
     BTN_DRY_GLASS:
       name: BTN_DRY_GLASS
       description: 'Кнопка: сушка стекла'
@@ -665,6 +952,7 @@ root_page:
         pin: '34'
       - component: X_UI
         pin: BTN_DRY_GLASS
+
     BTN_AC:
       name: BTN_AC
       description: 'Кнопка: кондиционер'
@@ -681,6 +969,7 @@ root_page:
         pin: '35'
       - component: X_UI
         pin: BTN_AC
+
     BTN_RECIRC:
       name: BTN_RECIRC
       description: 'Кнопка: рециркуляция'
@@ -697,6 +986,7 @@ root_page:
         pin: '36'
       - component: X_UI
         pin: BTN_RECIRC
+
     LED_DEFROST_GLASS_DRV:
       name: LED_DEFROST_GLASS_DRV
       description: 'Индикатор кнопки: воздух на стекло (управление, активный низкий
@@ -714,6 +1004,7 @@ root_page:
         pin: LED_DEFROST_GLASS_DRV
       - component: U1
         pin: '50'
+
     LED_FACE_DRV:
       name: LED_FACE_DRV
       description: 'Индикатор кнопки: воздух в лицо (управление, активный низкий уровень)'
@@ -730,6 +1021,7 @@ root_page:
         pin: LED_FACE_DRV
       - component: U1
         pin: '55'
+
     LED_FEET_DRV:
       name: LED_FEET_DRV
       description: 'Индикатор кнопки: воздух в ноги (управление, активный низкий уровень)'
@@ -746,6 +1038,7 @@ root_page:
         pin: LED_FEET_DRV
       - component: U1
         pin: '56'
+
     LED_DRY_GLASS_DRV:
       name: LED_DRY_GLASS_DRV
       description: 'Индикатор кнопки: сушка стекла (управление, активный низкий уровень)'
@@ -762,6 +1055,7 @@ root_page:
         pin: LED_DRY_GLASS_DRV
       - component: U1
         pin: '3'
+
     LED_AC_DRV:
       name: LED_AC_DRV
       description: 'Индикатор кнопки: кондиционер (управление, активный низкий уровень)'
@@ -778,6 +1072,7 @@ root_page:
         pin: LED_AC_DRV
       - component: U1
         pin: '4'
+
     LED_RECIRC_DRV:
       name: LED_RECIRC_DRV
       description: 'Индикатор кнопки: рециркуляция (управление, активный низкий уровень)'
@@ -794,6 +1089,7 @@ root_page:
         pin: LED_RECIRC_DRV
       - component: U1
         pin: '10'
+
     TEMP_SET_ADC:
       name: TEMP_SET_ADC
       description: АЦП задания температуры (потенциометр, 2-проводное включение, внутренний
@@ -811,6 +1107,7 @@ root_page:
         pin: '14'
       - component: X_UI
         pin: TEMP_SET_ADC
+
     FAN_SEL_ADC:
       name: FAN_SEL_ADC
       description: АЦП выбора режима/скорости вентилятора (галлетник AUTO,0..4, резисторный
@@ -828,6 +1125,7 @@ root_page:
         pin: '15'
       - component: X_UI
         pin: FAN_SEL_ADC
+
     NTC_CABIN:
       name: NTC_CABIN
       description: Температура воздуха в салоне (NTC на плате в трубе продувки)
@@ -846,6 +1144,7 @@ root_page:
         pin: NTC_CABIN
       - component: X_SEN_CABIN
         pin: NTC_CABIN
+
     NTC_HEAT_W:
       name: NTC_HEAT_W
       description: 'Датчик патрубка отопителя: узел линии на разъёме'
@@ -862,6 +1161,7 @@ root_page:
         pin: NTC_HEAT_W
       - component: X_SEN_HEAT
         pin: NTC_HEAT_W
+
     NTC_HEAT:
       name: NTC_HEAT
       description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора)'
@@ -878,6 +1178,7 @@ root_page:
         pin: NTC_HEAT
       - component: U1
         pin: '17'
+
     SOLAR_RAW:
       name: SOLAR_RAW
       description: Выход датчика солнечной радиации (0..5В)
@@ -894,6 +1195,7 @@ root_page:
         pin: SOLAR_RAW
       - component: X_SEN_SOLAR
         pin: SOLAR_RAW
+
     SOLAR_ADC:
       name: SOLAR_ADC
       description: Сигнал солнечной радиации после делителя 5В->3,3В на АЦП
@@ -910,6 +1212,7 @@ root_page:
         pin: '20'
       - component: X_SEN_SOLAR
         pin: SOLAR_ADC
+
     COND_RAW:
       name: COND_RAW
       description: Выход датчика конденсата на стекле (0..5В)
@@ -926,6 +1229,7 @@ root_page:
         pin: COND_RAW
       - component: X_SEN_COND
         pin: COND_RAW
+
     COND_ADC:
       name: COND_ADC
       description: Сигнал конденсата после делителя 5В->3,3В на АЦП
@@ -942,38 +1246,25 @@ root_page:
         pin: '21'
       - component: X_SEN_COND
         pin: COND_ADC
-    MOTOR_1_A:
-      name: MOTOR_1_A
-      description: 'Заслонка 1: выход А мостового драйвера к моторедуктору'
+
+    # ─── Канал заслонки 1 ──────────────────────────────────────────
+    FB_M1_RAW:
+      name: FB_M1_RAW
+      description: 'Заслонка 1: выход потенциометра положения (0..5В) с J1:7'
       attributes:
-        type: PWM_POWER
-        voltage_level: 0..12.0V
-        current_max: 5.0A
+        type: ANALOG_SIGNAL
+        voltage_level: 0..5.0V
+        current_max: 0.005A
         spice_simulation:
           model_stimulus: ''
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
       - component: X_PWR
-        pin: MOTOR_1_A
-      - component: X_ACT
-        pin: MOTOR_1_A
-    MOTOR_1_B:
-      name: MOTOR_1_B
-      description: 'Заслонка 1: выход B мостового драйвера к моторедуктору'
-      attributes:
-        type: PWM_POWER
-        voltage_level: 0..12.0V
-        current_max: 5.0A
-        spice_simulation:
-          model_stimulus: ''
-          parasitic_r_ohm: 0.05
-          parasitic_l_h: 10n
-      nodes:
-      - component: X_PWR
-        pin: MOTOR_1_B
-      - component: X_ACT
-        pin: MOTOR_1_B
+        pin: FB_M1_RAW
+      - component: X_M1
+        pin: FB_RAW
+
     FB_M1:
       name: FB_M1
       description: 'Заслонка 1: сигнал ОС после делителя 5В->3,3В на АЦП'
@@ -988,8 +1279,9 @@ root_page:
       nodes:
       - component: U1
         pin: '22'
-      - component: X_ACT
-        pin: FB_M1
+      - component: X_M1
+        pin: FB
+
     M1_IN1:
       name: M1_IN1
       description: 'Заслонка 1: вход IN1 драйвера'
@@ -1004,8 +1296,9 @@ root_page:
       nodes:
       - component: U1
         pin: '42'
-      - component: X_ACT
-        pin: M1_IN1
+      - component: X_M1
+        pin: IN1
+
     M1_IN2:
       name: M1_IN2
       description: 'Заслонка 1: вход IN2 драйвера'
@@ -1020,11 +1313,12 @@ root_page:
       nodes:
       - component: U1
         pin: '43'
-      - component: X_ACT
-        pin: M1_IN2
-    MOTOR_2_A:
-      name: MOTOR_2_A
-      description: 'Заслонка 2: выход А мостового драйвера к моторедуктору'
+      - component: X_M1
+        pin: IN2
+
+    MOTOR_1_A:
+      name: MOTOR_1_A
+      description: 'Заслонка 1: выход А мостового драйвера к моторедуктору'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1035,12 +1329,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_PWR
-        pin: MOTOR_2_A
-      - component: X_ACT
-        pin: MOTOR_2_A
-    MOTOR_2_B:
-      name: MOTOR_2_B
-      description: 'Заслонка 2: выход B мостового драйвера к моторедуктору'
+        pin: MOTOR_1_A
+      - component: X_M1
+        pin: MOTOR_A
+
+    MOTOR_1_B:
+      name: MOTOR_1_B
+      description: 'Заслонка 1: выход B мостового драйвера к моторедуктору'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1051,15 +1346,17 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_PWR
-        pin: MOTOR_2_B
-      - component: X_ACT
-        pin: MOTOR_2_B
+        pin: MOTOR_1_B
+      - component: X_M1
+        pin: MOTOR_B
+
+    # ─── Канал заслонки 2 ──────────────────────────────────────────
     FB_M2_RAW:
       name: FB_M2_RAW
-      description: 'Заслонка 2: выход потенциометра положения (0..5В)'
+      description: 'Заслонка 2: выход потенциометра положения (0..5В) с J1:10'
       attributes:
         type: ANALOG_SIGNAL
-        voltage_level: 0..3.3V
+        voltage_level: 0..5.0V
         current_max: 0.005A
         spice_simulation:
           model_stimulus: ''
@@ -1068,8 +1365,9 @@ root_page:
       nodes:
       - component: X_PWR
         pin: FB_M2_RAW
-      - component: X_ACT
-        pin: FB_M2_RAW
+      - component: X_M2
+        pin: FB_RAW
+
     FB_M2:
       name: FB_M2
       description: 'Заслонка 2: сигнал ОС после делителя 5В->3,3В на АЦП'
@@ -1084,8 +1382,9 @@ root_page:
       nodes:
       - component: U1
         pin: '23'
-      - component: X_ACT
-        pin: FB_M2
+      - component: X_M2
+        pin: FB
+
     M2_IN1:
       name: M2_IN1
       description: 'Заслонка 2: вход IN1 драйвера'
@@ -1100,8 +1399,9 @@ root_page:
       nodes:
       - component: U1
         pin: '44'
-      - component: X_ACT
-        pin: M2_IN1
+      - component: X_M2
+        pin: IN1
+
     M2_IN2:
       name: M2_IN2
       description: 'Заслонка 2: вход IN2 драйвера'
@@ -1116,11 +1416,12 @@ root_page:
       nodes:
       - component: U1
         pin: '45'
-      - component: X_ACT
-        pin: M2_IN2
-    MOTOR_3_A:
-      name: MOTOR_3_A
-      description: 'Заслонка 3: выход А мостового драйвера к моторедуктору'
+      - component: X_M2
+        pin: IN2
+
+    MOTOR_2_A:
+      name: MOTOR_2_A
+      description: 'Заслонка 2: выход А мостового драйвера к моторедуктору'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1131,12 +1432,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_PWR
-        pin: MOTOR_3_A
-      - component: X_ACT
-        pin: MOTOR_3_A
-    MOTOR_3_B:
-      name: MOTOR_3_B
-      description: 'Заслонка 3: выход B мостового драйвера к моторедуктору'
+        pin: MOTOR_2_A
+      - component: X_M2
+        pin: MOTOR_A
+
+    MOTOR_2_B:
+      name: MOTOR_2_B
+      description: 'Заслонка 2: выход B мостового драйвера к моторедуктору'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1147,15 +1449,17 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_PWR
-        pin: MOTOR_3_B
-      - component: X_ACT
-        pin: MOTOR_3_B
+        pin: MOTOR_2_B
+      - component: X_M2
+        pin: MOTOR_B
+
+    # ─── Канал заслонки 3 ──────────────────────────────────────────
     FB_M3_RAW:
       name: FB_M3_RAW
-      description: 'Заслонка 3: выход потенциометра положения (0..5В)'
+      description: 'Заслонка 3: выход потенциометра положения (0..5В) с J1:13'
       attributes:
         type: ANALOG_SIGNAL
-        voltage_level: 0..3.3V
+        voltage_level: 0..5.0V
         current_max: 0.005A
         spice_simulation:
           model_stimulus: ''
@@ -1164,8 +1468,9 @@ root_page:
       nodes:
       - component: X_PWR
         pin: FB_M3_RAW
-      - component: X_ACT
-        pin: FB_M3_RAW
+      - component: X_M3
+        pin: FB_RAW
+
     FB_M3:
       name: FB_M3
       description: 'Заслонка 3: сигнал ОС после делителя 5В->3,3В на АЦП'
@@ -1180,8 +1485,9 @@ root_page:
       nodes:
       - component: U1
         pin: '26'
-      - component: X_ACT
-        pin: FB_M3
+      - component: X_M3
+        pin: FB
+
     M3_IN1:
       name: M3_IN1
       description: 'Заслонка 3: вход IN1 драйвера'
@@ -1196,8 +1502,9 @@ root_page:
       nodes:
       - component: U1
         pin: '57'
-      - component: X_ACT
-        pin: M3_IN1
+      - component: X_M3
+        pin: IN1
+
     M3_IN2:
       name: M3_IN2
       description: 'Заслонка 3: вход IN2 драйвера'
@@ -1212,11 +1519,12 @@ root_page:
       nodes:
       - component: U1
         pin: '58'
-      - component: X_ACT
-        pin: M3_IN2
-    MOTOR_4_A:
-      name: MOTOR_4_A
-      description: 'Заслонка 4: выход А мостового драйвера к моторедуктору'
+      - component: X_M3
+        pin: IN2
+
+    MOTOR_3_A:
+      name: MOTOR_3_A
+      description: 'Заслонка 3: выход А мостового драйвера к моторедуктору'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1227,12 +1535,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_PWR
-        pin: MOTOR_4_A
-      - component: X_ACT
-        pin: MOTOR_4_A
-    MOTOR_4_B:
-      name: MOTOR_4_B
-      description: 'Заслонка 4: выход B мостового драйвера к моторедуктору'
+        pin: MOTOR_3_A
+      - component: X_M3
+        pin: MOTOR_A
+
+    MOTOR_3_B:
+      name: MOTOR_3_B
+      description: 'Заслонка 3: выход B мостового драйвера к моторедуктору'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1243,15 +1552,17 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_PWR
-        pin: MOTOR_4_B
-      - component: X_ACT
-        pin: MOTOR_4_B
+        pin: MOTOR_3_B
+      - component: X_M3
+        pin: MOTOR_B
+
+    # ─── Канал заслонки 4 ──────────────────────────────────────────
     FB_M4_RAW:
       name: FB_M4_RAW
-      description: 'Заслонка 4: выход потенциометра положения (0..5В)'
+      description: 'Заслонка 4: выход потенциометра положения (0..5В) с J1:16'
       attributes:
         type: ANALOG_SIGNAL
-        voltage_level: 0..3.3V
+        voltage_level: 0..5.0V
         current_max: 0.005A
         spice_simulation:
           model_stimulus: ''
@@ -1260,8 +1571,9 @@ root_page:
       nodes:
       - component: X_PWR
         pin: FB_M4_RAW
-      - component: X_ACT
-        pin: FB_M4_RAW
+      - component: X_M4
+        pin: FB_RAW
+
     FB_M4:
       name: FB_M4
       description: 'Заслонка 4: сигнал ОС после делителя 5В->3,3В на АЦП'
@@ -1276,8 +1588,9 @@ root_page:
       nodes:
       - component: U1
         pin: '27'
-      - component: X_ACT
-        pin: FB_M4
+      - component: X_M4
+        pin: FB
+
     M4_IN1:
       name: M4_IN1
       description: 'Заслонка 4: вход IN1 драйвера'
@@ -1292,8 +1605,9 @@ root_page:
       nodes:
       - component: U1
         pin: '59'
-      - component: X_ACT
-        pin: M4_IN1
+      - component: X_M4
+        pin: IN1
+
     M4_IN2:
       name: M4_IN2
       description: 'Заслонка 4: вход IN2 драйвера'
@@ -1308,8 +1622,44 @@ root_page:
       nodes:
       - component: U1
         pin: '2'
-      - component: X_ACT
-        pin: M4_IN2
+      - component: X_M4
+        pin: IN2
+
+    MOTOR_4_A:
+      name: MOTOR_4_A
+      description: 'Заслонка 4: выход А мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_4_A
+      - component: X_M4
+        pin: MOTOR_A
+
+    MOTOR_4_B:
+      name: MOTOR_4_B
+      description: 'Заслонка 4: выход B мостового драйвера к моторедуктору'
+      attributes:
+        type: PWM_POWER
+        voltage_level: 0..12.0V
+        current_max: 5.0A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: X_PWR
+        pin: MOTOR_4_B
+      - component: X_M4
+        pin: MOTOR_B
+
+    # ─── Остальные выходы ──────────────────────────────────────────
     FAN_PWM_CTL:
       name: FAN_PWM_CTL
       description: Внутренний ШИМ-сигнал управления основным вентилятором с МК
@@ -1326,6 +1676,7 @@ root_page:
         pin: '41'
       - component: X_OUT
         pin: FAN_PWM_CTL
+
     HEAT_FAN_PWM_CTL:
       name: HEAT_FAN_PWM_CTL
       description: Внешний ШИМ-выход на автомобильный разъем к штатному силовому модулю
@@ -1343,6 +1694,7 @@ root_page:
         pin: HEAT_FAN_PWM_CTL
       - component: X_OUT
         pin: HEAT_FAN_PWM_CTL
+
     M_FAN_CTL:
       name: M_FAN_CTL
       description: Управление мини-вентилятором продувки датчика
@@ -1359,6 +1711,7 @@ root_page:
         pin: '11'
       - component: X_SEN_CABIN
         pin: M_FAN_CTL
+
     AC_CTL:
       name: AC_CTL
       description: Управление транзистором запроса кондиционера
@@ -1375,9 +1728,10 @@ root_page:
         pin: '28'
       - component: X_OUT
         pin: AC_CTL
+
     AC_REQ_OUT:
       name: AC_REQ_OUT
-      description: Линия запроса кондиционера +12В к J1:31 (вход ЭБУ двигателя)
+      description: Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя)
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1391,6 +1745,7 @@ root_page:
         pin: AC_REQ_OUT
       - component: X_OUT
         pin: AC_REQ_OUT
+
     ILLUM_IN_RAW:
       name: ILLUM_IN_RAW
       description: Вход внешней подсветки прибора (+12В габаритов)
@@ -1409,6 +1764,7 @@ root_page:
         pin: ILLUM_IN_RAW
       - component: X_BACKLIGHT
         pin: ILLUM_IN_RAW
+
     ILLUM_SENSE:
       name: ILLUM_SENSE
       description: Сигнал подсветки после делителя на вход МК
@@ -1425,6 +1781,7 @@ root_page:
         pin: '8'
       - component: X_UI
         pin: ILLUM_SENSE
+
     CAN_TX:
       name: CAN_TX
       description: 'CAN: передача от МК к трансиверу'
@@ -1441,6 +1798,7 @@ root_page:
         pin: '62'
       - component: X_CAN
         pin: CAN_TX
+
     CAN_RX:
       name: CAN_RX
       description: 'CAN: приём от трансивера к МК'
@@ -1457,6 +1815,7 @@ root_page:
         pin: '61'
       - component: X_CAN
         pin: CAN_RX
+
     CANH:
       name: CANH
       description: 'CAN: шина High (J1:25)'
@@ -1473,6 +1832,7 @@ root_page:
         pin: CANH
       - component: X_PWR
         pin: CANH
+
     CANL:
       name: CANL
       description: 'CAN: шина Low (J1:26)'
