@@ -9,7 +9,7 @@
        - от нового пина отросток;
        - ищется ближайшая точка на существующих сегментах сети;
        - маршрут от tip-отростка до точки врезки.
-    3. При неудаче — метка на пине.
+    3. При неудаче — метка на пине или на T-точке.
 
 Правила маршрутизации — в router_impl/rules.py.
 Поиск пути — в router_impl/pathfind.py.
@@ -228,8 +228,10 @@ class Router(RouterLogMixin):
         if seed is None:
             log.warning("%s no_seed_pair endpoints=%d",
                         ctx(page=self.page, net=net_name), n)
-            for cell, pin in endpoints:
-                self._mark_fallback(net_name, pin, cell, "route failed")
+            for _cell, pin in endpoints:
+                self._mark_fallback(net_name, pin,
+                                    self._pin_contact_mm(pin),
+                                    "route failed")
             return wires
 
         for k, (cell, pin) in enumerate(endpoints):
@@ -280,8 +282,12 @@ class Router(RouterLogMixin):
             self._log_frontier(net_name, attempt)
             self.frontier.update(attempt.frontier)
 
-            self._mark_fallback(net_name, pin_a, cell_a, "route failed")
-            self._mark_fallback(net_name, pin_b, cell_b, "route failed")
+            self._mark_fallback(net_name, pin_a,
+                                self._pin_contact_mm(pin_a),
+                                "route failed")
+            self._mark_fallback(net_name, pin_b,
+                                self._pin_contact_mm(pin_b),
+                                "route failed")
             log.warning("%s fallback labels_on=%s,%s",
                         ctx(page=self.page, net=net_name),
                         pin_a.local_key, pin_b.local_key)
@@ -363,10 +369,26 @@ class Router(RouterLogMixin):
                         comp=self._designator(pin_c),
                         pin=self._pin_num(pin_c)),
                     pin_c.local_key, min(len(candidates), max_tries))
-        self._mark_fallback(net_name, pin_c, cell_c, "T-junction failed")
-        log.warning("%s fallback label_on=%s",
-                    ctx(page=self.page, net=net_name),
-                    pin_c.local_key)
+
+        # Ближайшая T-точка, к которой пытались дойти; если проводов
+        # в сети ещё нет — метка уходит на пин.
+        if candidates:
+            target = candidates[0]
+            contact_mm = (
+                target.col * self.grid_mm,
+                target.row * self.grid_mm,
+            )
+            self._mark_fallback(net_name, pin_c, contact_mm,
+                                "T-junction failed", on_wire=True)
+            log.warning("%s fallback label_on=wire cell=%s",
+                        ctx(page=self.page, net=net_name), target)
+        else:
+            self._mark_fallback(net_name, pin_c,
+                                self._pin_contact_mm(pin_c),
+                                "T-junction failed")
+            log.warning("%s fallback label_on=%s",
+                        ctx(page=self.page, net=net_name),
+                        pin_c.local_key)
         return None
 
     @staticmethod
@@ -417,24 +439,54 @@ class Router(RouterLogMixin):
     # Метки fallback — пишутся в Sheet, не в Router
     # =========================================================
 
-    def _mark_fallback(self, net_name: str, pin, cell: Cell,
-                   reason: str) -> None:
-        """Ставит метку на пин, если её ещё нет на странице.
+    def _pin_contact_mm(self, pin) -> Tuple[float, float]:
+        """Точка контакта пина в мм (Y↓) для anchor'а fallback-метки.
 
-        Идемпотентность — по local_key в пределах страницы.
+        anchor_page_mm компонента + offset_mm пина (см. Pin.contact_mm).
+        Если пин ещё не привязан к странице (anchor нет) — падаем на
+        anchor компонента, чтобы метка всё равно встала.
         """
-        key = pin.local_key
-        for lbl in self.sheet.labels:
-            if lbl.local_key == key:
-                return
+        mm = pin.contact_mm
+        if mm is None:
+            return pin.component.anchor_page_mm
+        return mm
+
+    def _mark_fallback(self, net_name: str, pin,
+                       contact_mm: Tuple[float, float],
+                       reason: str, on_wire: bool = False) -> None:
+        """Ставит метку fallback.
+
+        on_wire=False — метка на пине. Пин не подключён к сети проводом
+            и связывается с ней по имени. Дедуп по local_key: у каждого
+            пина своя метка.
+        on_wire=True — метка на проводе сети (T-точка). Дедуп по net_name:
+            на сеть достаточно одной такой метки.
+
+        direction = pin.direction (без инверсии): anchor = contact_mm,
+        текст рисуется против вектора направления, то есть наружу.
+        """
+        if on_wire:
+            for lbl in self.sheet.labels:
+                if lbl.net_name == net_name and lbl.on_wire:
+                    log.debug("%s label_skipped net=%s already_on_wire",
+                            ctx(page=self.page, net=net_name), net_name)
+                    return
+        else:
+            for lbl in self.sheet.labels:
+                if lbl.local_key == pin.local_key:
+                    return
+
         self.sheet.labels.append(FallbackLabel(
             net_name=net_name,
-            local_key=key,
-            cell=cell,
+            local_key=pin.local_key,
+            contact_mm=contact_mm,
+            direction=pin.direction,
             reason=reason,
+            on_wire=on_wire,
         ))
-        log.info("%s label net=%s reason=%s",
+        log.info("%s label net=%s reason=%s on_wire=%s "
+                 "contact_mm=%s dir=%s",
                 ctx(page=self.page, net=net_name,
                     comp=self._designator(pin),
                     pin=self._pin_num(pin)),
-                net_name, reason)
+                net_name, reason, on_wire, contact_mm, pin.direction)

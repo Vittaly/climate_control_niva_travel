@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import List, Optional, TYPE_CHECKING
 
 from cell import Cell
-from constants import Axis
+from constants import Axis, Direction
 from logging_setup import get_logger, ctx
 
 if TYPE_CHECKING:
@@ -60,6 +60,26 @@ class Writer:
         """
         return (cell.col * self.cell_size_mm,
                 cell.row * self.cell_size_mm)
+
+    @staticmethod
+    def _label_angle(direction: Direction) -> int:
+        """Угол label'а в KiCad.
+
+        anchor = contact_mm (точка контакта). direction пина смотрит
+        «в тело» компонента, поэтому текст рисуется против вектора
+        направления — то есть наружу.
+
+            0   — текст вправо от anchor
+            180 — текст влево  от anchor
+            90  — текст вверх
+            270 — текст вниз
+        """
+        return {
+            Direction.LEFT:    0,     # пин смотрит влево  → текст вправо
+            Direction.RIGHT: 180,     # пин смотрит вправо → текст влево
+            Direction.DOWN:   90,     # пин смотрит вниз   → текст вверх
+            Direction.UP:    270,     # пин смотрит вверх  → текст вниз
+        }[direction]
 
     def write_text(self) -> str:
         """Текстовая сводка по странице (для routes.txt / отладки)."""
@@ -273,20 +293,25 @@ class Writer:
         # ---------- 6. Метки сети ----------
         n_labels = 0
         for lbl in getattr(sheet, "labels", []) or []:
-            x_mm, y_mm = self.cell_to_mm(lbl.cell)
+            x_mm, y_mm = lbl.contact_mm
+            rotation = float(self._label_angle(lbl.direction))
+            justify = "right" if rotation == 180.0 else "left"
             try:
-                sch.add_label(lbl.net_name, (x_mm, y_mm))
+                sch.add_label(lbl.net_name, (x_mm, y_mm),
+                            rotation=rotation,
+                            effects={"justify": justify})
                 log.info(
-                    "%s write_label net=%s pin=%s cell=(%d,%d) mm=(%.2f,%.2f)",
+                    "%s write_label net=%s pin=%s on_wire=%s "
+                    "contact_mm=(%.2f,%.2f) dir=%s rotation=%.0f "
+                    "justify=%s",
                     ctx(page=label, net=lbl.net_name,
                         pin=lbl.local_key),
-                    lbl.net_name, lbl.local_key,
-                    lbl.cell.col, lbl.cell.row,
-                    x_mm, y_mm,
+                    lbl.net_name, lbl.local_key, lbl.on_wire,
+                    x_mm, y_mm, lbl.direction, rotation, justify,
                 )
                 n_labels += 1
             except Exception as e:
-                log.warning("%s label pin=%s error=%s",
+                log.warning("%s label error=%s",
                             ctx(page=label, net=lbl.net_name,
                                 pin=lbl.local_key), e)
 

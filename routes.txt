@@ -1,7 +1,7 @@
 # sheet=root
 # cell_size_mm=1.27
 # components=25
-# labels=34
+# labels=31
 # t_junctions=44
 C10: 100nF anchor_mm=(120.65,397.51) 3x7 cells rot=0 mirror=None
 C21: 100nF anchor_mm=(298.45,111.76) 3x7 cells rot=0 mirror=None
@@ -166,7 +166,7 @@ PORT_M_FAN_CTL: M_FAN_CTL anchor_mm=(22.86,6.35) 9x2 cells rot=0 mirror=None
 # sheet=heating_sensor.kicad_sch
 # cell_size_mm=1.27
 # components=7
-# labels=9
+# labels=10
 # t_junctions=0
 C25: 100nF anchor_mm=(17.78,17.78) 3x7 cells rot=0 mirror=None
 R25: 10k anchor_mm=(16.51,19.05) 3x7 cells rot=0 mirror=None
@@ -178,7 +178,7 @@ PORT_NTC_HEAT: NTC_HEAT anchor_mm=(13.97,16.51) 8x2 cells rot=0 mirror=None
 # sheet=solar_sensor.kicad_sch
 # cell_size_mm=1.27
 # components=6
-# labels=9
+# labels=10
 # t_junctions=0
 C26: 100nF anchor_mm=(17.78,19.05) 3x7 cells rot=0 mirror=None
 R27: 10k anchor_mm=(17.78,17.78) 3x7 cells rot=0 mirror=None
@@ -189,7 +189,7 @@ PORT_SOLAR_ADC: SOLAR_ADC anchor_mm=(16.51,16.51) 9x2 cells rot=0 mirror=None
 # sheet=condensate_sensor.kicad_sch
 # cell_size_mm=1.27
 # components=6
-# labels=9
+# labels=10
 # t_junctions=0
 C27: 100nF anchor_mm=(16.51,19.05) 3x7 cells rot=0 mirror=None
 R29: 10k anchor_mm=(16.51,17.78) 3x7 cells rot=0 mirror=None

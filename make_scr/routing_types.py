@@ -9,6 +9,9 @@ from dataclasses import dataclass
 
 from cell import Cell
 
+from typing import Tuple
+from constants import Direction
+
 
 @dataclass
 class FallbackLabel:
@@ -23,9 +26,12 @@ class FallbackLabel:
     """
     net_name: str
     local_key: str
-    cell: Cell
+    contact_mm: Tuple[float, float]   # точка контакта: пин или T-точка
+    direction: Direction              # = pin.direction, без инверсии
     reason: str
     kind: str = "label"
+    on_wire: bool = False   # True — метка на проводе сети (T-точка), False — на пине
+
 
 
 @dataclass

@@ -184,7 +184,7 @@ class SheetRefComponent(Component):
             # «в тело»: пин на левом краю смотрит вправо (внутрь bbox)
             direction = Direction.RIGHT
         else:
-            col_cell = self.bbox_cols - 1
+            col_cell = self.bbox_cols
             # «в тело»: пин на правом краю смотрит влево (внутрь bbox)
             direction = Direction.LEFT
 

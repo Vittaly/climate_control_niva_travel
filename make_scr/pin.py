@@ -78,6 +78,24 @@ class Pin:
     # ---------- удобные свойства ----------
 
     @property
+    def contact_mm(self) -> Optional[Tuple[float, float]]:
+        """Точка контакта пина на странице, в мм (Y↓).
+
+        abs_pin_mm = anchor_page_mm + offset_mm.
+        Возвращает None, если пин не привязан к компоненту
+        или у компонента ещё нет anchor_page_mm.
+
+        Используется writer'ом для anchor'а fallback-метки:
+        anchor = contact_mm, direction = pin.direction (без инверсии),
+        текст рисуется против вектора направления, то есть наружу.
+        """
+        comp = self.component
+        if comp is None or comp.anchor_page_mm is None:
+            return None
+        ax, ay = comp.anchor_page_mm
+        return (ax + self.offset_x, ay + self.offset_y)
+    
+    @property
     def offset_x(self) -> float:
         """Смещение пина от якоря по X (мм)."""
         return self.offset_mm[Axis.X]
