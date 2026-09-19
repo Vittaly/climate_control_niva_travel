@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/can_bus.kicad_sch")
-		(date "2026-09-19T01:04:33")
+		(date "2026-09-19T10:25:13")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "8e2b83aa-8201-424e-9f64-0e1bc455f24c")
+			(tstamps "0631e64d-8b9a-4876-9b5a-bd6f9e265d67")
 			(units
 				(unit
 					(name "A")
@@ -213,18 +213,6 @@
 			(class "Default")
 			(node
 				(ref "U8")
-				(pin "3")
-				(pinfunction "VDD_3")
-				(pintype "power_in")
-			)
-			(node
-				(ref "U8")
-				(pin "5")
-				(pinfunction "Vio_5")
-				(pintype "power_in")
-			)
-			(node
-				(ref "U8")
 				(pin "7")
 				(pinfunction "CANH_7")
 				(pintype "bidirectional")
@@ -278,6 +266,23 @@
 				(pin "8")
 				(pinfunction "STBY_8")
 				(pintype "input")
+			)
+		)
+		(net
+			(code "6")
+			(name "/VCC_5V")
+			(class "Default")
+			(node
+				(ref "U8")
+				(pin "3")
+				(pinfunction "VDD_3")
+				(pintype "power_in")
+			)
+			(node
+				(ref "U8")
+				(pin "5")
+				(pinfunction "Vio_5")
+				(pintype "power_in")
 			)
 		)
 	)

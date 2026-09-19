@@ -5,7 +5,7 @@
 .INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/motor_model.lib
 .INCLUDE spice/ACTUATOR_CHANNEL.sub
 
-* Порты: FB FB_RAW GND IN1 IN2 MOTOR_A MOTOR_B
+* Порты: FB FB_RAW GND IN1 IN2 MOTOR_A MOTOR_B VCC_12V
 
 * V1: Питание H-моста
 V1 VCC_12V 0 DC 14.4
@@ -18,7 +18,7 @@ V3 IN2 0 DC 0.0
 
 * XM: Тот же моторедуктор, без питания
 XM MOTOR_A MOTOR_B SPEED DC_MOTOR R_arm=30 L_arm=50m Ke=40 Kt=0.05 C_inertia=1e-4 R_friction=30
-XACTUATOR_CHANNEL FB FB_RAW 0 IN1 IN2 MOTOR_A MOTOR_B ACTUATOR_CHANNEL
+XACTUATOR_CHANNEL FB FB_RAW 0 IN1 IN2 MOTOR_A MOTOR_B VCC_12V ACTUATOR_CHANNEL
 
 .op
 .control

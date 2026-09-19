@@ -31,7 +31,7 @@ X_M4: X_M4 anchor_mm=(12.70,3.81) 18x14 cells rot=0 mirror=None
 # sheet=can_bus.kicad_sch
 # cell_size_mm=1.27
 # components=7
-# labels=6
+# labels=8
 # t_junctions=2
 U8: MCP2562-E-SN anchor_mm=(35.56,24.13) 21x17 cells rot=0 mirror=None
 PORT_VCC_5V: VCC_5V anchor_mm=(21.59,12.70) 6x2 cells rot=0 mirror=None
@@ -43,8 +43,8 @@ PORT_CANL: CANL anchor_mm=(24.13,15.24) 5x2 cells rot=0 mirror=None
 # sheet=power_supply.kicad_sch
 # cell_size_mm=1.27
 # components=42
-# labels=0
-# t_junctions=32
+# labels=2
+# t_junctions=31
 C1: 470uF anchor_mm=(41.91,161.29) 3x7 cells rot=0 mirror=None
 C11: 100uF anchor_mm=(11.43,161.29) 3x7 cells rot=0 mirror=None
 C16: 100nF anchor_mm=(11.43,182.88) 3x7 cells rot=0 mirror=None
@@ -90,7 +90,7 @@ PORT_HEAT_FAN_PWM_CTL: HEAT_FAN_PWM_CTL anchor_mm=(34.29,3.81) 14x2 cells rot=0 
 # sheet=user_interface.kicad_sch
 # cell_size_mm=1.27
 # components=56
-# labels=7
+# labels=8
 # t_junctions=33
 C22: 100nF anchor_mm=(161.29,138.43) 3x7 cells rot=0 mirror=None
 C23: 100nF anchor_mm=(10.16,138.43) 3x7 cells rot=0 mirror=None
@@ -151,8 +151,8 @@ PORT_ILLUM_SENSE: ILLUM_SENSE anchor_mm=(97.79,90.17) 10x2 cells rot=0 mirror=No
 # sheet=cabin_sensor.kicad_sch
 # cell_size_mm=1.27
 # components=10
-# labels=0
-# t_junctions=5
+# labels=4
+# t_junctions=4
 D3: 1N4148W anchor_mm=(63.50,7.62) 7x3 cells rot=0 mirror=None
 J5: Внутр. коннектор вентилятора продувки (2п, XH) anchor_mm=(50.80,6.35) 3x3 cells rot=0 mirror=None
 Q2: AO3400 anchor_mm=(8.89,29.21) 7x9 cells rot=0 mirror=None
@@ -221,7 +221,7 @@ PORT_HEAT_FAN_PWM_CTL: HEAT_FAN_PWM_CTL anchor_mm=(26.67,31.75) 14x2 cells rot=0
 # sheet=backlight.kicad_sch
 # cell_size_mm=1.27
 # components=58
-# labels=18
+# labels=22
 # t_junctions=26
 R1: 130R anchor_mm=(36.83,128.27) 3x7 cells rot=0 mirror=None
 R2: 130R anchor_mm=(201.93,100.33) 3x7 cells rot=0 mirror=None
@@ -284,7 +284,7 @@ PORT_GND: GND anchor_mm=(95.25,66.04) 4x2 cells rot=0 mirror=None
 # sheet=actuator_channel.kicad_sch
 # cell_size_mm=1.27
 # components=14
-# labels=1
+# labels=2
 # t_junctions=6
 U1: DRV8871 H-мост anchor_mm=(48.26,57.15) 17x17 cells rot=0 mirror=None
 C1: 100nF anchor_mm=(7.62,26.67) 3x7 cells rot=0 mirror=None

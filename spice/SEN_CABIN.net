@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cabin_sensor.kicad_sch")
-		(date "2026-09-19T01:04:33")
+		(date "2026-09-19T10:25:13")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "b134fd4e-0027-4b2b-89df-5cb82b4318bb")
+			(tstamps "ffdff029-baec-4a93-a646-7040d073fa6a")
 			(units
 				(unit
 					(name "A")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6f91ade6-3811-46de-84f2-16504997c309")
+			(tstamps "c122a7f5-3338-4ad4-aad4-bac0f8f8462a")
 			(units
 				(unit
 					(name "A")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0b66ea56-d286-43d1-8f95-8d436e5fee9f")
+			(tstamps "2e49d5ae-c2c0-47f8-be03-1f6f9e4e81dd")
 			(units
 				(unit
 					(name "A")
@@ -282,7 +282,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "58dc2597-1c2c-4793-bc7a-c3c9d13e9af6")
+			(tstamps "15b3c0c4-fa13-44af-b84d-2234fbb293ca")
 			(units
 				(unit
 					(name "A")
@@ -342,7 +342,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ddd38f5e-46fa-43fd-939c-b6c038664056")
+			(tstamps "02d6d668-bf14-46de-9ffd-7e31017bce94")
 			(units
 				(unit
 					(name "A")
@@ -402,7 +402,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3240796a-7726-4c2c-9284-22c92a6cce15")
+			(tstamps "043b45c0-cfb1-4815-965a-e7583d10683f")
 			(units
 				(unit
 					(name "A")
@@ -625,24 +625,8 @@
 			(class "Default")
 			(node
 				(ref "Q2")
-				(pin "1")
-				(pinfunction "G_1")
-				(pintype "input")
-			)
-			(node
-				(ref "Q2")
 				(pin "3")
 				(pinfunction "D_3")
-				(pintype "passive")
-			)
-			(node
-				(ref "R16")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R17")
-				(pin "1")
 				(pintype "passive")
 			)
 			(node
@@ -668,6 +652,27 @@
 		)
 		(net
 			(code "3")
+			(name "/M_FAN_GATE")
+			(class "Default")
+			(node
+				(ref "Q2")
+				(pin "1")
+				(pinfunction "G_1")
+				(pintype "input")
+			)
+			(node
+				(ref "R16")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R17")
+				(pin "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "4")
 			(name "/NTC_CABIN")
 			(class "Default")
 			(node
@@ -677,7 +682,7 @@
 			)
 		)
 		(net
-			(code "4")
+			(code "5")
 			(name "/VCC_12V")
 			(class "Default")
 			(node
@@ -694,7 +699,7 @@
 			)
 		)
 		(net
-			(code "5")
+			(code "6")
 			(name "Net-(D3-K)")
 			(class "Default")
 			(node

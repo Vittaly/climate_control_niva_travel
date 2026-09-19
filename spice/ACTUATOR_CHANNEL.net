@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/actuator_channel.kicad_sch")
-		(date "2026-09-19T01:04:32")
+		(date "2026-09-19T10:25:12")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6cf4289b-8df5-4fb1-8031-37164a5fa9c4")
+			(tstamps "b49a4572-f699-420d-8651-51a1350ddb30")
 			(units
 				(unit
 					(name "A")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "9c8a9934-0235-498e-b10a-9df784bee2a3")
+			(tstamps "26c87958-f299-4148-9ed2-532f8cf8ef4f")
 			(units
 				(unit
 					(name "A")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a624f90f-081d-45ea-9053-6804168bffcb")
+			(tstamps "0501f176-9d0d-49e9-b7db-c01fc912832e")
 			(units
 				(unit
 					(name "A")
@@ -279,7 +279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "cebf88fd-2e6c-410f-a911-69763d968ca2")
+			(tstamps "e2fda96c-1129-4d98-8bc8-b8af1a0b0ae8")
 			(units
 				(unit
 					(name "A")
@@ -339,7 +339,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "23cfc3fa-74dc-4dcd-ba76-eedd53ce8a84")
+			(tstamps "2675d5f9-d197-410a-926d-db5b7f293009")
 			(units
 				(unit
 					(name "A")
@@ -399,7 +399,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "9efc5570-cac2-4db2-a129-5cb59a669aee")
+			(tstamps "ec309e82-da55-49ff-8e4a-89781a3c6c94")
 			(units
 				(unit
 					(name "A")
@@ -623,16 +623,16 @@
 			(class "Default")
 			(node
 				(ref "C1")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "C1")
 				(pin "2")
 				(pintype "passive")
 			)
 			(node
 				(ref "C2")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R1")
 				(pin "2")
 				(pintype "passive")
 			)
@@ -645,12 +645,6 @@
 				(ref "U1")
 				(pin "1")
 				(pinfunction "GND_1")
-				(pintype "power_in")
-			)
-			(node
-				(ref "U1")
-				(pin "5")
-				(pinfunction "VM_5")
 				(pintype "power_in")
 			)
 			(node
@@ -712,6 +706,22 @@
 		)
 		(net
 			(code "8")
+			(name "/VCC_12V")
+			(class "Default")
+			(node
+				(ref "C1")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U1")
+				(pin "5")
+				(pinfunction "VM_5")
+				(pintype "power_in")
+			)
+		)
+		(net
+			(code "9")
 			(name "Net-(U1-ILIM)")
 			(class "Default")
 			(node
@@ -723,16 +733,6 @@
 				(ref "U1")
 				(pin "4")
 				(pinfunction "ILIM_4")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "9")
-			(name "unconnected-(R1-Pad2)")
-			(class "Default")
-			(node
-				(ref "R1")
-				(pin "2")
 				(pintype "passive")
 			)
 		)

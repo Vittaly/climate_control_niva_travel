@@ -5,7 +5,7 @@
 * При Vdiff > порога приёмника RXD = 0.
 .INCLUDE spice/CAN.sub
 
-* Порты: CANH CANL CAN_RX CAN_TX GND
+* Порты: CANH CANL CAN_RX CAN_TX GND VCC_5V
 
 * V1: Питание трансивера +5В
 V1 VCC_5V 0 DC 5.0
@@ -18,7 +18,7 @@ V3 CANH 0 DC 3.5
 
 * V4: Внешний передатчик: CANL = 1,5В
 V4 CANL 0 DC 1.5
-XCAN CANH CANL CAN_RX CAN_TX 0 CAN
+XCAN CANH CANL CAN_RX CAN_TX 0 VCC_5V CAN
 
 .op
 .control

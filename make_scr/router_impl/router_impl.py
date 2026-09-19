@@ -260,8 +260,8 @@ class Router(RouterLogMixin):
     # =========================================================
 
     def _route_pair(self, net_name: str,
-                    cell_a: Cell, pin_a: "Pin",
-                    cell_b: Cell, pin_b: "Pin") -> Optional[Wire]:
+                cell_a: Cell, pin_a: "Pin",
+                cell_b: Cell, pin_b: "Pin") -> Optional[Wire]:
         log.info("%s connect %s → %s",
                 ctx(page=self.page, net=net_name,
                     comp=self._designator(pin_a),
@@ -301,14 +301,52 @@ class Router(RouterLogMixin):
             start_stub=stub_a.stub,
             end_stub=stub_b.stub,
         )
-        self._occupy(wire)
+
+        # Регистрация в карте. Если _occupy вернул причину — клетка
+        # занята чужой сетью несовместимо, провод НЕ валиден.
+        reason = self._occupy(wire)
+        if reason is not None:
+            log.warning(
+                "%s wire_rejected key=%s %s",
+                ctx(page=self.page, net=net_name),
+                wire.key, reason,
+            )
+            # провод не возвращаем — вызывающий его не зарегистрирует
+            # в netlist и не отдаст Writer'у
+            self._mark_fallback(net_name, pin_a,
+                                self._pin_contact_mm(pin_a),
+                                "route rejected")
+            self._mark_fallback(net_name, pin_b,
+                                self._pin_contact_mm(pin_b),
+                                "route rejected")
+            return None
+
         self._log_wire_full(net_name, wire)
         return wire
+
+
+    
 
     # =========================================================
     # T-врезка
     # =========================================================
 
+    def _cell_is_exclusive(self, cell: Cell, net_name: str) -> bool:
+        """True, если клетка занята проводами ТОЛЬКО сети net_name.
+
+        Клетки-пересечения двух сетей НЕ подходят для fallback-меток
+        и T-врезок: KiCad приклеит label/endpoint к обеим сетям и
+        склеит их. Для чистых клеток такого риска нет.
+        """
+        occ = self.map.get((cell.col, cell.row))
+        if occ is None or not isinstance(occ, WireCell):
+            return False
+        for w in occ.wires:
+            if w.net_name != net_name:
+                return False
+        return True
+    
+    
     def _route_t_junction(self, net_name: str,
                       cell_c: Cell, pin_c: "Pin",
                       existing_wires: List[Wire]) -> Optional[Wire]:
@@ -327,8 +365,13 @@ class Router(RouterLogMixin):
         candidates.sort(key=lambda c: abs(c.col - stub_c.tip.col) +
                                     abs(c.row - stub_c.tip.row))
 
+        # Отбрасываем клетки-пересечения: там уже транзит чужого провода.
+        # T-точка или label на такой клетке склеит нашу сеть с чужой.
+        exclusive = [c for c in candidates
+                    if self._cell_is_exclusive(c, net_name)]
+
         max_tries = 5
-        for i, target in enumerate(candidates[:max_tries]):
+        for i, target in enumerate(exclusive[:max_tries]):
             attempt = self._find_path(net_name, stub_c.tip, target)
             if not attempt.success:
                 continue
@@ -338,6 +381,7 @@ class Router(RouterLogMixin):
                         comp=self._designator(pin_c),
                         pin=self._pin_num(pin_c)),
                     target, i + 1)
+
             wire = Wire(
                 net_name=net_name,
                 start=pin_c,
@@ -347,7 +391,15 @@ class Router(RouterLogMixin):
                 end_stub=None,
                 t_junction=True,
             )
-            self._occupy(wire)
+            reason = self._occupy(wire)
+            if reason is not None:
+                log.warning(
+                    "%s wire_rejected key=%s target=%s %s",
+                    ctx(page=self.page, net=net_name),
+                    wire.key, target, reason,
+                )
+                continue
+
             self._log_wire_full(net_name, wire)
 
             host = self._find_host_wire(target, existing_wires)
@@ -368,27 +420,38 @@ class Router(RouterLogMixin):
                     ctx(page=self.page, net=net_name,
                         comp=self._designator(pin_c),
                         pin=self._pin_num(pin_c)),
-                    pin_c.local_key, min(len(candidates), max_tries))
+                    pin_c.local_key, min(len(exclusive), max_tries))
 
-        # Ближайшая T-точка, к которой пытались дойти; если проводов
-        # в сети ещё нет — метка уходит на пин.
-        if candidates:
-            target = candidates[0]
-            contact_mm = (
-                target.col * self.grid_mm,
-                target.row * self.grid_mm,
+        # ── Fallback ─────────────────────────────────────────────
+        # Pin-side метка ставится всегда: пин связывается с сетью
+        # по имени. Wire-side метка — только если есть «чистая»
+        # клетка (без пересечений с чужими сетями), иначе она склеит
+        # сети в KiCad.
+        self._mark_fallback(
+            net_name, pin_c,
+            self._pin_contact_mm(pin_c),
+            "T-junction failed",
+            on_wire=False,
+        )
+        log.warning("%s fallback label_on_pin=%s",
+                    ctx(page=self.page, net=net_name),
+                    pin_c.local_key)
+
+        if exclusive:
+            target = exclusive[0]
+            t_mm = (target.col * self.grid_mm,
+                    target.row * self.grid_mm)
+            self._mark_fallback(
+                net_name, pin_c, t_mm,
+                "T-junction failed",
+                on_wire=True,
             )
-            self._mark_fallback(net_name, pin_c, contact_mm,
-                                "T-junction failed", on_wire=True)
-            log.warning("%s fallback label_on=wire cell=%s",
-                        ctx(page=self.page, net=net_name), target)
-        else:
-            self._mark_fallback(net_name, pin_c,
-                                self._pin_contact_mm(pin_c),
-                                "T-junction failed")
-            log.warning("%s fallback label_on=%s",
-                        ctx(page=self.page, net=net_name),
-                        pin_c.local_key)
+            log.warning(
+                "%s fallback label_on_wire cell=%s mm=(%.2f,%.2f)",
+                ctx(page=self.page, net=net_name),
+                target, t_mm[0], t_mm[1],
+            )
+
         return None
 
     @staticmethod
@@ -413,48 +476,83 @@ class Router(RouterLogMixin):
     # Заполнение карты
     # =========================================================
 
-    def _occupy(self, wire: Wire) -> None:
+    def _occupy(self, wire: Wire) -> Optional[str]:
+        """Помечает клетки провода. Возвращает причину конфликта или None.
+
+        None — карта обновлена, провод валиден.
+        str  — конфликт: чужая сеть занимает клетку несовместимо.
+            В этом случае карта НЕ обновляется, а вызывающий код
+            обязан не регистрировать провод.
+
+        Порядок: сначала проверяем все клетки, потом применяем.
+        Если применить частично и упасть — карта и нетлист разойдутся.
+        """
+        plan: list[tuple[Cell, WireCell]] = []
+
         for cell in wire.all_cells():
             key = (cell.col, cell.row)
             existing = self.map.get(key)
+
             if existing is None:
-                self.map[key] = WireCell(wires=[wire])
+                plan.append((cell, WireCell(wires=[wire])))
                 continue
 
             if isinstance(existing, WireCell):
-                # своя сеть — просто добавляем, если объект ещё не в списке
+                # своя сеть — просто добавляем
                 if any(w.net_name == wire.net_name for w in existing.wires):
-                    existing.add_wire(wire)
+                    plan.append((cell, existing))
                     continue
 
-                # чужая сеть: проверяем совместимость с уже занятыми
+                # чужая сеть: совместимость
                 ok, reason = self._check_cross(cell, wire, existing)
-                if ok:
-                    existing.add_wire(wire)
-                else:
-                    log.error(
-                        "%s OCCUPY_CONFLICT cell=%s net=%s reason=%s "
-                        "existing_nets=%s",
-                        ctx(page=self.page, net=wire.net_name),
-                        cell, wire.net_name, reason,
-                        existing.net_names(),
-                    )
+                if not ok:
+                    return f"cell={cell} net={wire.net_name} reason={reason}"
+                plan.append((cell, existing))
                 continue
-                # ComponentBody / PinCell — стена, не перезаписываем
+
+            # ComponentBody / PinCell — стена
+            return (f"cell={cell} net={wire.net_name} "
+                    f"blocked by {type(existing).__name__}")
+
+        # Применяем: все клетки прошли проверку
+        for cell, wc in plan:
+            key = (cell.col, cell.row)
+            if self.map.get(key) is None:
+                self.map[key] = wc
+            else:
+                wc.add_wire(wire)
+
+        return None
+
     
-    def _check_cross(self, cell, new_wire, wire_cell):
+    def _check_cross(self, cell, new_wire, existing_wc):
+        """Проверяет совместимость двух проводов в клетке.
+
+        Разрешено: обе сети транзитом, ориентации перпендикулярны.
+        Запрещено: endpoint у любой из сетей; параллельные ориентации;
+                диагональ.
+        """
+        #from constants import WireOrientation
+        #from router_impl.router_rules import orientations_at, is_endpoint_at
+
         new_orients = _orientations_at(new_wire, cell)
         new_endpoint = _is_endpoint_at(new_wire, cell)
 
-        for w in wire_cell.wires:
-            orients = _orientations_at(w, cell)
-            endpoint = _is_endpoint_at(w, cell)
-            reason = _check_entry(orients, endpoint,
-                                entry_angle=...,
-                                entry_is_endpoint=new_endpoint,
-                                foreign_net=w.net_name)
-            if reason:
-                return False, reason
+        for old in existing_wc.wires:
+            old_orients = _orientations_at(old, cell)
+            old_endpoint = _is_endpoint_at(old, cell)
+
+            if new_endpoint or old_endpoint:
+                return False, f"endpoint with {old.net_name}"
+            if WireOrientation.DIAGONAL in new_orients \
+                    or WireOrientation.DIAGONAL in old_orients:
+                return False, f"diagonal with {old.net_name}"
+
+            for no in new_orients:
+                for oo in old_orients:
+                    if no == oo:
+                        return False, f"parallel {no.value} with {old.net_name}"
+
         return True, None
 
     def _compatible_cross(new_orients, new_endpoint,

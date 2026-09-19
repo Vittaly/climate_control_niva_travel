@@ -6,7 +6,7 @@
 * а Vdiff остаётся в разумных пределах.
 .INCLUDE spice/CAN.sub
 
-* Порты: CANH CANL CAN_RX CAN_TX GND
+* Порты: CANH CANL CAN_RX CAN_TX GND VCC_5V
 
 * V1: Питание трансивера
 V1 VCC_5V 0 DC 5.0
@@ -16,7 +16,7 @@ V2 CAN_TX 0 DC 0.0
 
 * R_SHORT: Имитация КЗ CANH-CANL (1 Ом)
 R_SHORT CANH CANL 1
-XCAN CANH CANL CAN_RX CAN_TX 0 CAN
+XCAN CANH CANL CAN_RX CAN_TX 0 VCC_5V CAN
 
 .op
 .control

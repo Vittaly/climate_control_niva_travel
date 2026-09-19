@@ -5,14 +5,14 @@
 * NTC_CABIN = 3.3 · 2.49/(10 + 2.49) ≈ 0.66В.
 .INCLUDE spice/SEN_CABIN.sub
 
-* Порты: GND M_FAN_CTL NTC_CABIN VCC_12V
+* Порты: GND M_FAN_CTL M_FAN_GATE NTC_CABIN VCC_12V
 
 * V1: Опорное питание АЦП (эмуляция VCC_3V3 с листа UI)
 V1 VCC_3V3_EXT 0 DC 3.3
 
 * R_PU: R24 (10к) — верхнее плечо делителя, физически на UI
 R_PU VCC_3V3_EXT NTC_CABIN 10k
-XSEN_CABIN 0 M_FAN_CTL NTC_CABIN VCC_12V SEN_CABIN RT1_T=60
+XSEN_CABIN 0 M_FAN_CTL M_FAN_GATE NTC_CABIN VCC_12V SEN_CABIN RT1_T=60
 
 .op
 .control
