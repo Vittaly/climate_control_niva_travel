@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cabin_sensor.kicad_sch")
-		(date "2026-09-19T10:25:13")
+		(date "2026-09-19T11:38:02")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ffdff029-baec-4a93-a646-7040d073fa6a")
+			(tstamps "cae9eaf2-3405-48c8-b91a-e21449dab825")
 			(units
 				(unit
 					(name "A")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "c122a7f5-3338-4ad4-aad4-bac0f8f8462a")
+			(tstamps "42375826-7f0b-4f6f-bbc4-0fac203cc381")
 			(units
 				(unit
 					(name "A")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2e49d5ae-c2c0-47f8-be03-1f6f9e4e81dd")
+			(tstamps "cf8dfcfb-ea4d-4715-90c9-8ba3f8a0ecc0")
 			(units
 				(unit
 					(name "A")
@@ -282,7 +282,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "15b3c0c4-fa13-44af-b84d-2234fbb293ca")
+			(tstamps "693cb160-c36b-406d-92fb-d83bc393afdd")
 			(units
 				(unit
 					(name "A")
@@ -342,7 +342,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "02d6d668-bf14-46de-9ffd-7e31017bce94")
+			(tstamps "c954dd5b-5b12-4c61-9b31-9f3745cef270")
 			(units
 				(unit
 					(name "A")
@@ -402,7 +402,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "043b45c0-cfb1-4815-965a-e7583d10683f")
+			(tstamps "15d1178c-33f4-4b9d-91bc-13e7a8e01fff")
 			(units
 				(unit
 					(name "A")
@@ -683,24 +683,7 @@
 		)
 		(net
 			(code "5")
-			(name "/VCC_12V")
-			(class "Default")
-			(node
-				(ref "D3")
-				(pin "2")
-				(pinfunction "A_2")
-				(pintype "passive")
-			)
-			(node
-				(ref "J5")
-				(pin "1")
-				(pinfunction "Pin_1_1")
-				(pintype "passive")
-			)
-		)
-		(net
-			(code "6")
-			(name "Net-(D3-K)")
+			(name "/SENS_FAN_SW")
 			(class "Default")
 			(node
 				(ref "D3")
@@ -718,6 +701,23 @@
 				(ref "Q2")
 				(pin "2")
 				(pinfunction "S_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "6")
+			(name "/VCC_12V")
+			(class "Default")
+			(node
+				(ref "D3")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J5")
+				(pin "1")
+				(pinfunction "Pin_1_1")
 				(pintype "passive")
 			)
 		)

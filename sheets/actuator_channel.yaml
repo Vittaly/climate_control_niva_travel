@@ -73,7 +73,7 @@ component_types:
       Tolerance: 1%
   TYPE_DRV8871DDA:
     symbol: Driver_Motor:DRV8871DDA
-    footprint: Package_SO:SOIC-8_3.9x4.9mm_P1.27mm
+    footprint: Package_SO:Texas_HTSOP-8-1EP_3.9x4.9mm_P1.27mm_EP2.95x4.9mm_Mask2.4x3.1mm_ThermalVias
     value: DRV8871 H-мост
     fields: {}
 
@@ -139,6 +139,8 @@ nets:
         pin: '1'
       - component: U1
         pin: '7'
+      - component: U1
+        pin: '9'
       - component: C1
         pin: '2'
       - component: R1

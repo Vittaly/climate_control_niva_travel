@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/heating_sensor.kicad_sch")
-		(date "2026-09-19T10:25:11")
+		(date "2026-09-19T11:38:00")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "c85b3d8b-6117-45ac-8170-3fc688374aef")
+			(tstamps "a872afc6-0619-40fd-b859-7dcde9b082ab")
 			(units
 				(unit
 					(name "A")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "483ac405-e1a4-4677-a1a2-6318b01288f5")
+			(tstamps "013c2907-8d06-4008-9611-f46b710f039c")
 			(units
 				(unit
 					(name "A")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f25f0bdb-3fb9-4871-b60e-ce96e2755741")
+			(tstamps "b30e5020-720a-433c-a7cd-a86b35d7f389")
 			(units
 				(unit
 					(name "A")
@@ -345,16 +345,21 @@
 			)
 			(node
 				(ref "R25")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R25")
 				(pin "2")
 				(pintype "passive")
 			)
 			(node
 				(ref "R26")
+				(pin "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "4")
+			(name "/VCC_3V3")
+			(class "Default")
+			(node
+				(ref "R25")
 				(pin "1")
 				(pintype "passive")
 			)

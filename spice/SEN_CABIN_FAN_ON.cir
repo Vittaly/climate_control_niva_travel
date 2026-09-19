@@ -4,7 +4,7 @@
 * Через вентилятор (R_FAN = 100 Ом) идёт ток ~144 мА.
 .INCLUDE spice/SEN_CABIN.sub
 
-* Порты: GND M_FAN_CTL M_FAN_GATE NTC_CABIN VCC_12V
+* Порты: GND M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V
 
 * V1: Бортовая сеть +14,4В
 V1 VCC_12V 0 DC 14.4
@@ -14,7 +14,7 @@ V2 M_FAN_CTL 0 DC 3.3
 
 * R_FAN: Эквивалент обмотки вентилятора (R = 100 Ом, ток ~140 мА)
 R_FAN VCC_12V SENS_FAN_SW 100
-XSEN_CABIN 0 M_FAN_CTL M_FAN_GATE NTC_CABIN VCC_12V SEN_CABIN
+XSEN_CABIN 0 M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V SEN_CABIN
 
 .op
 .control

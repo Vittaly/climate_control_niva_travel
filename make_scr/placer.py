@@ -8,7 +8,7 @@
 
 Три алгоритма (внутренние):
     - _place_rows()          — упаковка рядами;
-    - _place_connectivity()  — BFS от хаба + force-directed;
+    - _place_connectivity()  — BFS от хаба + раздвигание + force-directed;
     - _place_matrix()        — матричная раскладка (RCM + улицы).
 
 Плейсер работает ТОЛЬКО В КЛЕТКАХ:
@@ -158,13 +158,17 @@ class Placer:
     # =========================================================
 
     def auto_place(self) -> str:
-        """Размещает компоненты, сам выбирая алгоритм."""
+        """Размещает компоненты, сам выбирая алгоритм.
+
+        После connectivity — проверяет наложения. Если они есть
+        (connectivity не учитывает размеры компонентов при
+        расстановке соседей по кольцам), откатывается на matrix.
+        Matrix раскладывает по сетке и наложений не даёт.
+        """
         from connectivity import build_component_graph
 
         adj = build_component_graph(self.sheet)
         strategy = self._choose_strategy(adj)
-
-        self.last_strategy = strategy
 
         log.info("%s placement components=%d strategy=%s",
                  ctx(page=self.page_name),
@@ -174,11 +178,22 @@ class Placer:
             self._place_rows()
         elif strategy == _Strategy.CONNECTIVITY:
             self._place_connectivity(adj)
+            overlaps = self.all_overlaps()
+            if overlaps:
+                log.warning(
+                    "%s connectivity produced %d overlaps, "
+                    "fallback to matrix",
+                    ctx(page=self.page_name), len(overlaps),
+                )
+                self._reset_positions()
+                self._place_matrix(adj, _MatrixConfig())
+                strategy = _Strategy.MATRIX
         elif strategy == _Strategy.MATRIX:
             self._place_matrix(adj, _MatrixConfig())
         else:
             raise ValueError(f"Неизвестная стратегия: {strategy}")
 
+        self.last_strategy = strategy
         self._log_positions("placement_done")
         return strategy.value
 
@@ -271,11 +286,20 @@ class Placer:
         seed_margin: int = 3,
         refine_iters: int = 30,
     ) -> None:
+        """BFS-раскладка от хаба + раздвигание + force-directed refine.
+
+        Три шага:
+            1. _seed_by_bfs      — быстро расставляет по кольцам;
+            2. _resolve_overlaps — раздвигает наложившиеся, если
+                                   кольца не учли размеры компонентов;
+            3. _refine_by_force  — добивает по cost (HPWL).
+        """
         from connectivity import graph_summary
         log.debug("%s strategy=connectivity top=%s",
                   ctx(page=self.page_name), graph_summary(adj))
 
         self._seed_by_bfs(adj, margin=seed_margin)
+        self._resolve_overlaps(adj)
         self._refine_by_force(adj, iterations=refine_iters)
         self._log_positions("connectivity_placed")
 
@@ -346,6 +370,123 @@ class Placer:
             rings.append(ring)
         return rings
 
+    @staticmethod
+    def _ring_cells(r: int) -> List[Tuple[int, int]]:
+        """Клетки кольца радиуса r (r=0 — одна клетка (0,0))."""
+        if r == 0:
+            return [(0, 0)]
+        out: List[Tuple[int, int]] = []
+        for dc in range(-r, r + 1):
+            out.append((dc, -r))
+            out.append((dc, r))
+        for dr in range(-r + 1, r):
+            out.append((-r, dr))
+            out.append((r, dr))
+        return out
+
+    def _resolve_overlaps(self, adj: Dict[str, Dict[str, int]]) -> None:
+        """Раздвигает компоненты, у которых есть наложения после BFS.
+
+        Идёт в BFS-порядке от хаба: хаб остаётся на месте, каждый
+        следующий либо остаётся, если его текущая позиция свободна
+        от уже расставленных, либо переезжает в ближайшую свободную
+        клетку по спирали вокруг своей текущей позиции.
+
+        Нужно, потому что _seed_by_bfs ставит соседей по одноклеточным
+        кольцам — компонент размером 3x7 и больше сдвигается всего
+        на 1 клетку от хаба и налезает на соседей.
+
+        В отличие от _refine_by_force, работает с большими радиусами,
+        поэтому может выбраться из плотного наложения.
+        """
+        if not self.components:
+            return
+
+        hub = max(
+            self.components.keys(),
+            key=lambda d: sum(adj.get(d, {}).values()),
+        )
+        order = self._bfs_order(adj, hub)
+
+        placed: Dict[str, Cell] = {}
+        moved = 0
+
+        for d in order:
+            comp = self.components[d]
+            current = self.positions[d]
+
+            if self._pos_free_from(current, comp, placed):
+                placed[d] = current
+                continue
+
+            new_pos = self._find_free_spot(comp, current, placed)
+            placed[d] = new_pos
+            self.positions[d] = new_pos
+            comp.set_position(
+                bbox_origin=new_pos,
+                rotation=comp.rotation,
+                mirror=comp.mirror,
+            )
+            moved += 1
+
+        log.debug("%s connectivity resolve_overlaps moved=%d",
+                  ctx(page=self.page_name), moved)
+
+    def _bfs_order(self, adj: Dict[str, Dict[str, int]],
+                   start: str) -> List[str]:
+        """BFS-порядок обхода от start, затем оставшиеся."""
+        visited: set[str] = {start}
+        q: deque[str] = deque([start])
+        order: List[str] = [start]
+
+        while q:
+            v = q.popleft()
+            for u in adj.get(v, {}):
+                if u not in visited:
+                    visited.add(u)
+                    order.append(u)
+                    q.append(u)
+
+        for d in self.components:
+            if d not in visited:
+                order.append(d)
+        return order
+
+    def _pos_free_from(self, pos: Cell, comp: Component,
+                       placed: Dict[str, Cell]) -> bool:
+        """Свободна ли позиция от уже расставленных компонентов."""
+        x1, y1 = pos.col, pos.row
+        x2, y2 = x1 + comp.bbox_cols, y1 + comp.bbox_rows
+
+        for d, p in placed.items():
+            oc = self.components[d]
+            ox1, oy1 = p.col, p.row
+            ox2, oy2 = ox1 + oc.bbox_cols, oy1 + oc.bbox_rows
+            if not (x2 <= ox1 or ox2 <= x1 or y2 <= oy1 or oy2 <= y1):
+                return False
+        return True
+
+    def _find_free_spot(self, comp: Component, near: Cell,
+                        placed: Dict[str, Cell],
+                        max_radius: int = 40) -> Cell:
+        """Ближайшая свободная позиция по спирали вокруг near.
+
+        Спираль: сначала пробуем r=0 (текущая), потом кольца всё
+        большего радиуса. Шаг — 1 клетка, но max_radius большой,
+        чтобы компонент мог выехать из плотной зоны.
+        """
+        bc, br = near.col, near.row
+        for r in range(max_radius + 1):
+            for dc, dr in self._ring_cells(r):
+                c, rw = bc + dc, br + dr
+                if c < 0 or rw < 0:
+                    continue
+                pos = Cell(c, rw)
+                if self._pos_free_from(pos, comp, placed):
+                    return pos
+        # ничего не нашли — уводим далеко вправо-вниз
+        return Cell(bc + 100, br + 100)
+
     def _pack_orphans(self, orphans: List[str], margin: int = 2,
                       max_cols: int = 6) -> None:
         if not self.positions:
@@ -370,6 +511,12 @@ class Placer:
 
     def _refine_by_force(self, adj: Dict[str, Dict[str, int]],
                          iterations: int = 30) -> None:
+        """Force-directed улучшение cost (HPWL).
+
+        Двигает каждый компонент на один шаг в сторону уменьшения
+        суммарной длины связей. Шаги разной длины (1, 3, 8) дают
+        шанс «перепрыгнуть» соседа, если одноклеточный шаг заблокирован.
+        """
         if not adj:
             log.debug("%s connectivity no_graph refine_skipped",
                       ctx(page=self.page_name))
@@ -378,6 +525,13 @@ class Placer:
         cost = self._target_cost(adj)
         log.debug("%s connectivity cost_start=%.1f",
                   ctx(page=self.page_name), cost)
+
+        # Шаги: близкие (тонкая подстройка) и дальние (перескок).
+        steps = (
+            (1, 0), (-1, 0), (0, 1), (0, -1),
+            (3, 0), (-3, 0), (0, 3), (0, -3),
+            (8, 0), (-8, 0), (0, 8), (0, -8),
+        )
 
         improved_total = 0
         for it in range(iterations):
@@ -389,7 +543,7 @@ class Placer:
 
                 best_delta = 0.0
                 best_pos: Optional[Cell] = None
-                for dc, dr in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                for dc, dr in steps:
                     new_pos = Cell(current.col + dc, current.row + dr)
                     if new_pos.col < 0 or new_pos.row < 0:
                         continue
@@ -466,6 +620,16 @@ class Placer:
             if not (x2 <= ox1 or ox2 <= x1 or y2 <= oy1 or oy2 <= y1):
                 return False
         return True
+
+    def _reset_positions(self) -> None:
+        """Сбрасывает координаты всех компонентов.
+
+        Нужен для отката со стратегии, которая уже расставила
+        компоненты, но результат оказался невалиден (пересечения).
+        """
+        self.positions.clear()
+        for comp in self.components.values():
+            comp.anchor_page_mm = None
 
     # =========================================================
     # Стратегия 3: MATRIX
@@ -618,18 +782,7 @@ class Placer:
         order: List[str],
         cfg: _MatrixConfig,
     ) -> Tuple[List[int], List[int]]:
-        """Ширина улиц между строками/колонками матрицы.
-
-        Ширина улицы = local + ceil(transit / divisor) + 2, где:
-            local   — пины ТОЛЬКО компонентов, стоящих вплотную
-                      к улице (для вертикальной улицы j — компоненты
-                      в колонках j и j+1, смотрящие в улицу);
-            transit — провода между компонентами слева и справа
-                      от улицы (для вертикальной) или сверху и снизу
-                      (для горизонтальной);
-            divisor — (число параллельных улиц в том же направлении)
-                      + 2 (обход по краю схемы).
-        """
+        """Ширина улиц между строками/колонками матрицы."""
         n_rows = len(rows)
         n_cols = max((len(r) for r in rows), default=0)
 
@@ -648,8 +801,6 @@ class Placer:
         # Локальные пины — ТОЛЬКО пограничные компоненты улицы
         # =========================================================
 
-        # col_local[j] — пины компонентов в колонках j и j+1,
-        # смотрящие в улицу j (между колонками j и j+1).
         col_local = [0] * max(0, n_cols - 1)
         for j in range(n_cols - 1):
             left = 0
@@ -664,8 +815,6 @@ class Placer:
                     right += pin_dir[d]["left"]
             col_local[j] = left + right
 
-        # row_local[i] — пины компонентов в строках i и i+1,
-        # смотрящие в улицу i (между строками i и i+1).
         row_local = [0] * max(0, n_rows - 1)
         for i in range(n_rows - 1):
             top = 0
@@ -747,14 +896,7 @@ class Placer:
     # =========================================================
 
     def _pin_counts_by_direction(self) -> Dict[str, Dict[str, int]]:
-        """Число пинов каждого компонента по направлениям.
-
-        Направление определяется по offset_mm пина:
-            offset_mm[X] > 0  → пин справа (смотрит вправо)
-            offset_mm[X] < 0  → пин слева  (смотрит влево)
-            offset_mm[Y] > 0  → пин снизу  (смотрит вниз)
-            offset_mm[Y] < 0  → пин сверху (смотрит вверх)
-        """
+        """Число пинов каждого компонента по направлениям."""
         result: Dict[str, Dict[str, int]] = {}
         for designator, comp in self.components.items():
             counts = {"left": 0, "right": 0, "up": 0, "down": 0}
@@ -773,27 +915,18 @@ class Placer:
         return result
 
     def _wires_between_components(self) -> Dict[Tuple[str, str], int]:
-        """Оценка числа проводов между парами компонентов.
-
-        Для каждой сети строим «звезду» вокруг компонента-хаба
-        (с наибольшим числом пинов в сети). Число проводов между
-        хабом и компонентом b — это число пинов b в этой сети.
-
-        Это даёт примерно n - 1 проводов на сеть (n — общее число
-        пинов в сети), а не n * (n - 1) / 2.
-        """
+        """Оценка числа проводов между парами компонентов."""
         result: Dict[Tuple[str, str], int] = {}
 
         if self.netlist is None or self.sheet is None:
             return result
 
         for net_name, net in self.netlist.nets.items():
-            # собираем пины по компонентам
             comp_pins: Dict[str, list] = {}
             for fqn in net.pins:
-                local = self.sheet.local_key(fqn)   # теперь всегда срабатывает
+                local = self.sheet.local_key(fqn)
                 if local is None:
-                    continue                         # ← стало просто страховкой
+                    continue
                 designator, num = local.split(":", 1)
                 comp = self.components.get(designator)
                 if comp is None:
@@ -806,11 +939,9 @@ class Placer:
             if len(comp_pins) < 2:
                 continue
 
-            # хаб — компонент с наибольшим числом пинов в сети
             items = sorted(comp_pins.items(), key=lambda kv: -len(kv[1]))
             hub, hub_pins = items[0]
 
-            # все остальные компоненты соединяем с хабом
             for designator, pins in items[1:]:
                 key = (hub, designator) if hub < designator else (designator, hub)
                 result[key] = result.get(key, 0) + len(pins)
@@ -958,16 +1089,6 @@ class Placer:
             for c in range(pos.col, pos.col + comp.bbox_cols):
                 for r in range(pos.row, pos.row + comp.bbox_rows):
                     m[(c, r)] = ComponentBody(component=comp)
-
-        # for designator, comp in self.components.items():
-        #     pos = self.positions.get(designator)
-        #     if pos is None:
-        #         continue
-        #     for pin in comp.pins:
-        #         pc = comp.abs_pin_cell(pin)
-        #         key = (pc.col, pc.row)
-        #         m[key] = PinCell(component=comp, pin=pin)
-        #         pin_count += 1
 
         log.info("%s router_map components=%d pin_cells=%d total=%d",
                  ctx(page=self.page_name),

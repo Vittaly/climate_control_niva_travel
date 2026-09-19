@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/actuator_channel.kicad_sch")
-		(date "2026-09-19T10:25:12")
+		(date "2026-09-19T11:38:01")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "b49a4572-f699-420d-8651-51a1350ddb30")
+			(tstamps "fd4a92e7-8e56-42bc-8c79-1a63386c4ae4")
 			(units
 				(unit
 					(name "A")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "26c87958-f299-4148-9ed2-532f8cf8ef4f")
+			(tstamps "66278b38-d6df-4c91-b436-91b15b574004")
 			(units
 				(unit
 					(name "A")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "0501f176-9d0d-49e9-b7db-c01fc912832e")
+			(tstamps "dddf3da7-b019-4a3b-a805-9b0c9602633e")
 			(units
 				(unit
 					(name "A")
@@ -279,7 +279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e2fda96c-1129-4d98-8bc8-b8af1a0b0ae8")
+			(tstamps "96966474-1d45-4a30-b04b-d658fdc9dc20")
 			(units
 				(unit
 					(name "A")
@@ -339,7 +339,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2675d5f9-d197-410a-926d-db5b7f293009")
+			(tstamps "abe63395-9989-42f3-b1c5-3116bfa14fc3")
 			(units
 				(unit
 					(name "A")
@@ -399,7 +399,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ec309e82-da55-49ff-8e4a-89781a3c6c94")
+			(tstamps "4746a976-3436-4966-96ba-92162ff9ca0e")
 			(units
 				(unit
 					(name "A")
@@ -662,6 +662,22 @@
 		)
 		(net
 			(code "4")
+			(name "/ILIM")
+			(class "Default")
+			(node
+				(ref "R1")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "U1")
+				(pin "4")
+				(pinfunction "ILIM_4")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "5")
 			(name "/IN1")
 			(class "Default")
 			(node
@@ -672,7 +688,7 @@
 			)
 		)
 		(net
-			(code "5")
+			(code "6")
 			(name "/IN2")
 			(class "Default")
 			(node
@@ -683,7 +699,7 @@
 			)
 		)
 		(net
-			(code "6")
+			(code "7")
 			(name "/MOTOR_A")
 			(class "Default")
 			(node
@@ -694,7 +710,7 @@
 			)
 		)
 		(net
-			(code "7")
+			(code "8")
 			(name "/MOTOR_B")
 			(class "Default")
 			(node
@@ -705,7 +721,7 @@
 			)
 		)
 		(net
-			(code "8")
+			(code "9")
 			(name "/VCC_12V")
 			(class "Default")
 			(node
@@ -718,22 +734,6 @@
 				(pin "5")
 				(pinfunction "VM_5")
 				(pintype "power_in")
-			)
-		)
-		(net
-			(code "9")
-			(name "Net-(U1-ILIM)")
-			(class "Default")
-			(node
-				(ref "R1")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "U1")
-				(pin "4")
-				(pinfunction "ILIM_4")
-				(pintype "passive")
 			)
 		)
 	)

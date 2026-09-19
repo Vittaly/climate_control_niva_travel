@@ -5,14 +5,14 @@
 .INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/ntc_models.lib
 .INCLUDE spice/SEN_HEAT.sub
 
-* Порты: GND NTC_HEAT NTC_HEAT_W
+* Порты: GND NTC_HEAT NTC_HEAT_W VCC_3V3
 
 * V1: Питание делителя +3,3В
 V1 VCC_3V3 0 DC 3.3
 
 * XRT2: Внешний NTC патрубка отопителя при 25°C (R = 10 кОм)
 XRT2 NTC_HEAT_W 0 NTC_10K_3435 T=25
-XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W SEN_HEAT
+XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W VCC_3V3 SEN_HEAT
 
 .op
 .control

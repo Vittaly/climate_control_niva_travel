@@ -163,11 +163,112 @@ class Router(RouterLogMixin):
                     ctx(page=self.page, net=net_name),
                     _rss_mb(), len(net_wires), len(all_wires))
 
+        # Имена внутренних сетей (нет порта и нет fallback-метки):
+        # KiCad иначе сгенерирует Net-(U1-ILIM) вместо /ILIM.
+        self._name_internal_nets()
+
         log.info("%s routing_done wires=%d labels=%d t_junctions=%d",
                 ctx(page=self.page),
                 len(all_wires),
                 len(self.sheet.labels), len(self.sheet.t_junctions))
         return all_wires
+
+
+    def _name_internal_nets(self) -> None:
+        """Ставит метку-имя на провод внутренних сетей.
+
+        Внутренняя сеть — та, у которой на этой странице нет
+        PortComponent и нет ни одной FallbackLabel. Такие сети
+        остаются без имени в .kicad_sch, и KiCad генерирует
+        Net-(U1-ILIM). Метка на проводе фиксирует имя из YAML.
+
+        Метка ставится одна на сеть, на «чистой» клетке её провода
+        (без транзита чужой сети — иначе KiCad приклеит имя к обеим).
+        """
+        # 1. Сети, у которых уже есть имя на этой странице:
+        #    порты и существующие метки.
+        named: set[str] = set()
+        for comp in self.components.values():
+            if getattr(comp, "is_port", False):
+                named.add(comp.net_name)
+        for lbl in self.sheet.labels:
+            named.add(lbl.net_name)
+
+        # 2. Сети, которые надо назвать: есть провода, нет имени.
+        for net_name, net in self.netlist.nets.items():
+            if net_name in named:
+                continue
+            wires = getattr(net, "wires", []) or []
+            if not wires:
+                continue
+
+            cell = self._pick_label_cell(net_name, wires)
+            if cell is None:
+                log.warning(
+                    "%s net_name_label skipped net=%s reason=no_cell",
+                    ctx(page=self.page, net=net_name), net_name,
+                )
+                continue
+
+            # метка на проводе, геометрия — как у on_wire-fallback,
+            # но reason другой: это не аварийная ситуация.
+            x_mm = cell.col * self.grid_mm
+            y_mm = cell.row * self.grid_mm
+            pin = wires[0].start        # любой пин сети для контекста
+            self.sheet.labels.append(FallbackLabel(
+                net_name=net_name,
+                local_key=pin.local_key,
+                contact_mm=(x_mm, y_mm),
+                direction=pin.direction,
+                reason="internal_net_name",
+                on_wire=True,
+            ))
+            log.info(
+                "%s net_name_label net=%s cell=%s mm=(%.2f,%.2f)",
+                ctx(page=self.page, net=net_name),
+                net_name, cell, x_mm, y_mm,
+            )
+
+    def _pick_label_cell(
+        self, net_name: str, wires: List[Wire],
+    ) -> Optional[Cell]:
+        """Выбирает клетку для метки-имени сети.
+
+        Приоритет:
+            1. Середина самого длинного сегмента самого длинного
+               провода — там метка не помешает и не попадёт в угол.
+            2. Любая клетка пути.
+            3. None, если ничего не нашли.
+
+        Клетка обязательно должна быть «чистой»: только провода
+        этой сети, без транзита чужих. Иначе KiCad приклеит имя
+        и к чужой сети тоже.
+        """
+        # Сортируем провода по убыванию длины — самая заметная
+        # сеть даст самую длинную метку-носитель.
+        sorted_wires = sorted(
+            wires, key=lambda w: w.length, reverse=True,
+        )
+
+        for wire in sorted_wires:
+            for seg in wire.segments():
+                cells = seg.cells()
+                if len(cells) < 2:
+                    continue
+                # Берём середину сегмента, а не углы.
+                mid = cells[len(cells) // 2]
+                if self._cell_is_exclusive(mid, net_name):
+                    return mid
+
+        # Резервный вариант — любая клетка пути, если середина
+        # не подошла.
+        for wire in sorted_wires:
+            for cell in wire.path:
+                if self._cell_is_exclusive(cell, net_name):
+                    return cell
+
+        return None    
+    
 
     # =========================================================
     # Сбор пинов сети

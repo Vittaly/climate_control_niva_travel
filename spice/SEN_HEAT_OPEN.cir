@@ -5,11 +5,11 @@
 * Прошивка должна распознать это как ошибку датчика.
 .INCLUDE spice/SEN_HEAT.sub
 
-* Порты: GND NTC_HEAT NTC_HEAT_W
+* Порты: GND NTC_HEAT NTC_HEAT_W VCC_3V3
 
 * V1: Питание делителя +3,3В
 V1 VCC_3V3 0 DC 3.3
-XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W SEN_HEAT
+XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W VCC_3V3 SEN_HEAT
 
 .op
 .control
