@@ -1,13 +1,15 @@
-* Ngspice тест: SEN_COND / SEN_COND_WET
+* Ngspice тест: condensate_sensor / SEN_COND_WET
 * Датчик в крайнем положении — сильная конденсация.
-* COND_RAW = 5В → COND_ADC ≈ 3,33В (верхняя граница АЦП).
-.INCLUDE spice/SEN_COND.sub
+* COND_IN_RAW = 5В → COND_ADC ≈ 3,33В. Стабилитрон ещё заперт
+* (BV = 3,6В), на сигнал не влияет.
+.model D_ZENER_3V6 D(IS=1e-14 RS=100 N=1.05 BV=3.6 IBV=1m CJO=50p)
+.INCLUDE spice/condensate_sensor.sub
 
-* Порты: COND_ADC COND_RAW GND
+* Порты: COND_ADC COND_IN_RAW GND
 
 * V1: Датчик конденсата: крайнее положение (5В)
-V1 COND_RAW 0 DC 5.0
-XSEN_COND COND_ADC COND_RAW 0 SEN_COND
+V1 COND_IN_RAW 0 DC 5.0
+Xcondensate_sensor COND_ADC COND_IN_RAW 0 condensate_sensor
 
 .op
 .control

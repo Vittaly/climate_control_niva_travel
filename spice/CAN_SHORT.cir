@@ -1,10 +1,11 @@
-* Ngspice тест: CAN / CAN_SHORT
+* Ngspice тест: can_bus / CAN_SHORT
 * Проверка поведения при КЗ CANH на CANL через низкоомный
 * шунт (имитация повреждения шины).
 * Драйвер активен, но ток ограничен внутренней защитой.
 * Проверяем, что CANH не проваливается к нулю мгновенно,
 * а Vdiff остаётся в разумных пределах.
-.INCLUDE spice/CAN.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/mcp2562_ngspice.lib
+.INCLUDE spice/can_bus.sub
 
 * Порты: CANH CANL CAN_RX CAN_TX GND VCC_5V
 
@@ -16,7 +17,10 @@ V2 CAN_TX 0 DC 0.0
 
 * R_SHORT: Имитация КЗ CANH-CANL (1 Ом)
 R_SHORT CANH CANL 1
-XCAN CANH CANL CAN_RX CAN_TX 0 VCC_5V CAN
+
+* R_TERM: Эквивалент двух терминаторов 120 Ом на концах шины
+R_TERM CANH CANL 60
+Xcan_bus CANH CANL CAN_RX CAN_TX 0 VCC_5V can_bus
 
 .op
 .control

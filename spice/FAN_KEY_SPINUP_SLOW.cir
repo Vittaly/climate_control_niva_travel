@@ -1,0 +1,39 @@
+* Ngspice тест: fan_driver_testbench / FAN_KEY_SPINUP_SLOW
+* Медленный тест: реальный разгон мотора печки от нуля до номинала.
+* τ_мех = C_inertia · R_friction = 0.5 с, за 3 с ротор проходит 6 τ
+* и выходит на равновесие. Проверяем ток и скорость в конце окна.
+* Требует ~несколько секунд CPU — держать вне быстрого прогона.
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/motor_model.lib
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/BTS141_model.lib
+.model D_SCHOTTKY D(IS=1e-6 RS=0.03 N=1.05 CJO=200p VJ=0.55 M=0.5 BV=40 IBV=1e-4)
+.INCLUDE spice/fan_driver_testbench.sub
+
+* Порты: FAN_GATE_INT FAN_LOAD_LO FAN_PWM_EXT_IN GND MOTOR_TERM VBAT_FAN
+
+* V1: Батарея включается скачком в t=0,5 мкс
+V1 VBAT_SRC 0 PULSE(0.0 13.5 0.5u 0.1u 0.1u 1 1)
+
+* V2: Ключ открыт на 100%
+V2 FAN_PWM_EXT_IN 0 DC 12.0
+
+R33 VBAT_SRC VBAT_FAN 0.015
+
+L3 VBAT_SRC VBAT_FAN 1.5u
+
+R34 GND 0 0.015
+
+L4 GND 0 1.5u
+
+* XMOT: Мотор печки 12В, разгон из покоя
+XMOT VBAT_FAN MOTOR_TERM SPEED DC_MOTOR R_arm=0.45 L_arm=250u Ke=1.35 Kt=0.0333 C_inertia=0.05 R_friction=10
+Xfan_driver_testbench FAN_GATE_INT FAN_LOAD_LO FAN_PWM_EXT_IN 0 MOTOR_TERM VBAT_FAN fan_driver_testbench
+
+.measure TRAN ifan_end   FIND i(V1)     AT=2.9
+.measure TRAN vspeed_end FIND v(SPEED)  AT=2.9
+.measure TRAN ifan_peak  MIN  i(V1)
+.tran 1m 3
+.control
+run
+print ifan_end vspeed_end ifan_peak
+.endc
+.end

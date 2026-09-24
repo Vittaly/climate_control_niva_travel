@@ -1,13 +1,14 @@
-* Ngspice тест: SEN_SOLAR / SEN_SOLAR_MID
+* Ngspice тест: solar_sensor / SEN_SOLAR_MID
 * Средняя освещённость (пасмурно).
-* SOLAR_RAW = 2,5В → SOLAR_ADC ≈ 1,67В (K = 2/3).
-.INCLUDE spice/SEN_SOLAR.sub
+* SOLAR_IN_RAW = 2,5В → SOLAR_ADC ≈ 1,67В (K = 2/3).
+.model D_ZENER_3V6 D(IS=1e-14 RS=100 N=1.05 BV=3.6 IBV=1m CJO=50p)
+.INCLUDE spice/solar_sensor.sub
 
-* Порты: GND SOLAR_ADC SOLAR_RAW
+* Порты: GND SOLAR_ADC SOLAR_IN_RAW
 
 * V1: Датчик солнечной радиации: середина диапазона (2,5В)
-V1 SOLAR_RAW 0 DC 2.5
-XSEN_SOLAR 0 SOLAR_ADC SOLAR_RAW SEN_SOLAR
+V1 SOLAR_IN_RAW 0 DC 2.5
+Xsolar_sensor 0 SOLAR_ADC SOLAR_IN_RAW solar_sensor
 
 .op
 .control

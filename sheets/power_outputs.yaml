@@ -1,5 +1,3 @@
-page_name: OUT
-file: power_outputs.kicad_sch
 functional_purpose: |
   Модуль выходных сигналов к внешним устройствам автомобиля.
 
@@ -18,8 +16,17 @@ functional_purpose: |
      Эмиттер Q4 → VCC_12V, коллектор → R21 (1к) → AC_REQ_OUT (J1:24) —
      высокий (≈12В) при AC_CTL = H, низкий (0В) при AC_CTL = L.
 
-  В SPICE используются встроенные модели NMOS/NPN/PNP с параметрами,
-  достаточными для статических проверок H/L на выходах.
+  В SPICE:
+    * Q1 (BSS138)   — primitive: M, inline .model NMOS;
+    * Q3 (MMBT3904) — primitive: Q, inline .model NPN;
+    * Q4 (MMBT3906) — primitive: Q, inline .model PNP;
+    * R — примитивы, spice не требуют.
+
+  Распиновка (KiCad-символы):
+    Transistor_FET:BSS138   → pin 1 = G, pin 2 = S, pin 3 = D;
+    Transistor_BJT:MMBT3904 → pin 1 = B, pin 2 = E, pin 3 = C;
+    Transistor_BJT:MMBT3906 → pin 1 = B, pin 2 = E, pin 3 = C.
+  Имена выводов уникальны → в nets: связи задаются pinfunction.
 
 ports:
 - net_label: VCC_12V
@@ -48,21 +55,26 @@ component_types:
     value: BSS138
     fields: {}
     spice:
-      model: BSS138
       description: |
         N-канальный MOSFET логического уровня 50В/200мА.
         Vgs_th ≈ 1,3В, Rds_on ≈ 3–6 Ом при Vgs = 3,3В.
         Используется как буфер ШИМ с открытым стоком.
+      primitive: M
+      model_def: ".model BSS138 NMOS(VTO=1.3 KP=0.5 LAMBDA=0.02)"
+      bulk: S             # подложка = исток (дискретный BSS138 в SOT-23)
+
   TYPE_QNPN_MMBT3904:
     symbol: Transistor_BJT:MMBT3904
     footprint: Package_TO_SOT_SMD:SOT-23
     value: MMBT3904
     fields: {}
     spice:
-      model: MMBT3904
       description: |
         NPN универсальный 40В/200мА. h_FE ≈ 200.
         Драйвер базы PNP-ключа Q4.
+      primitive: Q
+      model_def: ".model MMBT3904 NPN(IS=1e-14 BF=200 VAF=100 IKF=0.3)"
+
   TYPE_QPNP_MMBT3906_3906V:
     symbol: Transistor_BJT:MMBT3906
     footprint: Package_TO_SOT_SMD:SOT-23
@@ -70,16 +82,18 @@ component_types:
     fields:
       Voltage: 40V
     spice:
-      model: MMBT3906
       description: |
         PNP универсальный 40В/200мА. h_FE ≈ 150.
         Высокосторонний ключ +12В на AC_REQ_OUT.
+      primitive: Q
+      model_def: ".model MMBT3906 PNP(IS=1e-14 BF=150 VAF=100 IKF=0.3)"
+
   TYPE_R_1K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 1k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
+
   TYPE_R_4K7_12V:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -88,19 +102,19 @@ component_types:
       Voltage: 12V
       Power: 0.1W
       Tolerance: 1%
-    spice: { model: R }
+
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 10k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
+
   TYPE_R_100K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 100k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
+
   TYPE_R_10K_12V:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -109,7 +123,6 @@ component_types:
       Voltage: 12V
       Power: 0.1W
       Tolerance: 1%
-    spice: { model: R }
 
 components:
   Q1:
@@ -157,7 +170,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: Q4,  pin: '2' }    # эмиттер Q4
+    - { component: Q4,  pinfunction: 'E' }   # эмиттер Q4 (pin 2)
     - { component: R20, pin: '2' }
     - { component: R14, pin: '2' }
 
@@ -174,8 +187,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: Q1,  pin: '2' }    # исток Q1
-    - { component: Q3,  pin: '2' }    # эмиттер Q3
+    - { component: Q1,  pinfunction: 'S' }   # исток Q1 (pin 2)
+    - { component: Q3,  pinfunction: 'E' }   # эмиттер Q3 (pin 2)
     - { component: R19, pin: '2' }
 
   FAN_PWM_CTL:
@@ -207,7 +220,7 @@ nets:
         parasitic_l_h: 10n
     nodes:
     - { component: R13, pin: '2' }
-    - { component: Q1,  pin: '1' }
+    - { component: Q1,  pinfunction: 'G' }   # затвор Q1 (pin 1)
 
   FAN_PWM_NODE:
     name: FAN_PWM_NODE
@@ -222,7 +235,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: Q1,  pin: '3' }    # сток Q1
+    - { component: Q1,  pinfunction: 'D' }   # сток Q1 (pin 3)
     - { component: R14, pin: '1' }
     - { component: R15, pin: '1' }
 
@@ -255,7 +268,7 @@ nets:
         parasitic_l_h: 10n
     nodes:
     - { component: R18, pin: '2' }
-    - { component: Q3,  pin: '1' }
+    - { component: Q3,  pinfunction: 'B' }   # база Q3 (pin 1)
     - { component: R19, pin: '1' }
 
   AC_PNP_BASE:
@@ -271,8 +284,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: Q3,  pin: '3' }    # коллектор Q3
-    - { component: Q4,  pin: '1' }    # база Q4
+    - { component: Q3,  pinfunction: 'C' }   # коллектор Q3 (pin 3)
+    - { component: Q4,  pinfunction: 'B' }   # база Q4 (pin 1)
     - { component: R20, pin: '1' }
 
   AC_REQ:
@@ -288,7 +301,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: Q4,  pin: '3' }    # коллектор Q4
+    - { component: Q4,  pinfunction: 'C' }   # коллектор Q4 (pin 3)
     - { component: R21, pin: '1' }
 
   AC_REQ_OUT:
@@ -321,24 +334,15 @@ nets:
     nodes:
     - { component: R15, pin: '2' }
 
-spice:
-  models:
-    # BSS138: NMOS логического уровня, Vth≈1,3В, KP подогнан под Rds_on ≈ 5 Ом при Vgs=3,3В.
-    - "BSS138 NMOS(VTO=1.3 KP=0.5 LAMBDA=0.02)"
-    # MMBT3904: NPN универсальный 40В/200мА.
-    - "MMBT3904 NPN(IS=1e-14 BF=200 VAF=100 IKF=0.3)"
-    # MMBT3906: PNP комплементарный 40В/200мА.
-    - "MMBT3906 PNP(IS=1e-14 BF=150 VAF=100 IKF=0.3)"
-
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
 #
 # Канал вентилятора (буфер Q1):
-#   FAN_PWM_CTL = 0 → Q1 закрыт → FAN_PWM_NODE = 12В → HEAT_FAN_PWM_CTL = 12В
-#   FAN_PWM_CTL = 3,3 → Q1 открыт → FAN_PWM_NODE ≈ 0 → HEAT_FAN_PWM_CTL ≈ 0
+#   FAN_PWM_CTL = 0   → Q1 закрыт → FAN_PWM_NODE = 12В → HEAT_FAN_PWM_CTL = 12В
+#   FAN_PWM_CTL = 3,3 → Q1 открыт → FAN_PWM_NODE ≈ 0  → HEAT_FAN_PWM_CTL ≈ 0
 #
 # Канал запроса кондиционера (Q3 + Q4):
-#   AC_CTL = 0 → Q3 закрыт → Q4 заперт R20 → AC_REQ_OUT = 0 (через внешнюю нагрузку)
+#   AC_CTL = 0   → Q3 закрыт → Q4 заперт R20 → AC_REQ_OUT = 0
 #   AC_CTL = 3,3 → Q3 открыт → Q4 открыт → AC_REQ_OUT ≈ 12В (минус Vce_sat)
 #
 # В сценариях AC внешняя нагрузка (вход ЭБУ) моделируется резистором
@@ -366,8 +370,10 @@ scenarios:
           value: 0.0
           description: "ШИМ-вход с МК = 0 (буфер закрыт)"
     checks:
-      - { node: v(heat_fan_pwm_ctl), min: 13.0, max: 14.5,
-          description: "HEAT_FAN_PWM_CTL = 12В (буфер закрыт)" }
+      - node: v(heat_fan_pwm_ctl)
+        min: 13.0
+        max: 14.5
+        description: "HEAT_FAN_PWM_CTL = 12В (буфер закрыт)"
 
   - name: OUT_FAN_ON
     description: |
@@ -388,8 +394,10 @@ scenarios:
           value: 3.3
           description: "ШИМ-вход с МК = 3,3В (буфер открыт)"
     checks:
-      - { node: v(heat_fan_pwm_ctl), min: 0.0, max: 1.0,
-          description: "HEAT_FAN_PWM_CTL ≈ 0В (буфер открыт)" }
+      - node: v(heat_fan_pwm_ctl)
+        min: 0.0
+        max: 1.0
+        description: "HEAT_FAN_PWM_CTL ≈ 0В (буфер открыт)"
 
   - name: OUT_AC_OFF
     description: |
@@ -416,8 +424,10 @@ scenarios:
           value: 10k
           description: "Внешний вход ЭБУ (10 кОм на GND)"
     checks:
-      - { node: v(ac_req_out), min: 0.0, max: 0.5,
-          description: "AC_REQ_OUT = 0 (нет запроса)" }
+      - node: v(ac_req_out)
+        min: 0.0
+        max: 0.5
+        description: "AC_REQ_OUT = 0 (нет запроса)"
 
   - name: OUT_AC_ON
     description: |
@@ -448,7 +458,11 @@ scenarios:
       let iecu = vac / 10k
       print vac iecu
     checks:
-      - { node: vac,  min: 12.0, max: 14.5,
-          description: "AC_REQ_OUT ≈ 12В (запрос кондиционера подан)" }
-      - { node: iecu, min: 0.001, max: 0.002,
-          description: "ток в нагрузку ЭБУ ≈ 1,2 мА" }
+      - node: vac
+        min: 12.0
+        max: 14.5
+        description: "AC_REQ_OUT ≈ 12В (запрос кондиционера подан)"
+      - node: iecu
+        min: 0.001
+        max: 0.002
+        description: "ток в нагрузку ЭБУ ≈ 1,2 мА"

@@ -1,0 +1,9 @@
+* cabin_sensor — субсхема из нетлиста KiCad + YAML
+.subckt cabin_sensor GND M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V PARAMS: RT1_T=25
+  D3 SENS_FAN_SW VCC_12V D_1N4148
+  * J5: Conn_01x02 (Внутр. коннектор вентилятора продувки (2п, XH)) — не моделируется
+  MQ2 SENS_FAN_SW M_FAN_GATE GND GND AO3400A
+  R16 M_FAN_CTL M_FAN_GATE 1k
+  R17 M_FAN_GATE GND 10k
+  XRT1 NTC_CABIN GND NTC_10K_3435 T={RT1_T}
+.ends cabin_sensor

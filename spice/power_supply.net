@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/power_supply.kicad_sch")
-		(date "2026-09-19T11:37:59")
+		(date "2026-09-24T23:13:17")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -56,7 +56,7 @@
 	(components
 		(comp
 			(ref "C1")
-			(value "470uF")
+			(value "470u")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "adc34208-c1f2-4f9a-a63e-6fb9c1284e87")
+			(tstamps "b4c7fdf5-5d25-419c-8f68-ffca9e941697")
 			(units
 				(unit
 					(name "A")
@@ -116,7 +116,7 @@
 		)
 		(comp
 			(ref "C2")
-			(value "100nF")
+			(value "100n")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e3f133f3-92e8-46c3-916d-290182817c82")
+			(tstamps "85ccdb2b-435c-40cb-921e-714df2951eab")
 			(units
 				(unit
 					(name "A")
@@ -176,7 +176,7 @@
 		)
 		(comp
 			(ref "C3")
-			(value "10uF")
+			(value "10u")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "cf5ce74d-884f-4b00-8e50-57ef4e806bb4")
+			(tstamps "9f40cead-1c5e-49a9-b04e-a0338daafd72")
 			(units
 				(unit
 					(name "A")
@@ -236,7 +236,7 @@
 		)
 		(comp
 			(ref "C4")
-			(value "10uF")
+			(value "10u")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -279,7 +279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e7d1236f-7d1a-4c06-a227-2ba745a2e848")
+			(tstamps "03c9a4e1-8bbc-41f5-b734-184f86dbe3b4")
 			(units
 				(unit
 					(name "A")
@@ -296,7 +296,7 @@
 		)
 		(comp
 			(ref "C11")
-			(value "100uF")
+			(value "100u")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -339,7 +339,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e12481ea-1fd6-40fa-b4ca-fcac71fe72df")
+			(tstamps "cb374085-432e-428e-aca9-b18805cc15c6")
 			(units
 				(unit
 					(name "A")
@@ -356,7 +356,7 @@
 		)
 		(comp
 			(ref "C16")
-			(value "100nF")
+			(value "100n")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -399,7 +399,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "aa23d335-6931-45db-aad2-eb6dd2f028a1")
+			(tstamps "8c63b888-7af4-4774-9b53-546bd48954dd")
 			(units
 				(unit
 					(name "A")
@@ -416,7 +416,7 @@
 		)
 		(comp
 			(ref "C17")
-			(value "100nF")
+			(value "100n")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -459,7 +459,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "333a0d69-a606-4d6b-85ae-9585601d2985")
+			(tstamps "b5b3a1ac-e9e8-40c5-9ff6-39bd1f9c5126")
 			(units
 				(unit
 					(name "A")
@@ -476,7 +476,7 @@
 		)
 		(comp
 			(ref "C18")
-			(value "100nF")
+			(value "100n")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -519,7 +519,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "dec4fbc4-eed1-4a86-b577-1cde408e7cc2")
+			(tstamps "685d08f1-d2c8-4a02-9756-d0beb98df515")
 			(units
 				(unit
 					(name "A")
@@ -536,7 +536,7 @@
 		)
 		(comp
 			(ref "C19")
-			(value "100nF")
+			(value "100n")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -579,7 +579,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5ed764cc-c113-4d65-b92e-165df49f987b")
+			(tstamps "70d8f699-4503-4561-b9bb-779872933d13")
 			(units
 				(unit
 					(name "A")
@@ -596,7 +596,7 @@
 		)
 		(comp
 			(ref "C20")
-			(value "1uF")
+			(value "1u")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -639,7 +639,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "369bf021-ea64-4171-bc28-da3e9bdc2837")
+			(tstamps "46376943-edb0-4c4d-b4ea-41c842143b24")
 			(units
 				(unit
 					(name "A")
@@ -699,7 +699,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "da3e326f-dc7a-4620-b5b4-2b8bc44566b6")
+			(tstamps "069f342c-3bc3-4afd-950a-c3cd533a4c3b")
 			(units
 				(unit
 					(name "A")
@@ -759,7 +759,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "9e2a2608-fb7e-4531-9ba9-2539f33cf4f2")
+			(tstamps "d2109221-34e2-40b5-9b98-f6a35f41626a")
 			(units
 				(unit
 					(name "A")
@@ -819,7 +819,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "34b1b023-30fa-4af2-a58d-8f24e8c07eab")
+			(tstamps "3c0ba775-ed9e-4fa6-a074-6b76128bff92")
 			(units
 				(unit
 					(name "A")
@@ -879,7 +879,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3bbb5142-a253-4bbd-bfea-3df26731bbe7")
+			(tstamps "a10b3656-376c-439f-82f2-70c3b9370886")
 			(units
 				(unit
 					(name "A")
@@ -939,7 +939,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "e5081161-919e-420e-9cfd-8dd5efae0569")
+			(tstamps "76e63acf-1e24-47fa-b3f5-749e10cf7f45")
 			(units
 				(unit
 					(name "A")
@@ -1089,7 +1089,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "b1ad5f30-8789-4c1a-95a6-5db6bf5f8e99")
+			(tstamps "387bf489-8ea9-4489-8b5c-3165718324d6")
 			(units
 				(unit
 					(name "A")
@@ -1149,7 +1149,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "537ad5ed-6ffa-4262-805a-56fcc3273870")
+			(tstamps "b43295ca-93a4-487e-b3dd-fe4c78620c1d")
 			(units
 				(unit
 					(name "A")
@@ -1212,7 +1212,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "7d887f04-72b5-44d1-92d7-d7449edfc8f0")
+			(tstamps "2b92f56f-9ce2-44e6-8234-ffaacbf4795b")
 			(units
 				(unit
 					(name "A")
@@ -1690,7 +1690,7 @@
 		)
 		(net
 			(code "4")
-			(name "/COND_RAW")
+			(name "/COND_IN_RAW")
 			(class "Default")
 			(node
 				(ref "J1")
@@ -1799,14 +1799,14 @@
 			)
 			(node
 				(ref "D2")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
 				(ref "D5")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -1963,7 +1963,7 @@
 		)
 		(net
 			(code "21")
-			(name "/SOLAR_RAW")
+			(name "/SOLAR_IN_RAW")
 			(class "Default")
 			(node
 				(ref "J1")
@@ -1998,14 +1998,14 @@
 			)
 			(node
 				(ref "D4")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "D5")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
@@ -2021,8 +2021,8 @@
 			(class "Default")
 			(node
 				(ref "D1")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -2044,8 +2044,8 @@
 			(class "Default")
 			(node
 				(ref "D1")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
@@ -2077,8 +2077,8 @@
 			)
 			(node
 				(ref "D4")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -2125,8 +2125,8 @@
 			)
 			(node
 				(ref "D2")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node

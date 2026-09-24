@@ -1,5 +1,3 @@
-page_name: FAN_KEY
-file: fan_driver_testbench.kicad_sch
 functional_purpose: |
   Внешний ШИМ-ключ вентилятора печки — ОТДЕЛЬНАЯ схема.
   В иерархию основной платы не входит: физически это отдельный
@@ -15,7 +13,14 @@ functional_purpose: |
   Мотор вентилятора и паразитные параметры проводов подключаются
   ТОЛЬКО при прогоне тестов Ngspice (SPICE-уровень). На .kicad_sch
   их нет: это часть автомобильной проводки и внешнего мотора.
-  Модель мотора DC_MOTOR (main.yaml.spice.component_models.DC_MOTOR).
+
+  В SPICE:
+    * Q5 (BTS141) — subckt BTS141 в BTS141_model.lib; символ
+      Q_NMOS_GSD, но subckt имеет порты IN/OUT/GND, поэтому
+      в nets: связи задаются номерами пинов (не pinfunction);
+    * D6 (SS54)  — primitive: D с inline .model D_SCHOTTKY;
+    * мотор      — testbench, inline в каждом сценарии;
+    * R/C/L      — примитивы, spice не требуют.
 
 ports:
 - net_label: FAN_PWM_EXT_IN
@@ -29,7 +34,7 @@ ports:
   description: Силовая земля внешнего модуля
 - net_label: FAN_LOAD_LO
   type: OUTPUT
-  description: Коммутируемый выход OUT смарт-ключа к минусу мотора
+  description: Коммутируемый выход OUT смарт-ключа к минусу мотора вентилятора
 - net_label: MOTOR_TERM
   type: OUTPUT
   description: Выходной вывод подключения мотора после LC-фильтра
@@ -42,30 +47,25 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
-    spice:
-      model: R
-      description: "Защитный резистор линии IN"
+
   TYPE_C_0603_1NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 1nF
+    value: 1n
     fields:
       Voltage: 50V
       Type: Ceramic
       Dielectric: X7R
-    spice:
-      model: C
-      description: "Фильтр затвора"
+
   TYPE_C_0603_100NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 100nF
+    value: 100n
     fields:
       Voltage: 50V
       Type: Ceramic
       Dielectric: X7R
-    spice:
-      model: C
+
   TYPE_DIODE_SMA_SS54:
     symbol: Device:D
     footprint: Diode_SMD:D_SMA
@@ -73,31 +73,44 @@ component_types:
     fields:
       Type: Schottky
     spice:
-      model: MyD_FREEWHEEL
       description: |
         Шоттки SS54 5А/40В — freewheel мотора вентилятора.
-        Rs = 0.3 Ом моделирует реальное Vf ≈ 0,5–0,6В при 15А;
-        от Rs напрямую зависит ограничение выброса на стоке Q5
-        при размыкании (сценарий FAN_KEY_PWM).
+        Распиновка Device:D: pin 1 = K (катод), pin 2 = A (анод).
+        Имена выводов уникальны → в nets: адресуются pinfunction.
+        Rs = 0.03 Ом даёт Vf ≈ 0.5–0.6В при 15А, ограничивает
+        выброс на стоке Q5 при размыкании (FAN_KEY_PWM, vdmax).
+      primitive: D
+      model_def: ".model D_SCHOTTKY D(IS=1e-6 RS=0.03 N=1.05 CJO=200p VJ=0.55 M=0.5 BV=40 IBV=1e-4)"
+
   TYPE_INDUCTOR_1210_2UH:
     symbol: Device:L
     footprint: Inductor_SMD:L_1210_3225Metric
-    value: 2uH
+    value: 2u
     fields: {}
-    spice:
-      model: L
+
   TYPE_SWITCH_TO252_BTS141:
-    symbol: Device:Q_NMOS_GSD
+    symbol: Transistor_FET:Q_NMOS_GSD
     footprint: Package_TO_SOT_SMD:TO-252-3_TabPin2
     value: BTS141
     fields:
       Type: Smart_LowSide_Switch
     spice:
-      model: BTS141
       description: |
-        Smart low-side switch Infineon BTS141.
-        Модель BTS141 из bts141_ngspice.lib
-        (main.yaml.spice.component_models.BTS141).
+        Smart low-side switch, 12В / 40А, Infineon BTS141 (TO-252).
+        Моделируется: N-канальный MOSFET с Rds_on ~15 мОм;
+        активный уровень IN = лог. 1; защита от КЗ и перегрева.
+
+        Subckt BTS141 имеет порты IN/OUT/GND. Символ Q_NMOS_GSD
+        даёт pinfunction G/D/S, что не совпадает семантически
+        (умный ключ ≠ MOSFET). Поэтому в nets: связи задаются
+        номерами пинов: pin 1 → IN, pin 2 → OUT, pin 3 → GND.
+      include: BTS141_model.lib
+      subckt: BTS141
+      nodes:
+        IN:  { pin: "1" }
+        OUT: { pin: "2" }
+        GND: { pin: "3" }
+      required_params: []
 
 components:
   R31:
@@ -142,7 +155,7 @@ nets:
     nodes:
     - { component: R31,  pin: '2' }
     - { component: C546, pin: '1' }
-    - { component: Q5,   pin: '1' }
+    - { component: Q5,   pin: '1' }        # Q5.IN (subckt-порт IN на пине 1)
 
   FAN_LOAD_LO:
     name: FAN_LOAD_LO
@@ -153,8 +166,8 @@ nets:
       voltage_level: 0..12.0V
       current_max: 30.0A
     nodes:
-    - { component: Q5,   pin: '2' }
-    - { component: D6,   pin: '2' }
+    - { component: Q5,   pin: '2' }              # Q5.OUT (пин 2)
+    - { component: D6,   pinfunction: 'A' }      # анод freewheel-диода
     - { component: L637, pin: '1' }
 
   MOTOR_TERM:
@@ -178,7 +191,7 @@ nets:
       voltage_level: 12.0V
       current_max: 30.0A
     nodes:
-    - { component: D6, pin: '1' }
+    - { component: D6, pinfunction: 'K' }        # катод на +12В
 
   GND:
     name: GND
@@ -189,15 +202,9 @@ nets:
       voltage_level: 0V
       current_max: 30.0A
     nodes:
-    - { component: Q5,   pin: '3' }
+    - { component: Q5,   pin: '3' }              # Q5.GND (пин 3)
     - { component: C546, pin: '2' }
     - { component: C593, pin: '2' }
-
-spice:
-  models:
-    # SS54 с реалистичным Rs = 0.3Ω — влияет на ограничение выброса
-    # на стоке при размыкании Q5 (FAN_KEY_PWM, vdmax).
-    - "MyD_FREEWHEEL D(IS=1e-6 RS=0.3 CJ=2n BV=60)"
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
@@ -221,7 +228,8 @@ spice:
 # Стенд добавляет то, чего нет в схеме: провода R33/L3/R34/L4,
 # мотор XMOT, источники питания и ШИМ.
 #
-# Модель мотора DC_MOTOR — универсальная. Параметры подобраны
+# Модель мотора DC_MOTOR — универсальная, из motor_model.lib,
+# подключается inline в каждом сценарии. Параметры подобраны
 # под мотор печки 12В, номинал 15А при 13,5В / 5000 об/мин:
 #   R_arm = 13.5/30 = 0.45 Ω           — ток заторможенного ротора 30А
 #   EMF = 13.5 − 0.45·15 = 6.75В при 5000 об/мин
@@ -231,126 +239,57 @@ spice:
 
 scenarios:
 
-  - name: FAN_KEY_STEADY
+  - name: FAN_KEY_SPINUP_SLOW
     description: |
-      Номинальный режим: ключ Q5 открыт, мотор на рабочей скорости.
-      Ожидаемый ток через батарею ≈ 15А при 13,5В / 5000 об/мин.
-    analysis: op
-    deck:
-      - source:
-          ref: V1
-          net: VBAT_SRC
-          type: dc
-          value: 13.5
-          description: "Батарея 13,5В (номинал бортсети)"
-      - source:
-          ref: V2
-          net: FAN_PWM_EXT_IN
-          type: dc
-          value: 12.0
-          description: "Управление ключом: постоянно открыт (100%)"
-
-      - resistor:
-          ref: R33
-          net_pos: VBAT_SRC
-          net_neg: VBAT_FAN
-          value: 0.015
-          description: "Сопротивление провода +12В (2,5 мм², ~1 м)"
-      - inductor:
-          ref: L3
-          net_pos: VBAT_SRC
-          net_neg: VBAT_FAN
-          value: 1.5u
-          description: "Индуктивность провода +12В"
-      - resistor:
-          ref: R34
-          net_pos: GND
-          net_neg: "0"
-          value: 0.015
-          description: "Сопротивление обратного провода"
-      - inductor:
-          ref: L4
-          net_pos: GND
-          net_neg: "0"
-          value: 1.5u
-          description: "Индуктивность обратного провода"
-
-      - motor:
-          ref: XMOT
-          model: DC_MOTOR
-          net_pos: VBAT_FAN
-          net_neg: MOTOR_TERM
-          net_speed: SPEED
-          params:
-            R_arm:      0.45
-            L_arm:      250u
-            Ke:         1.35
-            Kt:         0.0333
-            C_inertia:  0.05
-            R_friction: 10
-          description: "Мотор печки 12В, номинал 15А при 5000 об/мин"
-    control: |
-      let ifan = -i(V1)
-      let vspeed = v(SPEED)
-      print ifan vspeed
-    checks:
-      - { node: ifan,   min: 12.0, max: 18.0,
-          description: "ток мотора ≈ 15А (номинал, ключ открыт)" }
-      - { node: vspeed, min: 4.5,  max: 5.5,
-          description: "скорость ≈ 5000 об/мин (Speed ≈ 5В)" }
-
-  - name: FAN_KEY_STARTUP
-    description: |
-      Пусковой режим: батарея включается скачком, ротор неподвижен.
-      Ожидаемый бросок тока ≈ 30А, затем разгон к номиналу.
+      Медленный тест: реальный разгон мотора печки от нуля до номинала.
+      τ_мех = C_inertia · R_friction = 0.5 с, за 3 с ротор проходит 6 τ
+      и выходит на равновесие. Проверяем ток и скорость в конце окна.
+      Требует ~несколько секунд CPU — держать вне быстрого прогона.
     analysis: tran
-    tran: "0.1m 0.5m"
+    tran: "1m 3"
     deck:
-      - source:
-          ref: V2
-          net: FAN_PWM_EXT_IN
-          type: dc
-          value: 12.0
-          description: "Ключ открыт (ШИМ = 100%)"
-
       - source:
           ref: V1
           net: VBAT_SRC
           type: pulse
           pulse: { v1: 0.0, v2: 13.5, td: 0.5u, tr: 0.1u, tf: 0.1u, pw: 1, per: 1 }
           description: "Батарея включается скачком в t=0,5 мкс"
+      - source:
+          ref: V2
+          net: FAN_PWM_EXT_IN
+          type: dc
+          value: 12.0
+          description: "Ключ открыт на 100%"
 
       - resistor:
           ref: R33
           net_pos: VBAT_SRC
           net_neg: VBAT_FAN
           value: 0.015
-          description: "Сопротивление провода +12В"
       - inductor:
           ref: L3
           net_pos: VBAT_SRC
           net_neg: VBAT_FAN
           value: 1.5u
-          description: "Индуктивность провода +12В"
       - resistor:
           ref: R34
           net_pos: GND
           net_neg: "0"
           value: 0.015
-          description: "Сопротивление обратного провода"
       - inductor:
           ref: L4
           net_pos: GND
           net_neg: "0"
           value: 1.5u
-          description: "Индуктивность обратного провода"
 
       - motor:
           ref: XMOT
-          model: DC_MOTOR
-          net_pos: VBAT_FAN
-          net_neg: MOTOR_TERM
-          net_speed: SPEED
+          include: motor_model.lib
+          subckt: DC_MOTOR
+          nodes:
+            INP:   VBAT_FAN
+            INN:   MOTOR_TERM
+            SPEED: SPEED
           params:
             R_arm:      0.45
             L_arm:      250u
@@ -358,15 +297,24 @@ scenarios:
             Kt:         0.0333
             C_inertia:  0.05
             R_friction: 10
-          description: "Мотор печки, старт из состояния покоя"
+          description: "Мотор печки 12В, разгон из покоя"
     measures:
-      - "TRAN isurge MIN i(V1)"
-      - "TRAN isteady AVG i(V1)"
+      - "TRAN ifan_end   FIND i(V1)     AT=2.9"
+      - "TRAN vspeed_end FIND v(SPEED)  AT=2.9"
+      - "TRAN ifan_peak  MIN  i(V1)"
     checks:
-      - { node: isurge,  min: -35.0, max: -25.0,
-          description: "пусковой бросок ≈ 30А (ротор заторможен)" }
-      - { node: isteady, min: -20.0, max: -10.0,
-          description: "средний ток за 0,5 мс ≈ 15А (разгон)" }
+      - node: ifan_end
+        min: -16.0
+        max: -13.0
+        description: "установившийся ток ≈ 14,5А (номинал)"
+      - node: vspeed_end
+        min: 4.5
+        max: 5.1
+        description: "скорость ≈ 4,83В (≈ 4830 об/мин)"
+      - node: ifan_peak
+        min: -32.0
+        max: -22.0
+        description: "пусковой бросок ≈ 27А"
 
   - name: FAN_KEY_PWM
     description: |
@@ -428,10 +376,12 @@ scenarios:
 
       - motor:
           ref: XMOT
-          model: DC_MOTOR
-          net_pos: VBAT_FAN
-          net_neg: MOTOR_TERM
-          net_speed: SPEED
+          include: motor_model.lib
+          subckt: DC_MOTOR
+          nodes:
+            INP:   VBAT_FAN
+            INN:   MOTOR_TERM
+            SPEED: SPEED
           params:
             R_arm:      0.45
             L_arm:      250u
@@ -450,9 +400,18 @@ scenarios:
       let igavg = mean(ig)
       print vgsmax igavg
     checks:
-      - { id: FAN_KEY_PWM,    node: vgsmax, min: 8.0,   max: 11.5,
-          description: "завал фронтов затвора (Vgs < 12В)" }
-      - { id: FAN_KEY_PWM_IG, node: igavg, min: 0.0,   max: 0.0025,
-          description: "средний ток затвора < 2,5 мА" }
-      - { id: FAN_KEY_PWM_VD, node: vdmax, min: 13.0,  max: 16.0,
-          description: "сток удержан freewheel-диодом ~14В" }
+      - id: FAN_KEY_PWM
+        node: vgsmax
+        min: 8.0
+        max: 11.5
+        description: "завал фронтов затвора (Vgs < 12В)"
+      - id: FAN_KEY_PWM_IG
+        node: igavg
+        min: 0.0
+        max: 0.0025
+        description: "средний ток затвора < 2,5 мА"
+      - id: FAN_KEY_PWM_VD
+        node: vdmax
+        min: 13.0
+        max: 16.0
+        description: "сток удержан freewheel-диодом ~14В"

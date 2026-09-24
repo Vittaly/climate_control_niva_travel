@@ -1,17 +1,17 @@
-* UI — субсхема из нетлиста KiCad + YAML
-.subckt UI BTN_AC BTN_DEFROST_GLASS BTN_DRY_GLASS BTN_FACE BTN_FEET BTN_RECIRC FAN_SEL_ADC GALLET_POS_1 GALLET_POS_2 GALLET_POS_3 GALLET_POS_4 GND ILLUM_IN_RAW ILLUM_SENSE LED_AC_A LED_AC_DRV LED_DEFROST_GLASS_A LED_DEFROST_GLASS_DRV LED_DRY_GLASS_A LED_DRY_GLASS_DRV LED_FACE_A LED_FACE_DRV LED_FEET_A LED_FEET_DRV LED_RECIRC_A LED_RECIRC_DRV NTC_CABIN TEMP_SET_ADC VCC_3V3
+* user_interface — субсхема из нетлиста KiCad + YAML
+.subckt user_interface BTN_AC BTN_DEFROST_GLASS BTN_DRY_GLASS BTN_FACE BTN_FEET BTN_RECIRC FAN_SEL_ADC GALLET_POS_1 GALLET_POS_2 GALLET_POS_3 GALLET_POS_4 GND ILLUM_IN_RAW ILLUM_SENSE LED_AC_A LED_AC_DRV LED_DEFROST_GLASS_A LED_DEFROST_GLASS_DRV LED_DRY_GLASS_A LED_DRY_GLASS_DRV LED_FACE_A LED_FACE_DRV LED_FEET_A LED_FEET_DRV LED_RECIRC_A LED_RECIRC_DRV NTC_CABIN TEMP_SET_ADC VCC_3V3
   C22 TEMP_SET_ADC GND 100n
   C23 FAN_SEL_ADC GND 100n
   C24 NTC_CABIN GND 100n
   C32 ILLUM_SENSE GND 100n
   * J3: Conn_01x02 (Внутр. коннектор потенциометра (2п, XH)) — не моделируется
   * J4: Conn_01x05 (Внутр. коннектор галлетника (5п, XH)) — не моделируется
-  * LED1: LED (Индикатор зелёный 1206) — не моделируется
-  * LED2: LED (Индикатор зелёный 1206) — не моделируется
-  * LED3: LED (Индикатор зелёный 1206) — не моделируется
-  * LED4: LED (Индикатор янтарный 1206) — не моделируется
-  * LED5: LED (Индикатор зелёный 1206) — не моделируется
-  * LED6: LED (Индикатор зелёный 1206) — не моделируется
+  DLED1 LED_DEFROST_GLASS_A LED_DEFROST_GLASS_DRV LED_GREEN
+  DLED2 LED_FACE_A LED_FACE_DRV LED_GREEN
+  DLED3 LED_FEET_A LED_FEET_DRV LED_GREEN
+  DLED4 LED_DRY_GLASS_A LED_DRY_GLASS_DRV LED_AMBER
+  DLED5 LED_AC_A LED_AC_DRV LED_GREEN
+  DLED6 LED_RECIRC_A LED_RECIRC_DRV LED_GREEN
   R10 VCC_3V3 LED_DRY_GLASS_A 1k
   R11 VCC_3V3 LED_AC_A 1k
   R12 VCC_3V3 LED_RECIRC_A 1k
@@ -33,4 +33,4 @@
   * SW4: SW_Push (Кнопка тактовая 6x6 без фиксации) — не моделируется
   * SW5: SW_Push (Кнопка тактовая 6x6 без фиксации) — не моделируется
   * SW6: SW_Push (Кнопка тактовая 6x6 без фиксации) — не моделируется
-.ends UI
+.ends user_interface

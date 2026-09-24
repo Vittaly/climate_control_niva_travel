@@ -1,0 +1,9 @@
+* fan_driver_testbench — субсхема из нетлиста KiCad + YAML
+.subckt fan_driver_testbench FAN_GATE_INT FAN_LOAD_LO FAN_PWM_EXT_IN GND MOTOR_TERM VBAT_FAN
+  C546 FAN_GATE_INT GND 1n
+  C593 MOTOR_TERM GND 100n
+  D6 FAN_LOAD_LO VBAT_FAN D_SCHOTTKY
+  L637 FAN_LOAD_LO MOTOR_TERM 2u
+  XQ5 FAN_GATE_INT FAN_LOAD_LO GND BTS141
+  R31 FAN_PWM_EXT_IN FAN_GATE_INT 100
+.ends fan_driver_testbench

@@ -1,0 +1,51 @@
+* Ngspice тест: fan_driver_testbench / FAN_KEY_PWM
+* ШИМ 4 кГц через слабый выход модуля контроля (R14‖R15).
+* Завал фронтов затвора через R31 + C546 от источника
+* с импедансом 5,7 кОм. Проверяем:
+*   * Vgs на затворе не успевает дойти до 12В;
+*   * средний ток затвора не превышает 2,5 мА;
+*   * сток удерживается freewheel-диодом D6 на уровне ~14В.
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/motor_model.lib
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/BTS141_model.lib
+.model D_SCHOTTKY D(IS=1e-6 RS=0.03 N=1.05 CJO=200p VJ=0.55 M=0.5 BV=40 IBV=1e-4)
+.INCLUDE spice/fan_driver_testbench.sub
+
+* Порты: FAN_GATE_INT FAN_LOAD_LO FAN_PWM_EXT_IN GND MOTOR_TERM VBAT_FAN
+
+* V1: Питание стенда +13,5В
+V1 VBAT_SRC 0 DC 13.5
+
+* RSRC: Выходное сопротивление модуля контроля (R14‖R15)
+RSRC FAN_PWM_EXT_IN FAN_PWM_SRC 5.7k
+
+* V2: ШИМ 4 кГц, скважность 50% (имитация выхода МК)
+V2 FAN_PWM_SRC 0 PULSE(12.0 0.0 0 0.5u 0.5u 125u 250u)
+
+* R33: Сопротивление провода +12В
+R33 VBAT_SRC VBAT_FAN 0.015
+
+* L3: Индуктивность провода +12В
+L3 VBAT_SRC VBAT_FAN 1.5u
+
+* R34: Сопротивление обратного провода
+R34 GND 0 0.015
+
+* L4: Индуктивность обратного провода
+L4 GND 0 1.5u
+
+* XMOT: Мотор печки, ШИМ-регулирование
+XMOT VBAT_FAN MOTOR_TERM SPEED DC_MOTOR R_arm=0.45 L_arm=250u Ke=1.35 Kt=0.0333 C_inertia=0.05 R_friction=10
+Xfan_driver_testbench FAN_GATE_INT FAN_LOAD_LO FAN_PWM_EXT_IN 0 MOTOR_TERM VBAT_FAN fan_driver_testbench
+
+.measure TRAN vdmax MAX v(FAN_LOAD_LO)
+.tran 2u 1m
+.control
+run
+let vg = v(FAN_GATE_INT)
+let n = length(vg)
+let vgsmax = vg[n-1]
+let ig = (v(FAN_PWM_SRC) - v(FAN_GATE_INT)) / 5.7k
+let igavg = mean(ig)
+print vgsmax igavg
+.endc
+.end

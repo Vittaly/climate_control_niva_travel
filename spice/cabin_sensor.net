@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/actuator_channel.kicad_sch")
-		(date "2026-09-19T11:38:01")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/cabin_sensor.kicad_sch")
+		(date "2026-09-24T23:13:15")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -13,7 +13,7 @@
 				(company)
 				(rev)
 				(date)
-				(source "actuator_channel.kicad_sch")
+				(source "cabin_sensor.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -55,8 +55,8 @@
 	)
 	(components
 		(comp
-			(ref "C1")
-			(value "100nF")
+			(ref "D3")
+			(value "1N4148W")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -72,8 +72,8 @@
 			)
 			(libsource
 				(lib "Device")
-				(part "C")
-				(description "Unpolarized capacitor")
+				(part "D")
+				(description "Diode")
 			)
 			(property
 				(name "mirror")
@@ -85,21 +85,21 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "actuator_channel.kicad_sch")
+				(value "cabin_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
-				(value "cap capacitor")
+				(value "diode")
 			)
 			(property
 				(name "ki_fp_filters")
-				(value "C_*")
+				(value "TO-???* *_Diode_* *SingleDiode* D_*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "fd4a92e7-8e56-42bc-8c79-1a63386c4ae4")
+			(tstamps "8c0c7127-8eae-4f99-86b9-fcc4a0a0d93a")
 			(units
 				(unit
 					(name "A")
@@ -115,8 +115,8 @@
 			)
 		)
 		(comp
-			(ref "C2")
-			(value "100nF")
+			(ref "J5")
+			(value "Внутр. коннектор вентилятора продувки (2п, XH)")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -131,9 +131,9 @@
 				)
 			)
 			(libsource
-				(lib "Device")
-				(part "C")
-				(description "Unpolarized capacitor")
+				(lib "Connector_Generic")
+				(part "Conn_01x02")
+				(description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
 			)
 			(property
 				(name "mirror")
@@ -145,21 +145,21 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "actuator_channel.kicad_sch")
+				(value "cabin_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
-				(value "cap capacitor")
+				(value "connector")
 			)
 			(property
 				(name "ki_fp_filters")
-				(value "C_*")
+				(value "Connector*:*_1x??_*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "66278b38-d6df-4c91-b436-91b15b574004")
+			(tstamps "ac46bc00-ac51-4229-b2c5-4000e309819b")
 			(units
 				(unit
 					(name "A")
@@ -175,8 +175,71 @@
 			)
 		)
 		(comp
-			(ref "R1")
-			(value "33k")
+			(ref "Q2")
+			(value "AO3400")
+			(fields
+				(field
+					(name "mirror") "None")
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Transistor_FET")
+				(part "AO3400A")
+				(description "30V Vds, 5.7A Id, N-Channel MOSFET, SOT-23")
+			)
+			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
+				(name "Sheetname")
+				(value "Root")
+			)
+			(property
+				(name "Sheetfile")
+				(value "cabin_sensor.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "N-Channel MOSFET")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "SOT?23*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "b3d591cb-e51d-46c3-8d14-3f02e4a3d740")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R16")
+			(value "1k")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -205,7 +268,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "actuator_channel.kicad_sch")
+				(value "cabin_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -219,7 +282,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "dddf3da7-b019-4a3b-a805-9b0c9602633e")
+			(tstamps "46739881-ac3e-4196-88f0-ff3888753ab0")
 			(units
 				(unit
 					(name "A")
@@ -235,7 +298,7 @@
 			)
 		)
 		(comp
-			(ref "R2")
+			(ref "R17")
 			(value "10k")
 			(fields
 				(field
@@ -265,7 +328,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "actuator_channel.kicad_sch")
+				(value "cabin_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -279,7 +342,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "96966474-1d45-4a30-b04b-d658fdc9dc20")
+			(tstamps "c8cb2ac5-909b-4e4b-a36e-eeaeea5d2d79")
 			(units
 				(unit
 					(name "A")
@@ -295,8 +358,8 @@
 			)
 		)
 		(comp
-			(ref "R3")
-			(value "20k")
+			(ref "RT1")
+			(value "10k")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -312,8 +375,8 @@
 			)
 			(libsource
 				(lib "Device")
-				(part "R")
-				(description "Resistor")
+				(part "Thermistor_NTC")
+				(description "Temperature dependent resistor, negative temperature coefficient")
 			)
 			(property
 				(name "mirror")
@@ -325,21 +388,21 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "actuator_channel.kicad_sch")
+				(value "cabin_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
-				(value "R res resistor")
+				(value "thermistor NTC resistor sensor RTD")
 			)
 			(property
 				(name "ki_fp_filters")
-				(value "R_*")
+				(value "R_* RV_*")
 			)
 			(sheetpath
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "abe63395-9989-42f3-b1c5-3116bfa14fc3")
+			(tstamps "e9e90fe9-1642-4b69-9277-26338ec57583")
 			(units
 				(unit
 					(name "A")
@@ -349,87 +412,6 @@
 						)
 						(pin
 							(num "2")
-						)
-					)
-				)
-			)
-		)
-		(comp
-			(ref "U1")
-			(value "DRV8871 H-мост")
-			(fields
-				(field
-					(name "mirror") "None")
-				(field
-					(name "Footprint")
-				)
-				(field
-					(name "Datasheet")
-				)
-				(field
-					(name "Description")
-				)
-			)
-			(libsource
-				(lib "Driver_Motor")
-				(part "DRV8871DDA")
-				(description "Brushed DC Motor Driver, PWM Control, 45V, 3.6A, Current limiting, HTSOP-8")
-			)
-			(property
-				(name "mirror")
-				(value "None")
-			)
-			(property
-				(name "Sheetname")
-				(value "Root")
-			)
-			(property
-				(name "Sheetfile")
-				(value "actuator_channel.kicad_sch")
-			)
-			(property
-				(name "ki_keywords")
-				(value "H-bridge driver motor current limit")
-			)
-			(property
-				(name "ki_fp_filters")
-				(value "Texas*HTSOP*1EP*3.9x4.9mm*P1.27mm*EP2.95x4.9mm*Mask2.4x3.1mm*")
-			)
-			(sheetpath
-				(names "/")
-				(tstamps "/")
-			)
-			(tstamps "4746a976-3436-4966-96ba-92162ff9ca0e")
-			(units
-				(unit
-					(name "A")
-					(pins
-						(pin
-							(num "3")
-						)
-						(pin
-							(num "2")
-						)
-						(pin
-							(num "5")
-						)
-						(pin
-							(num "1")
-						)
-						(pin
-							(num "7")
-						)
-						(pin
-							(num "9")
-						)
-						(pin
-							(num "6")
-						)
-						(pin
-							(num "8")
-						)
-						(pin
-							(num "4")
 						)
 					)
 				)
@@ -440,17 +422,17 @@
 	(variants)
 	(libparts
 		(libpart
-			(lib "Device")
-			(part "C")
-			(description "Unpolarized capacitor")
+			(lib "Connector_Generic")
+			(part "Conn_01x02")
+			(description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
 			(footprints
-				(fp "C_*")
+				(fp "Connector*:*_1x??_*")
 			)
 			(fields
 				(field
-					(name "Reference") "C")
+					(name "Reference") "J")
 				(field
-					(name "Value") "C")
+					(name "Value") "Conn_01x02")
 				(field
 					(name "Footprint")
 				)
@@ -458,17 +440,58 @@
 					(name "Datasheet")
 				)
 				(field
-					(name "Description") "Unpolarized capacitor")
+					(name "Description") "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
 			)
 			(pins
 				(pin
 					(num "1")
-					(name "")
+					(name "Pin_1")
 					(type "passive")
 				)
 				(pin
 					(num "2")
-					(name "")
+					(name "Pin_2")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "Device")
+			(part "D")
+			(description "Diode")
+			(footprints
+				(fp "TO-???*")
+				(fp "*_Diode_*")
+				(fp "*SingleDiode*")
+				(fp "D_*")
+			)
+			(fields
+				(field
+					(name "Reference") "D")
+				(field
+					(name "Value") "D")
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description") "Diode")
+				(field
+					(name "Sim.Device") "D")
+				(field
+					(name "Sim.Pins") "1=K 2=A")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "K")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "A")
 					(type "passive")
 				)
 			)
@@ -508,69 +531,74 @@
 			)
 		)
 		(libpart
-			(lib "Driver_Motor")
-			(part "DRV8871DDA")
-			(description "Brushed DC Motor Driver, PWM Control, 45V, 3.6A, Current limiting, HTSOP-8")
-			(docs "http://www.ti.com/lit/ds/symlink/drv8871.pdf")
+			(lib "Device")
+			(part "Thermistor_NTC")
+			(description "Temperature dependent resistor, negative temperature coefficient")
 			(footprints
-				(fp "Texas*HTSOP*1EP*3.9x4.9mm*P1.27mm*EP2.95x4.9mm*Mask2.4x3.1mm*")
+				(fp "R_*")
+				(fp "RV_*")
 			)
 			(fields
 				(field
-					(name "Reference") "U")
+					(name "Reference") "TH")
 				(field
-					(name "Value") "DRV8871DDA")
+					(name "Value") "Thermistor_NTC")
 				(field
-					(name "Footprint") "Package_SO:Texas_HTSOP-8-1EP_3.9x4.9mm_P1.27mm_EP2.95x4.9mm_Mask2.4x3.1mm_ThermalVias")
+					(name "Footprint")
+				)
 				(field
-					(name "Datasheet") "http://www.ti.com/lit/ds/symlink/drv8871.pdf")
+					(name "Datasheet")
+				)
 				(field
-					(name "Description") "Brushed DC Motor Driver, PWM Control, 45V, 3.6A, Current limiting, HTSOP-8")
+					(name "Description") "Temperature dependent resistor, negative temperature coefficient")
 			)
 			(pins
 				(pin
 					(num "1")
-					(name "GND")
-					(type "power_in")
+					(name "")
+					(type "passive")
 				)
 				(pin
 					(num "2")
-					(name "IN2")
+					(name "")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "Transistor_FET")
+			(part "AO3400A")
+			(description "30V Vds, 5.7A Id, N-Channel MOSFET, SOT-23")
+			(docs "http://www.aosmd.com/pdfs/datasheet/AO3400A.pdf")
+			(footprints
+				(fp "SOT?23*")
+			)
+			(fields
+				(field
+					(name "Reference") "Q")
+				(field
+					(name "Value") "AO3400A")
+				(field
+					(name "Footprint") "Package_TO_SOT_SMD:SOT-23")
+				(field
+					(name "Datasheet") "http://www.aosmd.com/pdfs/datasheet/AO3400A.pdf")
+				(field
+					(name "Description") "30V Vds, 5.7A Id, N-Channel MOSFET, SOT-23")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "G")
 					(type "input")
+				)
+				(pin
+					(num "2")
+					(name "S")
+					(type "passive")
 				)
 				(pin
 					(num "3")
-					(name "IN1")
-					(type "input")
-				)
-				(pin
-					(num "4")
-					(name "ILIM")
-					(type "passive")
-				)
-				(pin
-					(num "5")
-					(name "VM")
-					(type "power_in")
-				)
-				(pin
-					(num "6")
-					(name "OUT1")
-					(type "output")
-				)
-				(pin
-					(num "7")
-					(name "GND")
-					(type "passive")
-				)
-				(pin
-					(num "8")
-					(name "OUT2")
-					(type "output")
-				)
-				(pin
-					(num "9")
-					(name "GND")
+					(name "D")
 					(type "passive")
 				)
 			)
@@ -578,162 +606,119 @@
 	)
 	(libraries
 		(library
+			(logical "Connector_Generic")
+			(uri "${KICAD10_SYMBOL_DIR}/Connector_Generic.kicad_sym")
+		)
+		(library
 			(logical "Device")
 			(uri "${KICAD10_SYMBOL_DIR}/Device.kicad_sym")
 		)
 		(library
-			(logical "Driver_Motor")
-			(uri "${KICAD10_SYMBOL_DIR}/Driver_Motor.kicad_sym")
+			(logical "Transistor_FET")
+			(uri "${KICAD10_SYMBOL_DIR}/Transistor_FET.kicad_sym")
 		)
 	)
 	(nets
 		(net
 			(code "1")
-			(name "/FB")
+			(name "/GND")
 			(class "Default")
 			(node
-				(ref "C2")
-				(pin "1")
+				(ref "Q2")
+				(pin "2")
+				(pinfunction "S_2")
 				(pintype "passive")
 			)
 			(node
-				(ref "R2")
+				(ref "R17")
 				(pin "2")
 				(pintype "passive")
 			)
 			(node
-				(ref "R3")
-				(pin "1")
+				(ref "RT1")
+				(pin "2")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "2")
-			(name "/FB_RAW")
+			(name "/M_FAN_CTL")
 			(class "Default")
 			(node
-				(ref "R2")
+				(ref "R16")
 				(pin "1")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "3")
-			(name "/GND")
+			(name "/M_FAN_GATE")
 			(class "Default")
 			(node
-				(ref "C1")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "C2")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R1")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R3")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "U1")
+				(ref "Q2")
 				(pin "1")
-				(pinfunction "GND_1")
-				(pintype "power_in")
+				(pinfunction "G_1")
+				(pintype "input")
 			)
 			(node
-				(ref "U1")
-				(pin "7")
-				(pinfunction "GND_7")
+				(ref "R16")
+				(pin "2")
 				(pintype "passive")
 			)
 			(node
-				(ref "U1")
-				(pin "9")
-				(pinfunction "GND_9")
+				(ref "R17")
+				(pin "1")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "4")
-			(name "/ILIM")
+			(name "/NTC_CABIN")
 			(class "Default")
 			(node
-				(ref "R1")
+				(ref "RT1")
 				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "U1")
-				(pin "4")
-				(pinfunction "ILIM_4")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "5")
-			(name "/IN1")
+			(name "/SENS_FAN_SW")
 			(class "Default")
 			(node
-				(ref "U1")
+				(ref "D3")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "J5")
+				(pin "2")
+				(pinfunction "Pin_2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q2")
 				(pin "3")
-				(pinfunction "IN1_3")
-				(pintype "input")
+				(pinfunction "D_3")
+				(pintype "passive")
 			)
 		)
 		(net
 			(code "6")
-			(name "/IN2")
-			(class "Default")
-			(node
-				(ref "U1")
-				(pin "2")
-				(pinfunction "IN2_2")
-				(pintype "input")
-			)
-		)
-		(net
-			(code "7")
-			(name "/MOTOR_A")
-			(class "Default")
-			(node
-				(ref "U1")
-				(pin "6")
-				(pinfunction "OUT1_6")
-				(pintype "output")
-			)
-		)
-		(net
-			(code "8")
-			(name "/MOTOR_B")
-			(class "Default")
-			(node
-				(ref "U1")
-				(pin "8")
-				(pinfunction "OUT2_8")
-				(pintype "output")
-			)
-		)
-		(net
-			(code "9")
 			(name "/VCC_12V")
 			(class "Default")
 			(node
-				(ref "C1")
+				(ref "D3")
 				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
-				(ref "U1")
-				(pin "5")
-				(pinfunction "VM_5")
-				(pintype "power_in")
+				(ref "J5")
+				(pin "1")
+				(pinfunction "Pin_1_1")
+				(pintype "passive")
 			)
 		)
 	)

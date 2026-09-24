@@ -1,8 +1,9 @@
-* Ngspice тест: CAN / CAN_RECESSIVE
+* Ngspice тест: can_bus / CAN_RECESSIVE
 * Рецессивное состояние шины (TXD = 1).
 * Драйвер выключен, выходы CANH/CANL подтянуты внутренними
 * делителями к ~2,5В. Vdiff ≈ 0.
-.INCLUDE spice/CAN.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/mcp2562_ngspice.lib
+.INCLUDE spice/can_bus.sub
 
 * Порты: CANH CANL CAN_RX CAN_TX GND VCC_5V
 
@@ -11,7 +12,10 @@ V1 VCC_5V 0 DC 5.0
 
 * V2: TXD = 1 (рецессив, драйвер выключен)
 V2 CAN_TX 0 DC 5.0
-XCAN CANH CANL CAN_RX CAN_TX 0 VCC_5V CAN
+
+* R_TERM: Эквивалент двух терминаторов 120 Ом на концах шины
+R_TERM CANH CANL 60
+Xcan_bus CANH CANL CAN_RX CAN_TX 0 VCC_5V can_bus
 
 .op
 .control

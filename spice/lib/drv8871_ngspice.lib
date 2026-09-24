@@ -1,22 +1,37 @@
-* Поведенческая модель DRV8871 для ngspice
-* Выводы: IN1 IN2 OUT1 OUT2 VM GND
-.subckt DRV8871 IN1 IN2 OUT1 OUT2 VM GND
+* drv8871_ngspice.lib
+* H-мост DRV8871 (TI), поведенческая макромодель.
+* Выводы: IN1 IN2 OUT1 OUT2 VM GND.
+*
+* Логика по даташиту:
+*   IN1=0, IN2=0 → coast:   OUT1, OUT2 Hi-Z
+*   IN1=1, IN2=0 → forward: OUT1=VM, OUT2=GND
+*   IN1=0, IN2=1 → reverse: OUT1=GND, OUT2=VM
+*   IN1=1, IN2=1 → brake:   OUT1=GND, OUT2=GND
+*
+* Моделируется: порог входов ~2.5В, Rds_on ~0.5Ω,
+*               cross-conduction предотвращён по логике.
+* Не моделируется: токоограничение по ILIM, защита от КЗ
+*               и перегрева, dead time, время переключения.
 
-* Модели ключей (SW) для ngspice:
-* Ron = 0.282 Ом (половина от суммарного RDS(on)=0.565 Ом из даташита)
-* Vt = 1.4V (порог переключения логики), Vh = 0.4V (гистерезис)
-.model SW_HS SW(Ron=0.282 Roff=1Meg Vt=1.4 Vh=0.4)
-.model SW_LS SW(Ron=0.282 Roff=1Meg Vt=1.4 Vh=0.4)
+.SUBCKT DRV8871 IN1 IN2 OUT1 OUT2 VM GND
++ PARAMS: Ron=0.5 Roff=1Meg Vth=2.5
 
-* Синтаксис ключей ngspice: Sxxxx n+ n- nc+ nc- model
-* Верхние ключи (High-Side) открываются, когда на входе HIGH
-S_HS1 VM   OUT1 IN1 GND SW_HS
-S_HS2 VM   OUT2 IN2 GND SW_HS
+* Компараторы входов: 1, если V(IN) > Vth.
+B_hi1 hi1 GND V = (V(IN1, GND) > Vth) ? 1 : 0
+B_hi2 hi2 GND V = (V(IN2, GND) > Vth) ? 1 : 0
 
-* Нижние ключи (Low-Side). В DRV8871 логика торможения/decay работает так:
-* Если IN1=LOW, то OUT1 прижимается к GND. То есть нижний ключ инвертирован.
-* Для ngspice инверсию делаем, меняя полярность управляющих узлов (GND и INx).
-S_LS1 OUT1 GND  GND IN2 SW_LS
-S_LS2 OUT2 GND  GND IN1 SW_LS
+* Таблица истинности H-моста.
+B_hs1 hs1 GND V = V(hi1, GND) * (1 - V(hi2, GND))
+B_hs2 hs2 GND V = (1 - V(hi1, GND)) * V(hi2, GND)
+B_ls1 ls1 GND V = V(hi2, GND)
+B_ls2 ls2 GND V = V(hi1, GND)
 
-.ends DRV8871
+* Силовые ключи, управляемые вычисленными сигналами.
+S_HS1 VM   OUT1 hs1 GND SW_DRV
+S_HS2 VM   OUT2 hs2 GND SW_DRV
+S_LS1 OUT1 GND  ls1 GND SW_DRV
+S_LS2 OUT2 GND  ls2 GND SW_DRV
+
+.MODEL SW_DRV SW(Ron={Ron} Roff={Roff} Vt=0.5 Vh=0.1)
+
+.ENDS DRV8871

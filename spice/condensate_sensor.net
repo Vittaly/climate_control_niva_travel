@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/solar_sensor.kicad_sch")
-		(date "2026-09-19T11:38:00")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/condensate_sensor.kicad_sch")
+		(date "2026-09-24T23:13:16")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -13,7 +13,7 @@
 				(company)
 				(rev)
 				(date)
-				(source "solar_sensor.kicad_sch")
+				(source "condensate_sensor.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -55,8 +55,8 @@
 	)
 	(components
 		(comp
-			(ref "C26")
-			(value "100nF")
+			(ref "C27")
+			(value "100n")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -85,7 +85,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "solar_sensor.kicad_sch")
+				(value "condensate_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f46d9b89-6085-4c01-9264-2c77a74bd3cb")
+			(tstamps "c06cec87-a793-4b1b-b312-ce25593bbbd7")
 			(units
 				(unit
 					(name "A")
@@ -115,7 +115,67 @@
 			)
 		)
 		(comp
-			(ref "R27")
+			(ref "D28")
+			(value "BZX84C3V6")
+			(fields
+				(field
+					(name "mirror") "None")
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "D_Zener")
+				(description "Zener diode")
+			)
+			(property
+				(name "mirror")
+				(value "None")
+			)
+			(property
+				(name "Sheetname")
+				(value "Root")
+			)
+			(property
+				(name "Sheetfile")
+				(value "condensate_sensor.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "diode")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "TO-???* *_Diode_* *SingleDiode* D_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "4e6565ea-2a9c-4bc3-99a1-6e0d80320fb3")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R29")
 			(value "10k")
 			(fields
 				(field
@@ -145,7 +205,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "solar_sensor.kicad_sch")
+				(value "condensate_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -159,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a979e6be-3b33-4d65-a69c-ad0aa92e8079")
+			(tstamps "cff53310-4799-41fb-8272-802827f6207a")
 			(units
 				(unit
 					(name "A")
@@ -175,7 +235,7 @@
 			)
 		)
 		(comp
-			(ref "R28")
+			(ref "R30")
 			(value "20k")
 			(fields
 				(field
@@ -205,7 +265,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "solar_sensor.kicad_sch")
+				(value "condensate_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -219,7 +279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "af768197-679d-45a3-9044-e46fc8d08841")
+			(tstamps "c0a88ff0-4756-4676-a382-9c9e4c7b4fb2")
 			(units
 				(unit
 					(name "A")
@@ -274,6 +334,43 @@
 		)
 		(libpart
 			(lib "Device")
+			(part "D_Zener")
+			(description "Zener diode")
+			(footprints
+				(fp "TO-???*")
+				(fp "*_Diode_*")
+				(fp "*SingleDiode*")
+				(fp "D_*")
+			)
+			(fields
+				(field
+					(name "Reference") "D")
+				(field
+					(name "Value") "D_Zener")
+				(field
+					(name "Footprint")
+				)
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description") "Zener diode")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "K")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "A")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "Device")
 			(part "R")
 			(description "Resistor")
 			(footprints
@@ -316,46 +413,58 @@
 	(nets
 		(net
 			(code "1")
-			(name "/GND")
+			(name "/COND_ADC")
 			(class "Default")
 			(node
-				(ref "C26")
+				(ref "C27")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D28")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R29")
 				(pin "2")
 				(pintype "passive")
 			)
 			(node
-				(ref "R28")
-				(pin "2")
+				(ref "R30")
+				(pin "1")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "2")
-			(name "/SOLAR_ADC")
+			(name "/COND_IN_RAW")
 			(class "Default")
 			(node
-				(ref "C26")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R27")
-				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R28")
+				(ref "R29")
 				(pin "1")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "3")
-			(name "/SOLAR_RAW")
+			(name "/GND")
 			(class "Default")
 			(node
-				(ref "R27")
-				(pin "1")
+				(ref "C27")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D28")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R30")
+				(pin "2")
 				(pintype "passive")
 			)
 		)

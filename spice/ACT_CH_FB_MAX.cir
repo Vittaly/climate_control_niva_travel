@@ -1,13 +1,24 @@
-* Ngspice тест: ACTUATOR_CHANNEL / ACT_CH_FB_MAX
+* Ngspice тест: actuator_channel / ACT_CH_FB_MAX
 * Делитель ОС при максимальном положении потенциометра.
 * 5В на FB_RAW → ~3,33В на FB.
-.INCLUDE spice/ACTUATOR_CHANNEL.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/drv8871_ngspice.lib
+.INCLUDE spice/actuator_channel.sub
 
 * Порты: FB FB_RAW GND ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V
 
 * V1: Потенциометр заслонки в крайнем положении (5В)
 V1 FB_RAW 0 DC 5.0
-XACTUATOR_CHANNEL FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V ACTUATOR_CHANNEL
+
+V2 VCC_12V 0 DC 0.0
+
+V3 IN1 0 DC 0.0
+
+V4 IN2 0 DC 0.0
+
+R_MA MOTOR_A 0 1Meg
+
+R_MB MOTOR_B 0 1Meg
+Xactuator_channel FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V actuator_channel
 
 .op
 .control

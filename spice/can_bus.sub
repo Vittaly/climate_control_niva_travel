@@ -1,0 +1,4 @@
+* can_bus — субсхема из нетлиста KiCad + YAML
+.subckt can_bus CANH CANL CAN_RX CAN_TX GND VCC_5V
+  XU8 CAN_TX CAN_RX CANH CANL GND VCC_5V VCC_5V GND MCP2562
+.ends can_bus

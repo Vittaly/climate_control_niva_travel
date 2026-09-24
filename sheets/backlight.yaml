@@ -1,5 +1,3 @@
-page_name: BACKLIGHT
-file: backlight.kicad_sch
 functional_purpose: |
   Модуль фоновой подсветки шкал ручек управления, подсветки
   кнопок и указателя.
@@ -13,18 +11,24 @@ functional_purpose: |
   габаритами автомобиля.
 
   Группы каналов:
-    * 8 шкальных (шкалы ручек ТЕМП и ВЕНТ), LED белые 0805;
-    * 2 канала подсветки кнопок (6 кнопок), LED белые 1206;
-    * 4 канала указателя, LED белые 0603.
+    * 8 шкальных (шкалы ручек ТЕМП и ВЕНТ);
+    * 2 канала подсветки кнопок (6 кнопок);
+    * 4 канала указателя.
+
+  Все LED — 1206 (для ручной пайки).
 
   Ток одного канала при 12В: (12 − 3·3,2)/130 ≈ 18,5 мА.
   Суммарный ток: ≈ 260 мА.
 
-  Соответствие KiCad-reference и логических ролей:
-    R9  = R_BTN1, R10 = R_BTN2,
-    R11 = R_PTR1, R12 = R_PTR2, R13 = R_PTR3, R14 = R_PTR4,
-    LED101..LED106   = LED_BTN_1..LED_BTN_6,
-    LED201..LED212   = LED_PTR_1..LED_PTR_12.
+  В SPICE:
+    * LED11..LED212 — primitive: D с inline .model LED_WHITE;
+    * R — примитивы, spice не требуют.
+
+  Полярность LED (KiCad Device:LED):
+    pin 1 = K (катод), pin 2 = A (анод).
+    Имена выводов уникальны → в nets: адресуются pinfunction 'K'/'A'.
+    Внутри канала LED соединены последовательно: A→K→A→K→A→K→GND.
+    После резистора R1..R14 стоит АНОД первого LED (pinfunction 'A').
 
 ports:
 - net_label: ILLUM_IN_RAW
@@ -35,137 +39,93 @@ ports:
   description: Общая силовая земля схемы
 
 component_types:
-  TYPE_R_0603_130R:
+  TYPE_R_130R:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 130R
     fields:
       Power: 0.1W
       Tolerance: 1%
-    spice:
-      model: R
-      description: "Токоограничивающий резистор LED-канала"
-  TYPE_LED_0805_WHITE:
-    symbol: Device:LED
-    footprint: LED_SMD:LED_0805_2012Metric
-    value: Белый SMD 0805
-    fields: { Color: White }
-    spice:
-      model: LED_WHITE
-  TYPE_LED_1206_WHITE:
+
+  TYPE_LED_WHITE:
     symbol: Device:LED
     footprint: LED_SMD:LED_1206_3216Metric
     value: Белый SMD 1206
     fields: { Color: White }
     spice:
-      model: LED_WHITE
-  TYPE_LED_0603_WHITE:
-    symbol: Device:LED
-    footprint: LED_SMD:LED_0603_1608Metric
-    value: Белый SMD 0603
-    fields: { Color: White }
-    spice:
-      model: LED_WHITE
+      description: |
+        Белый светодиод 1206.
+        Vf ≈ 3,2В при 20 мА; 3 LED последовательно ≈ 9,6В.
+        Используется во всех 14 каналах подсветки.
+        Распиновка Device:LED: pin 1 = K (катод), pin 2 = A (анод).
+      primitive: D
+      model_def: ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p)"
 
 components:
   # ─── Шкалы ручек ───────────────────────────────────────────────
-  R1:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 1"
-  R2:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 2"
-  R3:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 3"
-  R4:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 4"
-  R5:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 5"
-  R6:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 6"
-  R7:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 7"
-  R8:
-    type: TYPE_R_0603_130R
-    description: "Токоограничивающий резистор канала шкалы 8"
+  R1: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 1" }
+  R2: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 2" }
+  R3: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 3" }
+  R4: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 4" }
+  R5: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 5" }
+  R6: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 6" }
+  R7: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 7" }
+  R8: { type: TYPE_R_130R, description: "Токоограничивающий резистор канала шкалы 8" }
 
-  LED11: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 1' }
-  LED12: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 2' }
-  LED13: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 3' }
-  LED21: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 4' }
-  LED22: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 5' }
-  LED23: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 6' }
-  LED31: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 7' }
-  LED32: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 8' }
-  LED33: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 9' }
-  LED41: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 10' }
-  LED42: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 11' }
-  LED43: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 1: Диод 12' }
-  LED51: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 1' }
-  LED52: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 2' }
-  LED53: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 3' }
-  LED61: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 4' }
-  LED62: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 5' }
-  LED63: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 6' }
-  LED71: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 7' }
-  LED72: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 8' }
-  LED73: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 9' }
-  LED81: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 10' }
-  LED82: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 11' }
-  LED83: { type: TYPE_LED_0805_WHITE, description: 'Шкала Ручки 2: Диод 12' }
+  LED11: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 1' }
+  LED12: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 2' }
+  LED13: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 3' }
+  LED21: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 4' }
+  LED22: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 5' }
+  LED23: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 6' }
+  LED31: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 7' }
+  LED32: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 8' }
+  LED33: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 9' }
+  LED41: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 10' }
+  LED42: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 11' }
+  LED43: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 1: Диод 12' }
+  LED51: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 1' }
+  LED52: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 2' }
+  LED53: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 3' }
+  LED61: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 4' }
+  LED62: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 5' }
+  LED63: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 6' }
+  LED71: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 7' }
+  LED72: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 8' }
+  LED73: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 9' }
+  LED81: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 10' }
+  LED82: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 11' }
+  LED83: { type: TYPE_LED_WHITE, description: 'Шкала Ручки 2: Диод 12' }
 
-  # ─── Подсветка кнопок (2 канала × 3 LED, белые 1206) ───────────
-  R9:
-    type: TYPE_R_0603_130R
-    description: "R_BTN1: резистор канала подсветки кнопок SW1..SW3"
-    fields: { Role: R_BTN1 }
-  R10:
-    type: TYPE_R_0603_130R
-    description: "R_BTN2: резистор канала подсветки кнопок SW4..SW6"
-    fields: { Role: R_BTN2 }
+  # ─── Подсветка кнопок (2 канала × 3 LED) ───────────────────────
+  R9:  { type: TYPE_R_130R, description: "R_BTN1: резистор канала подсветки кнопок SW1..SW3" }
+  R10: { type: TYPE_R_130R, description: "R_BTN2: резистор канала подсветки кнопок SW4..SW6" }
 
-  LED101: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_1: Подсветка кнопки SW1 (стекло)' }
-  LED102: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_2: Подсветка кнопки SW2 (лицо)' }
-  LED103: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_3: Подсветка кнопки SW3 (ноги)' }
-  LED104: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_4: Подсветка кнопки SW4 (сушка стекла)' }
-  LED105: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_5: Подсветка кнопки SW5 (кондиционер)' }
-  LED106: { type: TYPE_LED_1206_WHITE, description: 'LED_BTN_6: Подсветка кнопки SW6 (рециркуляция)' }
+  LED101: { type: TYPE_LED_WHITE, description: 'LED_BTN_1: Подсветка кнопки SW1 (стекло)' }
+  LED102: { type: TYPE_LED_WHITE, description: 'LED_BTN_2: Подсветка кнопки SW2 (лицо)' }
+  LED103: { type: TYPE_LED_WHITE, description: 'LED_BTN_3: Подсветка кнопки SW3 (ноги)' }
+  LED104: { type: TYPE_LED_WHITE, description: 'LED_BTN_4: Подсветка кнопки SW4 (сушка стекла)' }
+  LED105: { type: TYPE_LED_WHITE, description: 'LED_BTN_5: Подсветка кнопки SW5 (кондиционер)' }
+  LED106: { type: TYPE_LED_WHITE, description: 'LED_BTN_6: Подсветка кнопки SW6 (рециркуляция)' }
 
-  # ─── Указатель (4 канала × 3 LED, белые 0603) ──────────────────
-  R11:
-    type: TYPE_R_0603_130R
-    description: "R_PTR1: резистор канала указателя 1"
-    fields: { Role: R_PTR1 }
-  R12:
-    type: TYPE_R_0603_130R
-    description: "R_PTR2: резистор канала указателя 2"
-    fields: { Role: R_PTR2 }
-  R13:
-    type: TYPE_R_0603_130R
-    description: "R_PTR3: резистор канала указателя 3"
-    fields: { Role: R_PTR3 }
-  R14:
-    type: TYPE_R_0603_130R
-    description: "R_PTR4: резистор канала указателя 4"
-    fields: { Role: R_PTR4 }
+  # ─── Указатель (4 канала × 3 LED) ──────────────────────────────
+  R11: { type: TYPE_R_130R, description: "R_PTR1: резистор канала указателя 1" }
+  R12: { type: TYPE_R_130R, description: "R_PTR2: резистор канала указателя 2" }
+  R13: { type: TYPE_R_130R, description: "R_PTR3: резистор канала указателя 3" }
+  R14: { type: TYPE_R_130R, description: "R_PTR4: резистор канала указателя 4" }
 
-  LED201: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_1:  Указатель шкалы: Диод 1' }
-  LED202: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_2:  Указатель шкалы: Диод 2' }
-  LED203: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_3:  Указатель шкалы: Диод 3' }
-  LED204: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_4:  Указатель шкалы: Диод 4' }
-  LED205: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_5:  Указатель шкалы: Диод 5' }
-  LED206: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_6:  Указатель шкалы: Диод 6' }
-  LED207: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_7:  Указатель шкалы: Диод 7' }
-  LED208: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_8:  Указатель шкалы: Диод 8' }
-  LED209: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_9:  Указатель шкалы: Диод 9' }
-  LED210: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_10: Указатель шкалы: Диод 10' }
-  LED211: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_11: Указатель шкалы: Диод 11' }
-  LED212: { type: TYPE_LED_0603_WHITE, description: 'LED_PTR_12: Указатель шкалы: Диод 12' }
+  LED201: { type: TYPE_LED_WHITE, description: 'LED_PTR_1:  Указатель шкалы: Диод 1' }
+  LED202: { type: TYPE_LED_WHITE, description: 'LED_PTR_2:  Указатель шкалы: Диод 2' }
+  LED203: { type: TYPE_LED_WHITE, description: 'LED_PTR_3:  Указатель шкалы: Диод 3' }
+  LED204: { type: TYPE_LED_WHITE, description: 'LED_PTR_4:  Указатель шкалы: Диод 4' }
+  LED205: { type: TYPE_LED_WHITE, description: 'LED_PTR_5:  Указатель шкалы: Диод 5' }
+  LED206: { type: TYPE_LED_WHITE, description: 'LED_PTR_6:  Указатель шкалы: Диод 6' }
+  LED207: { type: TYPE_LED_WHITE, description: 'LED_PTR_7:  Указатель шкалы: Диод 7' }
+  LED208: { type: TYPE_LED_WHITE, description: 'LED_PTR_8:  Указатель шкалы: Диод 8' }
+  LED209: { type: TYPE_LED_WHITE, description: 'LED_PTR_9:  Указатель шкалы: Диод 9' }
+  LED210: { type: TYPE_LED_WHITE, description: 'LED_PTR_10: Указатель шкалы: Диод 10' }
+  LED211: { type: TYPE_LED_WHITE, description: 'LED_PTR_11: Указатель шкалы: Диод 11' }
+  LED212: { type: TYPE_LED_WHITE, description: 'LED_PTR_12: Указатель шкалы: Диод 12' }
 
 nets:
   ILLUM_IN_RAW:
@@ -209,124 +169,211 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    # Шкалы
-    - { component: LED13,  pin: '2' }
-    - { component: LED23,  pin: '2' }
-    - { component: LED33,  pin: '2' }
-    - { component: LED43,  pin: '2' }
-    - { component: LED53,  pin: '2' }
-    - { component: LED63,  pin: '2' }
-    - { component: LED73,  pin: '2' }
-    - { component: LED83,  pin: '2' }
+    # Шкалы (последний LED в каждом канале — катод)
+    - { component: LED13,  pinfunction: 'K' }
+    - { component: LED23,  pinfunction: 'K' }
+    - { component: LED33,  pinfunction: 'K' }
+    - { component: LED43,  pinfunction: 'K' }
+    - { component: LED53,  pinfunction: 'K' }
+    - { component: LED63,  pinfunction: 'K' }
+    - { component: LED73,  pinfunction: 'K' }
+    - { component: LED83,  pinfunction: 'K' }
     # Кнопки
-    - { component: LED103, pin: '2' }
-    - { component: LED106, pin: '2' }
+    - { component: LED103, pinfunction: 'K' }
+    - { component: LED106, pinfunction: 'K' }
     # Указатель
-    - { component: LED203, pin: '2' }
-    - { component: LED206, pin: '2' }
-    - { component: LED209, pin: '2' }
-    - { component: LED212, pin: '2' }
+    - { component: LED203, pinfunction: 'K' }
+    - { component: LED206, pinfunction: 'K' }
+    - { component: LED209, pinfunction: 'K' }
+    - { component: LED212, pinfunction: 'K' }
 
   # ─── Шкалы ручек (8 каналов × 3 LED) ───────────────────────────
-  NET_SCALE_CH1_A: { name: NET_SCALE_CH1_A, is_hierarchical_port: false,
-    nodes: [{ component: R1,    pin: '2' }, { component: LED11, pin: '1' }] }
-  NET_SCALE_CH1_B: { name: NET_SCALE_CH1_B, is_hierarchical_port: false,
-    nodes: [{ component: LED11, pin: '2' }, { component: LED12, pin: '1' }] }
-  NET_SCALE_CH1_C: { name: NET_SCALE_CH1_C, is_hierarchical_port: false,
-    nodes: [{ component: LED12, pin: '2' }, { component: LED13, pin: '1' }] }
+  # Узел _A: сток R → анод (pinfunction 'A') первого LED.
+  # Узел _B: катод ('K') первого LED → анод ('A') второго.
+  # Узел _C: катод ('K') второго LED → анод ('A') третьего.
+  NET_SCALE_CH1_A:
+    name: NET_SCALE_CH1_A
+    is_hierarchical_port: false
+    nodes: [{ component: R1, pin: '2' }, { component: LED11, pinfunction: 'A' }]
+  NET_SCALE_CH1_B:
+    name: NET_SCALE_CH1_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED11, pinfunction: 'K' }, { component: LED12, pinfunction: 'A' }]
+  NET_SCALE_CH1_C:
+    name: NET_SCALE_CH1_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED12, pinfunction: 'K' }, { component: LED13, pinfunction: 'A' }]
 
-  NET_SCALE_CH2_A: { name: NET_SCALE_CH2_A, is_hierarchical_port: false,
-    nodes: [{ component: R2,    pin: '2' }, { component: LED21, pin: '1' }] }
-  NET_SCALE_CH2_B: { name: NET_SCALE_CH2_B, is_hierarchical_port: false,
-    nodes: [{ component: LED21, pin: '2' }, { component: LED22, pin: '1' }] }
-  NET_SCALE_CH2_C: { name: NET_SCALE_CH2_C, is_hierarchical_port: false,
-    nodes: [{ component: LED22, pin: '2' }, { component: LED23, pin: '1' }] }
+  NET_SCALE_CH2_A:
+    name: NET_SCALE_CH2_A
+    is_hierarchical_port: false
+    nodes: [{ component: R2, pin: '2' }, { component: LED21, pinfunction: 'A' }]
+  NET_SCALE_CH2_B:
+    name: NET_SCALE_CH2_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED21, pinfunction: 'K' }, { component: LED22, pinfunction: 'A' }]
+  NET_SCALE_CH2_C:
+    name: NET_SCALE_CH2_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED22, pinfunction: 'K' }, { component: LED23, pinfunction: 'A' }]
 
-  NET_SCALE_CH3_A: { name: NET_SCALE_CH3_A, is_hierarchical_port: false,
-    nodes: [{ component: R3,    pin: '2' }, { component: LED31, pin: '1' }] }
-  NET_SCALE_CH3_B: { name: NET_SCALE_CH3_B, is_hierarchical_port: false,
-    nodes: [{ component: LED31, pin: '2' }, { component: LED32, pin: '1' }] }
-  NET_SCALE_CH3_C: { name: NET_SCALE_CH3_C, is_hierarchical_port: false,
-    nodes: [{ component: LED32, pin: '2' }, { component: LED33, pin: '1' }] }
+  NET_SCALE_CH3_A:
+    name: NET_SCALE_CH3_A
+    is_hierarchical_port: false
+    nodes: [{ component: R3, pin: '2' }, { component: LED31, pinfunction: 'A' }]
+  NET_SCALE_CH3_B:
+    name: NET_SCALE_CH3_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED31, pinfunction: 'K' }, { component: LED32, pinfunction: 'A' }]
+  NET_SCALE_CH3_C:
+    name: NET_SCALE_CH3_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED32, pinfunction: 'K' }, { component: LED33, pinfunction: 'A' }]
 
-  NET_SCALE_CH4_A: { name: NET_SCALE_CH4_A, is_hierarchical_port: false,
-    nodes: [{ component: R4,    pin: '2' }, { component: LED41, pin: '1' }] }
-  NET_SCALE_CH4_B: { name: NET_SCALE_CH4_B, is_hierarchical_port: false,
-    nodes: [{ component: LED41, pin: '2' }, { component: LED42, pin: '1' }] }
-  NET_SCALE_CH4_C: { name: NET_SCALE_CH4_C, is_hierarchical_port: false,
-    nodes: [{ component: LED42, pin: '2' }, { component: LED43, pin: '1' }] }
+  NET_SCALE_CH4_A:
+    name: NET_SCALE_CH4_A
+    is_hierarchical_port: false
+    nodes: [{ component: R4, pin: '2' }, { component: LED41, pinfunction: 'A' }]
+  NET_SCALE_CH4_B:
+    name: NET_SCALE_CH4_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED41, pinfunction: 'K' }, { component: LED42, pinfunction: 'A' }]
+  NET_SCALE_CH4_C:
+    name: NET_SCALE_CH4_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED42, pinfunction: 'K' }, { component: LED43, pinfunction: 'A' }]
 
-  NET_SCALE_CH5_A: { name: NET_SCALE_CH5_A, is_hierarchical_port: false,
-    nodes: [{ component: R5,    pin: '2' }, { component: LED51, pin: '1' }] }
-  NET_SCALE_CH5_B: { name: NET_SCALE_CH5_B, is_hierarchical_port: false,
-    nodes: [{ component: LED51, pin: '2' }, { component: LED52, pin: '1' }] }
-  NET_SCALE_CH5_C: { name: NET_SCALE_CH5_C, is_hierarchical_port: false,
-    nodes: [{ component: LED52, pin: '2' }, { component: LED53, pin: '1' }] }
+  NET_SCALE_CH5_A:
+    name: NET_SCALE_CH5_A
+    is_hierarchical_port: false
+    nodes: [{ component: R5, pin: '2' }, { component: LED51, pinfunction: 'A' }]
+  NET_SCALE_CH5_B:
+    name: NET_SCALE_CH5_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED51, pinfunction: 'K' }, { component: LED52, pinfunction: 'A' }]
+  NET_SCALE_CH5_C:
+    name: NET_SCALE_CH5_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED52, pinfunction: 'K' }, { component: LED53, pinfunction: 'A' }]
 
-  NET_SCALE_CH6_A: { name: NET_SCALE_CH6_A, is_hierarchical_port: false,
-    nodes: [{ component: R6,    pin: '2' }, { component: LED61, pin: '1' }] }
-  NET_SCALE_CH6_B: { name: NET_SCALE_CH6_B, is_hierarchical_port: false,
-    nodes: [{ component: LED61, pin: '2' }, { component: LED62, pin: '1' }] }
-  NET_SCALE_CH6_C: { name: NET_SCALE_CH6_C, is_hierarchical_port: false,
-    nodes: [{ component: LED62, pin: '2' }, { component: LED63, pin: '1' }] }
+  NET_SCALE_CH6_A:
+    name: NET_SCALE_CH6_A
+    is_hierarchical_port: false
+    nodes: [{ component: R6, pin: '2' }, { component: LED61, pinfunction: 'A' }]
+  NET_SCALE_CH6_B:
+    name: NET_SCALE_CH6_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED61, pinfunction: 'K' }, { component: LED62, pinfunction: 'A' }]
+  NET_SCALE_CH6_C:
+    name: NET_SCALE_CH6_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED62, pinfunction: 'K' }, { component: LED63, pinfunction: 'A' }]
 
-  NET_SCALE_CH7_A: { name: NET_SCALE_CH7_A, is_hierarchical_port: false,
-    nodes: [{ component: R7,    pin: '2' }, { component: LED71, pin: '1' }] }
-  NET_SCALE_CH7_B: { name: NET_SCALE_CH7_B, is_hierarchical_port: false,
-    nodes: [{ component: LED71, pin: '2' }, { component: LED72, pin: '1' }] }
-  NET_SCALE_CH7_C: { name: NET_SCALE_CH7_C, is_hierarchical_port: false,
-    nodes: [{ component: LED72, pin: '2' }, { component: LED73, pin: '1' }] }
+  NET_SCALE_CH7_A:
+    name: NET_SCALE_CH7_A
+    is_hierarchical_port: false
+    nodes: [{ component: R7, pin: '2' }, { component: LED71, pinfunction: 'A' }]
+  NET_SCALE_CH7_B:
+    name: NET_SCALE_CH7_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED71, pinfunction: 'K' }, { component: LED72, pinfunction: 'A' }]
+  NET_SCALE_CH7_C:
+    name: NET_SCALE_CH7_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED72, pinfunction: 'K' }, { component: LED73, pinfunction: 'A' }]
 
-  NET_SCALE_CH8_A: { name: NET_SCALE_CH8_A, is_hierarchical_port: false,
-    nodes: [{ component: R8,    pin: '2' }, { component: LED81, pin: '1' }] }
-  NET_SCALE_CH8_B: { name: NET_SCALE_CH8_B, is_hierarchical_port: false,
-    nodes: [{ component: LED81, pin: '2' }, { component: LED82, pin: '1' }] }
-  NET_SCALE_CH8_C: { name: NET_SCALE_CH8_C, is_hierarchical_port: false,
-    nodes: [{ component: LED82, pin: '2' }, { component: LED83, pin: '1' }] }
+  NET_SCALE_CH8_A:
+    name: NET_SCALE_CH8_A
+    is_hierarchical_port: false
+    nodes: [{ component: R8, pin: '2' }, { component: LED81, pinfunction: 'A' }]
+  NET_SCALE_CH8_B:
+    name: NET_SCALE_CH8_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED81, pinfunction: 'K' }, { component: LED82, pinfunction: 'A' }]
+  NET_SCALE_CH8_C:
+    name: NET_SCALE_CH8_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED82, pinfunction: 'K' }, { component: LED83, pinfunction: 'A' }]
 
   # ─── Подсветка кнопок (2 канала × 3 LED) ───────────────────────
-  NET_BTN_CH1_A: { name: NET_BTN_CH1_A, is_hierarchical_port: false,
-    nodes: [{ component: R9,     pin: '2' }, { component: LED101, pin: '1' }] }
-  NET_BTN_CH1_B: { name: NET_BTN_CH1_B, is_hierarchical_port: false,
-    nodes: [{ component: LED101, pin: '2' }, { component: LED102, pin: '1' }] }
-  NET_BTN_CH1_C: { name: NET_BTN_CH1_C, is_hierarchical_port: false,
-    nodes: [{ component: LED102, pin: '2' }, { component: LED103, pin: '1' }] }
+  NET_BTN_CH1_A:
+    name: NET_BTN_CH1_A
+    is_hierarchical_port: false
+    nodes: [{ component: R9, pin: '2' }, { component: LED101, pinfunction: 'A' }]
+  NET_BTN_CH1_B:
+    name: NET_BTN_CH1_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED101, pinfunction: 'K' }, { component: LED102, pinfunction: 'A' }]
+  NET_BTN_CH1_C:
+    name: NET_BTN_CH1_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED102, pinfunction: 'K' }, { component: LED103, pinfunction: 'A' }]
 
-  NET_BTN_CH2_A: { name: NET_BTN_CH2_A, is_hierarchical_port: false,
-    nodes: [{ component: R10,    pin: '2' }, { component: LED104, pin: '1' }] }
-  NET_BTN_CH2_B: { name: NET_BTN_CH2_B, is_hierarchical_port: false,
-    nodes: [{ component: LED104, pin: '2' }, { component: LED105, pin: '1' }] }
-  NET_BTN_CH2_C: { name: NET_BTN_CH2_C, is_hierarchical_port: false,
-    nodes: [{ component: LED105, pin: '2' }, { component: LED106, pin: '1' }] }
+  NET_BTN_CH2_A:
+    name: NET_BTN_CH2_A
+    is_hierarchical_port: false
+    nodes: [{ component: R10, pin: '2' }, { component: LED104, pinfunction: 'A' }]
+  NET_BTN_CH2_B:
+    name: NET_BTN_CH2_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED104, pinfunction: 'K' }, { component: LED105, pinfunction: 'A' }]
+  NET_BTN_CH2_C:
+    name: NET_BTN_CH2_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED105, pinfunction: 'K' }, { component: LED106, pinfunction: 'A' }]
 
   # ─── Указатель (4 канала × 3 LED) ──────────────────────────────
-  NET_PTR_CH1_A: { name: NET_PTR_CH1_A, is_hierarchical_port: false,
-    nodes: [{ component: R11,    pin: '2' }, { component: LED201, pin: '1' }] }
-  NET_PTR_CH1_B: { name: NET_PTR_CH1_B, is_hierarchical_port: false,
-    nodes: [{ component: LED201, pin: '2' }, { component: LED202, pin: '1' }] }
-  NET_PTR_CH1_C: { name: NET_PTR_CH1_C, is_hierarchical_port: false,
-    nodes: [{ component: LED202, pin: '2' }, { component: LED203, pin: '1' }] }
+  NET_PTR_CH1_A:
+    name: NET_PTR_CH1_A
+    is_hierarchical_port: false
+    nodes: [{ component: R11, pin: '2' }, { component: LED201, pinfunction: 'A' }]
+  NET_PTR_CH1_B:
+    name: NET_PTR_CH1_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED201, pinfunction: 'K' }, { component: LED202, pinfunction: 'A' }]
+  NET_PTR_CH1_C:
+    name: NET_PTR_CH1_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED202, pinfunction: 'K' }, { component: LED203, pinfunction: 'A' }]
 
-  NET_PTR_CH2_A: { name: NET_PTR_CH2_A, is_hierarchical_port: false,
-    nodes: [{ component: R12,    pin: '2' }, { component: LED204, pin: '1' }] }
-  NET_PTR_CH2_B: { name: NET_PTR_CH2_B, is_hierarchical_port: false,
-    nodes: [{ component: LED204, pin: '2' }, { component: LED205, pin: '1' }] }
-  NET_PTR_CH2_C: { name: NET_PTR_CH2_C, is_hierarchical_port: false,
-    nodes: [{ component: LED205, pin: '2' }, { component: LED206, pin: '1' }] }
+  NET_PTR_CH2_A:
+    name: NET_PTR_CH2_A
+    is_hierarchical_port: false
+    nodes: [{ component: R12, pin: '2' }, { component: LED204, pinfunction: 'A' }]
+  NET_PTR_CH2_B:
+    name: NET_PTR_CH2_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED204, pinfunction: 'K' }, { component: LED205, pinfunction: 'A' }]
+  NET_PTR_CH2_C:
+    name: NET_PTR_CH2_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED205, pinfunction: 'K' }, { component: LED206, pinfunction: 'A' }]
 
-  NET_PTR_CH3_A: { name: NET_PTR_CH3_A, is_hierarchical_port: false,
-    nodes: [{ component: R13,    pin: '2' }, { component: LED207, pin: '1' }] }
-  NET_PTR_CH3_B: { name: NET_PTR_CH3_B, is_hierarchical_port: false,
-    nodes: [{ component: LED207, pin: '2' }, { component: LED208, pin: '1' }] }
-  NET_PTR_CH3_C: { name: NET_PTR_CH3_C, is_hierarchical_port: false,
-    nodes: [{ component: LED208, pin: '2' }, { component: LED209, pin: '1' }] }
+  NET_PTR_CH3_A:
+    name: NET_PTR_CH3_A
+    is_hierarchical_port: false
+    nodes: [{ component: R13, pin: '2' }, { component: LED207, pinfunction: 'A' }]
+  NET_PTR_CH3_B:
+    name: NET_PTR_CH3_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED207, pinfunction: 'K' }, { component: LED208, pinfunction: 'A' }]
+  NET_PTR_CH3_C:
+    name: NET_PTR_CH3_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED208, pinfunction: 'K' }, { component: LED209, pinfunction: 'A' }]
 
-  NET_PTR_CH4_A: { name: NET_PTR_CH4_A, is_hierarchical_port: false,
-    nodes: [{ component: R14,    pin: '2' }, { component: LED210, pin: '1' }] }
-  NET_PTR_CH4_B: { name: NET_PTR_CH4_B, is_hierarchical_port: false,
-    nodes: [{ component: LED210, pin: '2' }, { component: LED211, pin: '1' }] }
-  NET_PTR_CH4_C: { name: NET_PTR_CH4_C, is_hierarchical_port: false,
-    nodes: [{ component: LED211, pin: '2' }, { component: LED212, pin: '1' }] }
+  NET_PTR_CH4_A:
+    name: NET_PTR_CH4_A
+    is_hierarchical_port: false
+    nodes: [{ component: R14, pin: '2' }, { component: LED210, pinfunction: 'A' }]
+  NET_PTR_CH4_B:
+    name: NET_PTR_CH4_B
+    is_hierarchical_port: false
+    nodes: [{ component: LED210, pinfunction: 'K' }, { component: LED211, pinfunction: 'A' }]
+  NET_PTR_CH4_C:
+    name: NET_PTR_CH4_C
+    is_hierarchical_port: false
+    nodes: [{ component: LED211, pinfunction: 'K' }, { component: LED212, pinfunction: 'A' }]
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
@@ -360,8 +407,8 @@ scenarios:
     checks:
       - { node: ich,  min: 0.012, max: 0.025,
           description: "ток одного канала ≈ 18,5 мА" }
-      - { node: vled, min: 1.5,   max: 2.5,
-          description: "падение на R1 ≈ 2В (Vпитания − 3·Vf)" }
+      - { node: vled, min: 1.5,   max: 3.0,
+          description: "падение на R1 при Vf LED 3,0…3,5 В" }
 
   - name: BACKLIGHT_HIGH
     description: |

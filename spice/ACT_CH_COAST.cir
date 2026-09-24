@@ -1,9 +1,11 @@
-* Ngspice тест: ACTUATOR_CHANNEL / ACT_CH_COAST
+* Ngspice тест: actuator_channel / ACT_CH_COAST
 * Выбег. IN1 = L, IN2 = L — оба плеча Hi-Z, на моторедуктор
-* питание не подаётся. Выходы должны прижиматься к GND через
-* утечки драйвера (в идеальной модели — 0В).
+* питание не подаётся. Выходы висят на средней точке VM/2,
+* определяемой body-диодами драйвера и обмоткой мотора.
+* Ток через мотор = 0, скорость не нарастает.
 .INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/motor_model.lib
-.INCLUDE spice/ACTUATOR_CHANNEL.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/drv8871_ngspice.lib
+.INCLUDE spice/actuator_channel.sub
 
 * Порты: FB FB_RAW GND ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V
 
@@ -18,11 +20,13 @@ V3 IN2 0 DC 0.0
 
 * XM: Тот же моторедуктор, без питания
 XM MOTOR_A MOTOR_B SPEED DC_MOTOR R_arm=30 L_arm=50m Ke=40 Kt=0.05 C_inertia=1e-4 R_friction=30
-XACTUATOR_CHANNEL FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V ACTUATOR_CHANNEL
+Xactuator_channel FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V actuator_channel
 
 .op
 .control
 run
-print v(motor_a) v(motor_b)
+let vsw = v(MOTOR_A) - v(MOTOR_B)
+let vspeed = v(SPEED)
+print v(motor_a) v(motor_b) vsw vspeed
 .endc
 .end

@@ -1,8 +1,11 @@
-* Ngspice тест: SEN_CABIN / SEN_CABIN_FAN_ON
+* Ngspice тест: cabin_sensor / SEN_CABIN_FAN_ON
 * Мини-вентилятор продувки включён.
 * M_FAN_CTL = 3.3В → Q2 открыт, SENS_FAN_SW прижат к GND.
 * Через вентилятор (R_FAN = 100 Ом) идёт ток ~144 мА.
-.INCLUDE spice/SEN_CABIN.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/ntc_models.lib
+.model D_1N4148 D(IS=2.52e-9 N=1.752 RS=0.568 CJO=4p BV=100)
+.model AO3400A NMOS(LEVEL=3 VTO=1.4 KP=20 RS=0.02 RD=0.02 LAMBDA=0.02)
+.INCLUDE spice/cabin_sensor.sub
 
 * Порты: GND M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V
 
@@ -14,7 +17,7 @@ V2 M_FAN_CTL 0 DC 3.3
 
 * R_FAN: Эквивалент обмотки вентилятора (R = 100 Ом, ток ~140 мА)
 R_FAN VCC_12V SENS_FAN_SW 100
-XSEN_CABIN 0 M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V SEN_CABIN
+Xcabin_sensor 0 M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V cabin_sensor RT1_T=25
 
 .op
 .control

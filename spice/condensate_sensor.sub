@@ -1,0 +1,7 @@
+* condensate_sensor — субсхема из нетлиста KiCad + YAML
+.subckt condensate_sensor COND_ADC COND_IN_RAW GND
+  C27 COND_ADC GND 100n
+  D28 GND COND_ADC D_ZENER_3V6
+  R29 COND_IN_RAW COND_ADC 10k
+  R30 COND_ADC GND 20k
+.ends condensate_sensor

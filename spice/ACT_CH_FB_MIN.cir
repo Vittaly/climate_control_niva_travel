@@ -1,13 +1,29 @@
-* Ngspice тест: ACTUATOR_CHANNEL / ACT_CH_FB_MIN
+* Ngspice тест: actuator_channel / ACT_CH_FB_MIN
 * Делитель ОС при минимальном положении потенциометра.
 * 0В на FB_RAW → 0В на FB.
-.INCLUDE spice/ACTUATOR_CHANNEL.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/drv8871_ngspice.lib
+.INCLUDE spice/actuator_channel.sub
 
 * Порты: FB FB_RAW GND ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V
 
 * V1: Потенциометр заслонки в крайнем положении (0В)
 V1 FB_RAW 0 DC 0.0
-XACTUATOR_CHANNEL FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V ACTUATOR_CHANNEL
+
+* V2: VM драйвера = 0 (в этом сценарии не используется)
+V2 VCC_12V 0 DC 0.0
+
+* V3: IN1 = 0 (драйвер в coast)
+V3 IN1 0 DC 0.0
+
+* V4: IN2 = 0 (драйвер в coast)
+V4 IN2 0 DC 0.0
+
+* R_MA: Tie-down выхода A драйвера
+R_MA MOTOR_A 0 1Meg
+
+* R_MB: Tie-down выхода B драйвера
+R_MB MOTOR_B 0 1Meg
+Xactuator_channel FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V actuator_channel
 
 .op
 .control

@@ -1,5 +1,3 @@
-page_name: CAN
-file: can_bus.kicad_sch
 functional_purpose: |
   Модуль CAN-интерфейса. Трансивер MCP2562-E-SN обеспечивает
   физический уровень шины CAN между МК (STM32F103, 3,3В логика)
@@ -20,11 +18,12 @@ functional_purpose: |
     доминантный:  CANH ≈ 3,5В,  CANL ≈ 1,5В,  Vdiff ≈ 2,0В
     рецессивный:  CANH ≈ 2,5В,  CANL ≈ 2,5В,  Vdiff ≈ 0В
 
-  Не моделируется (по природе behavioural-модели):
-    * паразитные ёмкости шины, влияние длины кабеля;
-    * защита от КЗ на CANH/CANL и thermal shutdown;
-    * задержка loop-back и джиттер;
-    * вход SPLIT, если он есть в другой ревизии чипа.
+  Модель U8 — subckt MCP2562 в mcp2562_ngspice.lib.
+  Распиновка (KiCad Interface_CAN_LIN:MCP2562-E-SN):
+    1 TXD, 2 VSS, 3 VDD, 4 RXD, 5 VIO, 6 CANL, 7 CANH, 8 STBY.
+  Все имена выводов уникальны → в nets: связи задаются pinfunction.
+  Не моделируется: паразитные ёмкости шины, влияние длины кабеля,
+  защита от КЗ CANH/CANL, thermal shutdown, loop-back, джиттер.
 
 ports:
 - net_label: VCC_5V
@@ -53,19 +52,33 @@ component_types:
     value: MCP2562-E-SN
     fields: {}
     spice:
-      model: MCP2562
       description: |
-        CAN-трансивер 5В, до 1 Мбит/с.
-        Модель MCP2562 из mcp2562_ngspice.lib.
+        CAN-трансивер 5В, до 1 Мбит/с, Microchip MCP2562-E-SN (SOIC-8).
 
         Пины (KiCad-нумерация):
-          1 TXD, 2 VSS, 3 VDD, 4 RXD,
+          1 TXD, 2 VSS(GND), 3 VDD, 4 RXD,
           5 VIO, 6 CANL, 7 CANH, 8 STBY.
 
         Что моделируется:
-          * драйвер TXD → CANH/CANL (доминанта/рецессив);
+          * драйвер TXD → CANH/CANL (доминанта Vdiff ≈ 2В,
+            рецессив Vdiff ≈ 0);
           * приёмник CANH/CANL → RXD;
           * вход STBY (активный низкий — при 0 трансивер включён).
+
+        Не моделируется: паразитные ёмкости шины, защита от КЗ
+        CANH/CANL, loop-back задержки, джиттер.
+      include: mcp2562_ngspice.lib
+      subckt: MCP2562
+      nodes:
+        TXD:  { pin: "1" }
+        RXD:  { pin: "4" }
+        CANH: { pin: "7" }
+        CANL: { pin: "6" }
+        STBY: { pin: "8" }
+        VDD:  { pin: "3" }
+        VIO:  { pin: "5" }
+        GND:  { pin: "2" }
+      required_params: []
 
 components:
   U8:
@@ -86,8 +99,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: U8, pin: '3' }   # VDD
-    - { component: U8, pin: '5' }   # VIO (в этой схеме на VDD)
+    - { component: U8, pinfunction: 'VDD' }   # pin 3
+    - { component: U8, pinfunction: 'Vio' }   # pin 5
 
   GND:
     name: GND
@@ -102,8 +115,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: U8, pin: '2' }   # VSS
-    - { component: U8, pin: '8' }   # STBY (активный режим, LOW)
+    - { component: U8, pinfunction: 'VSS' }   # pin 2
+    - { component: U8, pinfunction: 'STBY' }  # pin 8
 
   CAN_TX:
     name: CAN_TX
@@ -118,7 +131,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: U8, pin: '1' }   # TXD
+    - { component: U8, pinfunction: 'TXD' }   # pin 1
 
   CAN_RX:
     name: CAN_RX
@@ -133,7 +146,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: U8, pin: '4' }   # RXD
+    - { component: U8, pinfunction: 'RXD' }   # pin 4
 
   CANH:
     name: CANH
@@ -148,7 +161,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: U8, pin: '7' }
+    - { component: U8, pinfunction: 'CANH' }  # pin 7
 
   CANL:
     name: CANL
@@ -163,7 +176,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: U8, pin: '6' }
+    - { component: U8, pinfunction: 'CANL' }  # pin 6
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
@@ -201,6 +214,12 @@ scenarios:
           type: dc
           value: 5.0
           description: "TXD = 1 (рецессив, драйвер выключен)"
+      - resistor:
+          ref: R_TERM
+          net_pos: CANH
+          net_neg: CANL
+          value: 60
+          description: "Эквивалент двух терминаторов 120 Ом на концах шины"
     control: |
       let vh    = v(CANH)
       let vl    = v(CANL)
@@ -230,6 +249,12 @@ scenarios:
           type: dc
           value: 0.0
           description: "TXD = 0 (доминант, драйвер активен)"
+      - resistor:
+          ref: R_TERM
+          net_pos: CANH
+          net_neg: CANL
+          value: 60
+          description: "Эквивалент двух терминаторов 120 Ом на концах шины"
     control: |
       let vh    = v(CANH)
       let vl    = v(CANL)
@@ -272,6 +297,12 @@ scenarios:
           type: dc
           value: 1.5
           description: "Внешний передатчик: CANL = 1,5В"
+      - resistor:
+          ref: R_TERM
+          net_pos: CANH
+          net_neg: CANL
+          value: 60
+          description: "Эквивалент двух терминаторов 120 Ом на концах шины"
     control: |
       let vrxd = v(CAN_RX)
       print vrxd
@@ -306,6 +337,12 @@ scenarios:
           net_neg: CANL
           value: 1
           description: "Имитация КЗ CANH-CANL (1 Ом)"
+      - resistor:
+          ref: R_TERM
+          net_pos: CANH
+          net_neg: CANL
+          value: 60
+          description: "Эквивалент двух терминаторов 120 Ом на концах шины"
     control: |
       let vh    = v(CANH)
       let vl    = v(CANL)

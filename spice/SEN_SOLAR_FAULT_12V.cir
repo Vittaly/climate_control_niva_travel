@@ -1,24 +1,26 @@
-* Ngspice тест: SEN_SOLAR / SEN_SOLAR_FAULT_12V
-* Аварийный режим: замыкание линии SOLAR_RAW на бортсеть +12В
-* (неисправность проводки или КЗ датчика). Делитель R27/R28
-* ограничивает ток через линию до ~1,2 мА. В реальности
-* вход АЦП МК дополнительно защищён внутренним диодом на
-* VDDA — в модели без МК напряжение на SOLAR_ADC ограничено
-* только делителем (~8В), что показывает: для полной защиты
-* нужен внешний TVS или верхний резистор большего номинала.
-.INCLUDE spice/SEN_SOLAR.sub
+* Ngspice тест: solar_sensor / SEN_SOLAR_FAULT_12V
+* Аварийный режим: замыкание линии SOLAR_IN_RAW на бортсеть +12В.
+* 
+* Проверяем, что стабилитрон D29 защищает вход АЦП:
+* без него делитель дал бы 12 · 2/3 = 8В, что повредило бы МК.
+* С D29 узел SOLAR_ADC ограничен уровнем BV + I·Rz ≈ 3,7В.
+* 
+* Ток через стабилитрон: (12 − 3,7)/10k ≈ 0,83 мА — безопасен
+* для SOD-123 (допустимо до десятков мА при коротких импульсах).
+.model D_ZENER_3V6 D(IS=1e-14 RS=100 N=1.05 BV=3.6 IBV=1m CJO=50p)
+.INCLUDE spice/solar_sensor.sub
 
-* Порты: GND SOLAR_ADC SOLAR_RAW
+* Порты: GND SOLAR_ADC SOLAR_IN_RAW
 
 * V1: Аварийная подача +12В на вход датчика
-V1 SOLAR_RAW 0 DC 12.0
-XSEN_SOLAR 0 SOLAR_ADC SOLAR_RAW SEN_SOLAR
+V1 SOLAR_IN_RAW 0 DC 12.0
+Xsolar_sensor 0 SOLAR_ADC SOLAR_IN_RAW solar_sensor
 
 .op
 .control
 run
 let vadc = v(SOLAR_ADC)
-let iin  = (12.0 - v(SOLAR_ADC)) / 10k
-print vadc iin
+let iz   = (12.0 - v(SOLAR_ADC)) / 10k
+print vadc iz
 .endc
 .end

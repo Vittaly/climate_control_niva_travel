@@ -1,8 +1,9 @@
-* Ngspice тест: ACTUATOR_CHANNEL / ACT_CH_BRAKE
+* Ngspice тест: actuator_channel / ACT_CH_BRAKE
 * Тормоз. IN1 = H, IN2 = H — оба плеча low-side, мотор
 * замкнут через нижние ключи. Выходы прижаты к GND.
 .INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/motor_model.lib
-.INCLUDE spice/ACTUATOR_CHANNEL.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/drv8871_ngspice.lib
+.INCLUDE spice/actuator_channel.sub
 
 * Порты: FB FB_RAW GND ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V
 
@@ -17,7 +18,7 @@ V3 IN2 0 DC 3.3
 
 * XM: Тот же моторедуктор, обе клеммы на GND
 XM MOTOR_A MOTOR_B SPEED DC_MOTOR R_arm=30 L_arm=50m Ke=40 Kt=0.05 C_inertia=1e-4 R_friction=30
-XACTUATOR_CHANNEL FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V ACTUATOR_CHANNEL
+Xactuator_channel FB FB_RAW 0 ILIM IN1 IN2 MOTOR_A MOTOR_B VCC_12V actuator_channel
 
 .op
 .control

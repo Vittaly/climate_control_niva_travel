@@ -1,32 +1,32 @@
-page_name: SEN_COND
-file: condensate_sensor.kicad_sch
 functional_purpose: |
   Модуль измерения конденсата на стекле.
 
   Внешний датчик конденсата питается от +5В (J1:17) и выдаёт
-  аналоговый сигнал 0..5В на линию COND_RAW (J1:21). Резистивный
+  аналоговый сигнал 0..5В на линию COND_IN_RAW (J1:21). Резистивный
   делитель R29 (10к) / R30 (20к) масштабирует сигнал до 0..3,3В
   для входа АЦП микроконтроллера (COND_ADC). Конденсатор C27
-  фильтрует ВЧ-помехи.
+  фильтрует ВЧ-помехи. Стабилитрон D28 (3,6В) защищает вход АЦП
+  от затекания +12В в линию COND_IN_RAW.
 
   Коэффициент деления:
     K = R30 / (R29 + R30) = 20 / 30 = 2/3
 
   Характерные точки:
-    COND_RAW = 0В    → COND_ADC = 0В
-    COND_RAW = 2,5В  → COND_ADC ≈ 1,67В
-    COND_RAW = 5В    → COND_ADC ≈ 3,33В
+    COND_IN_RAW = 0В    → COND_ADC = 0В
+    COND_IN_RAW = 2,5В  → COND_ADC ≈ 1,67В
+    COND_IN_RAW = 5В    → COND_ADC ≈ 3,33В
+    COND_IN_RAW = 12В   → COND_ADC ≈ 3,7В (ограничен D28)
 
-  Делитель также ограничивает ток в АЦП при аварийных режимах
-  (обрыв, замыкание на +12В) до ~1,2 мА.
+# Модели R/C не объявляются: на листе только примитивы SPICE,
+# строятся по part. D28 — primitive: D с inline .model.
 
 ports:
 - net_label: GND
   type: POWER
   description: Общий провод (кузов автомобиля)
-- net_label: COND_RAW
+- net_label: COND_IN_RAW
   type: INPUT
-  description: Выход датчика конденсата на стекле (0..5В)
+  description: Вход датчика конденсата на стекле (0..5В), J1:21
 - net_label: COND_ADC
   type: OUTPUT
   description: Сигнал конденсата после делителя 5В->3,3В на АЦП
@@ -35,13 +35,11 @@ component_types:
   TYPE_C_100NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 100nF
+    value: 100n
     fields:
       Type: Ceramic
       Dielectric: X7R
-    spice:
-      model: C
-      description: "Керамический конденсатор X7R, фильтр АЦП"
+
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -49,8 +47,7 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
-    spice:
-      model: R
+
   TYPE_R_20K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -58,8 +55,21 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+
+  TYPE_D_ZENER_3V6:
+    symbol: Device:D_Zener
+    footprint: Diode_SMD:D_SOD-123
+    value: BZX84C3V6
+    fields: { Voltage: 3.6V }
     spice:
-      model: R
+      description: |
+        Стабилитрон 3,6В для защиты входа АЦП.
+        При V(COND_ADC) < 3,6В — заперт, сигнал идёт через делитель.
+        При V > 3,6В (аварийное затекание +12В) — открывается,
+        ограничивает COND_ADC на уровне BV + I·Rz ≈ 3,7В.
+        Распиновка Device:D_Zener: pin 1 = K, pin 2 = A.
+      primitive: D
+      model_def: ".model D_ZENER_3V6 D(IS=1e-14 RS=100 N=1.05 BV=3.6 IBV=1m CJO=50p)"
 
 components:
   C27:
@@ -71,6 +81,9 @@ components:
   R30:
     type: TYPE_R_20K
     description: "Делитель сигнала конденсата, нижнее плечо"
+  D28:
+    type: TYPE_D_ZENER_3V6
+    description: "Защитный стабилитрон входа АЦП конденсата"
 
 nets:
   GND:
@@ -88,10 +101,11 @@ nets:
     nodes:
     - { component: R30, pin: '2' }
     - { component: C27, pin: '2' }
+    - { component: D28, pinfunction: 'A' }   # анод стабилитрона на GND
 
-  COND_RAW:
-    name: COND_RAW
-    description: Выход датчика конденсата на стекле (0..5В)
+  COND_IN_RAW:
+    name: COND_IN_RAW
+    description: Вход датчика конденсата на стекле (0..5В), J1:21
     is_hierarchical_port: true
     attributes:
       type: ANALOG_SIGNAL
@@ -120,6 +134,7 @@ nets:
     - { component: R29, pin: '2' }
     - { component: R30, pin: '1' }
     - { component: C27, pin: '1' }
+    - { component: D28, pinfunction: 'K' }   # катод стабилитрона на ADC
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
@@ -127,14 +142,15 @@ nets:
 # Делитель R29 (10к) / R30 (20к):
 #   K = 20 / (10 + 20) = 2/3
 #
-# Проверяем три точки диапазона датчика конденсата:
+# Защитный стабилитрон D28 (BV = 3,6В, Rz ≈ 100 Ом):
+#   при V(COND_ADC) < 3,6В — заперт, на сигнал не влияет;
+#   при V ≥ 3,6В — открывается, ограничивает узел.
+#
+# Проверяем:
 #   0В (сухо)      → COND_ADC = 0В
 #   2,5В (роса)    → COND_ADC ≈ 1,67В
-#   5В (поток)     → COND_ADC ≈ 3,33В
-#
-# Дополнительно — аварийный режим: замыкание COND_RAW на +12В
-# (имитация неисправности проводки). Делитель ограничивает ток,
-# напряжение на COND_ADC не должно превышать питания АЦП.
+#   5В (поток)     → COND_ADC ≈ 3,33В (стабилитрон ещё закрыт)
+#   12В (авария)   → COND_ADC ≈ 3,7В (ограничен стабилитроном)
 # ─────────────────────────────────────────────────────────────────────
 
 scenarios:
@@ -147,7 +163,7 @@ scenarios:
     deck:
       - source:
           ref: V1
-          net: COND_RAW
+          net: COND_IN_RAW
           type: dc
           value: 0.0
           description: "Датчик конденсата: сухо (0В)"
@@ -158,12 +174,12 @@ scenarios:
   - name: SEN_COND_MID
     description: |
       Датчик в среднем положении — начало конденсации.
-      COND_RAW = 2,5В → COND_ADC ≈ 1,67В (K = 2/3).
+      COND_IN_RAW = 2,5В → COND_ADC ≈ 1,67В (K = 2/3).
     analysis: op
     deck:
       - source:
           ref: V1
-          net: COND_RAW
+          net: COND_IN_RAW
           type: dc
           value: 2.5
           description: "Датчик конденсата: середина диапазона (2,5В)"
@@ -174,12 +190,13 @@ scenarios:
   - name: SEN_COND_WET
     description: |
       Датчик в крайнем положении — сильная конденсация.
-      COND_RAW = 5В → COND_ADC ≈ 3,33В (верхняя граница АЦП).
+      COND_IN_RAW = 5В → COND_ADC ≈ 3,33В. Стабилитрон ещё заперт
+      (BV = 3,6В), на сигнал не влияет.
     analysis: op
     deck:
       - source:
           ref: V1
-          net: COND_RAW
+          net: COND_IN_RAW
           type: dc
           value: 5.0
           description: "Датчик конденсата: крайнее положение (5В)"
@@ -189,25 +206,32 @@ scenarios:
 
   - name: SEN_COND_FAULT_12V
     description: |
-      Аварийный режим: замыкание линии COND_RAW на бортсеть +12В
-      (неисправность проводки или КЗ датчика).
-      Делитель R29/R30 ограничивает ток и понижает напряжение
-      на входе АЦП. Проверяем, что COND_ADC остаётся в допустимых
-      пределах и не превышает 3,3В более чем на 10%.
+      Аварийный режим: замыкание линии COND_IN_RAW на бортсеть +12В.
+
+      Проверяем, что стабилитрон D28 защищает вход АЦП:
+      без него делитель дал бы 12 · 2/3 = 8В, что повредило бы МК.
+      С D28 узел COND_ADC ограничен уровнем BV + I·Rz ≈ 3,7В.
+
+      Ток через стабилитрон: (12 − 3,7)/10k ≈ 0,83 мА — безопасен
+      для SOD-123 (допустимо до десятков мА при коротких импульсах).
     analysis: op
     deck:
       - source:
           ref: V1
-          net: COND_RAW
+          net: COND_IN_RAW
           type: dc
           value: 12.0
-          description: "Аварийный режим: замыкание COND_RAW на +12В"
+          description: "Аварийный режим: замыкание COND_IN_RAW на +12В"
     control: |
       let vadc = v(COND_ADC)
-      let iin  = (12.0 - v(COND_ADC)) / 10k
-      print vadc iin
+      let iz   = (12.0 - v(COND_ADC)) / 10k
+      print vadc iz
     checks:
-      - { node: vadc, min: 3.20, max: 3.80,
-          description: "COND_ADC ограничен делителем (не более ~3,6В)" }
-      - { node: iin,  min: 0.0007, max: 0.0010,
-          description: "ток через делитель ≈ 0,84 мА (защита входа АЦП)" }
+      - node: vadc
+        min: 3.4
+        max: 3.8
+        description: "COND_ADC ограничен D28 на уровне ≈ 3,7В (безопасно для STM32)"
+      - node: iz
+        min: 0.0006
+        max: 0.0010
+        description: "ток через стабилитрон ≈ 0,83 мА (в пределах нормы SOD-123)"

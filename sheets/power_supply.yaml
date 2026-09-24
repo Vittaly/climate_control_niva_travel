@@ -1,5 +1,3 @@
-page_name: PWR
-file: power_supply.kicad_sch
 functional_purpose: |
   Модуль питания и автомобильного разъёма J1.
 
@@ -21,10 +19,20 @@ functional_purpose: |
   ШИМ вентилятора, подсветка, CAN, AC_REQ_OUT.
 
   В SPICE:
-    * U6 и U7 — модели из main.yaml.spice.component_models
-      (LM78M05_TO252, AP1117-15);
-    * диоды — .model из листа spice.models;
+    * U6, U7 — subckt-модели в mc78m05_ngspice.lib и
+      ams1117_33_ngspice.lib;
+    * D1, D2, D4, D5 — primitive: D с inline .model;
+    * R/C/L — примитивы, spice не требуют
+      (у L1 SPICE-значение задано через spice.value);
     * нагрузки на VCC_5V/VCC_3V3/VCC_12V задаются в сценарии.
+
+  Полярность диодов (KiCad Device:D, Device:D_Schottky, Device:D_Zener):
+    pin 1 = K (катод), pin 2 = A (анод).
+    Имена выводов уникальны → в nets: связи задаются pinfunction.
+    D1: A=VBAT_IN, K=VBAT_PROT     (проводит прямой ток в норме)
+    D2: K=VCC_12V, A=GND           (TVS, клиппит выброс выше BV)
+    D4: A=VCC_5V,  K=V5_SENS       (развязка, не пускает обратно)
+    D5: K=V5_SENS, A=GND           (TVS, клиппит V5_SENS)
 
 ports:
 - net_label: VCC_12V
@@ -42,12 +50,12 @@ ports:
 - net_label: NTC_HEAT_W
   type: OUTPUT
   description: 'Датчик патрубка отопителя: узел линии на разъёме J1:19'
-- net_label: SOLAR_RAW
+- net_label: SOLAR_IN_RAW
   type: INPUT
-  description: Выход датчика солнечной радиации (0..5В), J1:20
-- net_label: COND_RAW
+  description: Вход датчика солнечной радиации (0..5В), J1:20
+- net_label: COND_IN_RAW
   type: INPUT
-  description: Выход датчика конденсата на стекле (0..5В), J1:21
+  description: Вход датчика конденсата на стекле (0..5В), J1:21
 - net_label: MOTOR_1_A
   type: OUTPUT
   description: 'Заслонка 1: выход А мостового драйвера к моторедуктору, J1:5'
@@ -108,106 +116,140 @@ component_types:
   TYPE_C_470UF_25V:
     symbol: Device:C
     footprint: Capacitor_SMD:CP_Elec_10x10.5
-    value: 470uF
+    value: 470u
     fields: { Voltage: 25V, Type: Aluminum Electrolytic }
-    spice: { model: C }
+
   TYPE_C_100UF_25V:
     symbol: Device:C
     footprint: Capacitor_SMD:CP_Elec_8x10.5
-    value: 100uF
+    value: 100u
     fields: { Voltage: 25V, Type: Aluminum Electrolytic }
-    spice: { model: C }
+
   TYPE_C_100NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 100nF
+    value: 100n
     fields: { Type: Ceramic, Dielectric: X7R }
-    spice: { model: C }
+
   TYPE_C_100NF_12V:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 100nF
+    value: 100n
     fields: { Voltage: 12V, Type: Ceramic, Dielectric: X7R }
-    spice: { model: C }
+
   TYPE_C_1UF_25V:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0805_2012Metric
-    value: 1uF
+    value: 1u
     fields: { Voltage: 25V, Type: Ceramic, Dielectric: X7R }
-    spice: { model: C }
+
   TYPE_C_10UF_35V:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0805_2012Metric
-    value: 10uF
+    value: 10u
     fields: { Voltage: 35V, Type: Ceramic, Dielectric: X7R }
-    spice: { model: C }
+
   TYPE_C_10UF_10V:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0805_2012Metric
-    value: 10uF
+    value: 10u
     fields: { Voltage: 10V, Type: Ceramic, Dielectric: X7R }
-    spice: { model: C }
-  TYPE_DSCHOTTKY_SS54_40V:
+
+  TYPE_D_SCHOTTKY_SS54:
     symbol: Device:D_Schottky
     footprint: Diode_SMD:D_SMA
     value: SS54
     fields: { Voltage: 40V }
     spice:
-      model: D_SS54
-      description: "Шоттки 5А/40В, Vf ≈ 0,5В при 5А"
-  TYPE_DZENER_SMBJ15ATVS:
+      description: "Шоттки 5А/40В (D1, защита от переполюсовки)"
+      primitive: D
+      model_def: ".model D_SS54 D(IS=4.35e-9 RS=0.05 BV=40)"
+
+  TYPE_D_ZENER_TVS24:
     symbol: Device:D_Zener
     footprint: Diode_SMD:D_SMB
     value: SMBJ15A TVS
     fields: { Voltage: 15V }
     spice:
-      model: TVS24
       description: |
-        TVS SMBJ15A. BV = 24В — напряжение клиппинга при load-dump.
+        TVS SMBJ15A, BV = 24В — напряжение клиппинга при load-dump.
         При штатных 14,4В диод закрыт, ток утечки пренебрежим.
-  TYPE_DSCHOTTKY_SS14_12V:
+      primitive: D
+      model_def: ".model TVS24 D(IS=1e-14 RS=0.05 BV=24 IBV=1m N=1.05 CJO=200p)"
+
+  TYPE_D_SCHOTTKY_SS14:
     symbol: Device:D_Schottky
     footprint: Diode_SMD:D_SMA
     value: SS14
     fields: { Voltage: 12V }
     spice:
-      model: D_SS14
-      description: "Шоттки 1А/40В, Vf ≈ 0,4В"
-  TYPE_DZENER_SMBJ5P0A_5P6V:
+      description: "Шоттки 1А/40В (D4, диодная развязка V5_SENS)"
+      primitive: D
+      model_def: ".model D_SS14 D(IS=4.35e-9 RS=0.05 BV=40)"
+
+  TYPE_D_ZENER_TVS5:
     symbol: Device:D_Zener
     footprint: Diode_SMD:D_SMB
     value: SMBJ5.0A / 5,6В
     fields: { Voltage: 5.6V }
     spice:
-      model: TVS5
-      description: "TVS SMBJ5.0A, BV = 5,6В — защита линии V5_SENS"
-  TYPE_CONN02X16ODDEVEN:
+      description: |
+        TVS SMBJ5.0A, BV = 5,6В (D5, защита V5_SENS).
+        RS = 0.05 Ом — динамическое сопротивление в пробое,
+        соответствует V_clamp ≈ 9.2В @ 65.2А из даташита.
+      primitive: D
+      model_def: ".model TVS5 D(IS=4.35e-9 RS=0.05 BV=5.6 IBV=1m N=1.05 CJO=200p)"
+
+  TYPE_CONN_02X16:
     symbol: Connector_Generic:Conn_02x16_Odd_Even
     footprint: Connector_PinHeader_2.54mm:PinHeader_2x16_P2.54mm_Horizontal
     value: Разъём к автомобилю 2x16 (32 конт.)
     fields: {}
-  TYPE_L_ФЕРРИТ_12V:
+
+  TYPE_L_FERRITE_12V:
     symbol: Device:L
     footprint: Inductor_SMD:L_1210_3225Metric
     value: Феррит/дроссель по входу +12В (помехи)
     fields: { Voltage: 12V }
-    spice: { model: L }
-  TYPE_LM78M05TO252_MC78M05CDTG_5V:
+    spice:
+      value: 2.2u
+      description: |
+        Входной ферритовый дроссель +12В. Эквивалентная
+        индуктивность ~2.2 мкГн в рабочей полосе 1–30 МГц.
+        Реальный компонент — Murata BLM21BB600SN1
+        (60 Ω @ 100 МГц, Isat ≥ 3 А, DCR 0.15 Ω).
+
+  TYPE_REG_5V_MC78M05:
     symbol: Regulator_Linear:LM78M05_TO252
     footprint: Package_TO_SOT_SMD:TO-252-3_TabPin2
     value: MC78M05CDTG
     fields: { Voltage: 5V }
     spice:
-      model: LM78M05_TO252
-      description: "Линейный стабилизатор +5В, 0,5А (модель из main.yaml)"
-  TYPE_AP1117-15_AMS1117-3P3_3.3V:
+      description: |
+        Линейный стабилизатор +5В, 0.5А, MC78M05CDTG (TO-252).
+      include: mc78m05_ngspice.lib
+      subckt: MC78M05
+      nodes:
+        IN:  { pin: "1" }
+        GND: { pin: "2" }
+        OUT: { pin: "3" }
+      required_params: []
+
+  TYPE_LDO_3V3_AMS1117:
     symbol: Regulator_Linear:AP1117-15
     footprint: Package_TO_SOT_SMD:SOT-223-3_TabPin2
     value: AMS1117-3.3
     fields: { Voltage: 3.3V }
     spice:
-      model: AP1117-15
-      description: "LDO +3,3В, 1А (модель из main.yaml)"
+      description: |
+        LDO +3.3В, 1А, AMS1117-3.3 (SOT-223).
+      include: ams1117_33_ngspice.lib
+      subckt: AMS1117_33
+      nodes:
+        IN:  { pin: "1" }
+        GND: { pin: "2" }
+        OUT: { pin: "3" }
+      required_params: []
 
 components:
   C1:
@@ -241,28 +283,28 @@ components:
     type: TYPE_C_10UF_10V
     description: "Выход стабилизатора 5В"
   D1:
-    type: TYPE_DSCHOTTKY_SS54_40V
+    type: TYPE_D_SCHOTTKY_SS54
     description: "Защита от переполюсовки: SS54, 5А / 40В"
   D2:
-    type: TYPE_DZENER_SMBJ15ATVS
+    type: TYPE_D_ZENER_TVS24
     description: "TVS по входу: SMBJ15A, защита от выбросов и load-dump"
   D4:
-    type: TYPE_DSCHOTTKY_SS14_12V
+    type: TYPE_D_SCHOTTKY_SS14
     description: "Диодная развязка V5_SENS: блокирует обратную подачу +12В снаружи"
   D5:
-    type: TYPE_DZENER_SMBJ5P0A_5P6V
+    type: TYPE_D_ZENER_TVS5
     description: "TVS защиты линии +5В датчиков V5_SENS"
   J1:
-    type: TYPE_CONN02X16ODDEVEN
+    type: TYPE_CONN_02X16
     description: "Разъём к автомобилю 2x16 (32 конт.)"
   L1:
-    type: TYPE_L_ФЕРРИТ_12V
+    type: TYPE_L_FERRITE_12V
     description: "Феррит/дроссель по входу +12В (подавление помех)"
   U6:
-    type: TYPE_LM78M05TO252_MC78M05CDTG_5V
+    type: TYPE_REG_5V_MC78M05
     description: "Стабилизатор +5В, 500 мА, TO-252"
   U7:
-    type: TYPE_AP1117-15_AMS1117-3P3_3.3V
+    type: TYPE_LDO_3V3_AMS1117
     description: "LDO +3,3В, SOT-223"
 
 nets:
@@ -281,7 +323,7 @@ nets:
     nodes:
     - { component: J1, pin: '1' }
     - { component: J1, pin: '2' }
-    - { component: D1, pin: '1' }
+    - { component: D1, pinfunction: 'A' }    # анод на вход — ток идёт от входа в диод
 
   VBAT_PROT:
     name: VBAT_PROT
@@ -296,7 +338,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: D1, pin: '2' }
+    - { component: D1, pinfunction: 'K' }    # катод на защищённой стороне
     - { component: L1, pin: '1' }
 
   VCC_12V:
@@ -313,7 +355,7 @@ nets:
         parasitic_l_h: 10n
     nodes:
     - { component: L1,  pin: '2' }
-    - { component: D2,  pin: '2' }
+    - { component: D2,  pinfunction: 'K' }   # катод TVS на защищаемой шине
     - { component: C1,  pin: '1' }
     - { component: C2,  pin: '1' }
     - { component: C20, pin: '1' }
@@ -337,7 +379,7 @@ nets:
     - { component: U6, pin: '3' }
     - { component: C4, pin: '1' }
     - { component: U7, pin: '1' }
-    - { component: D4, pin: '1' }
+    - { component: D4, pinfunction: 'A' }    # анод на VCC_5V — ток течёт в V5_SENS
 
   V5_SENS:
     name: V5_SENS
@@ -352,8 +394,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: D4,  pin: '2' }
-    - { component: D5,  pin: '2' }
+    - { component: D4,  pinfunction: 'K' }    # катод на V5_SENS — диод развязки
+    - { component: D5,  pinfunction: 'K' }    # катод TVS на защищаемой шине
     - { component: C16, pin: '1' }
     - { component: C17, pin: '1' }
     - { component: C18, pin: '1' }
@@ -394,8 +436,8 @@ nets:
     - { component: U6,  pin: '2' }
     - { component: U7,  pin: '2' }
     - { component: C20, pin: '2' }
-    - { component: D5,  pin: '1' }
-    - { component: D2,  pin: '1' }
+    - { component: D5,  pinfunction: 'A' }    # анод TVS на GND
+    - { component: D2,  pinfunction: 'A' }    # анод TVS на GND
     - { component: C1,  pin: '2' }
     - { component: C2,  pin: '2' }
     - { component: C3,  pin: '2' }
@@ -421,9 +463,9 @@ nets:
     nodes:
     - { component: J1, pin: '19' }
 
-  SOLAR_RAW:
-    name: SOLAR_RAW
-    description: Выход датчика солнечной радиации (0..5В), J1:20
+  SOLAR_IN_RAW:
+    name: SOLAR_IN_RAW
+    description: Вход датчика солнечной радиации (0..5В), J1:20
     is_hierarchical_port: true
     attributes:
       type: ANALOG_SIGNAL
@@ -436,9 +478,9 @@ nets:
     nodes:
     - { component: J1, pin: '20' }
 
-  COND_RAW:
-    name: COND_RAW
-    description: Выход датчика конденсата на стекле (0..5В), J1:21
+  COND_IN_RAW:
+    name: COND_IN_RAW
+    description: Вход датчика конденсата на стекле (0..5В), J1:21
     is_hierarchical_port: true
     attributes:
       type: ANALOG_SIGNAL
@@ -716,26 +758,21 @@ nets:
     nodes:
     - { component: J1, pin: '23' }
 
-spice:
-  models:
-    - "D_SS54 D(IS=4.35e-9 RS=0.05 BV=40)"
-    - "D_SS14 D(IS=4.35e-9 RS=0.05 BV=40)"
-    - "TVS24 D(IS=4.35e-9 RS=0.64 BV=24)"
-    - "TVS5  D(IS=4.35e-9 RS=0.64 BV=5.6)"
-
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
 #
 # Проверяем ключевые защитные и питающие функции листа:
 #
 #   PWR_P1 — переполюсовка входа: VBAT_IN = -14В, V(VBAT_PROT) ≈ 0
-#   PWR_P2 — load-dump: VBAT_IN = 40В, TVS D2 клиппит VCC_12V ≤ 24В
+#   PWR_P2 — load-dump: VBAT_IN = 38,4В через Ri=0,5 Ом,
+#            TVS D2 клиппит VCC_12V ≈ 24–26В
 #   PWR_P3 — стабильность VCC_5V: VBAT_IN = 14,4В + нагрузка
 #   PWR_P5 — стабильность VCC_3V3: VCC_5V подаётся, U7 выдаёт 3,3В
 #   PWR_P6 — обратная подача +12В на V5_SENS через J1:17:
-#            D4 (SS14) блокирует, V(VCC_5V) не растёт
+#            D4 (SS14) блокирует, V(VCC_5V) не растёт,
+#            D5 ограничивает V5_SENS
 #
-# U6 (LM78M05) и U7 (AMS1117) — модели из main.yaml.spice.
+# U6 (MC78M05) и U7 (AMS1117) — subckt-модели в их типах.
 # Нагрузки задаются резисторами в deck.
 # ─────────────────────────────────────────────────────────────────────
 
@@ -755,32 +792,47 @@ scenarios:
           value: -14.0
           description: "Аварийная переполюсовка входа −14В"
     checks:
-      - { node: v(vbat_prot), min: -1.0, max: 1.0,
-          description: "VBAT_PROT ≈ 0 (диод заперт)" }
-      - { node: v(vcc_12v),   min: -1.0, max: 1.0,
-          description: "VCC_12V ≈ 0 (нет питания)" }
+      - node: v(vbat_prot)
+        min: -1.0
+        max: 1.0
+        description: "VBAT_PROT ≈ 0В: D1 заперт, питания нет"
+      - node: v(vcc_12v)
+        min: -1.0
+        max: 1.0
+        description: "VCC_12V ≈ 0В: нет входного питания"
 
   - name: PWR_P2
     description: |
-      Load-dump: на входе 40В (импульсный выброс от индуктивной
-      нагрузки). TVS D2 (SMBJ15A) клиппит шину VCC_12V до ~24В.
+      Импульс load dump 38,4В через Ri = 0,5 Ом (ISO 7637-2).
+      TVS D2 в пробое удерживает VCC_12V в районе 24–26В,
+      ток пробоя 20–30А рассеивается на диоде.
     analysis: op
     deck:
       - source:
           ref: V1
-          net: VBAT_IN
+          net: VCC_SRC
           type: dc
-          value: 40.0
-          description: "Аварийный выброс +40В"
+          value: 38.4
+          description: "Импульс load dump 38,4В (пик)"
+      - resistor:
+          ref: R_LD
+          net_pos: VCC_SRC
+          net_neg: VCC_12V
+          value: 0.5
+          description: "Внутреннее сопротивление источника (ISO 7637-2)"
     control: |
       let v12 = v(VCC_12V)
       let id2 = i(V1)
       print v12 id2
     checks:
-      - { node: v12, min: 0.0, max: 24.0,
-          description: "VCC_12V клиппится TVS до ≤ 24В" }
-      - { node: id2, min: -5.0, max: 0.0,
-          description: "TVS проводит ток в нагрузку" }
+      - node: v12
+        min: 20.0
+        max: 28.0
+        description: "VCC_12V клиппится TVS в районе 24–26В (BV + I·RS)"
+      - node: id2
+        min: -40.0
+        max: -10.0
+        description: "ток пробоя TVS ≈ 20–30А (знак — по соглашению SPICE)"
 
   - name: PWR_P3
     description: |
@@ -802,8 +854,10 @@ scenarios:
           value: 100
           description: "Нагрузка на +5В ≈ 50 мА"
     checks:
-      - { node: v(vcc_5v), min: 4.75, max: 5.25,
-          description: "VCC_5V = 5,0В ±5% (U6 в норме)" }
+      - node: v(vcc_5v)
+        min: 4.75
+        max: 5.25
+        description: "VCC_5V = 5,0В ±5% (выход U6 в норме)"
 
   - name: PWR_P5
     description: |
@@ -831,18 +885,24 @@ scenarios:
           value: 100
           description: "Нагрузка на +3,3В ≈ 33 мА"
     checks:
-      - { node: v(vcc_5v),  min: 4.75, max: 5.25,
-          description: "VCC_5V = 5,0В (вход U7)" }
-      - { node: v(vcc_3v3), min: 3.20, max: 3.40,
-          description: "VCC_3V3 = 3,3В ±3%" }
+      - node: v(vcc_5v)
+        min: 4.75
+        max: 5.25
+        description: "VCC_5V = 5,0В (вход U7)"
+      - node: v(vcc_3v3)
+        min: 3.20
+        max: 3.40
+        description: "VCC_3V3 = 3,3В ±3%"
 
   - name: PWR_P6
     description: |
       Обратная подача +12В на линию датчиков V5_SENS (J1:17).
       Штатно V5_SENS питается через D4 (SS14) от VCC_5V.
       Аварийный случай: снаружи через разъём приходит +12В.
-      Проверяем, что D4 заперт и обратный ток не поднимает
-      питание внутренней +5В шины.
+      Источник V2 подключён через R_INJ=100 Ом (имитация жгута
+      и Ri внешнего драйвера) — TVS D5 в пробое прижимает
+      V5_SENS к ~5,6В. Проверяем, что D4 заперт и обратная
+      подача не поднимает внутреннюю шину +5В.
     analysis: op
     deck:
       - source:
@@ -850,13 +910,19 @@ scenarios:
           net: VBAT_IN
           type: dc
           value: 14.4
-          description: "Номинальная бортсеть"
+          description: "Номинальная бортсеть +14,4В"
       - source:
           ref: V2
-          net: V5_SENS
+          net: V5_EXT
           type: dc
           value: 12.0
           description: "Аварийная обратная подача +12В через J1:17"
+      - resistor:
+          ref: R_INJ
+          net_pos: V5_EXT
+          net_neg: V5_SENS
+          value: 100
+          description: "Ri жгута и внешнего источника затекания (100 Ом)"
       - resistor:
           ref: R_L5V
           net_pos: VCC_5V
@@ -868,7 +934,11 @@ scenarios:
       let vsen = v(V5_SENS)
       print v5 vsen
     checks:
-      - { node: v5,   min: 4.75, max: 5.25,
-          description: "VCC_5V остаётся 5,0В — D4 блокирует обратную подачу" }
-      - { node: vsen, min: 3.0,  max: 5.6,
-          description: "V5_SENS ограничен D5 (TVS 5,6В)" }
+      - node: v5
+        min: 4.75
+        max: 5.25
+        description: "VCC_5V остаётся 5,0В — D4 блокирует обратную подачу"
+      - node: vsen
+        min: 3.0
+        max: 6.0
+        description: "V5_SENS ограничен D5: BV + I·RS ≈ 5,6…5,7В"

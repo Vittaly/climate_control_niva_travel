@@ -3,204 +3,49 @@ root_page:
   version: '2.5'
   file: climate_control_niva_travel.kicad_sch
 
-    # ─────────────────────────────────────────────────────────────────
-  # SPICE-конфигурация проекта
-  #
-  # lib_dir         — каталог с .lib/.model относительно корня проекта
-  #
-  # component_models — сложные компоненты со .SUBCKT. Каждый знает:
-  #     description   — что это и что моделируется
-  #     include       — файл .lib в lib_dir
-  #     subckt        — имя .SUBCKT внутри файла
-  #     nodes         — KiCad pin → SPICE port (порядок = порядок портов)
-  #     required_params — параметры, обязательные в каждом инстансе
-  #                       (передаются в deck сценария через params:)
-  #
-  # models          — переиспользуемые .model для пассивных компонентов.
-  #                   Подставляются в .cir при первом использовании.
   # ─────────────────────────────────────────────────────────────────
-  spice:
-    lib_dir: "spice/lib"
+  # Модель идентификации листов
+  #
+  #   * Первоисточник — sheets/<stem>.yaml. Stem = имя файла без .yaml.
+  #   * Схема листа   — <stem>.kicad_sch. Имя выводится из stem'а,
+  #                     отдельным полем нигде не дублируется.
+  #   * Ключ компонента в components ниже — X_<STEM_UPPER> для
+  #     одиночного листа и X_<STEM_UPPER>_<INST> для мульти-инстанса.
+  #   * Единственное место, где указывается связь с .kicad_sch —
+  #     атрибут value_sch у соответствующего X_*. Никакие page_name,
+  #     file, value внутри sheets/*.yaml больше не читаются.
+  #   * Список листов к прогону не хранится: он выводится как
+  #     {X_*, встречающиеся в nets} ∪ standalone_sheets.
+  #   * standalone_sheets — только stem'ы; листы без X_* и без
+  #     подключения к иерархии (силовой модуль, тестовые стенды).
+  #
+  # Корневая страница — тоже лист. Модели её компонентов объявлены
+  # в component_types[type].spice, как и на любом другом листе.
+  # Модель МК (STM32F103RCT6) генерируется per-scenario модулем
+  # mcu_model.py — её тип U1 несёт маркер auto_ports.
+  #
+  # Путь к .lib — общая конвенция скриптов (spice/lib), в YAML не
+  # дублируется.
+  #
+  # Соглашения:
+  #   * Идентификаторы типов (TYPE_*) — только ASCII: A-Z, a-z, 0-9, _.
+  #     Кириллица, пробелы, спецсимволы в именах типов не используются.
+  #   * value в типе — KiCad-нотация для R/C/L (10k, 1u, 100n) или
+  #     осмысленный текст для компонентов с spice-секцией (там value
+  #     SPICE-значения задаётся через spice.value).
+  # ─────────────────────────────────────────────────────────────────
 
-    component_models:
-
-      DRV8871DDA:
-        description: |
-          H-мост 3.6А с токоограничением и защитой от перегрузки/перегрева,
-          Texas Instruments DRV8871 (SOIC-8).
-
-          Моделируется: два полумоста OUT1/OUT2 с Rds_on ~0.5Ω;
-          логика IN1/IN2 (forward / reverse / coast / brake); порог
-          токоограничения по входу ILIM (pin 4).
-
-          Не моделируется: тепловой дрейф Rds_on и тока ограничения,
-          время переключения плеч, ток покоя по VM.
-        include: drv8871_ngspice.lib
-        subckt: DRV8871
-        nodes:
-          IN1:  { pin: "3" }
-          IN2:  { pin: "2" }
-          OUT1: { pin: "6" }
-          OUT2: { pin: "8" }
-          VM:   { pin: "5" }
-          GND:  { pin: "1" }
-        required_params: []
-
-      MCP2562-E-SN:
-        description: |
-          CAN-трансивер 5В, до 1 Мбит/с, Microchip MCP2562-E-SN (SOIC-8).
-
-          Моделируется: драйвер TXD → CANH/CANL (доминанта Vdiff ~2В,
-          рецессив ~0В); приёмник CANH/CANL → RXD; вход STBY.
-
-          Не моделируется: паразитные ёмкости шины, защита от КЗ
-          CANH/CANL, loop-back задержки, джиттер.
-        include: mcp2562_ngspice.lib
-        subckt: MCP2562
-        nodes:
-          TXD:  { pin: "1" }
-          RXD:  { pin: "4" }
-          CANH: { pin: "7" }
-          CANL: { pin: "6" }
-          STBY: { pin: "5" }
-          VDD:  { pin: "3" }
-          VIO:  { pin: "8" }
-          GND:  { pin: "2" }
-        required_params: []
-
-      LM78M05_TO252:
-        description: |
-          Линейный стабилизатор +5В, 0.5А, MC78M05CDTG (TO-252).
-
-          Моделируется: выход 5В ±2% в диапазоне 0..0.5А; падение
-          Vin−Vout ~2В при полной нагрузке; ограничение тока ~0.6А
-          (поведенческое, без тепловой обратной связи).
-
-          Не моделируется: thermal shutdown, гистерезис, шум,
-          PSRR по частоте.
-        include: mc78m05_ngspice.lib
-        subckt: MC78M05
-        nodes:
-          IN:  { pin: "1" }
-          GND: { pin: "2" }
-          OUT: { pin: "3" }
-        required_params: []
-
-      AP1117-15:
-        description: |
-          LDO +3.3В, 1А, AMS1117-3.3 (SOT-223).
-
-          Моделируется: выход 3.3В ±1% при 0..1А; падение Vin−Vout
-          ~1.1В при полной нагрузке; ограничение тока ~1.2А.
-
-          Не моделируется: thermal shutdown, частотная зависимость
-          PSRR и выходного импеданса.
-        include: ams1117_33_ngspice.lib
-        subckt: AMS1117_33
-        nodes:
-          IN:  { pin: "1" }
-          GND: { pin: "2" }
-          OUT: { pin: "3" }
-        required_params: []
-
-      BTS141:
-        description: |
-          Smart low-side switch, 12В / 40А, Infineon BTS141 (TO-252).
-
-          Моделируется: N-канальный MOSFET с Rds_on ~15 мОм; активный
-          уровень IN = лог. 1; защита от КЗ (порог ~40А, отключение);
-          защита от перегрева (~175°C, отключение); автоматическое
-          восстановление после снятия аварии.
-
-          Не моделируется: точная динамика тепловой модели кристалла;
-          конечное время реакции защиты.
-        include: bts141_ngspice.lib
-        subckt: BTS141
-        nodes:
-          IN:  { pin: "1" }
-          OUT: { pin: "2" }
-          GND: { pin: "3" }
-        required_params: []
-
-      Thermistor_NTC:
-        description: |
-          NTC-термистор 10к B3435.
-
-          R(T) = R25 · exp(BETA · (1/(273.15+T) − 1/298.15))
-          Характерные точки:
-            0°C   ≈ 27.2 кОм
-            25°C  = 10 кОм
-            60°C  ≈  2.49 кОм
-            85°C  ≈  1.27 кОм
-
-          Параметр T (температура) задаётся в deck сценария — это
-          позволяет одному и тому же .subckt давать разные результаты
-          в разных тестовых точках.
-        include: ntc_models.lib
-        subckt: NTC_10K_3435
-        nodes:
-          A: { pin: "1" }
-          B: { pin: "2" }
-        required_params:
-          - { name: T,    unit: "°C", description: "температура термистора" }
-          - { name: R25,  unit: "Ω",  description: "номинальное сопротивление при 25°C" }
-          - { name: BETA, unit: "K",  description: "коэффициент B" }
-
-      DC_MOTOR:
-        description: |
-          Универсальная электромеханическая модель коллекторного мотора.
-
-          Электрика:  R_arm (обмотка) + L_arm (индуктивность) + B_emf
-                      (back-EMF = Ke · V(Speed)).
-          Механика (электро-механическая аналогия):
-                      C_inertia (инерция ротора),
-                      R_friction (вязкое трение и нагрузка),
-                      B_torque = Kt·I_arm (нагнетает заряд в Speed).
-          Нормировка: 1В на узле Speed = 1000 об/мин.
-
-          Числовых дефолтов нет — все параметры обязательны в deck,
-          чтобы в сценарии всегда было явно видно, с каким мотором
-          ведётся прогон (мотор печки / заслонки / рециркуляции).
-        include: motor_model.lib
-        subckt: DC_MOTOR
-        nodes:
-          INP:   { pin: "In+" }
-          INN:   { pin: "In-" }
-          SPEED: { pin: "Speed" }
-        required_params:
-          - { name: R_arm,      unit: "Ω",  description: "сопротивление обмотки" }
-          - { name: L_arm,      unit: "H",  description: "индуктивность обмотки" }
-          - { name: Ke,         unit: "—",  description: "back-EMF на 1В Speed" }
-          - { name: Kt,         unit: "—",  description: "момент на 1А якоря" }
-          - { name: C_inertia,  unit: "—",  description: "инерция ротора" }
-          - { name: R_friction, unit: "Ω",  description: "вязкое трение и нагрузка" }
-
-    models:
-      LED_WHITE:
-        model_def: ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p)"
-        description: |
-          Белый светодиод 0805/1206/0603.
-          Vf ≈ 3.2В при 20 мА; 3 LED последовательно ≈ 9.6В.
-          Используется во всех каналах backlight и в индикаторах UI.
-
-      D_1N4148:
-        model_def: ".model D_1N4148 D(IS=2.52e-9 N=1.752 RS=0.568 CJO=4p BV=100)"
-        description: |
-          Малосигнальный кремниевый диод 100В / 300мА.
-          Используется в SEN_CABIN (D3) и как опорный диод.
-  
-  simulation_sheets:
-    - PWR
-    - UI
-    - SEN_HEAT
-    - SEN_SOLAR
-    - SEN_COND
-    - ACTUATOR_CHANNEL
-    - OUT
-    - CAN
-    - SEN_CABIN
-    - FAN_KEY
-    - BACKLIGHT
+  # ─────────────────────────────────────────────────────────────────
+  # Листы без X_* — не входят в иерархию основного проекта.
+  #
+  # Для них нет (sheet ...) в корневой схеме и нет ссылок из nets.
+  # Генерируются как отдельные .kicad_sch по своему <stem>.yaml и
+  # гоняются в e2e наравне с иерархическими листами.
+  #
+  # Формат: только stem (имя файла sheets/<stem>.yaml без расширения).
+  # ─────────────────────────────────────────────────────────────────
+  standalone_sheets:
+    - fan_driver_testbench
 
   mcu_pin_map:
     '1':
@@ -437,8 +282,8 @@ root_page:
     '17': +5В_SENS/REF (края потенциометров заслонок и питание датчиков)
     '18': DGND (общая цифровая земля датчиков/потенциометров)
     '19': NTC_HEAT (датчик на патрубке радиатора печки)
-    '20': SOLAR_OUT (0..5В)
-    '21': COND_OUT (0..5В)
+    '20': SOLAR_IN (0..5В, вход от внешнего датчика солнечной радиации)
+    '21': COND_IN (0..5В, вход от внешнего датчика конденсата на стекле)
     '22': ILLUM_IN (подсветка прибора)
     '23': FAN_PWM_OUT (ШИМ на внешний силовой модуль)
     '24': AC_REQ_OUT (+12В запрос кондиционера на вход ЭБУ)
@@ -454,6 +299,12 @@ root_page:
   symbol_pin_map: {}
 
   component_types:
+    # Только типы компонентов корневой схемы. R/C/L — примитивы,
+    # spice-секции не требуют (кроме случаев, где value не в
+    # KiCad-нотации — тогда задаётся spice.value).
+    # Connector не моделируется.
+    # STM32F103RCT6 — единственный, кто несёт spice с auto_ports.
+
     TYPE_C_100NF:
       symbol: Device:C
       footprint: Capacitor_SMD:C_0603_1608Metric
@@ -461,6 +312,7 @@ root_page:
       fields:
         Type: Ceramic
         Dielectric: X7R
+
     TYPE_C_10UF_6.3V:
       symbol: Device:C
       footprint: Capacitor_SMD:C_0805_2012Metric
@@ -469,16 +321,26 @@ root_page:
         Voltage: 6.3V
         Type: Ceramic
         Dielectric: X7R
-    TYPE_L_ФЕРРИТ600ОМ@100МГЦПОПИТАНИЮVDDA:
+
+    TYPE_L_FERRITE_600R_VDDA:
       symbol: Device:L
       footprint: Inductor_SMD:L_0805_2012Metric
-      value: Феррит 600Ом@100МГц по питанию VDDA
+      value: Ferrite 600R@100MHz VDDA
       fields: {}
-    TYPE_CONN01X04_SWD-ОТЛАДКА1X04:
+      spice:
+        description: |
+          Ферритовый дроссель 600Ω@100MHz по питанию VDDA (FB1).
+          Эквивалентная индуктивность ≈ 1 мкГн в рабочей полосе
+          0.1–30 МГц. Реальный компонент — Murata BLM21BB601SN1
+          или аналог. Isat с запасом покрывает ток АЦП (единицы мА).
+        value: 1u
+
+    TYPE_CONN01X04_SWD_DEBUG:
       symbol: Connector_Generic:Conn_01x04
       footprint: Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
-      value: SWD-отладка 1x04
+      value: SWD debug 1x04
       fields: {}
+
     TYPE_R_10K:
       symbol: Device:R
       footprint: Resistor_SMD:R_0603_1608Metric
@@ -486,11 +348,20 @@ root_page:
       fields:
         Power: 0.1W
         Tolerance: 1%
+
     TYPE_STM32F103RC-D-ETX_STM32F103RCT6:
       symbol: MCU_ST_STM32F1:STM32F103R_C-D-E_Tx
       footprint: Package_QFP:LQFP-64_10x10mm_P0.5mm
       value: STM32F103RCT6
       fields: {}
+      spice:
+        description: |
+          Модель STM32F103RCT6 по задействованным пинам корневой схемы.
+          Генерируется make_scr/mcu_model.py из mcu_pin_map.
+          Входы: 10 МΩ + 5 пФ, выходы: push-pull 40 Ω.
+          .INCLUDE spice/<scenario>_mcu.sub ставит kicad_to_spice.
+        auto_ports: mcu_pin_map
+        subckt: STM32F103RCT6
 
   components:
     C10:
@@ -504,7 +375,7 @@ root_page:
       description: выход стабилизатора 3,3В
     C6:
       type: TYPE_C_10UF_6.3V
-      description: шина 3,3В (общий накопитель
+      description: шина 3,3В (общий накопитель)
     C7:
       type: TYPE_C_100NF
       description: развязка VDD_1
@@ -515,10 +386,10 @@ root_page:
       type: TYPE_C_100NF
       description: развязка VDD_3
     FB1:
-      type: TYPE_L_ФЕРРИТ600ОМ@100МГЦПОПИТАНИЮVDDA
-      description: Феррит 600Ом@100МГц по питанию VDDA
+      type: TYPE_L_FERRITE_600R_VDDA
+      description: Феррит 600Ω@100MHz по питанию VDDA
     J2:
-      type: TYPE_CONN01X04_SWD-ОТЛАДКА1X04
+      type: TYPE_CONN01X04_SWD_DEBUG
       description: SWD-отладка 1x04
     R1:
       type: TYPE_R_10K
@@ -530,62 +401,64 @@ root_page:
       type: TYPE_STM32F103RC-D-ETX_STM32F103RCT6
       description: LQFP-64
 
-    X_CAN:
+    # ─── Иерархические листы основного проекта ─────────────────────
+    # Ключ X_<STEM_UPPER> — производное от stem'а YAML-файла листа.
+    # value_sch — единственное место, где указан .kicad_sch листа.
+
+    X_POWER_SUPPLY:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/can_bus.yaml
-      description: Модуль CAN
-      value_sch: sheets/can_bus.kicad_sch
-    X_PWR:
-      symbol: Core:Hierarchical_Sheet
-      value: sheets/power_supply.yaml
       description: Модуль PWR
-      value_sch: sheets/power_supply.kicad_sch
-    X_UI:
+      value_sch: power_supply.kicad_sch
+
+    X_USER_INTERFACE:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/user_interface.yaml
       description: Модуль UI
-      value_sch: sheets/user_interface.kicad_sch
-    X_SEN_CABIN:
+      value_sch: user_interface.kicad_sch
+
+    X_HEATING_SENSOR:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/cabin_sensor.yaml
-      description: Модуль SEN_CABIN
-      value_sch: sheets/cabin_sensor.kicad_sch
-    X_SEN_HEAT:
-      symbol: Core:Hierarchical_Sheet
-      value: sheets/heating_sensor.yaml
       description: Модуль SEN_HEAT
-      value_sch: sheets/heating_sensor.kicad_sch
-    X_SEN_SOLAR:
+      value_sch: heating_sensor.kicad_sch
+
+    X_SOLAR_SENSOR:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/solar_sensor.yaml
       description: Модуль SEN_SOLAR
-      value_sch: sheets/solar_sensor.kicad_sch
-    X_SEN_COND:
+      value_sch: solar_sensor.kicad_sch
+
+    X_CONDENSATE_SENSOR:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/condensate_sensor.yaml
       description: Модуль SEN_COND
-      value_sch: sheets/condensate_sensor.kicad_sch
-    X_OUT:
+      value_sch: condensate_sensor.kicad_sch
+
+    X_POWER_OUTPUTS:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/power_outputs.yaml
       description: Модуль OUT
-      value_sch: sheets/power_outputs.kicad_sch
+      value_sch: power_outputs.kicad_sch
+
+    X_CAN_BUS:
+      symbol: Core:Hierarchical_Sheet
+      description: Модуль CAN
+      value_sch: can_bus.kicad_sch
+
+    X_CABIN_SENSOR:
+      symbol: Core:Hierarchical_Sheet
+      description: Модуль SEN_CABIN
+      value_sch: cabin_sensor.kicad_sch
+
     X_BACKLIGHT:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/backlight.yaml
       description: Модуль радиальной фоновой подсветки шкал ручек управления
-      value_sch: sheets/backlight.kicad_sch
+      value_sch: backlight.kicad_sch
 
     # ─── 4 экземпляра универсального канала заслонки ───────────────
-    # Одна и та же подсхема sheets/actuator_channel.kicad_sch
-    # инстанцируется 4 раза. Конкретные имена цепей задаются
-    # сопоставлением портов; внутри листа имена обобщённые:
+    # Один и тот же actuator_channel.kicad_sch инстанцируется 4 раза.
+    # Суффикс _M1.._M4 различает инстансы; конкретные цепи задаются
+    # port_map. Внутри листа имена обобщённые:
     # IN1, IN2, MOTOR_A, MOTOR_B, FB_RAW, FB.
-    X_M1:
+    X_ACTUATOR_CHANNEL_M1:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/actuator_channel.yaml
       description: "Канал заслонки 1 (ТЕПЛО/ХОЛОД)"
-      value_sch: sheets/actuator_channel.kicad_sch
+      value_sch: actuator_channel.kicad_sch
       port_map:
         VCC_12V: VCC_12V
         GND:     GND
@@ -595,11 +468,10 @@ root_page:
         MOTOR_B: MOTOR_1_B
         FB_RAW:  FB_M1_RAW
         FB:      FB_M1
-    X_M2:
+    X_ACTUATOR_CHANNEL_M2:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/actuator_channel.yaml
       description: "Канал заслонки 2 (СТЕКЛО или ЛИЦО+НОГИ)"
-      value_sch: sheets/actuator_channel.kicad_sch
+      value_sch: actuator_channel.kicad_sch
       port_map:
         VCC_12V: VCC_12V
         GND:     GND
@@ -609,11 +481,10 @@ root_page:
         MOTOR_B: MOTOR_2_B
         FB_RAW:  FB_M2_RAW
         FB:      FB_M2
-    X_M3:
+    X_ACTUATOR_CHANNEL_M3:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/actuator_channel.yaml
       description: "Канал заслонки 3 (ЛИЦО или НОГИ)"
-      value_sch: sheets/actuator_channel.kicad_sch
+      value_sch: actuator_channel.kicad_sch
       port_map:
         VCC_12V: VCC_12V
         GND:     GND
@@ -623,11 +494,10 @@ root_page:
         MOTOR_B: MOTOR_3_B
         FB_RAW:  FB_M3_RAW
         FB:      FB_M3
-    X_M4:
+    X_ACTUATOR_CHANNEL_M4:
       symbol: Core:Hierarchical_Sheet
-      value: sheets/actuator_channel.yaml
       description: "Канал заслонки 4 (РЕЦИРКУЛЯЦИЯ)"
-      value_sch: sheets/actuator_channel.kicad_sch
+      value_sch: actuator_channel.kicad_sch
       port_map:
         VCC_12V: VCC_12V
         GND:     GND
@@ -651,19 +521,19 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: VCC_12V
-      - component: X_SEN_CABIN
+      - component: X_CABIN_SENSOR
         pin: VCC_12V
-      - component: X_OUT
+      - component: X_POWER_OUTPUTS
         pin: VCC_12V
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: VCC_12V
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: VCC_12V
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: VCC_12V
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: VCC_12V
 
     VCC_5V:
@@ -679,9 +549,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_CAN
+      - component: X_CAN_BUS
         pin: VCC_5V
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: VCC_5V
 
     VCC_3V3:
@@ -718,11 +588,11 @@ root_page:
         pin: '1'
       - component: J2
         pin: '1'
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: VCC_3V3
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: VCC_3V3
-      - component: X_SEN_HEAT
+      - component: X_HEATING_SENSOR
         pin: VCC_3V3
       - component: U1
         pin: '19'
@@ -784,29 +654,29 @@ root_page:
         pin: '4'
       - component: U1
         pin: '12'
-      - component: X_CAN
+      - component: X_CAN_BUS
         pin: GND
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: GND
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: GND
-      - component: X_SEN_CABIN
+      - component: X_CABIN_SENSOR
         pin: GND
-      - component: X_SEN_HEAT
+      - component: X_HEATING_SENSOR
         pin: GND
-      - component: X_SEN_SOLAR
+      - component: X_SOLAR_SENSOR
         pin: GND
-      - component: X_SEN_COND
+      - component: X_CONDENSATE_SENSOR
         pin: GND
-      - component: X_OUT
+      - component: X_POWER_OUTPUTS
         pin: GND
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: GND
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: GND
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: GND
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: GND
       - component: U1
         pin: '18'
@@ -899,7 +769,7 @@ root_page:
       nodes:
       - component: U1
         pin: '29'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: BTN_DEFROST_GLASS
 
     BTN_FACE:
@@ -916,7 +786,7 @@ root_page:
       nodes:
       - component: U1
         pin: '30'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: BTN_FACE
 
     BTN_FEET:
@@ -933,7 +803,7 @@ root_page:
       nodes:
       - component: U1
         pin: '33'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: BTN_FEET
 
     BTN_DRY_GLASS:
@@ -950,7 +820,7 @@ root_page:
       nodes:
       - component: U1
         pin: '34'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: BTN_DRY_GLASS
 
     BTN_AC:
@@ -967,7 +837,7 @@ root_page:
       nodes:
       - component: U1
         pin: '35'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: BTN_AC
 
     BTN_RECIRC:
@@ -984,7 +854,7 @@ root_page:
       nodes:
       - component: U1
         pin: '36'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: BTN_RECIRC
 
     LED_DEFROST_GLASS_DRV:
@@ -1000,7 +870,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: LED_DEFROST_GLASS_DRV
       - component: U1
         pin: '50'
@@ -1017,7 +887,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: LED_FACE_DRV
       - component: U1
         pin: '55'
@@ -1034,7 +904,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: LED_FEET_DRV
       - component: U1
         pin: '56'
@@ -1051,7 +921,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: LED_DRY_GLASS_DRV
       - component: U1
         pin: '3'
@@ -1068,7 +938,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: LED_AC_DRV
       - component: U1
         pin: '4'
@@ -1085,7 +955,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: LED_RECIRC_DRV
       - component: U1
         pin: '10'
@@ -1105,7 +975,7 @@ root_page:
       nodes:
       - component: U1
         pin: '14'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: TEMP_SET_ADC
 
     FAN_SEL_ADC:
@@ -1123,7 +993,7 @@ root_page:
       nodes:
       - component: U1
         pin: '15'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: FAN_SEL_ADC
 
     NTC_CABIN:
@@ -1140,9 +1010,9 @@ root_page:
       nodes:
       - component: U1
         pin: '16'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: NTC_CABIN
-      - component: X_SEN_CABIN
+      - component: X_CABIN_SENSOR
         pin: NTC_CABIN
 
     NTC_HEAT_W:
@@ -1157,9 +1027,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: NTC_HEAT_W
-      - component: X_SEN_HEAT
+      - component: X_HEATING_SENSOR
         pin: NTC_HEAT_W
 
     NTC_HEAT:
@@ -1174,27 +1044,27 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_SEN_HEAT
+      - component: X_HEATING_SENSOR
         pin: NTC_HEAT
       - component: U1
         pin: '17'
 
-    SOLAR_RAW:
-      name: SOLAR_RAW
-      description: Выход датчика солнечной радиации (0..5В)
+    SOLAR_IN_RAW:
+      name: SOLAR_IN_RAW
+      description: Вход датчика солнечной радиации (0..5В), пин J1:20
       attributes:
-        type: DIGITAL_SIGNAL
-        voltage_level: 3.3V
-        current_max: 0.02A
+        type: ANALOG_SIGNAL
+        voltage_level: 0..5.0V
+        current_max: 0.005A
         spice_simulation:
           model_stimulus: ''
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
-        pin: SOLAR_RAW
-      - component: X_SEN_SOLAR
-        pin: SOLAR_RAW
+      - component: X_POWER_SUPPLY
+        pin: SOLAR_IN_RAW
+      - component: X_SOLAR_SENSOR
+        pin: SOLAR_IN_RAW
 
     SOLAR_ADC:
       name: SOLAR_ADC
@@ -1210,25 +1080,25 @@ root_page:
       nodes:
       - component: U1
         pin: '20'
-      - component: X_SEN_SOLAR
+      - component: X_SOLAR_SENSOR
         pin: SOLAR_ADC
 
-    COND_RAW:
-      name: COND_RAW
-      description: Выход датчика конденсата на стекле (0..5В)
+    COND_IN_RAW:
+      name: COND_IN_RAW
+      description: Вход датчика конденсата на стекле (0..5В), пин J1:21
       attributes:
-        type: DIGITAL_SIGNAL
-        voltage_level: 3.3V
-        current_max: 0.02A
+        type: ANALOG_SIGNAL
+        voltage_level: 0..5.0V
+        current_max: 0.005A
         spice_simulation:
           model_stimulus: ''
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
-        pin: COND_RAW
-      - component: X_SEN_COND
-        pin: COND_RAW
+      - component: X_POWER_SUPPLY
+        pin: COND_IN_RAW
+      - component: X_CONDENSATE_SENSOR
+        pin: COND_IN_RAW
 
     COND_ADC:
       name: COND_ADC
@@ -1244,7 +1114,7 @@ root_page:
       nodes:
       - component: U1
         pin: '21'
-      - component: X_SEN_COND
+      - component: X_CONDENSATE_SENSOR
         pin: COND_ADC
 
     # ─── Канал заслонки 1 ──────────────────────────────────────────
@@ -1260,9 +1130,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: FB_M1_RAW
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: FB_RAW
 
     FB_M1:
@@ -1279,7 +1149,7 @@ root_page:
       nodes:
       - component: U1
         pin: '22'
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: FB
 
     M1_IN1:
@@ -1296,7 +1166,7 @@ root_page:
       nodes:
       - component: U1
         pin: '42'
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: IN1
 
     M1_IN2:
@@ -1313,7 +1183,7 @@ root_page:
       nodes:
       - component: U1
         pin: '43'
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: IN2
 
     MOTOR_1_A:
@@ -1328,9 +1198,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_1_A
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: MOTOR_A
 
     MOTOR_1_B:
@@ -1345,9 +1215,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_1_B
-      - component: X_M1
+      - component: X_ACTUATOR_CHANNEL_M1
         pin: MOTOR_B
 
     # ─── Канал заслонки 2 ──────────────────────────────────────────
@@ -1363,9 +1233,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: FB_M2_RAW
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: FB_RAW
 
     FB_M2:
@@ -1382,7 +1252,7 @@ root_page:
       nodes:
       - component: U1
         pin: '23'
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: FB
 
     M2_IN1:
@@ -1399,7 +1269,7 @@ root_page:
       nodes:
       - component: U1
         pin: '44'
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: IN1
 
     M2_IN2:
@@ -1416,7 +1286,7 @@ root_page:
       nodes:
       - component: U1
         pin: '45'
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: IN2
 
     MOTOR_2_A:
@@ -1431,9 +1301,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_2_A
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: MOTOR_A
 
     MOTOR_2_B:
@@ -1448,9 +1318,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_2_B
-      - component: X_M2
+      - component: X_ACTUATOR_CHANNEL_M2
         pin: MOTOR_B
 
     # ─── Канал заслонки 3 ──────────────────────────────────────────
@@ -1466,9 +1336,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: FB_M3_RAW
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: FB_RAW
 
     FB_M3:
@@ -1485,7 +1355,7 @@ root_page:
       nodes:
       - component: U1
         pin: '26'
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: FB
 
     M3_IN1:
@@ -1502,7 +1372,7 @@ root_page:
       nodes:
       - component: U1
         pin: '57'
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: IN1
 
     M3_IN2:
@@ -1519,7 +1389,7 @@ root_page:
       nodes:
       - component: U1
         pin: '58'
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: IN2
 
     MOTOR_3_A:
@@ -1534,9 +1404,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_3_A
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: MOTOR_A
 
     MOTOR_3_B:
@@ -1551,9 +1421,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_3_B
-      - component: X_M3
+      - component: X_ACTUATOR_CHANNEL_M3
         pin: MOTOR_B
 
     # ─── Канал заслонки 4 ──────────────────────────────────────────
@@ -1569,9 +1439,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: FB_M4_RAW
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: FB_RAW
 
     FB_M4:
@@ -1588,7 +1458,7 @@ root_page:
       nodes:
       - component: U1
         pin: '27'
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: FB
 
     M4_IN1:
@@ -1605,7 +1475,7 @@ root_page:
       nodes:
       - component: U1
         pin: '59'
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: IN1
 
     M4_IN2:
@@ -1622,7 +1492,7 @@ root_page:
       nodes:
       - component: U1
         pin: '2'
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: IN2
 
     MOTOR_4_A:
@@ -1637,9 +1507,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_4_A
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: MOTOR_A
 
     MOTOR_4_B:
@@ -1654,9 +1524,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: MOTOR_4_B
-      - component: X_M4
+      - component: X_ACTUATOR_CHANNEL_M4
         pin: MOTOR_B
 
     # ─── Остальные выходы ──────────────────────────────────────────
@@ -1674,7 +1544,7 @@ root_page:
       nodes:
       - component: U1
         pin: '41'
-      - component: X_OUT
+      - component: X_POWER_OUTPUTS
         pin: FAN_PWM_CTL
 
     HEAT_FAN_PWM_CTL:
@@ -1690,9 +1560,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: HEAT_FAN_PWM_CTL
-      - component: X_OUT
+      - component: X_POWER_OUTPUTS
         pin: HEAT_FAN_PWM_CTL
 
     M_FAN_CTL:
@@ -1709,7 +1579,7 @@ root_page:
       nodes:
       - component: U1
         pin: '11'
-      - component: X_SEN_CABIN
+      - component: X_CABIN_SENSOR
         pin: M_FAN_CTL
 
     AC_CTL:
@@ -1726,7 +1596,7 @@ root_page:
       nodes:
       - component: U1
         pin: '28'
-      - component: X_OUT
+      - component: X_POWER_OUTPUTS
         pin: AC_CTL
 
     AC_REQ_OUT:
@@ -1741,9 +1611,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: AC_REQ_OUT
-      - component: X_OUT
+      - component: X_POWER_OUTPUTS
         pin: AC_REQ_OUT
 
     ILLUM_IN_RAW:
@@ -1758,9 +1628,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: ILLUM_IN_RAW
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: ILLUM_IN_RAW
       - component: X_BACKLIGHT
         pin: ILLUM_IN_RAW
@@ -1779,7 +1649,7 @@ root_page:
       nodes:
       - component: U1
         pin: '8'
-      - component: X_UI
+      - component: X_USER_INTERFACE
         pin: ILLUM_SENSE
 
     CAN_TX:
@@ -1796,7 +1666,7 @@ root_page:
       nodes:
       - component: U1
         pin: '62'
-      - component: X_CAN
+      - component: X_CAN_BUS
         pin: CAN_TX
 
     CAN_RX:
@@ -1813,7 +1683,7 @@ root_page:
       nodes:
       - component: U1
         pin: '61'
-      - component: X_CAN
+      - component: X_CAN_BUS
         pin: CAN_RX
 
     CANH:
@@ -1828,9 +1698,9 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_CAN
+      - component: X_CAN_BUS
         pin: CANH
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: CANH
 
     CANL:
@@ -1845,7 +1715,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_CAN
+      - component: X_CAN_BUS
         pin: CANL
-      - component: X_PWR
+      - component: X_POWER_SUPPLY
         pin: CANL

@@ -1,22 +1,26 @@
-* Ngspice тест: SEN_COND / SEN_COND_FAULT_12V
-* Аварийный режим: замыкание линии COND_RAW на бортсеть +12В
-* (неисправность проводки или КЗ датчика).
-* Делитель R29/R30 ограничивает ток и понижает напряжение
-* на входе АЦП. Проверяем, что COND_ADC остаётся в допустимых
-* пределах и не превышает 3,3В более чем на 10%.
-.INCLUDE spice/SEN_COND.sub
+* Ngspice тест: condensate_sensor / SEN_COND_FAULT_12V
+* Аварийный режим: замыкание линии COND_IN_RAW на бортсеть +12В.
+* 
+* Проверяем, что стабилитрон D28 защищает вход АЦП:
+* без него делитель дал бы 12 · 2/3 = 8В, что повредило бы МК.
+* С D28 узел COND_ADC ограничен уровнем BV + I·Rz ≈ 3,7В.
+* 
+* Ток через стабилитрон: (12 − 3,7)/10k ≈ 0,83 мА — безопасен
+* для SOD-123 (допустимо до десятков мА при коротких импульсах).
+.model D_ZENER_3V6 D(IS=1e-14 RS=100 N=1.05 BV=3.6 IBV=1m CJO=50p)
+.INCLUDE spice/condensate_sensor.sub
 
-* Порты: COND_ADC COND_RAW GND
+* Порты: COND_ADC COND_IN_RAW GND
 
-* V1: Аварийный режим: замыкание COND_RAW на +12В
-V1 COND_RAW 0 DC 12.0
-XSEN_COND COND_ADC COND_RAW 0 SEN_COND
+* V1: Аварийный режим: замыкание COND_IN_RAW на +12В
+V1 COND_IN_RAW 0 DC 12.0
+Xcondensate_sensor COND_ADC COND_IN_RAW 0 condensate_sensor
 
 .op
 .control
 run
 let vadc = v(COND_ADC)
-let iin  = (12.0 - v(COND_ADC)) / 10k
-print vadc iin
+let iz   = (12.0 - v(COND_ADC)) / 10k
+print vadc iz
 .endc
 .end

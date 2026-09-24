@@ -1,8 +1,11 @@
-* Ngspice тест: SEN_CABIN / SEN_CABIN_NTC_MID
+* Ngspice тест: cabin_sensor / SEN_CABIN_NTC_MID
 * Термистор RT1 при комнатной температуре 25°C.
 * R_NTC = 10 кОм.
 * NTC_CABIN = 3.3 · 10/(10 + 10) = 1.65В.
-.INCLUDE spice/SEN_CABIN.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/ntc_models.lib
+.model D_1N4148 D(IS=2.52e-9 N=1.752 RS=0.568 CJO=4p BV=100)
+.model AO3400A NMOS(LEVEL=3 VTO=1.4 KP=20 RS=0.02 RD=0.02 LAMBDA=0.02)
+.INCLUDE spice/cabin_sensor.sub
 
 * Порты: GND M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V
 
@@ -11,7 +14,7 @@ V1 VCC_3V3_EXT 0 DC 3.3
 
 * R_PU: R24 (10к) — верхнее плечо делителя
 R_PU VCC_3V3_EXT NTC_CABIN 10k
-XSEN_CABIN 0 M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V SEN_CABIN RT1_T=25
+Xcabin_sensor 0 M_FAN_CTL M_FAN_GATE NTC_CABIN SENS_FAN_SW VCC_12V cabin_sensor RT1_T=25
 
 .op
 .control

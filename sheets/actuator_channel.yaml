@@ -1,5 +1,3 @@
-page_name: ACTUATOR_CHANNEL
-file: actuator_channel.kicad_sch
 functional_purpose: |
   Универсальный канал управления моторедуктором заслонки климатической
   системы. Содержит H-мост DRV8871, развязку по питанию и делитель ОС
@@ -15,6 +13,29 @@ functional_purpose: |
     U1 = U,     C1 = C_VM,
     R1 = R_ILIM, R2 = R_TOP, R3 = R_BOT,
     C2 = C_FB.
+
+  В SPICE:
+    * U1 (DRV8871) — модель в TYPE_DRV8871DDA.spice (subckt, include);
+    * моторедуктор — testbench, подключается inline в каждом сценарии
+      через motor: { include, subckt, nodes, params };
+    * R/C — примитивы, spice не требуют.
+
+  ВАЖНО: сценарии ACT_CH_FB_* проверяют только делитель ОС, но
+  инстанс субсхемы Xactuator_channel поднимает весь лист целиком,
+  включая DRV8871. Чтобы рабочая точка считалась, входы драйвера
+  (VCC_12V, IN1, IN2) должны быть закреплены источниками, а выходы
+  (MOTOR_A, MOTOR_B) — иметь путь на землю. Для этого в FB_*
+  сценариях добавлены нулевые источники и tie-down резисторы.
+  На измеряемый v(fb) они не влияют.
+
+  Распиновка DRV8871DDA (KiCad Driver_Motor:DRV8871DDA):
+    pin 1 = GND, pin 2 = IN2, pin 3 = IN1, pin 4 = ILIM,
+    pin 5 = VM,  pin 6 = OUT1, pin 7 = PGND, pin 8 = OUT2,
+    pin 9 = EP (thermal pad).
+  Пины 1, 7, 9 — три разных вывода на GND, имена не уникальны,
+  поэтому в nets: они адресуются по номерам (pin), а не по
+  pinfunction. Остальные пины имеют уникальные имена и берутся
+  по pinfunction.
 
 ports:
   - net_label: VCC_12V
@@ -46,10 +67,11 @@ component_types:
   TYPE_C_100NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 100nF
+    value: 100n
     fields:
       Type: Ceramic
       Dielectric: X7R
+
   TYPE_R_33K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -57,6 +79,7 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+
   TYPE_R_20K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -64,6 +87,7 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -71,11 +95,36 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+
   TYPE_DRV8871DDA:
     symbol: Driver_Motor:DRV8871DDA
     footprint: Package_SO:Texas_HTSOP-8-1EP_3.9x4.9mm_P1.27mm_EP2.95x4.9mm_Mask2.4x3.1mm_ThermalVias
     value: DRV8871 H-мост
     fields: {}
+    spice:
+      description: |
+        H-мост 3.6А с токоограничением и защитой, TI DRV8871.
+        Моделируется: два полумоста OUT1/OUT2 с Rds_on ~0.5Ω;
+        логика IN1/IN2.
+
+        Порты subckt DRV8871: IN1 IN2 OUT1 OUT2 VM GND.
+        НЕ заведены в модель пины:
+          * pin 4 (ILIM) — порог токоограничения задаётся
+            внешним R1, в модели фиксирован;
+          * pin 7 (PGND) — подключён к GND на схеме, в модели
+            неявно общий с pin 1;
+          * pin 9 (EP)   — тепловой пад, в модели неявно
+            на GND через pin 1.
+      include: drv8871_ngspice.lib
+      subckt: DRV8871
+      nodes:
+        IN1:  { pin: "3" }
+        IN2:  { pin: "2" }
+        OUT1: { pin: "6" }
+        OUT2: { pin: "8" }
+        VM:   { pin: "5" }
+        GND:  { pin: "1" }
+      required_params: []
 
 components:
   U1:
@@ -117,10 +166,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U1
-        pin: '5'
-      - component: C1
-        pin: '1'
+      - { component: U1, pinfunction: 'VM' }    # pin 5, уникальное имя
+      - { component: C1, pin: '1' }
 
   GND:
     name: GND
@@ -135,20 +182,14 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U1
-        pin: '1'
-      - component: U1
-        pin: '7'
-      - component: U1
-        pin: '9'
-      - component: C1
-        pin: '2'
-      - component: R1
-        pin: '2'
-      - component: R3
-        pin: '2'
-      - component: C2
-        pin: '2'
+      # U1: три GND-пина, имена не уникальны — адресуем по номерам.
+      - { component: U1, pin: '1' }             # GND
+      - { component: U1, pin: '7' }             # PGND
+      - { component: U1, pin: '9' }             # EP
+      - { component: C1, pin: '2' }
+      - { component: R1, pin: '2' }
+      - { component: R3, pin: '2' }
+      - { component: C2, pin: '2' }
 
   IN1:
     name: IN1
@@ -163,8 +204,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U1
-        pin: '3'
+      - { component: U1, pinfunction: 'IN1' }   # pin 3
 
   IN2:
     name: IN2
@@ -179,8 +219,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U1
-        pin: '2'
+      - { component: U1, pinfunction: 'IN2' }   # pin 2
 
   MOTOR_A:
     name: MOTOR_A
@@ -195,8 +234,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U1
-        pin: '6'
+      - { component: U1, pinfunction: 'OUT1' }  # pin 6
 
   MOTOR_B:
     name: MOTOR_B
@@ -211,8 +249,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U1
-        pin: '8'
+      - { component: U1, pinfunction: 'OUT2' }  # pin 8
 
   FB_RAW:
     name: FB_RAW
@@ -227,8 +264,7 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: R2
-        pin: '1'
+      - { component: R2, pin: '1' }
 
   FB:
     name: FB
@@ -243,12 +279,9 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: R2
-        pin: '2'
-      - component: R3
-        pin: '1'
-      - component: C2
-        pin: '1'
+      - { component: R2, pin: '2' }
+      - { component: R3, pin: '1' }
+      - { component: C2, pin: '1' }
 
   ILIM:
     name: ILIM
@@ -263,16 +296,15 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-      - component: U1
-        pin: '4'
-      - component: R1
-        pin: '1'
+      - { component: U1, pinfunction: 'ILIM' }  # pin 4
+      - { component: R1, pin: '1' }
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice для канала заслонки
 #
 # Драйвер DRV8871 (U1), пины:
-#   1 GND, 2 IN2, 3 IN1, 4 ILIM, 5 VM, 6 OUT1 (=MOTOR_A), 7 PGND, 8 OUT2 (=MOTOR_B)
+#   1 GND, 2 IN2, 3 IN1, 4 ILIM, 5 VM, 6 OUT1 (=MOTOR_A),
+#   7 PGND, 8 OUT2 (=MOTOR_B), 9 EP
 #
 # Логика H-моста:
 #   IN1=H, IN2=L  → MOTOR_A ≈ VCC_12V, MOTOR_B ≈ GND  (прямое)
@@ -284,9 +316,9 @@ nets:
 #   При FB_RAW = 5В   → FB = 3,333В
 #   При FB_RAW = 2,5В → FB = 1,667В
 #
-# Мотор: модель DC_MOTOR из motor_model.lib, все параметры заданы
-# явно в каждом сценарии (в .lib дефолтов нет). Параметры выбраны
-# под типовой моторедуктор заслонки климатической системы:
+# Мотор: модель DC_MOTOR из motor_model.lib, подключается inline в deck
+# каждого сценария. Параметры выбраны под типовой моторедуктор заслонки
+# климатической системы:
 #   R_arm      = 30 Ω       (пусковой ток 400 мА при 12В)
 #   Ke         = 40 В/В     (back-EMF на 1В узла Speed)
 #   Kt         = 0.05       (момент на 1А, согласован с R_friction)
@@ -331,10 +363,12 @@ scenarios:
 
       - motor:
           ref: XM
-          model: DC_MOTOR
-          net_pos: MOTOR_A
-          net_neg: MOTOR_B
-          net_speed: SPEED
+          include: motor_model.lib
+          subckt: DC_MOTOR
+          nodes:
+            INP:   MOTOR_A
+            INN:   MOTOR_B
+            SPEED: SPEED
           params:
             R_arm:      30
             L_arm:      50m
@@ -386,10 +420,12 @@ scenarios:
 
       - motor:
           ref: XM
-          model: DC_MOTOR
-          net_pos: MOTOR_A
-          net_neg: MOTOR_B
-          net_speed: SPEED
+          include: motor_model.lib
+          subckt: DC_MOTOR
+          nodes:
+            INP:   MOTOR_A
+            INN:   MOTOR_B
+            SPEED: SPEED
           params:
             R_arm:      30
             L_arm:      50m
@@ -412,8 +448,9 @@ scenarios:
   - name: ACT_CH_COAST
     description: |
       Выбег. IN1 = L, IN2 = L — оба плеча Hi-Z, на моторедуктор
-      питание не подаётся. Выходы должны прижиматься к GND через
-      утечки драйвера (в идеальной модели — 0В).
+      питание не подаётся. Выходы висят на средней точке VM/2,
+      определяемой body-диодами драйвера и обмоткой мотора.
+      Ток через мотор = 0, скорость не нарастает.
     analysis: op
     deck:
       - source:
@@ -439,10 +476,12 @@ scenarios:
 
       - motor:
           ref: XM
-          model: DC_MOTOR
-          net_pos: MOTOR_A
-          net_neg: MOTOR_B
-          net_speed: SPEED
+          include: motor_model.lib
+          subckt: DC_MOTOR
+          nodes:
+            INP:   MOTOR_A
+            INN:   MOTOR_B
+            SPEED: SPEED
           params:
             R_arm:      30
             L_arm:      50m
@@ -451,11 +490,27 @@ scenarios:
             C_inertia:  1e-4
             R_friction: 30
           description: "Тот же моторедуктор, без питания"
+    control: |
+      let vsw = v(MOTOR_A) - v(MOTOR_B)
+      let vspeed = v(SPEED)
+      print v(motor_a) v(motor_b) vsw vspeed
     checks:
-      - { node: v(motor_a), min: -0.5, max: 1.0,
-          description: "OUT1 Hi-Z (нет питания)" }
-      - { node: v(motor_b), min: -0.5, max: 1.0,
-          description: "OUT2 Hi-Z (нет питания)" }
+      - node: v(motor_a)
+        min: 0.0
+        max: 14.5
+        description: "OUT1 Hi-Z, потенциал определяется делителем body-диодов (~7,2В)"
+      - node: v(motor_b)
+        min: 0.0
+        max: 14.5
+        description: "OUT2 Hi-Z, потенциал определяется делителем body-диодов (~7,2В)"
+      - node: vsw
+        min: -0.05
+        max: 0.05
+        description: "нет дифференциального напряжения на моторе (v(A)−v(B) ≈ 0)"
+      - node: vspeed
+        min: -0.01
+        max: 0.01
+        description: "мотор не вращается (нет тока якоря)"
 
   - name: ACT_CH_BRAKE
     description: |
@@ -486,10 +541,12 @@ scenarios:
 
       - motor:
           ref: XM
-          model: DC_MOTOR
-          net_pos: MOTOR_A
-          net_neg: MOTOR_B
-          net_speed: SPEED
+          include: motor_model.lib
+          subckt: DC_MOTOR
+          nodes:
+            INP:   MOTOR_A
+            INN:   MOTOR_B
+            SPEED: SPEED
           params:
             R_arm:      30
             L_arm:      50m
@@ -505,6 +562,11 @@ scenarios:
           description: "OUT2 прижат к GND" }
 
   # ─── Делитель ОС потенциометра ────────────────────────────────────
+  #
+  # Эти сценарии проверяют только делитель FB_RAW → R2 → FB → R3 → GND,
+  # но поднимают весь лист целиком, включая DRV8871. Чтобы рабочая
+  # точка сходилась, входы драйвера закреплены нулевыми источниками,
+  # а выходы — tie-down резисторами. На v(fb) они не влияют.
 
   - name: ACT_CH_FB_MIN
     description: |
@@ -518,6 +580,39 @@ scenarios:
           type: dc
           value: 0.0
           description: "Потенциометр заслонки в крайнем положении (0В)"
+
+      # Закрепление входов DRV8871 для сходимости рабочей точки.
+      - source:
+          ref: V2
+          net: VCC_12V
+          type: dc
+          value: 0.0
+          description: "VM драйвера = 0 (в этом сценарии не используется)"
+      - source:
+          ref: V3
+          net: IN1
+          type: dc
+          value: 0.0
+          description: "IN1 = 0 (драйвер в coast)"
+      - source:
+          ref: V4
+          net: IN2
+          type: dc
+          value: 0.0
+          description: "IN2 = 0 (драйвер в coast)"
+      - resistor:
+          ref: R_MA
+          net_pos: MOTOR_A
+          net_neg: "0"
+          value: 1Meg
+          description: "Tie-down выхода A драйвера"
+      - resistor:
+          ref: R_MB
+          net_pos: MOTOR_B
+          net_neg: "0"
+          value: 1Meg
+          description: "Tie-down выхода B драйвера"
+
     checks:
       - { node: v(fb), min: -0.05, max: 0.05,
           description: "нижний край диапазона АЦП" }
@@ -534,6 +629,33 @@ scenarios:
           type: dc
           value: 2.5
           description: "Потенциометр заслонки в среднем положении (2,5В)"
+
+      - source:
+          ref: V2
+          net: VCC_12V
+          type: dc
+          value: 0.0
+      - source:
+          ref: V3
+          net: IN1
+          type: dc
+          value: 0.0
+      - source:
+          ref: V4
+          net: IN2
+          type: dc
+          value: 0.0
+      - resistor:
+          ref: R_MA
+          net_pos: MOTOR_A
+          net_neg: "0"
+          value: 1Meg
+      - resistor:
+          ref: R_MB
+          net_pos: MOTOR_B
+          net_neg: "0"
+          value: 1Meg
+
     checks:
       - { node: v(fb), min: 1.55, max: 1.80,
           description: "середина диапазона АЦП" }
@@ -550,6 +672,33 @@ scenarios:
           type: dc
           value: 5.0
           description: "Потенциометр заслонки в крайнем положении (5В)"
+
+      - source:
+          ref: V2
+          net: VCC_12V
+          type: dc
+          value: 0.0
+      - source:
+          ref: V3
+          net: IN1
+          type: dc
+          value: 0.0
+      - source:
+          ref: V4
+          net: IN2
+          type: dc
+          value: 0.0
+      - resistor:
+          ref: R_MA
+          net_pos: MOTOR_A
+          net_neg: "0"
+          value: 1Meg
+      - resistor:
+          ref: R_MB
+          net_pos: MOTOR_B
+          net_neg: "0"
+          value: 1Meg
+
     checks:
       - { node: v(fb), min: 3.20, max: 3.45,
           description: "верхний край диапазона АЦП" }

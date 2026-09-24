@@ -1,0 +1,7 @@
+* solar_sensor — субсхема из нетлиста KiCad + YAML
+.subckt solar_sensor GND SOLAR_ADC SOLAR_IN_RAW
+  C26 SOLAR_ADC GND 100n
+  D29 GND SOLAR_ADC D_ZENER_3V6
+  R27 SOLAR_IN_RAW SOLAR_ADC 10k
+  R28 SOLAR_ADC GND 20k
+.ends solar_sensor

@@ -1,5 +1,3 @@
-page_name: UI
-file: user_interface.kicad_sch
 functional_purpose: |
   Модуль пользовательского интерфейса: шесть тактовых кнопок,
   шесть светодиодов-индикаторов режимов, входы АЦП задания
@@ -18,10 +16,10 @@ functional_purpose: |
 
   Кодировка напряжений на FAN_SEL_ADC:
     AUTO (все разомкнуты)          → 3,30 В
-    Позиция 1 (R25 = 20к)      → 2,20 В
-    Позиция 2 (R26 = 10к)      → 1,65 В
-    Позиция 3 (R27 = 4,7к)     → 1,05 В
-    Позиция 4 (R28 = 1к)       → 0,30 В
+    Позиция 1 (R25 = 20к)          → 2,20 В
+    Позиция 2 (R26 = 10к)          → 1,65 В
+    Позиция 3 (R27 = 4,7к)         → 1,05 В
+    Позиция 4 (R28 = 1к)           → 0,30 В
 
   Детектор габаритов:
     * Делитель R39 (47к) / R40 (10к) от ILLUM_IN_RAW (1..14,4В)
@@ -35,6 +33,17 @@ functional_purpose: |
     * SW1..SW6 — тактовые, замыкают BTN_* на GND (подтяжка на МК).
     * R7..R12 (1к) + LED1..LED6 — индикаторы через VCC_3V3,
       катоды управляются с МК активным низким уровнем.
+
+  В SPICE:
+    * LED1..LED6 — primitive: D с inline .model (LED_GREEN, LED_AMBER);
+    * R/C/SW — примитивы, spice не требуют.
+
+  Полярность LED (KiCad Device:LED):
+    pin 1 = K (катод), pin 2 = A (анод).
+    Имена выводов уникальны → в nets: связи задаются pinfunction.
+    Схема канала: VCC_3V3 → R* → A(LED) → K(LED) → DRV-пин МК.
+    То есть в сети LED_*_A после резистора стоит АНОД,
+    в сети LED_*_DRV к пину МК — КАТОД.
 
 ports:
 - net_label: VCC_3V3
@@ -118,186 +127,134 @@ component_types:
   TYPE_C_100NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 100nF
+    value: 100n
     fields: { Type: Ceramic, Dielectric: X7R }
-    spice: { model: C }
-  TYPE_CONN01X02_ПОТЕНЦИОМЕТР:
+
+  TYPE_CONN01X02_POT:
     symbol: Connector_Generic:Conn_01x02
     footprint: Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical
     value: Внутр. коннектор потенциометра (2п, XH)
     fields: {}
-  TYPE_CONN01X05_ГАЛЛЕТНИК:
+
+  TYPE_CONN01X05_GALLET:
     symbol: Connector_Generic:Conn_01x05
     footprint: Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical
     value: Внутр. коннектор галлетника (5п, XH)
-    fields: {}
-    description: |
-      Разъём для подключения внешнего 5-позиционного галлетника
-      скорости вентилятора. Pin 1 — общий провод (GND),
-      pin 2..5 — сигнальные контакты позиций 1..4.
-  TYPE_LED_GREEN_1206:
+    fields:
+      Note: |
+        Разъём для подключения внешнего 5-позиционного галлетника
+        скорости вентилятора. Pin 1 — общий провод (GND),
+        pin 2..5 — сигнальные контакты позиций 1..4.
+
+  TYPE_LED_GREEN:
     symbol: Device:LED
     footprint: LED_SMD:LED_1206_3216Metric
     value: Индикатор зелёный 1206
     fields: { Color: Green }
     spice:
-      model: LED_GREEN
       description: "Зелёный индикатор 1206, Vf ≈ 2,1В при 10 мА"
-  TYPE_LED_AMBER_1206:
+      primitive: D
+      model_def: ".model LED_GREEN D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)"
+
+  TYPE_LED_AMBER:
     symbol: Device:LED
     footprint: LED_SMD:LED_1206_3216Metric
     value: Индикатор янтарный 1206
     fields: { Color: Amber }
     spice:
-      model: LED_AMBER
       description: "Янтарный индикатор 1206, Vf ≈ 2,0В при 10 мА"
+      primitive: D
+      model_def: ".model LED_AMBER D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)"
+
   TYPE_R_1K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 1k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
+
   TYPE_R_4K7:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 4.7k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
+
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 10k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
+
   TYPE_R_20K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 20k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
+
   TYPE_R_47K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 47k
     fields: { Power: 0.1W, Tolerance: 1% }
-    spice: { model: R }
-  TYPE_SWPUSH_6X6:
+
+  TYPE_SWPUSH:
     symbol: Switch:SW_Push
     footprint: Button_Switch_THT:SW_Push_1P1T_NO_6x6mm_H7.0mm
     value: Кнопка тактовая 6x6 без фиксации
     fields: {}
 
 components:
-  C22:
-    type: TYPE_C_100NF
-    description: "Фильтр АЦП задания температуры"
-  C23:
-    type: TYPE_C_100NF
-    description: "Фильтр АЦП скорости вентилятора"
-  C24:
-    type: TYPE_C_100NF
-    description: "Фильтр АЦП температуры салона"
-  C32:
-    type: TYPE_C_100NF
-    description: "Фильтр входа детектора габаритов"
+  C22: { type: TYPE_C_100NF, description: "Фильтр АЦП задания температуры" }
+  C23: { type: TYPE_C_100NF, description: "Фильтр АЦП скорости вентилятора" }
+  C24: { type: TYPE_C_100NF, description: "Фильтр АЦП температуры салона" }
+  C32: { type: TYPE_C_100NF, description: "Фильтр входа детектора габаритов" }
   J3:
-    type: TYPE_CONN01X02_ПОТЕНЦИОМЕТР
+    type: TYPE_CONN01X02_POT
     description: "Внутренний коннектор потенциометра задания температуры"
   J4:
-    type: TYPE_CONN01X05_ГАЛЛЕТНИК
+    type: TYPE_CONN01X05_GALLET
     description: |
       Внутренний коннектор галлетника скорости вентилятора.
       Pin 1 — общий (GND), pin 2..5 — сигналы позиций 1..4.
-  LED1:
-    type: TYPE_LED_GREEN_1206
-    description: "Индикатор кнопки SW1 (DEFROST_GLASS)"
-  LED2:
-    type: TYPE_LED_GREEN_1206
-    description: "Индикатор кнопки SW2 (FACE)"
-  LED3:
-    type: TYPE_LED_GREEN_1206
-    description: "Индикатор кнопки SW3 (FEET)"
-  LED4:
-    type: TYPE_LED_AMBER_1206
-    description: "Индикатор кнопки SW4 (DRY_GLASS)"
-  LED5:
-    type: TYPE_LED_GREEN_1206
-    description: "Индикатор кнопки SW5 (AC)"
-  LED6:
-    type: TYPE_LED_GREEN_1206
-    description: "Индикатор кнопки SW6 (RECIRC)"
-  R7:
-    type: TYPE_R_1K
-    description: "Токоограничение индикатора LED1"
-  R8:
-    type: TYPE_R_1K
-    description: "Токоограничение индикатора LED2"
-  R9:
-    type: TYPE_R_1K
-    description: "Токоограничение индикатора LED3"
-  R10:
-    type: TYPE_R_1K
-    description: "Токоограничение индикатора LED4"
-  R11:
-    type: TYPE_R_1K
-    description: "Токоограничение индикатора LED5"
-  R12:
-    type: TYPE_R_1K
-    description: "Токоограничение индикатора LED6"
-  R22:
-    type: TYPE_R_10K
-    description: "Подтяжка потенциометра задания температуры"
-  R23:
-    type: TYPE_R_10K
-    description: "Подтяжка FAN_SEL_ADC к VCC_3V3 (верхнее плечо делителя галлетника)"
-  R24:
-    type: TYPE_R_10K
-    description: "Подтяжка NTC салона (верхнее плечо, сам NTC — на SEN_CABIN)"
-  R39:
-    type: TYPE_R_47K
-    description: "Делитель входа детектора габаритов, верхнее плечо"
-  R40:
-    type: TYPE_R_10K
-    description: "Делитель входа детектора габаритов, нижнее плечо"
+  LED1: { type: TYPE_LED_GREEN, description: "Индикатор кнопки SW1 (DEFROST_GLASS)" }
+  LED2: { type: TYPE_LED_GREEN, description: "Индикатор кнопки SW2 (FACE)" }
+  LED3: { type: TYPE_LED_GREEN, description: "Индикатор кнопки SW3 (FEET)" }
+  LED4: { type: TYPE_LED_AMBER, description: "Индикатор кнопки SW4 (DRY_GLASS)" }
+  LED5: { type: TYPE_LED_GREEN, description: "Индикатор кнопки SW5 (AC)" }
+  LED6: { type: TYPE_LED_GREEN, description: "Индикатор кнопки SW6 (RECIRC)" }
+  R7:  { type: TYPE_R_1K,  description: "Токоограничение индикатора LED1" }
+  R8:  { type: TYPE_R_1K,  description: "Токоограничение индикатора LED2" }
+  R9:  { type: TYPE_R_1K,  description: "Токоограничение индикатора LED3" }
+  R10: { type: TYPE_R_1K,  description: "Токоограничение индикатора LED4" }
+  R11: { type: TYPE_R_1K,  description: "Токоограничение индикатора LED5" }
+  R12: { type: TYPE_R_1K,  description: "Токоограничение индикатора LED6" }
+  R22: { type: TYPE_R_10K, description: "Подтяжка потенциометра задания температуры" }
+  R23: { type: TYPE_R_10K, description: "Подтяжка FAN_SEL_ADC к VCC_3V3" }
+  R24: { type: TYPE_R_10K, description: "Подтяжка NTC салона (верхнее плечо, NTC на SEN_CABIN)" }
+  R39: { type: TYPE_R_47K, description: "Делитель входа детектора габаритов, верхнее плечо" }
+  R40: { type: TYPE_R_10K, description: "Делитель входа детектора габаритов, нижнее плечо" }
   R25:
     type: TYPE_R_20K
     description: |
       Резистор ступени галлетника, позиция 1.
-      Замыкается на GND через контакт GALLET_POS_1.
-      Даёт FAN_SEL_ADC ≈ 2,20В.
+      Замыкается на GND через GALLET_POS_1 → FAN_SEL_ADC ≈ 2,20В.
   R26:
     type: TYPE_R_10K
     description: |
-      Резистор ступени галлетника, позиция 2.
-      Даёт FAN_SEL_ADC ≈ 1,65В.
+      Резистор ступени галлетника, позиция 2 → 1,65В.
   R27:
     type: TYPE_R_4K7
     description: |
-      Резистор ступени галлетника, позиция 3.
-      Даёт FAN_SEL_ADC ≈ 1,05В.
+      Резистор ступени галлетника, позиция 3 → 1,05В.
   R28:
     type: TYPE_R_1K
     description: |
-      Резистор ступени галлетника, позиция 4 (максимум).
-      Даёт FAN_SEL_ADC ≈ 0,30В.
-  SW1:
-    type: TYPE_SWPUSH_6X6
-    description: "Кнопка «воздух на стекло»"
-  SW2:
-    type: TYPE_SWPUSH_6X6
-    description: "Кнопка «воздух в лицо»"
-  SW3:
-    type: TYPE_SWPUSH_6X6
-    description: "Кнопка «воздух в ноги»"
-  SW4:
-    type: TYPE_SWPUSH_6X6
-    description: "Кнопка «сушка стекла»"
-  SW5:
-    type: TYPE_SWPUSH_6X6
-    description: "Кнопка «кондиционер»"
-  SW6:
-    type: TYPE_SWPUSH_6X6
-    description: "Кнопка «рециркуляция»"
+      Резистор ступени галлетника, позиция 4 (максимум) → 0,30В.
+  SW1: { type: TYPE_SWPUSH, description: "Кнопка «воздух на стекло»" }
+  SW2: { type: TYPE_SWPUSH, description: "Кнопка «воздух в лицо»" }
+  SW3: { type: TYPE_SWPUSH, description: "Кнопка «воздух в ноги»" }
+  SW4: { type: TYPE_SWPUSH, description: "Кнопка «сушка стекла»" }
+  SW5: { type: TYPE_SWPUSH, description: "Кнопка «кондиционер»" }
+  SW6: { type: TYPE_SWPUSH, description: "Кнопка «рециркуляция»" }
 
 nets:
   VCC_3V3:
@@ -343,7 +300,7 @@ nets:
     - { component: SW5, pin: '2' }
     - { component: SW6, pin: '2' }
     - { component: J3,  pin: '2' }
-    - { component: J4,  pin: '1' }    # общий провод галлетника
+    - { component: J4,  pin: '1' }
     - { component: C22, pin: '2' }
     - { component: C23, pin: '2' }
     - { component: C24, pin: '2' }
@@ -390,19 +347,22 @@ nets:
     - { component: SW6, pin: '1' }
 
   # ─── Индикаторы режимов ────────────────────────────────────────
+  # Схема канала: VCC_3V3 → R → анод LED ('A') → катод LED ('K') → DRV МК.
+  # МК тянет катод к GND, LED зажигается.
+
   LED_DEFROST_GLASS_A:
     name: LED_DEFROST_GLASS_A
     is_hierarchical_port: false
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
     - { component: R7,   pin: '2' }
-    - { component: LED1, pin: '1' }
+    - { component: LED1, pinfunction: 'A' }
   LED_DEFROST_GLASS_DRV:
     name: LED_DEFROST_GLASS_DRV
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - { component: LED1, pin: '2' }
+    - { component: LED1, pinfunction: 'K' }
 
   LED_FACE_A:
     name: LED_FACE_A
@@ -410,13 +370,13 @@ nets:
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
     - { component: R8,   pin: '2' }
-    - { component: LED2, pin: '1' }
+    - { component: LED2, pinfunction: 'A' }
   LED_FACE_DRV:
     name: LED_FACE_DRV
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - { component: LED2, pin: '2' }
+    - { component: LED2, pinfunction: 'K' }
 
   LED_FEET_A:
     name: LED_FEET_A
@@ -424,13 +384,13 @@ nets:
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
     - { component: R9,   pin: '2' }
-    - { component: LED3, pin: '1' }
+    - { component: LED3, pinfunction: 'A' }
   LED_FEET_DRV:
     name: LED_FEET_DRV
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - { component: LED3, pin: '2' }
+    - { component: LED3, pinfunction: 'K' }
 
   LED_DRY_GLASS_A:
     name: LED_DRY_GLASS_A
@@ -438,13 +398,13 @@ nets:
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
     - { component: R10,  pin: '2' }
-    - { component: LED4, pin: '1' }
+    - { component: LED4, pinfunction: 'A' }
   LED_DRY_GLASS_DRV:
     name: LED_DRY_GLASS_DRV
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - { component: LED4, pin: '2' }
+    - { component: LED4, pinfunction: 'K' }
 
   LED_AC_A:
     name: LED_AC_A
@@ -452,13 +412,13 @@ nets:
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
     - { component: R11,  pin: '2' }
-    - { component: LED5, pin: '1' }
+    - { component: LED5, pinfunction: 'A' }
   LED_AC_DRV:
     name: LED_AC_DRV
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - { component: LED5, pin: '2' }
+    - { component: LED5, pinfunction: 'K' }
 
   LED_RECIRC_A:
     name: LED_RECIRC_A
@@ -466,13 +426,13 @@ nets:
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V }
     nodes:
     - { component: R12,  pin: '2' }
-    - { component: LED6, pin: '1' }
+    - { component: LED6, pinfunction: 'A' }
   LED_RECIRC_DRV:
     name: LED_RECIRC_DRV
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - { component: LED6, pin: '2' }
+    - { component: LED6, pinfunction: 'K' }
 
   # ─── АЦП-входы ─────────────────────────────────────────────────
   TEMP_SET_ADC:
@@ -492,7 +452,7 @@ nets:
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
-    - { component: J4,      pin: '2' }
+    - { component: J4,  pin: '2' }
     - { component: R25, pin: '1' }
 
   GALLET_POS_2:
@@ -501,7 +461,7 @@ nets:
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
-    - { component: J4,      pin: '3' }
+    - { component: J4,  pin: '3' }
     - { component: R26, pin: '1' }
 
   GALLET_POS_3:
@@ -510,7 +470,7 @@ nets:
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
-    - { component: J4,      pin: '4' }
+    - { component: J4,  pin: '4' }
     - { component: R27, pin: '1' }
 
   GALLET_POS_4:
@@ -519,7 +479,7 @@ nets:
     is_hierarchical_port: true
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
-    - { component: J4,      pin: '5' }
+    - { component: J4,  pin: '5' }
     - { component: R28, pin: '1' }
 
   FAN_SEL_ADC:
@@ -531,12 +491,12 @@ nets:
     is_hierarchical_port: true
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
-    - { component: R23,     pin: '2' }
+    - { component: R23, pin: '2' }
     - { component: R25, pin: '2' }
     - { component: R26, pin: '2' }
     - { component: R27, pin: '2' }
     - { component: R28, pin: '2' }
-    - { component: C23,     pin: '1' }
+    - { component: C23, pin: '1' }
 
   NTC_CABIN:
     name: NTC_CABIN
@@ -576,25 +536,19 @@ nets:
     - { component: R40, pin: '1' }
     - { component: C32, pin: '1' }
 
-spice:
-  models:
-    - "LED_GREEN D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)"
-    - "LED_AMBER D(IS=1e-20 N=1.8 RS=8 BV=5 CJO=10p)"
-    - "SW_GP    SW(Ron=0.1 Roff=1Meg Vt=1.5 Vh=0.5)"
-
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
 #
 # Галлетник эмулируется замыканием соответствующего контакта
-# GALLET_POS_N на GND (V-источник 0В). Резисторы ступеней R_SEL_*
+# GALLET_POS_N на GND (V-источник 0В). Резисторы ступеней R25..R28
 # уже внутри .sub.
 #
 # Кодировка FAN_SEL_ADC:
 #   AUTO (все разомкнуты)      → 3,30В (только R23)
-#   Позиция 1 (R25 = 20к)  → 2,20В
-#   Позиция 2 (R26 = 10к)  → 1,65В
-#   Позиция 3 (R27 = 4,7к) → 1,05В
-#   Позиция 4 (R28 = 1к)   → 0,30В
+#   Позиция 1 (R25 = 20к)      → 2,20В
+#   Позиция 2 (R26 = 10к)      → 1,65В
+#   Позиция 3 (R27 = 4,7к)     → 1,05В
+#   Позиция 4 (R28 = 1к)       → 0,30В
 # ─────────────────────────────────────────────────────────────────────
 
 scenarios:
@@ -607,11 +561,17 @@ scenarios:
       FAN_SEL_ADC подтянут к +3,3В через R23.
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3,
-                  description: "Питание подтяжки R23" }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+          description: "Питание подтяжки R23"
     checks:
-      - { node: v(fan_sel_adc), min: 3.20, max: 3.40,
-          description: "AUTO → 3,3В (все контакты разомкнуты)" }
+      - node: v(fan_sel_adc)
+        min: 3.20
+        max: 3.40
+        description: "AUTO → 3,3В (все контакты разомкнуты)"
 
   - name: UI_FAN_POS_1
     description: |
@@ -619,13 +579,23 @@ scenarios:
       Делитель R23 (10к) / R25 (20к) → 2,20В.
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3,
-                  description: "Питание подтяжки" }
-      - source: { ref: V_G1, net: GALLET_POS_1, type: dc, value: 0.0,
-                  description: "Галлетник в позиции 1: замкнут POS_1" }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+          description: "Питание подтяжки"
+      - source:
+          ref: V_G1
+          net: GALLET_POS_1
+          type: dc
+          value: 0.0
+          description: "Галлетник в позиции 1: замкнут POS_1"
     checks:
-      - { node: v(fan_sel_adc), min: 2.10, max: 2.30,
-          description: "позиция 1 → 2,20В" }
+      - node: v(fan_sel_adc)
+        min: 2.10
+        max: 2.30
+        description: "позиция 1 → 2,20В"
 
   - name: UI_FAN_POS_2
     description: |
@@ -633,36 +603,66 @@ scenarios:
       Делитель R23 / R26 (10к) → 1,65В.
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
-      - source: { ref: V_G2, net: GALLET_POS_2, type: dc, value: 0.0,
-                  description: "Галлетник в позиции 2: замкнут POS_2" }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+      - source:
+          ref: V_G2
+          net: GALLET_POS_2
+          type: dc
+          value: 0.0
+          description: "Галлетник в позиции 2: замкнут POS_2"
     checks:
-      - { node: v(fan_sel_adc), min: 1.55, max: 1.75,
-          description: "позиция 2 → 1,65В" }
+      - node: v(fan_sel_adc)
+        min: 1.55
+        max: 1.75
+        description: "позиция 2 → 1,65В"
 
   - name: UI_FAN_POS_3
     description: |
       Галлетник в позиции 3. R27 (4,7к) → 1,05В.
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
-      - source: { ref: V_G3, net: GALLET_POS_3, type: dc, value: 0.0,
-                  description: "Галлетник в позиции 3: замкнут POS_3" }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+      - source:
+          ref: V_G3
+          net: GALLET_POS_3
+          type: dc
+          value: 0.0
+          description: "Галлетник в позиции 3: замкнут POS_3"
     checks:
-      - { node: v(fan_sel_adc), min: 0.95, max: 1.15,
-          description: "позиция 3 → 1,05В" }
+      - node: v(fan_sel_adc)
+        min: 0.95
+        max: 1.15
+        description: "позиция 3 → 1,05В"
 
   - name: UI_FAN_POS_4
     description: |
       Галлетник в позиции 4 (максимум). R28 (1к) → 0,30В.
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
-      - source: { ref: V_G4, net: GALLET_POS_4, type: dc, value: 0.0,
-                  description: "Галлетник в позиции 4: замкнут POS_4" }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+      - source:
+          ref: V_G4
+          net: GALLET_POS_4
+          type: dc
+          value: 0.0
+          description: "Галлетник в позиции 4: замкнут POS_4"
     checks:
-      - { node: v(fan_sel_adc), min: 0.25, max: 0.40,
-          description: "позиция 4 → 0,30В" }
+      - node: v(fan_sel_adc)
+        min: 0.25
+        max: 0.40
+        description: "позиция 4 → 0,30В"
 
   # ─── Детектор габаритов ────────────────────────────────────────
 
@@ -670,33 +670,57 @@ scenarios:
     description: Диммер на минимуме (1В) → ILLUM_SENSE ≈ 0,18В (ниже порога)
     analysis: op
     deck:
-      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 1.0 }
+      - source:
+          ref: V1
+          net: ILLUM_IN_RAW
+          type: dc
+          value: 1.0
     checks:
-      - { node: v(illum_sense), min: 0.0, max: 0.30 }
+      - node: v(illum_sense)
+        min: 0.0
+        max: 0.30
 
   - name: UI_ILLUM_MID
     description: Средняя яркость (5В) → ILLUM_SENSE ≈ 0,88В
     analysis: op
     deck:
-      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 5.0 }
+      - source:
+          ref: V1
+          net: ILLUM_IN_RAW
+          type: dc
+          value: 5.0
     checks:
-      - { node: v(illum_sense), min: 0.75, max: 1.00 }
+      - node: v(illum_sense)
+        min: 0.75
+        max: 1.00
 
   - name: UI_ILLUM_ON
     description: Номинальная яркость (12В) → ILLUM_SENSE ≈ 2,11В
     analysis: op
     deck:
-      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 12.0 }
+      - source:
+          ref: V1
+          net: ILLUM_IN_RAW
+          type: dc
+          value: 12.0
     checks:
-      - { node: v(illum_sense), min: 1.95, max: 2.25 }
+      - node: v(illum_sense)
+        min: 1.95
+        max: 2.25
 
   - name: UI_ILLUM_HIGH
     description: Максимум при генераторе (14,4В) → ILLUM_SENSE ≈ 2,53В
     analysis: op
     deck:
-      - source: { ref: V1, net: ILLUM_IN_RAW, type: dc, value: 14.4 }
+      - source:
+          ref: V1
+          net: ILLUM_IN_RAW
+          type: dc
+          value: 14.4
     checks:
-      - { node: v(illum_sense), min: 2.40, max: 2.65 }
+      - node: v(illum_sense)
+        min: 2.40
+        max: 2.65
 
   # ─── Задание температуры ───────────────────────────────────────
 
@@ -704,29 +728,53 @@ scenarios:
     description: Потенциометр отключён, R22 подтягивает к 3,3В
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
     checks:
-      - { node: v(temp_set_adc), min: 3.20, max: 3.40 }
+      - node: v(temp_set_adc)
+        min: 3.20
+        max: 3.40
 
   - name: UI_TEMP_MID
     description: Потенциометр в середине (10к) → 1,65В
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
-      - resistor: { ref: R_POT, net_pos: TEMP_SET_ADC, net_neg: "0",
-                    value: 10k }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+      - resistor:
+          ref: R_POT
+          net_pos: TEMP_SET_ADC
+          net_neg: "0"
+          value: 10k
     checks:
-      - { node: v(temp_set_adc), min: 1.55, max: 1.75 }
+      - node: v(temp_set_adc)
+        min: 1.55
+        max: 1.75
 
   - name: UI_TEMP_MIN
     description: Потенциометр на минимуме (100Ω) → ~0В
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
-      - resistor: { ref: R_POT, net_pos: TEMP_SET_ADC, net_neg: "0",
-                    value: 100 }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+      - resistor:
+          ref: R_POT
+          net_pos: TEMP_SET_ADC
+          net_neg: "0"
+          value: 100
     checks:
-      - { node: v(temp_set_adc), min: 0.0, max: 0.10 }
+      - node: v(temp_set_adc)
+        min: 0.0
+        max: 0.10
 
   # ─── Индикаторы режимов ────────────────────────────────────────
 
@@ -734,23 +782,43 @@ scenarios:
     description: Индикатор LED1 включён (катод прижат МК к GND)
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
-      - source: { ref: V2, net: LED_DEFROST_GLASS_DRV, type: dc, value: 0.0 }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+      - source:
+          ref: V2
+          net: LED_DEFROST_GLASS_DRV
+          type: dc
+          value: 0.0
     control: |
       let icc = -i(V1)
       print icc
     checks:
-      - { node: icc, min: 0.0008, max: 0.0015,
-          description: "ток через LED1 ≈ 1,2 мА" }
+      - node: icc
+        min: 0.0008
+        max: 0.0015
+        description: "ток через LED1 ≈ 1,2 мА"
 
   - name: UI_LED_OFF
     description: Индикатор LED1 выключен (катод на 3,3В с МК)
     analysis: op
     deck:
-      - source: { ref: V1, net: VCC_3V3, type: dc, value: 3.3 }
-      - source: { ref: V2, net: LED_DEFROST_GLASS_DRV, type: dc, value: 3.3 }
+      - source:
+          ref: V1
+          net: VCC_3V3
+          type: dc
+          value: 3.3
+      - source:
+          ref: V2
+          net: LED_DEFROST_GLASS_DRV
+          type: dc
+          value: 3.3
     control: |
       let icc = -i(V1)
       print icc
     checks:
-      - { node: icc, min: -0.0001, max: 0.0001 }
+      - node: icc
+        min: -0.0001
+        max: 0.0001

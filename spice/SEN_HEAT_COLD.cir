@@ -1,18 +1,18 @@
-* Ngspice тест: SEN_HEAT / SEN_HEAT_COLD
+* Ngspice тест: heating_sensor / SEN_HEAT_COLD
 * Труба отопителя холодная, 0°C.
-* R_NTC ≈ 27.2 кОм, делитель даёт высокий уровень.
-* NTC_HEAT ≈ 2.41В.
+* R_NTC ≈ 28.7 кОм, делитель даёт высокий уровень.
+* NTC_HEAT ≈ 2.45В.
 .INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/ntc_models.lib
-.INCLUDE spice/SEN_HEAT.sub
+.INCLUDE spice/heating_sensor.sub
 
 * Порты: GND NTC_HEAT NTC_HEAT_W VCC_3V3
 
 * V1: Питание делителя +3,3В
 V1 VCC_3V3 0 DC 3.3
 
-* XRT2: Внешний NTC патрубка отопителя при 0°C (R ≈ 27,2 кОм)
+* XRT2: Внешний NTC при 0°C (R ≈ 28,7 кОм)
 XRT2 NTC_HEAT_W 0 NTC_10K_3435 T=0
-XSEN_HEAT 0 NTC_HEAT NTC_HEAT_W VCC_3V3 SEN_HEAT
+Xheating_sensor 0 NTC_HEAT NTC_HEAT_W VCC_3V3 heating_sensor
 
 .op
 .control

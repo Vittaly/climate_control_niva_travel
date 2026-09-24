@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/condensate_sensor.kicad_sch")
-		(date "2026-09-19T11:38:01")
+		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/heating_sensor.kicad_sch")
+		(date "2026-09-24T23:13:16")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -13,7 +13,7 @@
 				(company)
 				(rev)
 				(date)
-				(source "condensate_sensor.kicad_sch")
+				(source "heating_sensor.kicad_sch")
 				(comment
 					(number "1")
 					(value "")
@@ -55,8 +55,8 @@
 	)
 	(components
 		(comp
-			(ref "C27")
-			(value "100nF")
+			(ref "C25")
+			(value "100n")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -85,7 +85,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "condensate_sensor.kicad_sch")
+				(value "heating_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "de33187f-6e6c-4aa8-b544-ab81be6117be")
+			(tstamps "89167f8e-b7c1-46fa-8b06-cb5facbf91a8")
 			(units
 				(unit
 					(name "A")
@@ -115,7 +115,7 @@
 			)
 		)
 		(comp
-			(ref "R29")
+			(ref "R25")
 			(value "10k")
 			(fields
 				(field
@@ -145,7 +145,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "condensate_sensor.kicad_sch")
+				(value "heating_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2103c0a1-96df-4332-aa4f-ddcada39383a")
+			(tstamps "1374676d-d9a8-4ee0-8e25-b41aa8eb45a4")
 			(units
 				(unit
 					(name "A")
@@ -175,8 +175,8 @@
 			)
 		)
 		(comp
-			(ref "R30")
-			(value "20k")
+			(ref "R26")
+			(value "10k")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -205,7 +205,7 @@
 			)
 			(property
 				(name "Sheetfile")
-				(value "condensate_sensor.kicad_sch")
+				(value "heating_sensor.kicad_sch")
 			)
 			(property
 				(name "ki_keywords")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d86aab5c-1ae0-4a9f-b8e9-63305d04d220")
+			(tstamps "eff35279-000c-43e2-8133-c6dc2483f196")
 			(units
 				(unit
 					(name "A")
@@ -316,46 +316,51 @@
 	(nets
 		(net
 			(code "1")
-			(name "/COND_ADC")
+			(name "/GND")
 			(class "Default")
 			(node
-				(ref "C27")
-				(pin "1")
-				(pintype "passive")
-			)
-			(node
-				(ref "R29")
+				(ref "C25")
 				(pin "2")
-				(pintype "passive")
-			)
-			(node
-				(ref "R30")
-				(pin "1")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "2")
-			(name "/COND_RAW")
+			(name "/NTC_HEAT")
 			(class "Default")
 			(node
-				(ref "R29")
-				(pin "1")
+				(ref "R26")
+				(pin "2")
 				(pintype "passive")
 			)
 		)
 		(net
 			(code "3")
-			(name "/GND")
+			(name "/NTC_HEAT_W")
 			(class "Default")
 			(node
-				(ref "C27")
+				(ref "C25")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R25")
 				(pin "2")
 				(pintype "passive")
 			)
 			(node
-				(ref "R30")
-				(pin "2")
+				(ref "R26")
+				(pin "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "4")
+			(name "/VCC_3V3")
+			(class "Default")
+			(node
+				(ref "R25")
+				(pin "1")
 				(pintype "passive")
 			)
 		)

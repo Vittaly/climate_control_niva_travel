@@ -1,9 +1,10 @@
-* Ngspice тест: CAN / CAN_RX_PATH
+* Ngspice тест: can_bus / CAN_RX_PATH
 * Проверка приёмного тракта.
 * Подаём на CANH/CANL внешнее дифференциальное напряжение
 * (имитация чужого передатчика на шине), проверяем RXD.
 * При Vdiff > порога приёмника RXD = 0.
-.INCLUDE spice/CAN.sub
+.INCLUDE /home/vitaly-pc/kicad/climate_control_niva_travel/spice/lib/mcp2562_ngspice.lib
+.INCLUDE spice/can_bus.sub
 
 * Порты: CANH CANL CAN_RX CAN_TX GND VCC_5V
 
@@ -18,7 +19,10 @@ V3 CANH 0 DC 3.5
 
 * V4: Внешний передатчик: CANL = 1,5В
 V4 CANL 0 DC 1.5
-XCAN CANH CANL CAN_RX CAN_TX 0 VCC_5V CAN
+
+* R_TERM: Эквивалент двух терминаторов 120 Ом на концах шины
+R_TERM CANH CANL 60
+Xcan_bus CANH CANL CAN_RX CAN_TX 0 VCC_5V can_bus
 
 .op
 .control

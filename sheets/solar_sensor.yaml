@@ -1,32 +1,32 @@
-page_name: SEN_SOLAR
-file: solar_sensor.kicad_sch
 functional_purpose: |
   Модуль измерения солнечной радиации.
 
   Внешний датчик солнечной радиации питается от +5В (J1:17)
-  и выдаёт аналоговый сигнал 0..5В на линию SOLAR_RAW (J1:20).
+  и выдаёт аналоговый сигнал 0..5В на линию SOLAR_IN_RAW (J1:20).
   Резистивный делитель R27 (10к) / R28 (20к) масштабирует
   сигнал до 0..3,3В для входа АЦП микроконтроллера (SOLAR_ADC).
-  Конденсатор C26 фильтрует ВЧ-помехи.
+  Конденсатор C26 фильтрует ВЧ-помехи. Стабилитрон D29 (3,6В)
+  защищает вход АЦП от затекания +12В в линию SOLAR_IN_RAW.
 
   Коэффициент деления:
     K = R28 / (R27 + R28) = 20 / 30 = 2/3
 
   Характерные точки:
-    SOLAR_RAW = 0В    → SOLAR_ADC = 0В    (темнота)
-    SOLAR_RAW = 2,5В  → SOLAR_ADC ≈ 1,67В (пасмурно)
-    SOLAR_RAW = 5В    → SOLAR_ADC ≈ 3,33В (яркое солнце)
+    SOLAR_IN_RAW = 0В    → SOLAR_ADC = 0В    (темнота)
+    SOLAR_IN_RAW = 2,5В  → SOLAR_ADC ≈ 1,67В (пасмурно)
+    SOLAR_IN_RAW = 5В    → SOLAR_ADC ≈ 3,33В (яркое солнце)
+    SOLAR_IN_RAW = 12В   → SOLAR_ADC ≈ 3,7В (ограничен D29)
 
-  Делитель также ограничивает ток в АЦП при аварийных режимах
-  (обрыв, КЗ на +12В) до ~1,2 мА.
+# Модели R/C не объявляются: на листе только примитивы SPICE,
+# строятся по part. D29 — primitive: D с inline .model.
 
 ports:
 - net_label: GND
   type: POWER
   description: Общий провод (кузов автомобиля)
-- net_label: SOLAR_RAW
+- net_label: SOLAR_IN_RAW
   type: INPUT
-  description: Выход датчика солнечной радиации (0..5В), J1:20
+  description: Вход датчика солнечной радиации (0..5В), J1:20
 - net_label: SOLAR_ADC
   type: OUTPUT
   description: Сигнал солнечной радиации после делителя 5В->3,3В на АЦП
@@ -35,13 +35,11 @@ component_types:
   TYPE_C_100NF:
     symbol: Device:C
     footprint: Capacitor_SMD:C_0603_1608Metric
-    value: 100nF
+    value: 100n
     fields:
       Type: Ceramic
       Dielectric: X7R
-    spice:
-      model: C
-      description: "Керамический конденсатор X7R, фильтр АЦП"
+
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -49,8 +47,7 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
-    spice:
-      model: R
+
   TYPE_R_20K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
@@ -58,8 +55,21 @@ component_types:
     fields:
       Power: 0.1W
       Tolerance: 1%
+
+  TYPE_D_ZENER_3V6:
+    symbol: Device:D_Zener
+    footprint: Diode_SMD:D_SOD-123
+    value: BZX84C3V6
+    fields: { Voltage: 3.6V }
     spice:
-      model: R
+      description: |
+        Стабилитрон 3,6В для защиты входа АЦП.
+        При V(SOLAR_ADC) < 3,6В — заперт, сигнал идёт через делитель.
+        При V > 3,6В (аварийное затекание +12В) — открывается,
+        ограничивает SOLAR_ADC на уровне BV + I·Rz ≈ 3,7В.
+        Распиновка Device:D_Zener: pin 1 = K, pin 2 = A.
+      primitive: D
+      model_def: ".model D_ZENER_3V6 D(IS=1e-14 RS=100 N=1.05 BV=3.6 IBV=1m CJO=50p)"
 
 components:
   C26:
@@ -71,6 +81,9 @@ components:
   R28:
     type: TYPE_R_20K
     description: "Делитель сигнала солнечной радиации, нижнее плечо"
+  D29:
+    type: TYPE_D_ZENER_3V6
+    description: "Защитный стабилитрон входа АЦП солнечной радиации"
 
 nets:
   GND:
@@ -88,10 +101,11 @@ nets:
     nodes:
     - { component: R28, pin: '2' }
     - { component: C26, pin: '2' }
+    - { component: D29, pinfunction: 'A' }   # анод стабилитрона на GND
 
-  SOLAR_RAW:
-    name: SOLAR_RAW
-    description: Выход датчика солнечной радиации (0..5В), J1:20
+  SOLAR_IN_RAW:
+    name: SOLAR_IN_RAW
+    description: Вход датчика солнечной радиации (0..5В), J1:20
     is_hierarchical_port: true
     attributes:
       type: ANALOG_SIGNAL
@@ -120,6 +134,7 @@ nets:
     - { component: R27, pin: '2' }
     - { component: R28, pin: '1' }
     - { component: C26, pin: '1' }
+    - { component: D29, pinfunction: 'K' }   # катод стабилитрона на ADC
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
@@ -127,14 +142,16 @@ nets:
 # Делитель R27 (10к) / R28 (20к):
 #   K = 20 / (10 + 20) = 2/3
 #
-# Проверяем три точки диапазона датчика:
+# Защитный стабилитрон D29 (BV = 3,6В, Rz ≈ 100 Ом):
+#   при V(SOLAR_ADC) < 3,6В — заперт, на сигнал не влияет;
+#   при V ≥ 3,6В — открывается, ограничивает узел.
+#
+# Проверяем:
 #   0В  (темнота)   → SOLAR_ADC = 0В
 #   2,5В (пасмурно) → SOLAR_ADC ≈ 1,67В
-#   5В  (ярко)      → SOLAR_ADC ≈ 3,33В
-#
-# Плюс два крайних режима:
-#   12В (авария)    → ток через делитель ограничен (защита АЦП);
-#   обрыв линии     → SOLAR_ADC = 0 (нет подтяжки, вход высокоомный).
+#   5В  (ярко)      → SOLAR_ADC ≈ 3,33В (стабилитрон ещё закрыт)
+#   12В (авария)    → SOLAR_ADC ≈ 3,7В (ограничен стабилитроном)
+#   обрыв линии     → SOLAR_ADC = 0В (подтянут к GND через R28)
 # ─────────────────────────────────────────────────────────────────────
 
 scenarios:
@@ -147,80 +164,94 @@ scenarios:
     deck:
       - source:
           ref: V1
-          net: SOLAR_RAW
+          net: SOLAR_IN_RAW
           type: dc
           value: 0.0
           description: "Датчик солнечной радиации: темнота (0В)"
     checks:
-      - { node: v(solar_adc), min: -0.05, max: 0.05,
-          description: "SOLAR_ADC = 0В (нижний край диапазона)" }
+      - node: v(solar_adc)
+        min: -0.05
+        max: 0.05
+        description: "SOLAR_ADC = 0В (нижний край диапазона)"
 
   - name: SEN_SOLAR_MID
     description: |
       Средняя освещённость (пасмурно).
-      SOLAR_RAW = 2,5В → SOLAR_ADC ≈ 1,67В (K = 2/3).
+      SOLAR_IN_RAW = 2,5В → SOLAR_ADC ≈ 1,67В (K = 2/3).
     analysis: op
     deck:
       - source:
           ref: V1
-          net: SOLAR_RAW
+          net: SOLAR_IN_RAW
           type: dc
           value: 2.5
           description: "Датчик солнечной радиации: середина диапазона (2,5В)"
     checks:
-      - { node: v(solar_adc), min: 1.55, max: 1.80,
-          description: "середина диапазона АЦП ≈ 1,67В" }
+      - node: v(solar_adc)
+        min: 1.55
+        max: 1.80
+        description: "середина диапазона АЦП ≈ 1,67В"
 
   - name: SEN_SOLAR_BRIGHT
     description: |
       Яркое солнце, датчик на верхнем пределе.
-      SOLAR_RAW = 5В → SOLAR_ADC ≈ 3,33В (граница АЦП).
+      SOLAR_IN_RAW = 5В → SOLAR_ADC ≈ 3,33В. Стабилитрон ещё заперт
+      (BV = 3,6В), на сигнал не влияет.
     analysis: op
     deck:
       - source:
           ref: V1
-          net: SOLAR_RAW
+          net: SOLAR_IN_RAW
           type: dc
           value: 5.0
           description: "Датчик солнечной радиации: максимум (5В)"
     checks:
-      - { node: v(solar_adc), min: 3.20, max: 3.45,
-          description: "верхний край диапазона АЦП ≈ 3,33В" }
+      - node: v(solar_adc)
+        min: 3.20
+        max: 3.45
+        description: "верхний край диапазона АЦП ≈ 3,33В"
 
   - name: SEN_SOLAR_FAULT_12V
     description: |
-      Аварийный режим: замыкание линии SOLAR_RAW на бортсеть +12В
-      (неисправность проводки или КЗ датчика). Делитель R27/R28
-      ограничивает ток через линию до ~1,2 мА. В реальности
-      вход АЦП МК дополнительно защищён внутренним диодом на
-      VDDA — в модели без МК напряжение на SOLAR_ADC ограничено
-      только делителем (~8В), что показывает: для полной защиты
-      нужен внешний TVS или верхний резистор большего номинала.
+      Аварийный режим: замыкание линии SOLAR_IN_RAW на бортсеть +12В.
+
+      Проверяем, что стабилитрон D29 защищает вход АЦП:
+      без него делитель дал бы 12 · 2/3 = 8В, что повредило бы МК.
+      С D29 узел SOLAR_ADC ограничен уровнем BV + I·Rz ≈ 3,7В.
+
+      Ток через стабилитрон: (12 − 3,7)/10k ≈ 0,83 мА — безопасен
+      для SOD-123 (допустимо до десятков мА при коротких импульсах).
     analysis: op
     deck:
       - source:
           ref: V1
-          net: SOLAR_RAW
+          net: SOLAR_IN_RAW
           type: dc
           value: 12.0
           description: "Аварийная подача +12В на вход датчика"
     control: |
       let vadc = v(SOLAR_ADC)
-      let iin  = (12.0 - v(SOLAR_ADC)) / 10k
-      print vadc iin
+      let iz   = (12.0 - v(SOLAR_ADC)) / 10k
+      print vadc iz
     checks:
-      - { node: vadc, min: 7.0, max: 9.0,
-          description: "делитель даёт 12 · 2/3 = 8В — требуется внешняя защита" }
-      - { node: iin,  min: 0.0004, max: 0.0006,
-          description: "ток через делитель ≈ 0,4 мА" }
+      - node: vadc
+        min: 3.4
+        max: 3.8
+        description: "SOLAR_ADC ограничен D29 на уровне ≈ 3,7В (безопасно для STM32)"
+      - node: iz
+        min: 0.0006
+        max: 0.0010
+        description: "ток через стабилитрон ≈ 0,83 мА (в пределах нормы SOD-123)"
 
   - name: SEN_SOLAR_OPEN
     description: |
       Обрыв линии датчика (провод перебит, датчик отключён).
-      Линия SOLAR_RAW висит в воздухе, ток через делитель = 0,
+      Линия SOLAR_IN_RAW висит в воздухе, ток через делитель = 0,
       SOLAR_ADC подтягивается к GND через R28 = 20к.
     analysis: op
     deck: []   # источников нет — линия в воздухе
     checks:
-      - { node: v(solar_adc), min: -0.05, max: 0.05,
-          description: "SOLAR_ADC = 0В (нет сигнала с датчика)" }
+      - node: v(solar_adc)
+        min: -0.05
+        max: 0.05
+        description: "SOLAR_ADC = 0В (нет сигнала с датчика)"

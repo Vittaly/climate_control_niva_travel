@@ -64,6 +64,16 @@ Alias-пины:
     logging_setup. В from_yaml page передаётся вызывающим кодом
     (Sheet / Project); во внутренних методах берётся из
     self.sheet_path.
+
+Контракт from_yaml:
+    Либо возвращает построенный Component, либо бросает:
+      - DesignatorError      — designator не проходит валидацию KiCad;
+      - ComponentLoadError   — компонент в принципе не собирается
+                               (нет type, type не описан, нет symbol,
+                               symbol отсутствует в библиотеке).
+    Возврат None запрещён: молчаливая потеря компонента приводила
+    к «расхождениям в сетях» (node_skipped reason=no_component)
+    без внятной причины.
 """
 from __future__ import annotations
 
@@ -99,6 +109,53 @@ log = get_logger(__name__)
 # Нужен, чтобы пины, стоящие ровно на линии сетки, не «уезжали»
 # в соседнюю клетку из-за float-погрешности деления.
 _SNAP_EPS = 1e-6
+
+
+# =========================================================
+# Ошибки загрузки компонента
+# =========================================================
+
+class ComponentLoadError(Exception):
+    """Component.from_yaml не смог собрать компонент из YAML.
+
+    В отличие от DesignatorError (валидация имени), эта ошибка
+    означает, что компонент в принципе не может быть построен:
+    неизвестный type, отсутствующий symbol в библиотеке,
+    отсутствующий symbol в описании типа и т.п.
+
+    Несёт структурированный контекст — designator, type, symbol,
+    value, reason, hint — чтобы Project мог собрать читаемое
+    сообщение и НЕ терял компонент молча.
+    """
+
+    def __init__(
+        self,
+        designator: str,
+        reason: str,
+        *,
+        type_name: Optional[str] = None,
+        symbol: Optional[str] = None,
+        value: Optional[str] = None,
+        hint: Optional[str] = None,
+    ):
+        self.designator = designator
+        self.reason = reason
+        self.type_name = type_name
+        self.symbol = symbol
+        self.value = value
+        self.hint = hint
+
+        parts = [f"components.{designator}:"]
+        if type_name is not None:
+            parts.append(f"type={type_name!r}")
+        if symbol is not None:
+            parts.append(f"symbol={symbol!r}")
+        if value is not None:
+            parts.append(f"value={value!r}")
+        parts.append(f"— {reason}")
+        if hint:
+            parts.append(f"({hint})")
+        super().__init__(" ".join(parts))
 
 
 # =========================================================
@@ -231,6 +288,53 @@ class Component:
                 return p
         return None
 
+    def pin_by_name(self, name: str) -> Optional[Pin]:
+        """Пин по имени (pinfunction). None, если не найден/неоднозначен.
+
+        Порядок поиска:
+        1. Точное совпадение. Найдено ровно одно — возвращаем.
+        2. Совпадение без учёта регистра. Найдено ровно одно — возвращаем
+            с WARNING (чтобы автор знал о расхождении и мог поправить YAML).
+        3. Не найдено или неоднозначно — None и WARNING.
+        """
+        if not name:
+            return None
+
+        # 1. Точное совпадение
+        exact = [p for p in self.pins if p.name == name]
+        if len(exact) == 1:
+            return exact[0]
+        if len(exact) > 1:
+            log.warning(
+                "%s: pinfunction=%r неоднозначен, найдено %d пинов "
+                "(номера: %s). Используйте pin: '<номер>'.",
+                ctx(page=self.sheet_path or None, comp=self.designator),
+                name, len(exact),
+                ", ".join(p.number for p in exact),
+            )
+            return None
+
+        # 2. Fallback без учёта регистра
+        lower = name.lower()
+        ci = [p for p in self.pins
+            if p.name and p.name.lower() == lower]
+        if len(ci) == 1:
+            log.warning(
+                "%s: pinfunction=%r найдено как %r — "
+                "регистр отличается. В YAML лучше писать точно как в символе.",
+                ctx(page=self.sheet_path or None, comp=self.designator),
+                name, ci[0].name,
+            )
+            return ci[0]
+        if len(ci) > 1:
+            log.warning(
+                "%s: pinfunction=%r — несколько кандидатов по регистру: %s",
+                ctx(page=self.sheet_path or None, comp=self.designator),
+                name, [p.name for p in ci],
+            )
+            return None
+        return None
+
     def pin_by_local_key(self, local_key: str) -> Optional[Pin]:
         """Возвращает пин по локальному ключу "U1:42" или None."""
         for p in self.pins:
@@ -249,7 +353,7 @@ class Component:
         source: "KiCadSource",
         grid_mm: float = DEFAULT_GRID_MM,
         page: Optional[str] = None,
-    ) -> Optional["Component"]:
+    ) -> "Component":
         """Собирает компонент из описания типа в component_types.
 
         Что РАССЧИТЫВАЕТСЯ:
@@ -276,33 +380,74 @@ class Component:
             page:       имя страницы-владельца (для контекста логов).
 
         Returns:
-            Component либо None, если тип неизвестен или символ не найден.
+            Построенный Component.
+
+        Raises:
+            ComponentLoadError: тип не указан, тип не описан,
+                symbol не указан в типе, symbol не найден в
+                библиотеке. Компонент молча НЕ теряется — ошибка
+                летит наружу с полным контекстом
+                (designator/type/symbol/value/reason/hint).
+            DesignatorError: designator не проходит валидацию KiCad.
         """
+        # --- 1. type обязателен ---
         tname = cdef.get("type")
-        if not tname or tname not in types:
-            log.warning(
-                "%s тип '%s' не описан, пропускаю",
-                ctx(page=page, comp=designator),
-                tname,
+        if not tname:
+            raise ComponentLoadError(
+                designator=designator,
+                reason="в YAML не указано поле type",
+                value=cdef.get("value"),
             )
-            return None
+
+        # --- 2. type должен быть описан в component_types ---
+        if tname not in types:
+            known = sorted(types.keys())
+            if known:
+                shown = known[:10]
+                suffix = (
+                    f" (+{len(known) - len(shown)} ещё)"
+                    if len(known) > len(shown) else ""
+                )
+                hint = f"известные типы: {', '.join(shown)}{suffix}"
+            else:
+                hint = "component_types пуст"
+            raise ComponentLoadError(
+                designator=designator,
+                reason=f"тип {tname!r} не описан в component_types",
+                type_name=tname,
+                value=cdef.get("value"),
+                hint=hint,
+            )
 
         tinfo = types[tname]
-        lib_id = tinfo["symbol"]
+
+        # --- 3. symbol обязателен ---
+        lib_id = tinfo.get("symbol")
+        if not lib_id:
+            raise ComponentLoadError(
+                designator=designator,
+                reason=f"в типе {tname!r} не указан symbol",
+                type_name=tname,
+                value=tinfo.get("value"),
+            )
+
         value = tinfo.get("value", tname)
         fields = dict(tinfo.get("fields", {}))
 
+        # --- 4. symbol должен существовать в библиотеке ---
         try:
             pins_raw = source.get_pins(lib_id)
-        except KeyError:
-            log.error(
-                "%s нет символа %s в библиотеке",
-                ctx(page=page, comp=designator),
-                lib_id,
-            )
-            return None
+        except KeyError as e:
+            raise ComponentLoadError(
+                designator=designator,
+                reason=f"символ {lib_id!r} не найден в библиотеке KiCad",
+                type_name=tname,
+                symbol=lib_id,
+                value=value,
+                hint=f"KeyError: {e}",
+            ) from e
 
-        # --- 1. Сырые границы bbox по пинам (система СИМВОЛА, Y↑) ---
+        # --- 5. Сырые границы bbox по пинам (система СИМВОЛА, Y↑) ---
         pin_coords = [(float(p.get("x_mm", 0.0)), float(p.get("y_mm", 0.0)))
                       for p in pins_raw]
         if pin_coords:
@@ -313,7 +458,7 @@ class Component:
         else:
             min_x = max_x = min_y = max_y = 0.0
 
-        # --- 2. СИММЕТРИЧНОЕ расширение, если ширина меньше клетки ---
+        # --- 6. СИММЕТРИЧНОЕ расширение, если ширина меньше клетки ---
         # (все пины в одной точке — bbox всё равно должен быть хоть
         #  размером с клетку)
         if max_x - min_x < grid_mm:
@@ -323,7 +468,7 @@ class Component:
             min_y -= grid_mm
             max_y += grid_mm
 
-        # --- 3. Снап границ bbox к клеткам сетки ---
+        # --- 7. Снап границ bbox к клеткам сетки ---
         min_col_sym = math.floor(min_x / grid_mm + _SNAP_EPS)
         max_col_sym = math.ceil(max_x / grid_mm - _SNAP_EPS)
         min_row_sym = math.floor(min_y / grid_mm + _SNAP_EPS)
@@ -333,16 +478,16 @@ class Component:
         bbox_rows = max(1, max_row_sym - min_row_sym + 1)
         bbox_size = (bbox_cols, bbox_rows)
 
-        # --- 4. anchor в системе символа ---
+        # --- 8. anchor в системе символа ---
         anchor_x_sym = 0.0
         anchor_y_sym = 0.0
 
-        # --- 5. anchor_offset_mm (от левого-верхнего угла bbox, Y↓) ---
+        # --- 9. anchor_offset_mm (от левого-верхнего угла bbox, Y↓) ---
         anchor_offset_x = anchor_x_sym - min_col_sym * grid_mm
         anchor_offset_y = max_row_sym * grid_mm - anchor_y_sym   # Y↓
         anchor_offset_mm = (anchor_offset_x, anchor_offset_y)
 
-        # --- 6. пины (система СТРАНИЦЫ, Y↓, смещение от якоря) ---
+        # --- 10. пины (система СТРАНИЦЫ, Y↓, смещение от якоря) ---
         pins: List[Pin] = []
         for p in pins_raw:
             x_lib = float(p.get("x_mm", 0.0))
@@ -424,7 +569,6 @@ class Component:
         comp._warn_duplicate_pin_positions()
 
         return comp
-
 
     def __post_init__(self) -> None:
         """Валидация инвариантов компонента при создании.

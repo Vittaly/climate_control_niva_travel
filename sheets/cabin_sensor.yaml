@@ -1,5 +1,3 @@
-page_name: SEN_CABIN
-file: cabin_sensor.kicad_sch
 functional_purpose: |
   Модуль измерения температуры воздуха в салоне и управления
   мини-вентилятором продувки датчика.
@@ -16,9 +14,10 @@ functional_purpose: |
       защищая Q2 от индуктивного выброса при выключении.
 
   В SPICE:
-    * RT1 — параметризованный инстанс NTC_10K_3435 (см.
-      main.yaml.spice.component_models.Thermistor_NTC),
-      температура задаётся через overrides сценария;
+    * RT1 — параметризованный инстанс NTC_10K_3435 (subckt
+      в ntc_models.lib), температура задаётся через overrides;
+    * D3 — primitive: D с inline .model D_1N4148;
+    * Q2 — primitive: M с inline .model AO3400A (NMOS LEVEL=3);
     * вентилятор и R24 подаются в стенде сценария —
       они физически на других листах (вентилятор — внешний,
       R24 — на UI).
@@ -44,10 +43,13 @@ component_types:
     value: 1N4148W
     fields: {}
     spice:
-      model: D_1N4148
-      description: "Малосигнальный кремниевый диод 100В/300мА"
+      description: |
+        Малосигнальный кремниевый диод 100В / 300мА.
+        Распиновка Device:D: pin 1 = K (катод), pin 2 = A (анод).
+      primitive: D
+      model_def: ".model D_1N4148 D(IS=2.52e-9 N=1.752 RS=0.568 CJO=4p BV=100)"
 
-  TYPE_CONN01X02_ВНУТРPКОННЕКТОРВЕНТИЛЯТОРАПРОДУВКИ(2П,XH):
+  TYPE_CONN01X02:
     symbol: Connector_Generic:Conn_01x02
     footprint: Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical
     value: Внутр. коннектор вентилятора продувки (2п, XH)
@@ -59,53 +61,56 @@ component_types:
     value: AO3400
     fields: {}
     spice:
-      model: SW_GP
       description: |
-        N-канальный MOSFET логического уровня 30В/5.7А.
-        Rds_on ≈ 30 мОм при Vgs = 4.5В. В модели — упрощённый
-        ключ SW_GP (Ron=0.1 Ом), достаточный для проверки
-        вкл/выкл.
+        N-MOSFET логического уровня 30В/5.7А, Rds_on ≈ 30 мОм.
+        Ключ нижнего плеча вентилятора продувки салона.
+        Распиновка Transistor_FET:AO3400A:
+          pin 1 = G, pin 2 = S, pin 3 = D.
+        Узлы берутся по pinfunction D/G/S, nodes не нужны.
+      primitive: M
+      model_def: ".model AO3400A NMOS(LEVEL=3 VTO=1.4 KP=20 RS=0.02 RD=0.02 LAMBDA=0.02)"
+      bulk: S
 
   TYPE_R_1K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 1k
-    fields:
-      Power: 0.1W
-      Tolerance: 1%
-    spice:
-      model: R
+    fields: { Power: 0.1W, Tolerance: 1% }
 
   TYPE_R_10K:
     symbol: Device:R
     footprint: Resistor_SMD:R_0603_1608Metric
     value: 10k
-    fields:
-      Power: 0.1W
-      Tolerance: 1%
-    spice:
-      model: R
+    fields: { Power: 0.1W, Tolerance: 1% }
 
   TYPE_THERMISTORNTC_10K:
     symbol: Device:Thermistor_NTC
     footprint: Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal
     value: 10k
-    fields:
-      Power: 0.1W
-      Tolerance: 1%
+    fields: { Power: 0.1W, Tolerance: 1% }
     spice:
-      model: Thermistor_NTC
       description: |
-        NTC 10к B3435, длинные ножки, в трубе продувки.
-        Модель NTC_10K_3435 из ntc_models.lib.
-        Температура задаётся через overrides сценария.
+        NTC 10к B3435. R(T) = 10000 · exp(3435 · (1/(273.15+T) − 1/298.15)).
+        R25 и BETA зафиксированы внутри .subckt в ntc_models.lib.
+        T задаётся сценарием; по умолчанию 25°C — для сценариев,
+        где NTC не проверяется.
+        Subckt NTC_10K_3435 A B: узлы задаются явно (порядок портов
+        subckt не выводится из символа).
+      include: ntc_models.lib
+      subckt: NTC_10K_3435
+      nodes:
+        A: { pin: "1" }
+        B: { pin: "2" }
+      required_params:
+        - { name: T, unit: "°C", default: 25,
+            description: "температура термистора" }
 
 components:
   D3:
     type: TYPE_D_1N4148W
     description: "Обратный диод вентилятора продувки"
   J5:
-    type: TYPE_CONN01X02_ВНУТРPКОННЕКТОРВЕНТИЛЯТОРАПРОДУВКИ(2П,XH)
+    type: TYPE_CONN01X02
     description: "Внутренний коннектор вентилятора продувки (2п, XH)"
   Q2:
     type: TYPE_QNMOS_AO3400
@@ -134,8 +139,8 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: J5, pin: '1' }
-    - { component: D3, pin: '2' }
+    - { component: J5, pin: '1' }              # Pin_1 — автоген, номера достаточно
+    - { component: D3, pinfunction: 'K' }      # катод на +12В
 
   GND:
     name: GND
@@ -150,9 +155,9 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: Q2,  pin: '3' }
-    - { component: R17, pin: '2' }
-    - { component: RT1, pin: '2' }
+    - { component: Q2,  pinfunction: 'S' }     # исток Q2 на земле
+    - { component: R17, pin: '2' }             # Device:R — без pinfunction
+    - { component: RT1, pin: '2' }             # Thermistor_NTC — без pinfunction
 
   NTC_CABIN:
     name: NTC_CABIN
@@ -198,7 +203,7 @@ nets:
         parasitic_l_h: 10n
     nodes:
     - { component: R16, pin: '2' }
-    - { component: Q2,  pin: '1' }
+    - { component: Q2,  pinfunction: 'G' }     # затвор
     - { component: R17, pin: '1' }
 
   SENS_FAN_SW:
@@ -214,9 +219,9 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: Q2, pin: '2' }
-    - { component: J5, pin: '2' }
-    - { component: D3, pin: '1' }
+    - { component: Q2, pinfunction: 'D' }      # сток на нагрузке
+    - { component: J5, pin: '2' }              # Pin_2 — номера достаточно
+    - { component: D3, pinfunction: 'A' }      # анод на коммутируемой линии
 
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
@@ -231,8 +236,7 @@ nets:
 #   - R_PU — верхнее плечо делителя R24 (10к), физически на UI.
 #
 # Температура NTC передаётся через overrides на компонент RT1.
-# Генератор .cir превращает это в .param T_NTC = <значение>
-# и пробрасывает в .sub.
+# Генератор .cir превращает это в RT1_T=<значение> в Xcabin_sensor.
 #
 # Расчёт NTC:
 #   R(T) = 10000 · exp(3435 · (1/(273.15+T) − 1/298.15))
@@ -249,6 +253,9 @@ scenarios:
       M_FAN_CTL = 3.3В → Q2 открыт, SENS_FAN_SW прижат к GND.
       Через вентилятор (R_FAN = 100 Ом) идёт ток ~144 мА.
     analysis: op
+    overrides:
+      RT1:
+        T: 25         # нейтрально, NTC в этом сценарии не проверяется
     deck:
       - source:
           ref: V1
@@ -283,6 +290,9 @@ scenarios:
       к VCC_12V через обмотку вентилятора (R_FAN = 100 Ом),
       ток через вентилятор ≈ 0.
     analysis: op
+    overrides:
+      RT1:
+        T: 25         # нейтрально, NTC в этом сценарии не проверяется
     deck:
       - source:
           ref: V1

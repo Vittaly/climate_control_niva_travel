@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/backlight.kicad_sch")
-		(date "2026-09-19T11:38:03")
+		(date "2026-09-24T23:13:15")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
@@ -56,7 +56,7 @@
 	(components
 		(comp
 			(ref "LED11")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -99,7 +99,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3502448a-1341-4a1d-8866-dfa064f8fd17")
+			(tstamps "e018153c-171c-44d6-9de9-4f795b2fed7f")
 			(units
 				(unit
 					(name "A")
@@ -116,7 +116,7 @@
 		)
 		(comp
 			(ref "LED12")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -159,7 +159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d02abe90-ce64-4af3-8660-4667517f97cb")
+			(tstamps "fa6f22a2-272f-4a3f-9a6e-0890ae8fba99")
 			(units
 				(unit
 					(name "A")
@@ -176,7 +176,7 @@
 		)
 		(comp
 			(ref "LED13")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -219,7 +219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "45ce7a9a-17ad-40fb-afe9-f0ce35ea775a")
+			(tstamps "fdcb3ae6-ff39-4f3d-be6e-8da7fb5959df")
 			(units
 				(unit
 					(name "A")
@@ -236,7 +236,7 @@
 		)
 		(comp
 			(ref "LED21")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -279,7 +279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "63751113-54b0-4d3b-8ca2-2085f62eee4a")
+			(tstamps "cf14c3a0-c5d2-4c11-a20f-e59b5ab63413")
 			(units
 				(unit
 					(name "A")
@@ -296,7 +296,7 @@
 		)
 		(comp
 			(ref "LED22")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -339,7 +339,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "550db9b0-e038-420e-ae62-51cd0a023738")
+			(tstamps "ac2a3d11-751c-4701-8f17-deb38b20b3e5")
 			(units
 				(unit
 					(name "A")
@@ -356,7 +356,7 @@
 		)
 		(comp
 			(ref "LED23")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -399,7 +399,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "c78083c0-23b3-4719-8634-f30d001d91b4")
+			(tstamps "2d60d191-c454-4748-9ff3-3a20696018d2")
 			(units
 				(unit
 					(name "A")
@@ -416,7 +416,7 @@
 		)
 		(comp
 			(ref "LED31")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -459,7 +459,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "232fcd1f-cfb2-4a06-b45a-f61e8805e946")
+			(tstamps "62b01924-3d1c-4896-be23-c856718bac5a")
 			(units
 				(unit
 					(name "A")
@@ -476,7 +476,7 @@
 		)
 		(comp
 			(ref "LED32")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -519,7 +519,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "411f8f86-3825-4483-b48b-e961a8e5b5d0")
+			(tstamps "e690ee8c-fa91-4dc7-aa90-5a28d63f0fec")
 			(units
 				(unit
 					(name "A")
@@ -536,7 +536,7 @@
 		)
 		(comp
 			(ref "LED33")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -579,7 +579,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6748dbfc-7d6e-48c7-a365-1e0882a4c77a")
+			(tstamps "a47da80c-cfe4-4b8c-a95f-031c102ca8f5")
 			(units
 				(unit
 					(name "A")
@@ -596,7 +596,7 @@
 		)
 		(comp
 			(ref "LED41")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -639,7 +639,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "3c6ac7c1-cfa5-40eb-98e1-de052d021d80")
+			(tstamps "47d06e79-4b52-4e26-a6d8-12f04a7f0825")
 			(units
 				(unit
 					(name "A")
@@ -656,7 +656,7 @@
 		)
 		(comp
 			(ref "LED42")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -699,7 +699,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "1c16a3d2-bd1e-43f6-8903-49ffb19a52b7")
+			(tstamps "72fbe48f-f0d4-484d-8e43-eea3e01fe356")
 			(units
 				(unit
 					(name "A")
@@ -716,7 +716,7 @@
 		)
 		(comp
 			(ref "LED43")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -759,7 +759,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "affdb042-017d-4912-b328-9ac57fd7443d")
+			(tstamps "edb1a5ec-729d-449c-8bcd-04101f9bb54f")
 			(units
 				(unit
 					(name "A")
@@ -776,7 +776,7 @@
 		)
 		(comp
 			(ref "LED51")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -819,7 +819,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "66b5b8e7-ca35-420a-96dd-a651ac748510")
+			(tstamps "0e8a818d-c4b0-48da-b963-da6e8b444a48")
 			(units
 				(unit
 					(name "A")
@@ -836,7 +836,7 @@
 		)
 		(comp
 			(ref "LED52")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -879,7 +879,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5b5bc4b0-b482-4748-8051-71f14d1479bf")
+			(tstamps "766b8c6f-d97e-4285-9a5b-cc46d406ec6f")
 			(units
 				(unit
 					(name "A")
@@ -896,7 +896,7 @@
 		)
 		(comp
 			(ref "LED53")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -939,7 +939,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "c2704726-54a3-400a-9ae6-e511b747e13a")
+			(tstamps "e0784057-071f-42a7-816b-5ecd844c77a7")
 			(units
 				(unit
 					(name "A")
@@ -956,7 +956,7 @@
 		)
 		(comp
 			(ref "LED61")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -999,7 +999,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "097ce33b-42d4-47d3-8b74-1e1fc3e1be0f")
+			(tstamps "989f597d-5019-47a3-987a-0ca240bbce54")
 			(units
 				(unit
 					(name "A")
@@ -1016,7 +1016,7 @@
 		)
 		(comp
 			(ref "LED62")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1059,7 +1059,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ad05f513-3da1-4052-9910-522d0e5df237")
+			(tstamps "5479ab90-f91b-4954-8fb1-91087267dc5d")
 			(units
 				(unit
 					(name "A")
@@ -1076,7 +1076,7 @@
 		)
 		(comp
 			(ref "LED63")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1119,7 +1119,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4de1d841-6698-416b-878c-75a514e22189")
+			(tstamps "d0b856ac-2438-4ef4-9b7c-4914b080b734")
 			(units
 				(unit
 					(name "A")
@@ -1136,7 +1136,7 @@
 		)
 		(comp
 			(ref "LED71")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1179,7 +1179,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6793473c-0940-44ea-b9ad-31cee65a2fa7")
+			(tstamps "c32a50cc-f707-4898-8697-f3057a183d24")
 			(units
 				(unit
 					(name "A")
@@ -1196,7 +1196,7 @@
 		)
 		(comp
 			(ref "LED72")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1239,7 +1239,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "08afca5f-7f0e-4d5e-9583-6746dca63d0c")
+			(tstamps "547a45b1-63ed-484e-ae61-19e8fee1e455")
 			(units
 				(unit
 					(name "A")
@@ -1256,7 +1256,7 @@
 		)
 		(comp
 			(ref "LED73")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1299,7 +1299,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4b54de86-9f18-4bb7-af34-55689130cb2f")
+			(tstamps "6f2e815c-6681-43c8-931a-74abe66219d9")
 			(units
 				(unit
 					(name "A")
@@ -1316,7 +1316,7 @@
 		)
 		(comp
 			(ref "LED81")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1359,7 +1359,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d84c0def-42fc-431a-a803-89aaa15a9352")
+			(tstamps "6e484746-1f07-46fb-82b9-249114e13171")
 			(units
 				(unit
 					(name "A")
@@ -1376,7 +1376,7 @@
 		)
 		(comp
 			(ref "LED82")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1419,7 +1419,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6beed231-4d9b-4d94-8fe8-940ceeb50a76")
+			(tstamps "e325ba4c-2a2d-423d-b32e-f022d6735787")
 			(units
 				(unit
 					(name "A")
@@ -1436,7 +1436,7 @@
 		)
 		(comp
 			(ref "LED83")
-			(value "Белый SMD 0805")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1479,7 +1479,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5bb4c7a9-bbbc-4702-b43e-bfae0f3627da")
+			(tstamps "e53f9bb4-8c61-48d0-b48a-1aba0a5506b0")
 			(units
 				(unit
 					(name "A")
@@ -1539,7 +1539,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "25e306a6-e143-478b-99bc-993aaabcd2b2")
+			(tstamps "11b0a2bc-45c0-4e82-95fa-849c328de452")
 			(units
 				(unit
 					(name "A")
@@ -1599,7 +1599,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f3cf866c-aadb-42ad-8ed3-2b40dd0aa798")
+			(tstamps "6b2a3df6-35ee-4ff6-92b3-aba4f5aac08f")
 			(units
 				(unit
 					(name "A")
@@ -1659,7 +1659,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "7230dda1-5b0c-4ce0-a1fc-b34e0f791bb0")
+			(tstamps "b4a3558d-3076-44a2-a5f4-4894f4e8b056")
 			(units
 				(unit
 					(name "A")
@@ -1719,7 +1719,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ab17b0e6-1b05-4f0f-a22c-4d9dcffd90c9")
+			(tstamps "da6e48fb-6ab9-4745-9fe5-29971d399569")
 			(units
 				(unit
 					(name "A")
@@ -1779,7 +1779,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "692bd3da-cc94-46ef-afbb-51356ce4470c")
+			(tstamps "690b4566-3926-4776-aa51-bdcd0819194d")
 			(units
 				(unit
 					(name "A")
@@ -1839,7 +1839,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "2f054438-6245-4d14-955a-e912337d3d78")
+			(tstamps "faaa0eaf-1dd1-4664-b561-f874d2bcde1a")
 			(units
 				(unit
 					(name "A")
@@ -1856,7 +1856,7 @@
 		)
 		(comp
 			(ref "LED201")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1899,7 +1899,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "83d2dc11-a17c-491d-9eec-da89fc6b085b")
+			(tstamps "4e875273-7059-49a8-b9bc-da12048e9684")
 			(units
 				(unit
 					(name "A")
@@ -1916,7 +1916,7 @@
 		)
 		(comp
 			(ref "LED202")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -1959,7 +1959,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "4431b7a9-77f7-4324-83f4-44c60d49c41d")
+			(tstamps "882eb6ae-6d25-42c7-aab8-d163c00792c1")
 			(units
 				(unit
 					(name "A")
@@ -1976,7 +1976,7 @@
 		)
 		(comp
 			(ref "LED203")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2019,7 +2019,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "729ac561-2aa2-40c2-92bc-90cfebc5e758")
+			(tstamps "9a266e6f-ec16-4f12-bfcb-0fbcf8e3ba61")
 			(units
 				(unit
 					(name "A")
@@ -2036,7 +2036,7 @@
 		)
 		(comp
 			(ref "LED204")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2079,7 +2079,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d1c0de72-438f-4459-94ff-1829792e620d")
+			(tstamps "63ae84a2-afce-43eb-9223-7e5a685a0726")
 			(units
 				(unit
 					(name "A")
@@ -2096,7 +2096,7 @@
 		)
 		(comp
 			(ref "LED205")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2139,7 +2139,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5f83c791-454b-4945-87ae-7175fed233f3")
+			(tstamps "d4f9e388-10b1-479f-9038-a3d783fc2819")
 			(units
 				(unit
 					(name "A")
@@ -2156,7 +2156,7 @@
 		)
 		(comp
 			(ref "LED206")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2199,7 +2199,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d8460ac7-e08e-4b3a-b3fc-872991e907c1")
+			(tstamps "e099c08e-52aa-4304-ad94-ce3ab80da95a")
 			(units
 				(unit
 					(name "A")
@@ -2216,7 +2216,7 @@
 		)
 		(comp
 			(ref "LED207")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2259,7 +2259,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ecae3d3c-4c41-4df6-8d4f-3398ea3b4839")
+			(tstamps "ab2c893b-1487-4f31-9b6b-90d9a6d49bc8")
 			(units
 				(unit
 					(name "A")
@@ -2276,7 +2276,7 @@
 		)
 		(comp
 			(ref "LED208")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2319,7 +2319,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "31035ab1-bbff-4c0b-be0b-7578b41b1cd4")
+			(tstamps "125bb509-1523-4d3a-972e-546bc72354e8")
 			(units
 				(unit
 					(name "A")
@@ -2336,7 +2336,7 @@
 		)
 		(comp
 			(ref "LED209")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2379,7 +2379,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ba0a931e-240a-4088-bdbd-fe38da67f4c1")
+			(tstamps "8e9ee15b-c286-4a53-86a6-b36957062f89")
 			(units
 				(unit
 					(name "A")
@@ -2396,7 +2396,7 @@
 		)
 		(comp
 			(ref "LED210")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2439,7 +2439,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f1b33b98-fdc3-45d2-b8c2-a5b46e21af3e")
+			(tstamps "2051c606-4d6e-4774-97ee-08e5d1ef1481")
 			(units
 				(unit
 					(name "A")
@@ -2456,7 +2456,7 @@
 		)
 		(comp
 			(ref "LED211")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2499,7 +2499,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5451f355-3cb4-485b-a703-928c9f5dd3c2")
+			(tstamps "6d0130e9-0a07-49b4-8210-f38d51307a1b")
 			(units
 				(unit
 					(name "A")
@@ -2516,7 +2516,7 @@
 		)
 		(comp
 			(ref "LED212")
-			(value "Белый SMD 0603")
+			(value "Белый SMD 1206")
 			(fields
 				(field
 					(name "mirror") "None")
@@ -2559,7 +2559,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "5096d27d-9cfe-4a1e-9ae3-099ce625e2a8")
+			(tstamps "f0aa295a-a547-4fe6-b0db-c16b31db1705")
 			(units
 				(unit
 					(name "A")
@@ -2619,7 +2619,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "f7b793a3-440d-4f00-9944-d6b25b0785cb")
+			(tstamps "b2e4d4c4-6f71-4434-85f2-e28dcc4c6be3")
 			(units
 				(unit
 					(name "A")
@@ -2679,7 +2679,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6bbed45c-f231-4d32-8432-aafe1508c8b3")
+			(tstamps "f96d57c6-8e3d-4451-837e-210b4967dc18")
 			(units
 				(unit
 					(name "A")
@@ -2739,7 +2739,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6e41b256-b770-43d1-b182-6e233c8181fb")
+			(tstamps "ce100a3d-a4ea-4392-b57e-4c571a204902")
 			(units
 				(unit
 					(name "A")
@@ -2799,7 +2799,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "23e8768a-8caf-455b-8632-580d6528b52d")
+			(tstamps "c5de98c7-8a22-4e36-a209-70e152aab33b")
 			(units
 				(unit
 					(name "A")
@@ -2859,7 +2859,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "dc7f20c2-0010-4b79-a09e-7ff52c10977e")
+			(tstamps "59d3530b-d8d2-4bd0-85f0-4a28ec5d5d82")
 			(units
 				(unit
 					(name "A")
@@ -2919,7 +2919,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "d7b2f8b4-7710-4fd1-a7b2-b81538be7ee7")
+			(tstamps "ef47ee5c-98f2-4a47-b974-ed929fe2ec27")
 			(units
 				(unit
 					(name "A")
@@ -2979,7 +2979,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "bb6b9f38-bfeb-4f77-b89d-115d500aa980")
+			(tstamps "6e9e3f23-db6c-4045-bf23-8ebfb1eb4481")
 			(units
 				(unit
 					(name "A")
@@ -3039,7 +3039,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a878bbe1-d2cb-4ba0-83d6-7631bc0327a7")
+			(tstamps "d435dc7b-931a-41ba-8cfa-36ab26ba862d")
 			(units
 				(unit
 					(name "A")
@@ -3099,7 +3099,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "28ca291c-82ad-4006-b084-2ee558ecc50a")
+			(tstamps "b6888c4c-d92c-4385-a7fb-752ec61959fc")
 			(units
 				(unit
 					(name "A")
@@ -3159,7 +3159,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "60d59b7e-2682-4c0c-913b-93770c2c2864")
+			(tstamps "7b013148-4b81-4761-9359-c7e4a77edd8c")
 			(units
 				(unit
 					(name "A")
@@ -3219,7 +3219,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "a267a32e-466b-4fc7-bdb3-756605f549e1")
+			(tstamps "bf7ff462-1ebb-4cdb-acc2-39efb214613a")
 			(units
 				(unit
 					(name "A")
@@ -3279,7 +3279,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "88e7b2e9-d22b-4eec-a76e-163d049993f6")
+			(tstamps "191060be-1456-43d2-b932-132289ffd877")
 			(units
 				(unit
 					(name "A")
@@ -3339,7 +3339,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "832c4daf-de64-4a57-a1bb-1bd5dc772f9b")
+			(tstamps "79d29d42-de79-41d4-83b1-b973a12f3fbe")
 			(units
 				(unit
 					(name "A")
@@ -3399,7 +3399,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "ff4300f7-89e7-454a-b073-ecf1407785f2")
+			(tstamps "5482651b-5648-4c36-8c3b-45ab85dd2e87")
 			(units
 				(unit
 					(name "A")
@@ -3504,86 +3504,86 @@
 			(class "Default")
 			(node
 				(ref "LED103")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED106")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED13")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED203")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED206")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED209")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED212")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED23")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED33")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED43")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED53")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED63")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED73")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED83")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 		)
@@ -3668,8 +3668,8 @@
 			(class "Default")
 			(node
 				(ref "LED101")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -3684,14 +3684,14 @@
 			(class "Default")
 			(node
 				(ref "LED101")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED102")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3701,14 +3701,14 @@
 			(class "Default")
 			(node
 				(ref "LED102")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED103")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3718,8 +3718,8 @@
 			(class "Default")
 			(node
 				(ref "LED104")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -3734,14 +3734,14 @@
 			(class "Default")
 			(node
 				(ref "LED104")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED105")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3751,14 +3751,14 @@
 			(class "Default")
 			(node
 				(ref "LED105")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED106")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3768,8 +3768,8 @@
 			(class "Default")
 			(node
 				(ref "LED201")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -3784,14 +3784,14 @@
 			(class "Default")
 			(node
 				(ref "LED201")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED202")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3801,14 +3801,14 @@
 			(class "Default")
 			(node
 				(ref "LED202")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED203")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3818,8 +3818,8 @@
 			(class "Default")
 			(node
 				(ref "LED204")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -3834,14 +3834,14 @@
 			(class "Default")
 			(node
 				(ref "LED204")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED205")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3851,14 +3851,14 @@
 			(class "Default")
 			(node
 				(ref "LED205")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED206")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3868,8 +3868,8 @@
 			(class "Default")
 			(node
 				(ref "LED207")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -3884,14 +3884,14 @@
 			(class "Default")
 			(node
 				(ref "LED207")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED208")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3901,14 +3901,14 @@
 			(class "Default")
 			(node
 				(ref "LED208")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED209")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3918,8 +3918,8 @@
 			(class "Default")
 			(node
 				(ref "LED210")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -3934,14 +3934,14 @@
 			(class "Default")
 			(node
 				(ref "LED210")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED211")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3951,14 +3951,14 @@
 			(class "Default")
 			(node
 				(ref "LED211")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED212")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -3968,8 +3968,8 @@
 			(class "Default")
 			(node
 				(ref "LED11")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -3984,14 +3984,14 @@
 			(class "Default")
 			(node
 				(ref "LED11")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED12")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4001,14 +4001,14 @@
 			(class "Default")
 			(node
 				(ref "LED12")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED13")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4018,8 +4018,8 @@
 			(class "Default")
 			(node
 				(ref "LED21")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -4034,14 +4034,14 @@
 			(class "Default")
 			(node
 				(ref "LED21")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED22")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4051,14 +4051,14 @@
 			(class "Default")
 			(node
 				(ref "LED22")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED23")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4068,8 +4068,8 @@
 			(class "Default")
 			(node
 				(ref "LED31")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -4084,14 +4084,14 @@
 			(class "Default")
 			(node
 				(ref "LED31")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED32")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4101,14 +4101,14 @@
 			(class "Default")
 			(node
 				(ref "LED32")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED33")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4118,8 +4118,8 @@
 			(class "Default")
 			(node
 				(ref "LED41")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -4134,14 +4134,14 @@
 			(class "Default")
 			(node
 				(ref "LED41")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED42")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4151,14 +4151,14 @@
 			(class "Default")
 			(node
 				(ref "LED42")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED43")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4168,8 +4168,8 @@
 			(class "Default")
 			(node
 				(ref "LED51")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -4184,14 +4184,14 @@
 			(class "Default")
 			(node
 				(ref "LED51")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED52")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4201,14 +4201,14 @@
 			(class "Default")
 			(node
 				(ref "LED52")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED53")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4218,8 +4218,8 @@
 			(class "Default")
 			(node
 				(ref "LED61")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -4234,14 +4234,14 @@
 			(class "Default")
 			(node
 				(ref "LED61")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED62")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4251,14 +4251,14 @@
 			(class "Default")
 			(node
 				(ref "LED62")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED63")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4268,8 +4268,8 @@
 			(class "Default")
 			(node
 				(ref "LED71")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -4284,14 +4284,14 @@
 			(class "Default")
 			(node
 				(ref "LED71")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED72")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4301,14 +4301,14 @@
 			(class "Default")
 			(node
 				(ref "LED72")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED73")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4318,8 +4318,8 @@
 			(class "Default")
 			(node
 				(ref "LED81")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 			(node
@@ -4334,14 +4334,14 @@
 			(class "Default")
 			(node
 				(ref "LED81")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED82")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
@@ -4351,14 +4351,14 @@
 			(class "Default")
 			(node
 				(ref "LED82")
-				(pin "2")
-				(pinfunction "A_2")
+				(pin "1")
+				(pinfunction "K_1")
 				(pintype "passive")
 			)
 			(node
 				(ref "LED83")
-				(pin "1")
-				(pinfunction "K_1")
+				(pin "2")
+				(pinfunction "A_2")
 				(pintype "passive")
 			)
 		)
