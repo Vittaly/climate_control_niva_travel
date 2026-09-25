@@ -47,7 +47,7 @@ from typing import Dict, Iterable, Optional
 import yaml
 
 from component import Component, ComponentLoadError
-from constants import Axis, DEFAULT_GRID_MM, DEFAULT_NET_TYPE, Symbol
+from constants import Axis, DEFAULT_GRID_MM, DEFAULT_NET_TYPE, PathSearch, Symbol
 from kicad_source import KiCadSource
 from logging_setup import ctx, get_logger
 from placer import Placer
@@ -1068,7 +1068,7 @@ class Project:
 
         placer.all_overlaps()
 
-        router = Router.from_placer(placer)
+        router = Router.from_placer(placer, PathSearch.ASTAR )
         wires = router.route_all()
 
         log.info(

@@ -31,6 +31,8 @@ from occupant import ComponentBody, PinCell, WireCell
 # Определение ориентации и endpoint провода в клетке
 # =========================================================
 
+
+
 def _orientations_at(wire, cell: Cell) -> List[WireOrientation]:
     """Ориентации сегментов провода, проходящих через клетку.
 
@@ -41,12 +43,12 @@ def _orientations_at(wire, cell: Cell) -> List[WireOrientation]:
         [DIAGONAL]      — диагональный сегмент;
         [H, V]          — угол (провод поворачивает в этой клетке).
     """
-    orients: List[WireOrientation] = []
+    c, r = cell.col, cell.row
+    result: List[WireOrientation] = []
     for seg in wire.segments():
-        if cell not in seg.cells():
-            continue
-        orients.append(seg.orientation)
-    return orients
+        if seg.contains_cell(c, r):
+            result.append(seg.orientation)
+    return result
 
 
 def _is_endpoint_at(wire, cell: Cell) -> bool:
