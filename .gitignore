@@ -19,8 +19,7 @@ env/
 **/env/
 
 # IDE
-.idea/
-**/.idea/
+
 .vscode/
 **/.vscode/
 *.swp
@@ -47,4 +46,11 @@ dist/
 **/.DS_Store
 Thumbs.db
 **/Thumbs.db
-make_scr/out/debug.log
+make_scr/out/*
+spice/*.net
+routes.txt
+make_scr/__pycache__/*
+
+routes.txt
+.history
+p.out
