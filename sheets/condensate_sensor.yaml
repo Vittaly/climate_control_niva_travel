@@ -17,19 +17,19 @@ functional_purpose: |
     COND_IN_RAW = 5В    → COND_ADC ≈ 3,33В
     COND_IN_RAW = 12В   → COND_ADC ≈ 3,7В (ограничен D28)
 
-# Модели R/C не объявляются: на листе только примитивы SPICE,
-# строятся по part. D28 — primitive: D с inline .model.
+  # Модели R/C не объявляются: на листе только примитивы SPICE,
+  # строятся по part. D28 — primitive: D с inline .model.
 
-ports:
-- net_label: GND
-  type: POWER
-  description: Общий провод (кузов автомобиля)
-- net_label: COND_IN_RAW
-  type: INPUT
-  description: Вход датчика конденсата на стекле (0..5В), J1:21
-- net_label: COND_ADC
-  type: OUTPUT
-  description: Сигнал конденсата после делителя 5В->3,3В на АЦП
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (K, A).
 
 component_types:
   TYPE_C_100NF:
@@ -90,6 +90,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -107,6 +108,7 @@ nets:
     name: COND_IN_RAW
     description: Вход датчика конденсата на стекле (0..5В), J1:21
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -122,6 +124,7 @@ nets:
     name: COND_ADC
     description: Сигнал конденсата после делителя 5В->3,3В на АЦП
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..3.3V

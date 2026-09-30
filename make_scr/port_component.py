@@ -23,19 +23,25 @@
         углом bbox.
     pin.offset_mm — смещение единственного пина от anchor
         (система страницы, Y↓).
+
+Direction → shape/side:
+    Маппинг port_direction → shape и port_direction → side живёт
+    ТОЛЬКО здесь, в _DIRECTION_TO_SHAPE и side_for_direction().
+    Единственная точка входа — create(direction=...): shape и side
+    вычисляются из direction и не могут разойтись.
+    Потребители (project, writer) читают готовые comp.shape / comp.side
+    либо зовут shape_for_direction() напрямую — но не дублируют
+    маппинг у себя.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from component import Component
 from constants import Axis, DEFAULT_GRID_MM, Direction
 from logging_setup import get_logger
 from pin import Pin
-
-if TYPE_CHECKING:
-    pass
 
 log = get_logger(__name__)
 
@@ -47,11 +53,27 @@ class PortComponent(Component):
     Attributes:
         net_name: имя порта = имя сети, к которой он привязан.
         shape:    форма пиктограммы ("input"/"output"/"bidirectional"/...).
+                  Вычисляется из direction в create(); менять вручную
+                  не следует.
         side:     "left" | "right" — сторона листа, куда встаёт порт.
+                  Вычисляется из direction в create(); менять вручную
+                  не следует.
     """
     net_name: str = ""
-    shape: str = "input"
+    shape: str = ""
     side: str = "right"
+
+    # ---- маппинг port_direction → shape hierarchical_label / sheet-pin ----
+    # Единственное место в проекте, где этот маппинг определён.
+    _DIRECTION_TO_SHAPE: ClassVar[dict[str, str]] = {
+        "INPUT":         "input",
+        "OUTPUT":        "output",
+        "BIDIR":         "bidirectional",
+        "BIDIRECTIONAL": "bidirectional",
+        "TRISTATE":      "tri_state",
+        "TRI_STATE":     "tri_state",
+        "PASSIVE":       "passive",
+    }
 
     # ---- габарит метки в клетках (для раскладки и choose_outward_angle) ----
     # При DEFAULT_GRID_MM = 1.27 мм высота строки текста ~ 2 клетки,
@@ -61,6 +83,30 @@ class PortComponent(Component):
     PADDING_CELLS = 2       # пиктограмма + отступ
     V_GAP_CELLS = 1         # зазор по вертикали между соседними портами
     MIN_WIDTH_CELLS = 3     # нижняя граница для коротких имён
+
+    # ---------- direction → shape / side ----------
+
+    @classmethod
+    def shape_for_direction(cls, direction: str) -> str:
+        """port_direction из YAML → shape для KiCad.
+
+        Без дефолта: неизвестное значение — ValueError. Ошибку лучше
+        поймать на загрузке, чем молча получить input и сломанную
+        иерархию.
+        """
+        key = str(direction).upper()
+        if key not in cls._DIRECTION_TO_SHAPE:
+            raise ValueError(
+                f"неизвестный port_direction: {direction!r} "
+                f"(ожидается одно из: "
+                f"{', '.join(sorted(cls._DIRECTION_TO_SHAPE))})"
+            )
+        return cls._DIRECTION_TO_SHAPE[key]
+
+    @classmethod
+    def side_for_direction(cls, direction: str) -> str:
+        """OUTPUT ставится на правый край листа, остальное — на левый."""
+        return "right" if str(direction).upper() == "OUTPUT" else "left"
 
     def __post_init__(self):
         # если net_name не задан — берём name
@@ -116,12 +162,16 @@ class PortComponent(Component):
 
     @classmethod
     def create(cls, designator: str, net_name: str,
-               shape: str = "input", side: str = "right"
-               ) -> "PortComponent":
-        """Создаёт порт без указания символа KiCad.
+               direction: str) -> "PortComponent":
+        """Создаёт порт из port_direction.
 
-        lib_id="" — сигнал «нет symbol в библиотеке». Используется:
-            - в writer.py: рисовать hierarchical_label, не components.add.
+        shape и side вычисляются из direction — рассинхронизация
+        между ними невозможна по построению. lib_id="" — сигнал
+        «нет symbol в библиотеке»: в writer.py это ветка
+        hierarchical_label, не components.add.
+
+        Raises:
+            ValueError: если direction не из _DIRECTION_TO_SHAPE.
         """
         return cls(
             designator=designator,
@@ -132,8 +182,8 @@ class PortComponent(Component):
             fields={},
             sheet=None,
             net_name=net_name,
-            shape=shape,
-            side=side,
+            shape=cls.shape_for_direction(direction),
+            side=cls.side_for_direction(direction),
         )
 
     # ---------- маркеры для writer / stub ----------

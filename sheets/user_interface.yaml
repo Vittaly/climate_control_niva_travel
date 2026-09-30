@@ -45,83 +45,24 @@ functional_purpose: |
     То есть в сети LED_*_A после резистора стоит АНОД,
     в сети LED_*_DRV к пину МК — КАТОД.
 
-ports:
-- net_label: VCC_3V3
-  type: POWER
-  description: Логическое питание +3,3В микроконтроллера и фронт-панели
-- net_label: GND
-  type: POWER
-  description: Общий провод (кузов автомобиля)
-- net_label: BTN_DEFROST_GLASS
-  type: OUTPUT
-  description: 'Кнопка: воздух на стекло'
-- net_label: BTN_FACE
-  type: OUTPUT
-  description: 'Кнопка: воздух в лицо'
-- net_label: BTN_FEET
-  type: OUTPUT
-  description: 'Кнопка: воздух в ноги'
-- net_label: BTN_DRY_GLASS
-  type: OUTPUT
-  description: 'Кнопка: сушка стекла'
-- net_label: BTN_AC
-  type: OUTPUT
-  description: 'Кнопка: кондиционер'
-- net_label: BTN_RECIRC
-  type: OUTPUT
-  description: 'Кнопка: рециркуляция'
-- net_label: LED_DEFROST_GLASS_DRV
-  type: INPUT
-  description: 'Индикатор кнопки: воздух на стекло (активный низкий уровень)'
-- net_label: LED_FACE_DRV
-  type: INPUT
-  description: 'Индикатор кнопки: воздух в лицо (активный низкий уровень)'
-- net_label: LED_FEET_DRV
-  type: INPUT
-  description: 'Индикатор кнопки: воздух в ноги (активный низкий уровень)'
-- net_label: LED_DRY_GLASS_DRV
-  type: INPUT
-  description: 'Индикатор кнопки: сушка стекла (активный низкий уровень)'
-- net_label: LED_AC_DRV
-  type: INPUT
-  description: 'Индикатор кнопки: кондиционер (активный низкий уровень)'
-- net_label: LED_RECIRC_DRV
-  type: INPUT
-  description: 'Индикатор кнопки: рециркуляция (активный низкий уровень)'
-- net_label: TEMP_SET_ADC
-  type: OUTPUT
-  description: АЦП задания температуры (внешний потенциометр, 2-проводное включение)
-- net_label: FAN_SEL_ADC
-  type: OUTPUT
-  description: АЦП скорости вентилятора (кодировка резисторами R25..4 на плате)
-- net_label: GALLET_POS_1
-  type: INPUT
-  description: |
-    Контакт галлетника — позиция 1 скорости.
-    При замыкании на GALLET_COM/общий провод замыкает R25
-    на GND. В остальных положениях — разомкнут.
-- net_label: GALLET_POS_2
-  type: INPUT
-  description: 'Контакт галлетника — позиция 2 скорости'
-- net_label: GALLET_POS_3
-  type: INPUT
-  description: 'Контакт галлетника — позиция 3 скорости'
-- net_label: GALLET_POS_4
-  type: INPUT
-  description: 'Контакт галлетника — позиция 4 скорости'
-- net_label: NTC_CABIN
-  type: INPUT
-  description: Температура воздуха в салоне (NTC на плате в трубе продувки)
-- net_label: ILLUM_IN_RAW
-  type: POWER
-  description: |
-    Аналоговое питание подсветки прибора с выхода внешнего
-    регулятора яркости (диммера), J1:22. Диапазон 1..14,4В.
-    На этом листе используется только для детектора габаритов
-    через делитель R39/R40.
-- net_label: ILLUM_SENSE
-  type: OUTPUT
-  description: Сигнал подсветки после делителя на вход АЦП МК
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+    Направления на этом листе:
+      * INPUT  — питание (VCC_3V3), земля (GND), сигналы,
+                 приходящие извне: управления светодиодами
+                 с МК (LED_*_DRV), контакты галлетника
+                 (GALLET_POS_*), NTC_CABIN, ILLUM_IN_RAW;
+      * OUTPUT — сигналы с кнопок (BTN_*), выходы АЦП
+                 (TEMP_SET_ADC, FAN_SEL_ADC, ILLUM_SENSE).
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (K, A для LED).
 
 component_types:
   TYPE_C_100NF:
@@ -261,6 +202,7 @@ nets:
     name: VCC_3V3
     description: Логическое питание +3,3В микроконтроллера и фронт-панели
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 3.3V
@@ -284,6 +226,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -312,36 +255,42 @@ nets:
     name: BTN_DEFROST_GLASS
     description: 'Кнопка: воздух на стекло'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
     - { component: SW1, pin: '1' }
   BTN_FACE:
     name: BTN_FACE
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
     - { component: SW2, pin: '1' }
   BTN_FEET:
     name: BTN_FEET
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
     - { component: SW3, pin: '1' }
   BTN_DRY_GLASS:
     name: BTN_DRY_GLASS
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
     - { component: SW4, pin: '1' }
   BTN_AC:
     name: BTN_AC
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
     - { component: SW5, pin: '1' }
   BTN_RECIRC:
     name: BTN_RECIRC
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.02A }
     nodes:
     - { component: SW6, pin: '1' }
@@ -360,6 +309,7 @@ nets:
   LED_DEFROST_GLASS_DRV:
     name: LED_DEFROST_GLASS_DRV
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: LED1, pinfunction: 'K' }
@@ -374,6 +324,7 @@ nets:
   LED_FACE_DRV:
     name: LED_FACE_DRV
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: LED2, pinfunction: 'K' }
@@ -388,6 +339,7 @@ nets:
   LED_FEET_DRV:
     name: LED_FEET_DRV
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: LED3, pinfunction: 'K' }
@@ -402,6 +354,7 @@ nets:
   LED_DRY_GLASS_DRV:
     name: LED_DRY_GLASS_DRV
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: LED4, pinfunction: 'K' }
@@ -416,6 +369,7 @@ nets:
   LED_AC_DRV:
     name: LED_AC_DRV
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: LED5, pinfunction: 'K' }
@@ -430,6 +384,7 @@ nets:
   LED_RECIRC_DRV:
     name: LED_RECIRC_DRV
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: LED6, pinfunction: 'K' }
@@ -439,6 +394,7 @@ nets:
     name: TEMP_SET_ADC
     description: АЦП задания температуры (внешний потенциометр)
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: J3,  pin: '1' }
@@ -450,6 +406,7 @@ nets:
     name: GALLET_POS_1
     description: Контакт галлетника — позиция 1 скорости
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,  pin: '2' }
@@ -459,6 +416,7 @@ nets:
     name: GALLET_POS_2
     description: Контакт галлетника — позиция 2 скорости
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,  pin: '3' }
@@ -468,6 +426,7 @@ nets:
     name: GALLET_POS_3
     description: Контакт галлетника — позиция 3 скорости
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,  pin: '4' }
@@ -477,6 +436,7 @@ nets:
     name: GALLET_POS_4
     description: Контакт галлетника — позиция 4 скорости
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: DIGITAL_SIGNAL, voltage_level: 0..3.3V, current_max: 0.001A }
     nodes:
     - { component: J4,  pin: '5' }
@@ -489,6 +449,7 @@ nets:
       R25..4 на плате, замыкаются контактами галлетника на GND.
       Подтяжка R23 (10к) к +3,3В, фильтр C23.
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: R23, pin: '2' }
@@ -502,6 +463,7 @@ nets:
     name: NTC_CABIN
     description: Температура воздуха в салоне (верхнее плечо R24, NTC — на SEN_CABIN)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..3.3V, current_max: 0.005A }
     nodes:
     - { component: R24, pin: '2' }
@@ -515,6 +477,7 @@ nets:
       (J1:22). Диапазон 1..14,4В. Используется только для
       детектора габаритов через делитель R39/R40.
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 1.0..14.4V
@@ -530,6 +493,7 @@ nets:
     name: ILLUM_SENSE
     description: Сигнал подсветки после делителя R39/R40 на вход АЦП МК
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes: { type: ANALOG_SIGNAL, voltage_level: 0..2.6V, current_max: 0.005A }
     nodes:
     - { component: R39, pin: '2' }

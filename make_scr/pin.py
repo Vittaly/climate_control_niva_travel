@@ -49,10 +49,13 @@ class Pin:
         alias_of:   если пин — alias другого пина (тот же пад),
                     ссылка на канонический пин.
     """
+    # ── обязательные (без дефолта) ──
     owner: str
-    number: str
-    name: str
     offset_mm: Tuple[float, float]
+
+    # ── опциональные (с дефолтом) ──
+    number: Optional[str] = None
+    name: Optional[str] = None
     direction: Direction = DEFAULT_DIRECTION
     net_ref: Optional[str] = None
     component: Optional["Component"] = field(default=None, repr=False)
@@ -63,16 +66,38 @@ class Pin:
     def __hash__(self) -> int:
         return hash((self.owner, self.number))
 
+    def __post_init__(self):
+        if not self.number and not self.name:
+            raise ValueError(
+                f"Pin без number и name: owner={self.owner!r} — "
+                f"у пина должен быть хотя бы один идентификатор"
+            )
+
+    @property
+    def identifier(self) -> str:
+        """Идентификатор пина внутри компонента.
+
+        Обычный пин — номер ('42', 'PA13'): KiCad адресует его по
+        number, name — только подпись.
+        Sheet-пин — имя порта ('VCC_12V'): номера у него в KiCad нет,
+        единственный идентификатор — name.
+
+        Всегда возвращает непустую строку при корректной загрузке.
+        Пустой identifier — баг в Component/Pin, который стоит ловить
+        в __post_init__: у пина должен быть хотя бы number или name.
+        """
+        return self.number or self.name or ""
+
     @property
     def local_key(self) -> str:
-        """Локальный ключ пина: "U1:42"."""
-        return f"{self.owner}:{self.number}"
+        """Локальный ключ пина: 'U1:42' или 'X_POWER_SUPPLY:VCC_12V'."""
+        return f"{self.owner}:{self.identifier}"
 
     @property
     def fqn(self) -> str:
         """Полный ключ пина с префиксом страницы."""
         if self.component is not None and self.component.sheet is not None:
-            return f"{self.component.fqn}:{self.number}"
+            return f"{self.component.fqn}:{self.identifier}"
         return self.local_key
 
     # ---------- удобные свойства ----------

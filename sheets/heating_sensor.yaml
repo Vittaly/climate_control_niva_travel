@@ -37,19 +37,17 @@ functional_purpose: |
       Подключается inline в каждом сценарии через
       subckt: { include, subckt, nodes, params }.
 
-ports:
-- net_label: VCC_3V3
-  type: POWER
-  description: Логическое питание +3,3В микроконтроллера и фронт-панели
-- net_label: GND
-  type: POWER
-  description: Общий провод (кузов автомобиля)
-- net_label: NTC_HEAT_W
-  type: OUTPUT
-  description: 'Датчик патрубка отопителя: узел линии на разъёме (J1:19)'
-- net_label: NTC_HEAT
-  type: OUTPUT
-  description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора R26)'
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (для этого листа не нужно —
+                   все компоненты R/C адресуются по номерам пинов).
 
 component_types:
   TYPE_C_100NF:
@@ -84,6 +82,7 @@ nets:
     name: VCC_3V3
     description: Логическое питание +3,3В микроконтроллера и фронт-панели
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 3.3V
@@ -99,6 +98,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -114,6 +114,7 @@ nets:
     name: NTC_HEAT_W
     description: 'Датчик патрубка отопителя: узел линии на разъёме (J1:19)'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..3.3V
@@ -131,6 +132,7 @@ nets:
     name: NTC_HEAT
     description: 'Датчик патрубка отопителя: сигнал на АЦП (после защитного резистора R26)'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..3.3V

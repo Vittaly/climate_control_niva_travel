@@ -4,56 +4,90 @@
 
 Модель идентификации листов:
   * Первоисточник — sheets/<stem>.yaml. Stem = имя файла без .yaml.
-  * Схема листа   — <stem>.kicad_sch (в корне проекта).
-  * Компонент в main.yaml — X_<STEM_UPPER> (одиночный лист)
-                            X_<STEM_UPPER>_<INST> (мульти-инстанс).
+  * Схема листа   — <stem>.kicad_sch (в out/ или в корне проекта).
+  * Компонент в корневом YAML — X_<STEM_UPPER> (одиночный лист)
+                                X_<STEM_UPPER>_<INST> (мульти-инстанс).
   * value_sch у X_* — единственная связь компонента со схемой.
   * Список листов к прогону НЕ хранится отдельно: он выводится как
-    {X_*, встречающиеся в nets} ∪ standalone_sheets.
+    {X_*, встречающиеся в nets} ∪ standalone_sheets ∪ {ROOT_STEM}.
+  * Stem корня совпадает с именем проекта KiCad (и .kicad_sch):
+    climate_control_niva_travel. Имя файла .kicad_sch менять нельзя.
 
 Реестр моделей:
-  * main.yaml:spice.models — модели компонентов корневой страницы
-    (сейчас — STM32F103RCT6) и общие для всего проекта, если такие
-    появятся.
-  * sheets/<stem>.yaml:spice.models — модели компонентов этого листа
-    (DRV8871, MCP2562, NTC_*, BTS141, DC_MOTOR, LED_*, .model диодов).
-  * Каждая модель ссылается на .lib в spice/lib через include:
-    (имя файла, без пути). Путь — общая конвенция скриптов, в YAML
-    не дублируется.
+  * <ROOT_STEM>.yaml:spice.models — модели корневой страницы и общие.
+  * sheets/<stem>.yaml:spice.models — модели компонентов этого листа.
+  * Каждая модель ссылается на .lib в spice/lib через include.
   * component_types[type].spice.model → имя записи в реестре.
 
 MCU-модель:
-  * Электрика кремния — spice/lib/stm32f103rc_helpers.lib (рукописный,
-    проверяется в --check).
+  * Электрика кремния — spice/lib/stm32g071rb_helpers.lib.
   * Per-scenario модель МК — spice/<scenario>_mcu.sub, генерируется
-    модулем mcu_model.py. Вызов происходит из kicad_to_spice.build_cir
-    (шаг 2), не отсюда.
+    модулем mcu_model.py. Вызов — из kicad_to_spice.build_cir.
 
 Пути:
-  * PROJ       — корень проекта (каталог этого файла).
-  * MAIN_YAML  — sheets/main.yaml.
-  * LIB_DIR    — spice/lib, константа. Это знание скрипта о своей
-                 файловой структуре, в main.yaml не декларируется.
+  * PROJ      — корень проекта.
+  * MAIN_YAML — sheets/<ROOT_STEM>.yaml.
+  * LIB_DIR   — spice/lib, константа.
+  * OUT_DIR   — out/, куда Project.save() пишет сгенерированные схемы.
+
+Сверка схемы и YAML:
+
+  Перед сверкой имена компонентов в нетлисте нормализуются в
+  YAML-пространство. Причины:
+    * Multi-instance: kicad-cli при экспорте .kicad_sch, на который
+      ссылаются несколько X_*, подставляет refdes одного из
+      инстансов (наблюдение — последнего по порядку в instances).
+      YAML листа описывает канонические refdes (первого инстанса).
+    * Standalone-экспорт .kicad_sch не различает, от какого
+      родителя он «пришёл»; top-level Reference игнорируется,
+      когда есть блок (instances ...).
+
+  Карта нормализации строится ПО ФАКТИЧЕСКОМУ .kicad_sch, который
+  экспортировался (build_reverse_refdes_maps_from_sch):
+    * для каждого символа читается top-level
+      (property "Reference" "X") и все (reference "Y") из
+      (instances ...);
+    * получается {Y: X} — отображение instance_ref → top_ref;
+    * к нетлисту применяется замена refdes до сверки с YAML.
+
+  Это работает независимо от того, какой именно инстанс выбрал
+  kicad-cli, и не зависит от того, совпадает ли .kicad_sch с
+  текущим YAML. Если схему правили в KiCad GUI и refdes разошлись
+  с YAML — расхождение отразится как «Компоненты только в
+  нетлисте / только в YAML», что и требуется.
+
+  3a. Per-file сверка листьев — для каждого stem, чей YAML НЕ
+      содержит вложенных X_*. kicad-cli при экспорте такого
+      .kicad_sch нечего схлопывать, нетлист соответствует YAML
+      после нормализации refdes.
+
+  3b. Плоская сверка корневой схемы — для листов с вложенными
+      X_*. Строит ожидаемую карту сетей из графа Project
+      (net_map.build_from_project) и сравнивает с плоским
+      нетлистом kicad-cli по РАЗБИЕНИЮ множества пинов — без
+      имён сетей. Имена в плоском нетлисте нестабильны (KiCad
+      переименовывает VCC_12V → /X_FOO/VCC_12V), классы
+      эквивалентности пинов — стабильны.
 
 Шаги:
-  1. Экспорт нетлистов (kicad-cli) для каждого листа.
+  0. Очистка stale * _mcu.sub.
+  1. Экспорт per-file нетлистов (kicad-cli).
   2. Генерация .sub/.cir (kicad_to_spice.py) из нетлиста + YAML.
-     Внутри kicad_to_spice → mcu_model.generate_scenario для
-     сценариев, дёргающих МК.
-  3. Сверка нетлиста и YAML — ОБЯЗАТЕЛЬНЫЙ БЛОКИРУЮЩИЙ ШАГ.
+  3. Сверка — БЛОКИРУЮЩИЙ ШАГ (3a per-file + 3b плоская).
   4. Эмулятор Ngspice (run_tests.py) — только если шаг 3 прошёл.
 
 Запуск:
     python3 run_e2e.py                       # полный цикл
     python3 run_e2e.py --gen                 # только экспорт + генерация
-    python3 run_e2e.py --run                 # только прогон
+    python3 run_e2e.py --run                 # только прогон (3 + 4)
     python3 run_e2e.py --check               # валидация .lib и helpers
-    python3 run_e2e.py --net-check           # только сверка
+    python3 run_e2e.py --net-check           # только сверка (3)
     python3 run_e2e.py --no-net-check        # ОПАСНО: пропустить сверку
-    python3 run_e2e.py --sheet power_supply  # один лист по stem'у
+    python3 run_e2e.py --sheet power_supply  # только один stem
+    python3 run_e2e.py --sheet climate_control_niva_travel   # корень
 
 Код возврата: 0 если все PASS. Иначе:
-  * 1 — расхождение нетлиста и YAML (или ошибка конфигурации);
+  * 1 — расхождение YAML и схемы (или ошибка конфигурации);
   * N — число провалов тестов (если сверка прошла, но тесты упали).
 """
 import glob
@@ -62,20 +96,85 @@ import re
 import subprocess
 import sys
 import yaml
+import contextlib, io
+
+_SUPPRESS = (
+    "pins_unbound count=",
+    "pin_unbound des=",
+    "библиотечный orientation=",
+)
+
+def _emit_stream(stream, text, label=None):
+    tag = f"[{label}] " if label else ""
+    for line in text.splitlines():
+        if any(p in line for p in _SUPPRESS):
+            continue
+        low = line.lower()
+        if "warning" in low:
+            stream.write(f"{tag}WARN: {line}\n")
+        elif "error" in low:
+            stream.write(f"{tag}ERROR: {line}\n")
+        else:
+            stream.write(f"{tag}{line}\n")
+
+def _call_captured(fn, *args, label=None):
+    """Вызвать fn(*args) in-process, перехватив stdout/stderr,
+    и пропустить вывод через тот же emit(), что и run().
+
+    Возвращает (result, error). Если fn выбросил — error непуст,
+    result=None.
+    """
+    buf_out, buf_err = io.StringIO(), io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf_out), \
+             contextlib.redirect_stderr(buf_err):
+            result = fn(*args)
+    except Exception as e:
+        # вывод до исключения всё равно пропускаем через emit
+        _emit_stream(sys.stdout, buf_out.getvalue(), label)
+        _emit_stream(sys.stderr, buf_err.getvalue(), label)
+        return None, e
+    _emit_stream(sys.stdout, buf_out.getvalue(), label)
+    _emit_stream(sys.stderr, buf_err.getvalue(), label)
+    return result, None
 
 PROJ = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(PROJ, "make_scr"))
+from component import _norm_pin_name
+
+
 SHEETS_DIR = os.path.join(PROJ, "sheets")
-MAIN_YAML = os.path.join(SHEETS_DIR, "main.yaml")
 SPICE = os.path.join(PROJ, "spice")
 LIB_DIR = os.path.join(SPICE, "lib")
+OUT_DIR = os.path.join(PROJ, "out")
 PY = sys.executable
 
+
+# ─── Корневая страница ──────────────────────────────────────────────
+ROOT_STEM = "climate_control_niva_travel"
+MAIN_YAML = os.path.join(SHEETS_DIR, ROOT_STEM + ".yaml")
+
 # Рукописные библиотеки, обязательные к наличию независимо от того,
-# упомянуты ли они в spice.models. stm32f103rc_helpers.lib — база
-# для всех <scenario>_mcu.sub, без неё ни один MCU-сценарий не соберётся.
+# упомянуты ли они в spice.models.
 REQUIRED_HELPERS = (
-    "stm32f103rc_helpers.lib",
+    "stm32g071rb_helpers.lib",
 )
+
+
+_PINFUNC_SUFFIX = re.compile(r"_\d+$")
+
+
+def _norm_pinfunc(fn):
+    """Нормализация pinfunction из нетлиста KiCad.
+
+    KiCad 10 добавляет '_<номер>' (срезаем). Затем применяем ту же
+    нормализацию, что и component.pin_by_name: '/', '-', '[', '('.
+    Так нетлист и YAML попадают в одно пространство имён.
+    """
+    if not fn:
+        return fn
+    fn = _PINFUNC_SUFFIX.sub("", fn)
+    return _norm_pin_name(fn)
 
 
 def run(cmd, label=None):
@@ -83,20 +182,14 @@ def run(cmd, label=None):
     r = subprocess.run(cmd, cwd=PROJ, capture_output=True, text=True)
     tag = f"[{label}] " if label else ""
 
-    def emit(stream, text):
-        for line in text.splitlines():
-            low = line.lower()
-            if "warning" in low:
-                stream.write(f"{tag}WARN: {line}\n")
-            elif "error" in low:
-                stream.write(f"{tag}ERROR: {line}\n")
-            else:
-                stream.write(f"{tag}{line}\n")
+
+
+    
 
     if r.stdout:
-        emit(sys.stdout, r.stdout)
+        _emit_stream(sys.stdout, r.stdout)
     if r.stderr:
-        emit(sys.stderr, r.stderr)
+        _emit_stream(sys.stderr, r.stderr)
     return r.returncode
 
 
@@ -109,15 +202,15 @@ def rel(p):
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Резолвер: stem → (yaml, kicad_sch). Единственный в проекте.
+# Резолвер: stem → (yaml, kicad_sch)
 # ─────────────────────────────────────────────────────────────────────
 
 def derive_stems(root):
     """Набор stem'ов к прогону — выводится, а не хранится.
 
-    Иерархические: X_*, встречающиеся в nets, → basename(value_sch)
-                   без расширения .kicad_sch.
-    Standalone:    main.yaml.standalone_sheets (только stem'ы).
+    Всегда включает ROOT_STEM.
+    Иерархические: X_*, встречающиеся в nets, → basename(value_sch).
+    Standalone:    <ROOT_STEM>.yaml:standalone_sheets.
     """
     xs_in_components = {
         c for c, v in (root.get("components") or {}).items()
@@ -142,7 +235,7 @@ def derive_stems(root):
             "nets ссылается на X_*, которых нет в components: "
             + ", ".join(sorted(unknown)))
 
-    stems = set()
+    stems = {ROOT_STEM}
     for xname in xs_in_nets:
         v = root["components"][xname].get("value_sch")
         if not v:
@@ -157,16 +250,38 @@ def derive_stems(root):
 
 
 def resolve_stem(stem):
-    """stem → (yaml_path, sch_path, error|None)."""
+    """stem → (yaml_path, sch_path, error|None).
+
+    Приоритет поиска .kicad_sch: out/ (свежий) → PROJ → SHEETS_DIR.
+    """
+    if stem == ROOT_STEM:
+        if not os.path.exists(MAIN_YAML):
+            return MAIN_YAML, None, f"нет {rel(MAIN_YAML)}"
+        try:
+            root = load_main()
+        except Exception as e:
+            return MAIN_YAML, None, f"не удалось прочитать {rel(MAIN_YAML)}: {e}"
+        sch_name = root.get("file")
+        if not sch_name:
+            return MAIN_YAML, None, "root_page.file не задан в YAML"
+        for base in (OUT_DIR, PROJ):
+            sch = os.path.join(base, sch_name)
+            if os.path.exists(sch):
+                return MAIN_YAML, sch, None
+        return MAIN_YAML, None, f"нет {sch_name} (ни в out/, ни в корне)"
+
     yml = os.path.join(SHEETS_DIR, stem + ".yaml")
     if not os.path.exists(yml):
         return None, None, f"нет {rel(yml)}"
 
-    for sch in (os.path.join(PROJ, stem + ".kicad_sch"),
-                os.path.join(SHEETS_DIR, stem + ".kicad_sch")):
+    for sch in (
+        os.path.join(OUT_DIR, stem + ".kicad_sch"),
+        os.path.join(PROJ, stem + ".kicad_sch"),
+        os.path.join(SHEETS_DIR, stem + ".kicad_sch"),
+    ):
         if os.path.exists(sch):
             return yml, sch, None
-    return yml, None, f"нет {stem}.kicad_sch (ни в корне, ни в sheets/)"
+    return yml, None, f"нет {stem}.kicad_sch"
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -189,35 +304,25 @@ def netlist_ports(netfile):
 
 
 def _models_of(cfg: dict) -> dict:
-    """Реестр моделей из root_page или sheet YAML."""
     return (cfg.get("spice") or {}).get("models") or {}
 
 
 def check_libs():
-    """Проверить наличие всех .lib: spice.models корня + листов + helpers.
-
-    Источники include:
-      * main.yaml:spice.models[*].include — модели корня;
-      * sheets/*.yaml:spice.models[*].include — модели листов;
-      * REQUIRED_HELPERS — рукописные .lib, подключаемые
-        сгенерированными <scenario>_mcu.sub.
-
-    Путь к .lib — LIB_DIR, константа скрипта (spice/lib).
-    """
+    """Проверить наличие всех .lib: spice.models корня + листов + helpers."""
     missing = []
+    root_yaml_name = os.path.basename(MAIN_YAML)
 
-    # 1. Модели корня
     root = load_main()
     for name, model in _models_of(root).items():
         if not isinstance(model, dict):
             continue
         inc = model.get("include")
         if inc and not os.path.exists(os.path.join(LIB_DIR, inc)):
-            missing.append((f"main.yaml:{name}", os.path.join(LIB_DIR, inc)))
+            missing.append((f"{root_yaml_name}:{name}",
+                            os.path.join(LIB_DIR, inc)))
 
-    # 2. Модели листов
     for yml in sorted(glob.glob(os.path.join(SHEETS_DIR, "*.yaml"))):
-        if os.path.basename(yml) == "main.yaml":
+        if os.path.basename(yml) == root_yaml_name:
             continue
         try:
             data = yaml.safe_load(open(yml, encoding="utf-8")) or {}
@@ -231,7 +336,6 @@ def check_libs():
                 missing.append((f"{os.path.basename(yml)}:{name}",
                                 os.path.join(LIB_DIR, inc)))
 
-    # 3. Рукописные helpers
     for name in REQUIRED_HELPERS:
         if not os.path.exists(os.path.join(LIB_DIR, name)):
             missing.append(("helpers", os.path.join(LIB_DIR, name)))
@@ -248,22 +352,27 @@ def check_libs():
 # Очистка stale * _mcu.sub
 # ─────────────────────────────────────────────────────────────────────
 
-def clean_stale_mcu_subs(stems):
-    """Удалить spice/<scenario>_mcu.sub от сценариев, которых больше нет.
+def _sheet_scenarios(stem):
+    if stem == ROOT_STEM:
+        yml = MAIN_YAML
+    else:
+        yml = os.path.join(SHEETS_DIR, stem + ".yaml")
+    if not os.path.exists(yml):
+        return []
+    try:
+        data = yaml.safe_load(open(yml, encoding="utf-8")) or {}
+    except Exception:
+        return []
+    if stem == ROOT_STEM and "root_page" in data:
+        data = data.get("root_page") or {}
+    return data.get("scenarios") or []
 
-    Файл называется по имени сценария (а не stem'а), поэтому его
-    нельзя вывести из stem'ов: переименовали сценарий — старый
-    *_mcu.sub остался и будет подхвачен .INCLUDE, если где-то
-    в .cir сохранилась на него ссылка. Удаляем всё, что не
-    соответствует сценариям, объявленным в YAML сейчас.
-    """
+
+def clean_stale_mcu_subs(stems):
+    """Удалить spice/<scenario>_mcu.sub от сценариев, которых больше нет."""
     valid = set()
     for stem in stems:
-        yml = os.path.join(SHEETS_DIR, stem + ".yaml")
-        if not os.path.exists(yml):
-            continue
-        data = yaml.safe_load(open(yml, encoding="utf-8")) or {}
-        for sc in (data.get("scenarios") or []):
+        for sc in _sheet_scenarios(stem):
             name = sc.get("name")
             if name:
                 valid.add(f"{name}_mcu.sub")
@@ -279,7 +388,64 @@ def clean_stale_mcu_subs(stems):
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Сверка нетлиста и YAML
+# Карта нормализации refdes — из фактического .kicad_sch
+# ─────────────────────────────────────────────────────────────────────
+
+def build_reverse_refdes_maps_from_sch(sch_path: str) -> dict[str, str]:
+    """{instance_ref: top_ref} для одного .kicad_sch.
+
+    Читает файл .kicad_sch. Для каждого символа-экземпляра
+    (symbol (lib_id "...") ...) находит top-level
+    (property "Reference" "X") и все (reference "Y") из блока
+    (instances ...). Возвращает {Y: X} для каждого Y.
+
+    Смысл: kicad-cli при standalone-экспорте .kicad_sch, у которого
+    в символе есть блок (instances ...), подставляет refdes одного
+    из инстансов (наблюдение: последнего в блоке). top-level
+    Reference — то, что записано в файле как «каноническое» имя
+    символа. Сверка приводит нетлист в это пространство.
+
+    Работает по данным файла, а не по данным YAML: если схему
+    правили в KiCad GUI и refdes разошлись с YAML — карта всё равно
+    отражает реальность в файле. Расхождение с YAML тогда видно
+    отдельно как «Компоненты только в нетлисте / только в YAML».
+    """
+    if not sch_path or not os.path.exists(sch_path):
+        return {}
+    try:
+        text = open(sch_path, encoding="utf-8").read()
+    except OSError:
+        return {}
+
+    out: dict[str, str] = {}
+
+    # Символы-экземпляры начинаются с (symbol (lib_id "...") ...
+    # Определения в (lib_symbols ...) начинаются с (symbol "NAME" ...)
+    # без lib_id — их не трогаем.
+    for m in re.finditer(
+        r'\(symbol\s+\(lib_id\s+"[^"]+"\)(.*?)(?=\(symbol\s+\(lib_id|$)',
+        text, re.S,
+    ):
+        block = m.group(1)
+
+        ref_m = re.search(
+            r'\(property\s+"Reference"\s+"([^"]+)"', block,
+        )
+        if not ref_m:
+            continue
+        top = ref_m.group(1)
+
+        for inst_ref in re.findall(
+            r'\(path\s+"[^"]+"\s*\(reference\s+"([^"]+)"\)',
+            block,
+        ):
+            out.setdefault(inst_ref, top)
+
+    return out
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Разбор нетлиста
 # ─────────────────────────────────────────────────────────────────────
 
 def parse_netlist_components(text):
@@ -294,33 +460,11 @@ def parse_netlist_components(text):
     return comps
 
 
-_PINFUNC_SUFFIX = re.compile(r"_\d+$")
-
-
-def _norm_pinfunc(fn):
-    """Нормализует pinfunction из нетлиста KiCad 10.
-
-    KiCad 10 в экспорте нетлиста добавляет к имени вывода суффикс
-    '_<номер>': 'S_2', 'D_3', 'G_1', 'A_2', 'K_1', 'Pin_1_1'.
-    В YAML пользователь пишет имя вывода без суффикса ('S', 'D', ...).
-
-    Срезаем '_\\d+$', чтобы pinfunc_index и сравнение с YAML работали
-    в одном пространстве имён.
-    """
-    if not fn:
-        return fn
-    return _PINFUNC_SUFFIX.sub("", fn)
-
 def parse_netlist_nets(text):
     """{net_name: [(ref, pin, pinfunction_or_None), ...]}.
 
-    pinfunction нормализуется: 'S_2' → 'S', 'D_3' → 'D',
-    'Pin_1_1' → 'Pin_1' (KiCad 10 добавляет '_<pin>' к имени
-    вывода при экспорте).
-
-    Цепи с именем 'unconnected-*' (висящие пины) отбрасываются —
-    они не участвуют в сверке с YAML, потому что в YAML не
-    описываются.
+    pinfunction нормализуется ('S_2' → 'S').
+    Цепи 'unconnected-*' отбрасываются.
     """
     nets = {}
     for m in re.finditer(
@@ -342,13 +486,9 @@ def parse_netlist_nets(text):
         nets[name] = nodes
     return nets
 
-def pinfunc_index(nl_nets):
-    """{(ref, pin_number): pinfunction} — собран из нетлиста.
 
-    Используется для перевода YAML-узла с `pin: 'N'` в канонический
-    вид `(ref, 'fn', <pinfunction>)`, если у этого пина pinfunction
-    известен. Так сравнение YAML и нетлиста идёт в одном пространстве.
-    """
+def pinfunc_index(nl_nets):
+    """{(ref, pin_number): pinfunction} — собран из нетлиста."""
     idx = {}
     for nodes in nl_nets.values():
         for ref, pin, fn in nodes:
@@ -357,7 +497,7 @@ def pinfunc_index(nl_nets):
     return idx
 
 
-def canonical_nl_nets(nl_nets):
+def netlist_nets_canonical(nl_nets):
     """{net_name: {(ref, kind, value)}} из нетлиста.
 
     kind = 'fn'  если pinfunction известен,
@@ -374,69 +514,6 @@ def canonical_nl_nets(nl_nets):
         out[name] = keys
     return out
 
-def check_netlist_vs_yaml(yml_path, netfile):
-    sheet_yaml = yaml.safe_load(open(yml_path, encoding="utf-8")) or {}
-    text = open(netfile, encoding="utf-8").read()
-
-    nl_comps = parse_netlist_components(text)
-    nl_nets_raw = parse_netlist_nets(text)
-    pf_idx = pinfunc_index(nl_nets_raw)
-    nl_nets = netlist_nets_canonical(nl_nets_raw)
-    yml_nets_map = yaml_nets(sheet_yaml, pf_idx)
-
-    yml_refs = yaml_component_refs(sheet_yaml)
-    diffs = []
-
-    nl_refs = {r for r, c in nl_comps.items()
-               if not r.startswith("X_")
-               and c.get("part") != "Hierarchical_Sheet"}
-    if nl_refs - yml_refs:
-        diffs.append("  Компоненты только в нетлисте: " +
-                     ", ".join(sorted(nl_refs - yml_refs)))
-    if yml_refs - nl_refs:
-        diffs.append("  Компоненты только в YAML: " +
-                     ", ".join(sorted(yml_refs - nl_refs)))
-
-    # Фильтр X_* — по (ref) в кортеже
-    def strip_x(s):
-        return {k for k in s if not k[0].startswith("X_")}
-
-    nl_names = set(nl_nets.keys())
-    yml_names = set(yml_nets_map.keys())
-    if nl_names - yml_names:
-        diffs.append("  Сети только в нетлисте: " +
-                     ", ".join(sorted(nl_names - yml_names)))
-    if yml_names - nl_names:
-        diffs.append("  Сети только в YAML: " +
-                     ", ".join(sorted(yml_names - nl_names)))
-
-    def fmt(key):
-        ref, kind, val = key
-        return f"{ref}.{kind}={val}"
-
-    for name in sorted(nl_names & yml_names):
-        nl_set = strip_x(nl_nets[name])
-        yml_set = strip_x(yml_nets_map[name])
-        if nl_set == yml_set:
-            continue
-        for k in sorted(nl_set - yml_set):
-            diffs.append(f"  Сеть {name}: в YAML нет {fmt(k)}")
-        for k in sorted(yml_set - nl_set):
-            diffs.append(f"  Сеть {name}: в нетлисте нет {fmt(k)}")
-
-    return diffs
-
-def netlist_nets_canonical(nl_nets):
-    out = {}
-    for name, nodes in nl_nets.items():
-        keys = set()
-        for ref, pin, fn in nodes:
-            if fn:
-                keys.add((ref, "fn", fn))
-            else:
-                keys.add((ref, "pin", pin))
-        out[name] = keys
-    return out
 
 def yaml_component_refs(sheet_yaml):
     refs = set()
@@ -454,10 +531,7 @@ def yaml_nets(sheet_yaml, pinfunc_idx=None):
 
     Приоритет тот же, что в _bind_node: pin, иначе pinfunction.
     Если у узла стоит pin и для (ref, pin) известен pinfunction —
-    ключ нормализуется в (ref, 'fn', pinfunction), чтобы сравнение
-    с нетлистом было в одном пространстве.
-
-    pinfunc_idx — {(ref, pin): pinfunction} из нетлиста.
+    ключ нормализуется в (ref, 'fn', pinfunction).
     """
     idx = pinfunc_idx or {}
     out = {}
@@ -482,42 +556,79 @@ def yaml_nets(sheet_yaml, pinfunc_idx=None):
     return out
 
 
-def check_netlist_vs_yaml(yml_path, netfile):
-    """Сверка одного листа. yml_path уже известен — не ищем.
+# ─────────────────────────────────────────────────────────────────────
+# Сверка нетлиста и YAML (один лист)
+# ─────────────────────────────────────────────────────────────────────
+
+def _unwrap_root(sheet_yaml_raw):
+    """Если в YAML есть root_page — это корневая страница."""
+    if isinstance(sheet_yaml_raw, dict) and "root_page" in sheet_yaml_raw:
+        return (sheet_yaml_raw.get("root_page") or {}, True)
+    return (sheet_yaml_raw, False)
+
+
+def check_netlist_vs_yaml(yml_path, netfile, is_root=None, reverse_map=None):
+    """Сверка одного листа.
 
     YAML и нетлист нормализуются в одно пространство ключей:
         (ref, 'fn', pinfunction)  если pinfunction известен,
         (ref, 'pin', number)      иначе.
 
-    Это позволяет сравнивать узлы, заданные в YAML как pin, с
-    узлами в нетлисте, где есть pinfunction (и наоборот) — без
-    ложных срабатываний на «в YAML нет Q2.2» при записи
-    pinfunction: 'S'.
-    """
-    sheet_yaml = yaml.safe_load(open(yml_path, encoding="utf-8")) or {}
-    text = open(netfile, encoding="utf-8").read()
+    reverse_map — {instance_ref: top_ref}, применяется к refdes
+    нетлиста перед сверкой. Для multi-instance листьев: kicad-cli
+    подставляет refdes одного из инстансов, а YAML описывает
+    канонические. Карта строится по .kicad_sch (см.
+    build_reverse_refdes_maps_from_sch), а не по YAML — нормализация
+    отражает реальность в файле.
 
+    Для корневой страницы (is_root=True) проверка асимметрична:
+    YAML ⊆ нетлист. Плоский нетлист корня содержит компоненты всех
+    подлистов; требовать обратного включения нельзя. Плоская сверка
+    через net_map (шаг 3b) даёт полную картину по разбиению сетей.
+    """
+    sheet_yaml_raw = yaml.safe_load(open(yml_path, encoding="utf-8")) or {}
+    sheet_yaml, auto_root = _unwrap_root(sheet_yaml_raw)
+    if is_root is None:
+        is_root = auto_root
+
+    text = open(netfile, encoding="utf-8").read()
     nl_comps = parse_netlist_components(text)
     nl_nets_raw = parse_netlist_nets(text)
-    pf_idx = pinfunc_index(nl_nets_raw)
-    nl_nets = canonical_nl_nets(nl_nets_raw)
-    yml_nets_map = yaml_nets(sheet_yaml, pf_idx)
 
+    # Нормализация refdes нетлиста в пространство файла .kicad_sch.
+    if reverse_map:
+        def _m(r):
+            return reverse_map.get(r, r)
+
+        nl_comps = {_m(r): c for r, c in nl_comps.items()}
+        nl_nets_raw = {
+            net: [(_m(r), pin, fn) for r, pin, fn in nodes]
+            for net, nodes in nl_nets_raw.items()
+        }
+
+    pf_idx = pinfunc_index(nl_nets_raw)
+    nl_nets = netlist_nets_canonical(nl_nets_raw)
+    yml_nets_map = yaml_nets(sheet_yaml, pf_idx)
     yml_refs = yaml_component_refs(sheet_yaml)
+
     diffs = []
 
     nl_refs = {r for r, c in nl_comps.items()
                if not r.startswith("X_")
                and c.get("part") != "Hierarchical_Sheet"}
-    if nl_refs - yml_refs:
-        diffs.append("  Компоненты только в нетлисте: " +
-                     ", ".join(sorted(nl_refs - yml_refs)))
-    if yml_refs - nl_refs:
-        diffs.append("  Компоненты только в YAML: " +
-                     ", ".join(sorted(yml_refs - nl_refs)))
 
-    def strip_x(s):
-        return {k for k in s if not k[0].startswith("X_")}
+    if is_root:
+        if yml_refs - nl_refs:
+            diffs.append(
+                "  Компоненты в YAML, отсутствующие в нетлисте: " +
+                ", ".join(sorted(yml_refs - nl_refs)))
+    else:
+        if nl_refs - yml_refs:
+            diffs.append("  Компоненты только в нетлисте: " +
+                         ", ".join(sorted(nl_refs - yml_refs)))
+        if yml_refs - nl_refs:
+            diffs.append("  Компоненты только в YAML: " +
+                         ", ".join(sorted(yml_refs - nl_refs)))
 
     def fmt(key):
         ref, kind, val = key
@@ -525,24 +636,153 @@ def check_netlist_vs_yaml(yml_path, netfile):
 
     nl_names = set(nl_nets.keys())
     yml_names = set(yml_nets_map.keys())
-    if nl_names - yml_names:
-        diffs.append("  Сети только в нетлисте: " +
-                     ", ".join(sorted(nl_names - yml_names)))
-    if yml_names - nl_names:
-        diffs.append("  Сети только в YAML: " +
-                     ", ".join(sorted(yml_names - nl_names)))
+
+    if is_root:
+        if yml_names - nl_names:
+            diffs.append(
+                "  Сети в YAML, отсутствующие в нетлисте: " +
+                ", ".join(sorted(yml_names - nl_names)))
+    else:
+        if nl_names - yml_names:
+            diffs.append("  Сети только в нетлисте: " +
+                         ", ".join(sorted(nl_names - yml_names)))
+        if yml_names - nl_names:
+            diffs.append("  Сети только в YAML: " +
+                         ", ".join(sorted(yml_names - nl_names)))
 
     for name in sorted(nl_names & yml_names):
-        nl_set = strip_x(nl_nets[name])
-        yml_set = strip_x(yml_nets_map[name])
-        if nl_set == yml_set:
-            continue
-        for k in sorted(nl_set - yml_set):
-            diffs.append(f"  Сеть {name}: в YAML нет {fmt(k)}")
-        for k in sorted(yml_set - nl_set):
-            diffs.append(f"  Сеть {name}: в нетлисте нет {fmt(k)}")
+        nl_set = nl_nets[name]
+        yml_set = yml_nets_map[name]
+        if is_root:
+            for k in sorted(yml_set - nl_set):
+                diffs.append(f"  Сеть {name}: в нетлисте нет {fmt(k)}")
+        else:
+            if nl_set == yml_set:
+                continue
+            for k in sorted(nl_set - yml_set):
+                diffs.append(f"  Сеть {name}: в YAML нет {fmt(k)}")
+            for k in sorted(yml_set - nl_set):
+                diffs.append(f"  Сеть {name}: в нетлисте нет {fmt(k)}")
 
     return diffs
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Применимость per-file сверки
+# ─────────────────────────────────────────────────────────────────────
+
+def sheet_has_children(stem: str) -> bool:
+    """Есть ли в листе X_* (значит, это не лист дерева)."""
+    yml = os.path.join(SHEETS_DIR, stem + ".yaml")
+    if not os.path.exists(yml):
+        return False
+    try:
+        data = yaml.safe_load(open(yml, encoding="utf-8")) or {}
+    except Exception:
+        return False
+
+    # Корневой YAML обёрнут в root_page:. Разворачиваем перед
+    # чтением components, иначе для корня получим пусто и он
+    # ошибочно попадёт в per-file сверку.
+    if isinstance(data, dict) and "root_page" in data:
+        data = data.get("root_page") or {}
+
+    for cdef in (data.get("components") or {}).values():
+        if cdef.get("symbol") == "Core:Hierarchical_Sheet":
+            return True
+    return False
+
+
+def per_file_applicable(stem: str) -> tuple[bool, str]:
+    """Можно ли проверять stem автономным нетлистом.
+
+    Нельзя только для узлов с вложенными X_*: kicad-cli схлопнет
+    поддерево, и нетлист перестанет соответствовать YAML листа.
+    Multi-instance не мешает — refdes нормализуются через карту из
+    фактического .kicad_sch.
+    """
+    if sheet_has_children(stem):
+        return False, "есть вложенные X_*"
+    return True, ""
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Плоская сверка корня
+# ─────────────────────────────────────────────────────────────────────
+
+def run_flat_check():
+    """Плоская сверка корневой схемы.
+
+    Строит ожидаемую карту сетей из графа YAML
+    (net_map.build_from_project) и сравнивает с плоским нетлистом
+    kicad-cli. Сверка идёт по РАЗБИЕНИЮ множества пинов — без имён
+    сетей; KiCad переименовывает сети, но классы эквивалентности
+    пинов сохраняет.
+
+    Project загружается здесь же: он нужен только для этой сверки,
+    и per-file (3a) его не использует.
+
+    Возвращает (ok: bool, diffs: list[str], error: str | None).
+    """
+    try:
+        from project import Project, ProjectLoadError
+        from net_map import (
+            build_from_project, diff_against_kicad,
+            parse_kicad_netlist_to_pinrefs,
+        )
+    except ImportError as e:
+        return False, [], f"не удалось импортировать net_map/project: {e}"
+
+    try:
+        _buf = io.StringIO()
+        with contextlib.redirect_stdout(_buf), \
+            contextlib.redirect_stderr(_buf):
+            proj = Project(MAIN_YAML).load()
+            _emit_stream(sys.stdout, _buf.getvalue(), label="root-flat")
+    except ProjectLoadError as e:
+        _emit_stream(sys.stdout, _buf.getvalue(), label="root-flat")
+        return False, [], f"Project.load() упал: {e}"
+    except Exception as e:
+        _emit_stream(sys.stdout, _buf.getvalue(), label="root-flat")
+        return False, [], f"Project.load() упал неожиданно: {e}"
+
+    try:
+        _buf = io.StringIO()
+        with contextlib.redirect_stdout(_buf), \
+            contextlib.redirect_stderr(_buf):
+            expected = build_from_project(proj)
+        _emit_stream(sys.stdout, _buf.getvalue(), label="root-flat")
+    except Exception as e:
+        _emit_stream(sys.stdout, _buf.getvalue(), label="root-flat")
+        return False, [], f"build_from_project упал: {e}"
+
+    root_yaml = load_main()
+    root_file = root_yaml.get("file") or (ROOT_STEM + ".kicad_sch")
+
+    root_sch = None
+    for base in (OUT_DIR, PROJ):
+        cand = os.path.join(base, root_file)
+        if os.path.exists(cand):
+            root_sch = cand
+            break
+    if root_sch is None:
+        return False, [], f"нет {root_file} (ни в out/, ни в корне)"
+
+    flat_net = os.path.join(SPICE, ROOT_STEM + "_flat.net")
+    rc = run(["kicad-cli", "sch", "export", "netlist",
+              "--output", flat_net, root_sch], label="root-flat")
+    if rc != 0:
+        return False, [], f"kicad-cli вернул {rc}"
+    if not os.path.exists(flat_net):
+        return False, [], f"нет {rel(flat_net)} после экспорта"
+
+    try:
+        actual = parse_kicad_netlist_to_pinrefs(flat_net)
+    except Exception as e:
+        return False, [], f"не разобрал плоский нетлист: {e}"
+
+    diffs = diff_against_kicad(expected, actual)
+    return (not diffs), diffs, None
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -588,12 +828,12 @@ def main():
         ok, _ = check_libs()
         return 0 if ok else 1
 
-    # ─── Список stem'ов: выводится, а не хранится ──────────────────
     try:
         root = load_main()
         stems = derive_stems(root)
     except (ValueError, KeyError) as e:
-        print("!! Ошибка конфигурации main.yaml: %s" % e)
+        print("!! Ошибка конфигурации %s: %s"
+              % (os.path.basename(MAIN_YAML), e))
         return 1
 
     if opts["sheet"]:
@@ -604,9 +844,6 @@ def main():
         stems = [opts["sheet"]]
 
     # ─── Шаг 0: очистка stale MCU-моделей ──────────────────────────
-    # Только когда мы собираемся генерировать (полный цикл или --gen).
-    # В --run .cir уже собраны, и удалять файлы, на которые они
-    # ссылаются, нельзя.
     if not opts["run"]:
         print("== 0. Очистка stale * _mcu.sub ==")
         removed = clean_stale_mcu_subs(stems)
@@ -620,12 +857,12 @@ def main():
         for stem in stems:
             yml, sch, err = resolve_stem(stem)
             if err:
-                print("  %-22s %s — пропускаю" % (stem, err))
+                print("  %-32s %s — пропускаю" % (stem, err))
                 continue
             net = os.path.join(SPICE, stem + ".net")
             rc = run(["kicad-cli", "sch", "export", "netlist",
                       "--output", net, sch], label=stem)
-            print("  %-22s sch=%-32s yaml=%-30s rc=%d -> %s"
+            print("  %-32s sch=%-40s yaml=%-40s rc=%d -> %s"
                   % (stem, rel(sch), rel(yml), rc, rel(net)))
             if rc == 0:
                 netfiles[stem] = net
@@ -633,15 +870,15 @@ def main():
         print("== 2. Генерация .sub/.cir (kicad_to_spice.py) ==")
         print("     (внутри — mcu_model.generate_scenario для MCU-сценариев)")
         for stem, net in netfiles.items():
-            yml, _, err = resolve_stem(stem)
+            yml, sch, err = resolve_stem(stem)   # ← sch больше не отбрасываем
             if err:
-                print("  %-22s %s — пропускаю" % (stem, err))
+                print("  %-32s %s — пропускаю" % (stem, err))
                 continue
             ports = netlist_ports(net)
             cmd = [PY, os.path.join(PROJ, "kicad_to_spice.py"),
-                   net, stem, "--yaml", yml] + ports
+                   net, stem, "--yaml", yml, "--sch", sch] + ports
             rc = run(cmd, label=stem)
-            print("  %-22s net=%-24s yaml=%-30s rc=%d (портов: %d)"
+            print("  %-32s net=%-28s yaml=%-40s rc=%d (портов: %d)"
                   % (stem, rel(net), rel(yml), rc, len(ports)))
 
         if opts["gen"]:
@@ -657,30 +894,83 @@ def main():
                 if os.path.exists(net):
                     netfiles[stem] = net
 
-        print("== 3. Сверка нетлистов и YAML ==")
+        print("== 3. Сверка YAML и схем ==")
+
         any_diff = False
-        for stem in sorted(netfiles):
-            yml, _, err = resolve_stem(stem)
+
+        # ── 3a. Per-file сверка листьев ──
+        print("  -- 3a. Per-file сверка листьев --")
+        skipped: list[tuple[str, str]] = []
+        checked = 0
+        for stem in sorted(stems):
+            applicable, reason = per_file_applicable(stem)
+            if not applicable:
+                skipped.append((stem, reason))
+                continue
+
+            yml, sch, err = resolve_stem(stem)
             if err:
-                print("  %-22s %s — сверка невозможна" % (stem, err))
+                print("    %-30s %s — сверка невозможна" % (stem, err))
                 any_diff = True
                 continue
-            diffs = check_netlist_vs_yaml(yml, netfiles[stem])
-            if not diffs:
-                print("  %-22s yaml=%-30s OK" % (stem, rel(yml)))
+            net = netfiles.get(stem)
+            if not net:
+                print("    %-30s нет нетлиста — сверка невозможна" % stem)
+                any_diff = True
                 continue
-            any_diff = True
-            print("  %-22s yaml=%-30s РАСХОЖДЕНИЯ:" % (stem, rel(yml)))
-            for d in diffs:
-                print(d)
+
+            # Карта нормализации строится по .kicad_sch, который
+            # экспортировался. Не по YAML и не по Project — по факту
+            # файла на диске.
+            reverse_map = build_reverse_refdes_maps_from_sch(sch)
+
+            diffs = check_netlist_vs_yaml(
+                yml, net, is_root=False, reverse_map=reverse_map,
+            )
+            checked += 1
+            if not diffs:
+                print("    %-30s OK" % stem)
+            else:
+                any_diff = True
+                print("    %-30s РАСХОЖДЕНИЯ:" % stem)
+                for d in diffs:
+                    print(d)
+
+        if skipped:
+            print("    Пропущены (покрыты плоской сверкой корня):")
+            for stem, reason in skipped:
+                print("      %-30s %s" % (stem, reason))
+        if checked == 0 and not skipped:
+            print("    нет листьев для per-file сверки")
+
+        # ── 3b. Плоская сверка корня ──
+        # Запускается при полном прогоне или при явном --sheet ROOT_STEM.
+        do_flat_check = (
+            opts["sheet"] is None or opts["sheet"] == ROOT_STEM
+        )
+        if do_flat_check:
+            print("  -- 3b. Плоская сверка корневой схемы --")
+            ok, diffs, error = run_flat_check()
+            if error is not None:
+                print("    Сверка не выполнена: %s" % error)
+                any_diff = True
+            elif not ok:
+                any_diff = True
+                print("    РАСХОЖДЕНИЯ (по разбиению пинов):")
+                for d in diffs:
+                    print(d)
+            else:
+                print("    OK")
+
         if any_diff:
             print()
             print("!! Схема и YAML разошлись — прогон тестов отменён.")
             print("!! Исправьте схему, либо YAML, либо и то и другое.")
-            print("!! Если уверены, что расхождения безобидны:")
-            print("!!   python3 run_e2e.py --no-net-check  (для отладки)")
+            print("!! Для отладки можно пропустить сверку:")
+            print("!!   python3 run_e2e.py --no-net-check")
             return 1
-        print("  Все листы согласованы.")
+
+        print("  Все сверки пройдены.")
 
     if opts["net_check_only"]:
         return 0

@@ -4,10 +4,17 @@ functional_purpose: |
   потенциометра положения.
 
   Переиспользуется 4 раза на корневой странице проекта — по одному
-  экземпляру на каждую заслонку (X_M1..X_M4 в main.yaml). Конкретные
-  имена цепей задаются сопоставлением портов при инстанцировании,
-  внутри листа используются обобщённые имена: IN1, IN2, MOTOR_A,
-  MOTOR_B, FB_RAW, FB.
+  экземпляру на каждую заслонку (X_ACTUATOR_CHANNEL_M1..M4 в корневом
+  YAML). Связь с корневыми сетями задаётся на родителе через узлы
+  { component: X_ACTUATOR_CHANNEL_M*, pinfunction: <имя_порта> }.
+  Внутри листа используются обобщённые имена сетей-портов:
+  IN1, IN2, MOTOR_A, MOTOR_B, FB_RAW, FB.
+
+  Порты листа — это сети с флагом is_hierarchical_port: true.
+  Имя порта = имя сети. Направление (для размещения пина на левом
+  или правом краю bbox листа на родителе) задаётся полем
+  port_direction: INPUT | OUTPUT. По умолчанию — INPUT.
+  Отдельный верхний блок ports: больше не используется.
 
   Соответствие KiCad-reference и логических ролей:
     U1 = U,     C1 = C_VM,
@@ -37,31 +44,11 @@ functional_purpose: |
   pinfunction. Остальные пины имеют уникальные имена и берутся
   по pinfunction.
 
-ports:
-  - net_label: VCC_12V
-    type: POWER
-    description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
-  - net_label: GND
-    type: POWER
-    description: Общий провод (кузов автомобиля)
-  - net_label: IN1
-    type: INPUT
-    description: Логический вход IN1 драйвера H-моста
-  - net_label: IN2
-    type: INPUT
-    description: Логический вход IN2 драйвера H-моста
-  - net_label: MOTOR_A
-    type: OUTPUT
-    description: Выход A H-моста к моторедуктору заслонки
-  - net_label: MOTOR_B
-    type: OUTPUT
-    description: Выход B H-моста к моторедуктору заслонки
-  - net_label: FB_RAW
-    type: INPUT
-    description: Выход потенциометра положения (0..5В) с разъёма
-  - net_label: FB
-    type: OUTPUT
-    description: Сигнал ОС после делителя 5В->3,3В на вход АЦП
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '7').
+    pinfunction: — функциональное имя (VM, IN1, OUT1, ILIM, ...).
+    Резолв имён делает Component.pin_by_name() с нормализацией
+    суффиксов KiCad-символов.
 
 component_types:
   TYPE_C_100NF:
@@ -157,6 +144,7 @@ nets:
     name: VCC_12V
     description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 12.0V
@@ -173,6 +161,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -195,6 +184,7 @@ nets:
     name: IN1
     description: Логический вход IN1 драйвера H-моста
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -210,6 +200,7 @@ nets:
     name: IN2
     description: Логический вход IN2 драйвера H-моста
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -225,6 +216,7 @@ nets:
     name: MOTOR_A
     description: Выход A H-моста к моторедуктору заслонки
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -240,6 +232,7 @@ nets:
     name: MOTOR_B
     description: Выход B H-моста к моторедуктору заслонки
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -255,6 +248,7 @@ nets:
     name: FB_RAW
     description: Выход потенциометра положения (0..5В) с разъёма
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -270,6 +264,7 @@ nets:
     name: FB
     description: Сигнал ОС после делителя 5В->3,3В на вход АЦП
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..3.3V

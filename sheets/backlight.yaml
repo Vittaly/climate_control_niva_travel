@@ -30,13 +30,16 @@ functional_purpose: |
     Внутри канала LED соединены последовательно: A→K→A→K→A→K→GND.
     После резистора R1..R14 стоит АНОД первого LED (pinfunction 'A').
 
-ports:
-- net_label: ILLUM_IN_RAW
-  type: POWER
-  description: Вход внешней подсветки прибора (+12В габаритов автомобиля)
-- net_label: GND
-  type: POWER
-  description: Общая силовая земля схемы
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (K, A для LED).
 
 component_types:
   TYPE_R_130R:
@@ -132,6 +135,7 @@ nets:
     name: ILLUM_IN_RAW
     description: Вход внешней подсветки прибора (+12В габаритов)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 12.0V
@@ -160,6 +164,7 @@ nets:
     name: GND
     description: Общая силовая земля схемы
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V

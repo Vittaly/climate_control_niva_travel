@@ -2,14 +2,14 @@
 	(version "E")
 	(design
 		(source "/home/vitaly-pc/kicad/climate_control_niva_travel/can_bus.kicad_sch")
-		(date "2026-09-24T23:13:15")
+		(date "2026-09-30T20:41:40")
 		(tool "Eeschema 10.0.4-10.0.4~ubuntu25.10.1")
 		(sheet
 			(number "1")
 			(name "/")
 			(tstamps "/")
 			(title_block
-				(title)
+				(title "climate_control_niva_travel")
 				(company)
 				(rev)
 				(date)
@@ -61,6 +61,8 @@
 				(field
 					(name "mirror") "None")
 				(field
+					(name "hierarchy_path") "/c5a034c1-1f54-4e7e-8711-0930d2b4314e/3e6f426e-0825-4ec4-9e13-95c41a6eab89")
+				(field
 					(name "Footprint")
 				)
 				(field
@@ -78,6 +80,10 @@
 			(property
 				(name "mirror")
 				(value "None")
+			)
+			(property
+				(name "hierarchy_path")
+				(value "/c5a034c1-1f54-4e7e-8711-0930d2b4314e/3e6f426e-0825-4ec4-9e13-95c41a6eab89")
 			)
 			(property
 				(name "Sheetname")
@@ -99,7 +105,7 @@
 				(names "/")
 				(tstamps "/")
 			)
-			(tstamps "6f7a2ee7-2798-40c6-8027-6e3bda55645e")
+			(tstamps "3a1945c3-020d-46ba-8140-e9800b3750c9")
 			(units
 				(unit
 					(name "A")

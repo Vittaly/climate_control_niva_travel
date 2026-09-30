@@ -236,3 +236,74 @@ class Axis(IntEnum):
     """Индексы осей в кортежах (x, y)."""
     X = 0
     Y = 1
+
+# =========================================================
+# Библиотеки KiCad: таблицы проекта (sym-lib-table / fp-lib-table)
+# =========================================================
+
+class LibTableKind(StrEnum):
+    """Тип таблицы библиотек проекта KiCad."""
+    SYMBOL = "sym"          # sym-lib-table — библиотеки символов
+    FOOTPRINT = "fp"        # fp-lib-table  — библиотеки посадочных мест
+
+
+# Имя файла таблицы в корне проекта KiCad.
+LIB_TABLE_FILES: dict[LibTableKind, str] = {
+    LibTableKind.SYMBOL:    "sym-lib-table",
+    LibTableKind.FOOTPRINT: "fp-lib-table",
+}
+
+
+# Корневой токен S-expression внутри файла таблицы.
+LIB_TABLE_ROOT_TOKENS: dict[LibTableKind, str] = {
+    LibTableKind.SYMBOL:    "sym_lib_table",
+    LibTableKind.FOOTPRINT: "fp_lib_table",
+}
+
+
+# Тип плагина библиотеки в таблице (KiCad native).
+LIB_TABLE_TYPE_KICAD = "KiCad"
+
+# Версия формата таблицы (KiCad 6+).
+LIB_TABLE_VERSION = 7
+
+# Переменная KiCad, которая разворачивается в каталог .kicad_pro.
+KIPRJMOD_VAR = "${KIPRJMOD}"
+
+
+# Секции root_page в main.yaml, откуда берутся библиотеки проекта.
+class ProjectLibSection(StrEnum):
+    """Ключи root_page, описывающие библиотеки для регистрации."""
+    SYMBOL_LIBS = "symbol_libs"
+    FOOTPRINT_LIBS = "footprint_libs"
+
+
+# Соответствие секции root_page → типу таблицы.
+SECTION_TO_LIB_KIND: dict[ProjectLibSection, LibTableKind] = {
+    ProjectLibSection.SYMBOL_LIBS:    LibTableKind.SYMBOL,
+    ProjectLibSection.FOOTPRINT_LIBS: LibTableKind.FOOTPRINT,
+}
+
+PORT_DIRECTION_TO_SHAPE: dict[str, str] = {
+    "INPUT":         "input",
+    "OUTPUT":        "output",
+    "BIDIR":         "bidirectional",
+    "BIDIRECTIONAL": "bidirectional",
+    "TRISTATE":      "tri_state",
+    "TRI_STATE":     "tri_state",
+    "PASSIVE":       "passive",
+}
+
+def port_shape(direction: str | None) -> str:
+    """port_direction из YAML → shape для KiCad hierarchical_label / sheet-pin.
+
+    Единственное место в проекте, где этот маппинг определён.
+    Дефолт — INPUT, как и в YAML-конвенции.
+    """
+    return PORT_DIRECTION_TO_SHAPE.get(
+        (direction or "INPUT").upper(), "input"
+    )
+
+def port_side(direction: str | None) -> str:
+    """OUTPUT ставится на правый край листа, всё остальное — на левый."""
+    return "right" if (direction or "INPUT").upper() == "OUTPUT" else "left"

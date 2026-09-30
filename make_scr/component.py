@@ -208,7 +208,41 @@ def _compute_outward_angle(
     closest.sort(key=lambda c: priority[c[2]])
     return closest[0][1]
 
+# =========================================================
+# Нормализация имён выводов KiCad-символа
+# =========================================================
 
+def _norm_pin_name(name: Optional[str]) -> str:
+    """Нормализует имя вывода KiCad-символа.
+
+    Отрезает суффиксы, которые добавляют генераторы символов
+    (EasyEDA / JLC2KiCadLib, CubeMX-импортёры и т.п.):
+
+        'VSS/VSSA'             → 'VSS'
+        'VDD/VDDA'             → 'VDD'
+        'PF2 - NRST'           → 'PF2'
+        'PF2-NRST'             → 'PF2'
+        'PA14-BOOT0'           → 'PA14'
+        'PA11[PA9]'            → 'PA11'
+        'PA12[PA10]'           → 'PA12'
+        'PC14-OSC32_IN (PC14)' → 'PC14'
+        'PC15-OSC32_OUT (PC15)'→ 'PC15'
+        'PF0-OSC_IN (PF0)'     → 'PF0'
+
+    Порядок срезания: '[' → '/' → '-' → '('. Все разделители
+    однозначны, порядок не влияет на результат. В конце — strip,
+    чтобы убрать пробел после '-', как в 'PF2 - NRST'.
+
+    Возвращает пустую строку, если name пуст/None.
+    """
+    if not name:
+        return ""
+    s = str(name).strip().strip("'\"")
+    s = s.split("[", 1)[0]         # PA11[PA9]
+    s = s.split("/", 1)[0]         # VSS/VSSA
+    s = s.split("-", 1)[0]         # PF2 - NRST, PC15-OSC32_OUT
+    s = s.split("(", 1)[0]         # ... (PC15)
+    return s.strip()
 # =========================================================
 # Компонент
 # =========================================================
@@ -294,8 +328,12 @@ class Component:
         Порядок поиска:
         1. Точное совпадение. Найдено ровно одно — возвращаем.
         2. Совпадение без учёта регистра. Найдено ровно одно — возвращаем
-            с WARNING (чтобы автор знал о расхождении и мог поправить YAML).
-        3. Не найдено или неоднозначно — None и WARNING.
+        с WARNING (чтобы автор знал о расхождении и мог поправить YAML).
+        3. Совпадение после нормализации имени (_norm_pin_name). Найдено
+        ровно одно — возвращаем с DEBUG. Это покрывает символы, где
+        имя вывода содержит суффиксы ('VSS/VSSA', 'PF2-NRST',
+        'PA14-BOOT0', 'PA11[PA9]' и т.п.).
+        4. Не найдено или неоднозначно — None и WARNING.
         """
         if not name:
             return None
@@ -333,6 +371,29 @@ class Component:
                 name, [p.name for p in ci],
             )
             return None
+
+        # 3. Fallback через нормализацию имени
+        target = _norm_pin_name(name)
+        if not target:
+            return None
+        normed = [p for p in self.pins
+                if p.name and _norm_pin_name(p.name) == target]
+        if len(normed) == 1:
+            log.debug(
+                "%s: pinfunction=%r найдено как %r — через нормализацию.",
+                ctx(page=self.sheet_path or None, comp=self.designator),
+                name, normed[0].name,
+            )
+            return normed[0]
+        if len(normed) > 1:
+            log.warning(
+                "%s: pinfunction=%r нормализуется в %r, но кандидатов "
+                "несколько: %s. Используйте pin: '<номер>'.",
+                ctx(page=self.sheet_path or None, comp=self.designator),
+                name, target, [p.name for p in normed],
+            )
+            return None
+
         return None
 
     def pin_by_local_key(self, local_key: str) -> Optional[Pin]:
@@ -341,6 +402,34 @@ class Component:
             if p.local_key == local_key:
                 return p
         return None
+
+    def pin_by_identifier(self, ident: str) -> Optional[Pin]:
+        """Находит пин по идентификатору без уточнения его природы.
+
+        Идентификатор приходит из внешнего источника, где неизвестно,
+        номер это или имя:
+            * из FQN: "U1:42", "X_POWER_SUPPLY:VCC_12V";
+            * из local_key: "U1:42";
+            * из ключа словаря сети.
+
+        Приоритет — номер, затем имя:
+            * обычный пин: number="42", name="PB9". Запрос "42" → по номеру;
+            запрос "PB9" → по имени.
+            * sheet-пин: number=None, name="VCC_12V". Запрос "VCC_12V" → по имени.
+
+        В обоих случаях находит правильный пин.
+
+        Для YAML-узлов использовать НЕ ЭТОТ метод, а pin_by_number /
+        pin_by_name: там пользователь явно указывает pin: или
+        pinfunction: — семантика известна заранее, и приоритеты
+        задаются в project._bind_node.
+        """
+        if not ident:
+            return None
+        by_num = self.pin_by_number(ident)
+        if by_num is not None:
+            return by_num
+        return self.pin_by_name(ident)
 
     # ---------- построение из YAML ----------
 
@@ -783,3 +872,26 @@ class Component:
     def is_sheet_ref(self) -> bool:
         """Обычный компонент — не ссылка на лист."""
         return False
+
+    # component.py
+
+    @property
+    def frame_size(self) -> Tuple[int, int]:
+        """Габарит фигуры, которую рисует Writer.
+
+        Для обычного символа совпадает с bbox: пины сидят на кромке
+        bbox и считаются частью символа.
+
+        Для SheetRef переопределяется: рамка внутри bbox (см. sheet_ref.py).
+        """
+        return self.bbox_size
+
+
+    @property
+    def frame_offset_mm(self) -> Tuple[float, float]:
+        """Смещение ЛВ-угла frame относительно anchor (ЛВ-угла bbox).
+
+        Обычный символ — (0, 0).
+        SheetRef — (grid_mm, grid_mm): рамка на 1 клетку внутрь bbox.
+        """
+        return (0.0, 0.0)

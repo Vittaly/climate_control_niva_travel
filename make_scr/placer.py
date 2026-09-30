@@ -931,7 +931,7 @@ class Placer:
                 comp = self.components.get(designator)
                 if comp is None:
                     continue
-                pin = comp.pin_by_number(num)
+                pin = comp.pin_by_identifier(num)
                 if pin is None:
                     continue
                 comp_pins.setdefault(designator, []).append(pin)

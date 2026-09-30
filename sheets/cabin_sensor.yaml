@@ -22,19 +22,16 @@ functional_purpose: |
       они физически на других листах (вентилятор — внешний,
       R24 — на UI).
 
-ports:
-- net_label: VCC_12V
-  type: POWER
-  description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
-- net_label: GND
-  type: POWER
-  description: Общий провод (кузов автомобиля)
-- net_label: NTC_CABIN
-  type: INPUT
-  description: Температура воздуха в салоне (NTC на плате в трубе продувки)
-- net_label: M_FAN_CTL
-  type: INPUT
-  description: Управление мини-вентилятором продувки датчика
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (K, A, G, S, D).
 
 component_types:
   TYPE_D_1N4148W:
@@ -130,6 +127,7 @@ nets:
     name: VCC_12V
     description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 12.0V
@@ -146,6 +144,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -163,6 +162,7 @@ nets:
     name: NTC_CABIN
     description: Температура воздуха в салоне (NTC на плате в трубе продувки)
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..3.3V
@@ -178,6 +178,7 @@ nets:
     name: M_FAN_CTL
     description: Управление мини-вентилятором продувки датчика
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V

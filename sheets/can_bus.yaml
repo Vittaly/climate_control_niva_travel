@@ -25,25 +25,16 @@ functional_purpose: |
   Не моделируется: паразитные ёмкости шины, влияние длины кабеля,
   защита от КЗ CANH/CANL, thermal shutdown, loop-back, джиттер.
 
-ports:
-- net_label: VCC_5V
-  type: POWER
-  description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора 3,3В)
-- net_label: GND
-  type: POWER
-  description: Общий провод (кузов автомобиля)
-- net_label: CAN_TX
-  type: INPUT
-  description: 'CAN: передача от МК к трансиверу'
-- net_label: CAN_RX
-  type: OUTPUT
-  description: 'CAN: приём от трансивера к МК'
-- net_label: CANH
-  type: OUTPUT
-  description: 'CAN: шина High (J1:25)'
-- net_label: CANL
-  type: OUTPUT
-  description: 'CAN: шина Low (J1:26)'
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (VDD, TXD, CANH, ...).
 
 component_types:
   TYPE_MCP2562-E-SN_MCP2562-E-SN:
@@ -90,6 +81,7 @@ nets:
     name: VCC_5V
     description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора 3,3В)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 5.0V
@@ -106,6 +98,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -122,6 +115,7 @@ nets:
     name: CAN_TX
     description: 'CAN: передача от МК к трансиверу'
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -137,6 +131,7 @@ nets:
     name: CAN_RX
     description: 'CAN: приём от трансивера к МК'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -152,6 +147,7 @@ nets:
     name: CANH
     description: 'CAN: шина High (J1:25)'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -167,6 +163,7 @@ nets:
     name: CANL
     description: 'CAN: шина Low (J1:26)'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V

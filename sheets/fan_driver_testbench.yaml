@@ -2,6 +2,7 @@ functional_purpose: |
   Внешний ШИМ-ключ вентилятора печки — ОТДЕЛЬНАЯ схема.
   В иерархию основной платы не входит: физически это отдельный
   силовой модуль между модулем контроля и мотором вентилятора.
+  В `standalone_sheets` корневого YAML, без X_* ссылок.
 
   Состав:
     * Q5 (BTS141) — интеллектуальный ШИМ-ключ в нижнем плече
@@ -22,22 +23,18 @@ functional_purpose: |
     * мотор      — testbench, inline в каждом сценарии;
     * R/C/L      — примитивы, spice не требуют.
 
-ports:
-- net_label: FAN_PWM_EXT_IN
-  type: INPUT
-  description: Внешний силовой ШИМ-вход управления затвором ключа BTS141
-- net_label: VBAT_FAN
-  type: POWER
-  description: Питание мотора вентилятора и защитного freewheel-диода (+12В)
-- net_label: GND
-  type: POWER
-  description: Силовая земля внешнего модуля
-- net_label: FAN_LOAD_LO
-  type: OUTPUT
-  description: Коммутируемый выход OUT смарт-ключа к минусу мотора вентилятора
-- net_label: MOTOR_TERM
-  type: OUTPUT
-  description: Выходной вывод подключения мотора после LC-фильтра
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+    Для standalone-листа родителя нет: порты описывают внешний
+    интерфейс модуля (для документации и для writer'а).
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (K, A, VDD, ...).
 
 component_types:
   TYPE_R_0603_100R:
@@ -137,6 +134,7 @@ nets:
     name: FAN_PWM_EXT_IN
     description: Внешний ШИМ-вход управления затвором ключа BTS141
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -161,6 +159,7 @@ nets:
     name: FAN_LOAD_LO
     description: Коммутируемый выход OUT смарт-ключа к минусу мотора вентилятора
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -174,6 +173,7 @@ nets:
     name: MOTOR_TERM
     description: Выходной вывод подключения мотора после LC-фильтра
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -186,6 +186,7 @@ nets:
     name: VBAT_FAN
     description: Питание мотора вентилятора и freewheel-диода (+12В)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 12.0V
@@ -197,6 +198,7 @@ nets:
     name: GND
     description: Общая силовая земля модуля
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V

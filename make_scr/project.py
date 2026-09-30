@@ -5,21 +5,81 @@
     - Sheet  — страница KiCad (.kicad_sch): components, netlist, grid_mm.
     - Placer — размещает на одной Sheet; читает sheet.netlist/grid_mm.
     - Router — трассирует одну Sheet; пишет в sheet.labels/t_junctions.
-    - Writer — пишет .kicad_sch одной Sheet; читает sheet.grid_mm/netlist.
-    - Project — оркестратор: грузит YAML, гоняет Placer/Router, сохраняет.
+    - Writer — пишет .kicad_sch; единственный, кто знает про uuid,
+               page-номера и instance-пути (см. writer.py).
+    - Project — оркестратор: грузит YAML, гоняет Placer/Router, отдаёт
+               граф Writer'у.
 
 Идентификация листов (единая для всей цепочки):
     * Первоисточник — sheets/<stem>.yaml (stem = имя файла без .yaml).
     * Схема листа   — <stem>.kicad_sch (в корне проекта или в out_dir).
+    * Корневая страница — тоже лист: stem совпадает с именем проекта
+      KiCad и .kicad_sch проекта.
     * Связь листа со схемой объявлена РОВНО один раз — атрибутом
-      value_sch у соответствующего X_* в main.yaml.components.
-      Имена X_* — производные, на семантику листа не влияют.
-    * Никакие page_name / file внутри sheets/*.yaml не читаются.
+      value_sch у соответствующего X_* в components корневого YAML.
     * Список листов к прогону нигде не хранится: он выводится как
       {X_*, встречающиеся в nets} ∪ standalone_sheets (там — stem'ы).
 
 YAML живёт только внутри загрузки. Sheet о YAML не знает.
 Нетлист — поле Sheet, у каждой страницы свой.
+
+Модель данных о пинах МК:
+    Источник истины о том, какие пины U1 используются и как — секция
+    nets. Отдельной секции mcu_pin_map нет. Узел U1 в nets содержит:
+        pinfunction — имя вывода из символа KiCad ('PA13', 'VBAT', ...)
+        function    — короткая машинно-читаемая роль (опционально)
+        description — человекочитаемое описание логики (опционально)
+    Component.pin_by_name() привязывает пин по pinfunction. Смена
+    корпуса не требует правок в узлах, если имя вывода не изменилось.
+
+Модель портов (лист ↔ родитель):
+    * Источник истины о портах — флаг is_hierarchical_port: true
+      на сети ВНУТРИ дочернего YAML. Имя порта = имя сети.
+    * Направление — port_direction: INPUT | OUTPUT у той же сети;
+      по умолчанию INPUT. Устаревший верхний блок ports: не читается.
+    * На родителе порт — узел сети через pinfunction: <имя_порта>.
+      Связь «порт ребёнка ↔ корневая сеть» выводится по имени.
+    * Для writer'а: после привязки пина к сети сохраняется
+      pin.net_name — имя КОРНЕВОЙ сети. Writer пишет его в
+      write_sheet_pin вместо pin.name, иначе разные инстансы
+      одного листа сольют свои сети (MOTOR_A ×4 → одна сеть).
+
+Модель аннотации refdes:
+    Refdes — РЕЗУЛЬТАТ разворачивания иерархии, а не входные данные
+    YAML. Схема не хранит «как должны выглядеть refdes» — они
+    вычисляются как чистая функция от графа.
+
+    Алгоритм (Project._compute_refdes):
+        1. Depth-first обход дерева: корень → каждый X_* рекурсивно.
+        2. Глобальные счётчики по префиксу (U, R, C, D, Q, J, L, SW,
+           FB, ...) общие на весь проект.
+        3. Для multi-instance файл обходится N раз, по одному разу
+           на каждый X_*. Каждый обход продвигает счётчики дальше.
+        4. Refdes корня РЕЗЕРВИРУЮТСЯ в счётчиках (чтобы дети не
+           пересеклись), но маппинг для корня не сохраняется —
+           корень не инстанцируется, Writer пишет его символы
+           напрямую с их YAML-designator'ами.
+
+    Порядок обхода детерминирован: dict в Python 3.7+ сохраняет
+    порядок вставки, значит автор YAML управляет нумерацией,
+    переставляя строки в components.
+
+    _compute_refdes НЕ пишет в self — возвращает результат.
+    save() фиксирует его в self._refdes_maps; внешняя валидация
+    использует локальную переменную и не трогает состояние Project.
+
+Модель сохранения:
+    Всё, что относится к формату .kicad_sch — uuid страниц, page-
+    номера, instance-пути, рекурсия по дереву, — живёт в Writer'е
+    (см. writer.write_project). Project только собирает граф:
+        * root_sheet     — корень обхода,
+        * sheets         — {sheet_path: Sheet} всех листов,
+        * refdes_maps    — результат _compute_refdes,
+        * project_name   — имя проекта KiCad.
+    Standalone-листы (без X_* в основном проекте) обходятся тем же
+    Writer'ом отдельным вызовом write_project: у каждого свой
+    мини-корень, своя нумерация страниц, свой uuid. Writer кэширует
+    уже записанные sheet_path, поэтому повторная запись исключена.
 
 Политика ошибок загрузки:
     Компонент, который не удалось собрать, НЕ теряется молча.
@@ -29,8 +89,7 @@ YAML живёт только внутри загрузки. Sheet о YAML не �
     и логируются на уровне ERROR с полным контекстом
     (designator/type/symbol/value/reason). После обхода всех
     компонентов и листов Project.load() бросает ProjectLoadError —
-    до place_and_route/save дело не доходит, сломанный нетлист не
-    генерируется.
+    до place_and_route/save дело не доходит.
 
     Дополнительно проверяется связность иерархии:
       * X_* без value_sch                      — ошибка;
@@ -38,16 +97,46 @@ YAML живёт только внутри загрузки. Sheet о YAML не �
       * коллизия имён выходных .kicad_sch       — ошибка;
       * X_* без ни одной привязанной цепи       — ошибка (orphan);
       * standalone без <stem>.yaml              — ошибка.
+
+Библиотеки проекта:
+    * LibraryManager — ленивая генерация .kicad_sym через JLC2KiCadLib
+      для тех component_types, у которых задан lcsc_id, но нет
+      symbol и/или footprint. Генерация запускается в момент, когда
+      впервые встретился компонент соответствующего типа.
+      После генерации путь к .kicad_sym регистрируется в KiCadSource
+      (kicad-sch-api), чтобы get_pins() нашёл новый символ.
+
+    * save() регистрирует библиотеки LibraryManager в sym-lib-table /
+      fp-lib-table выходного каталога. Источник данных — сам
+      LibraryManager (имена и пути к .kicad_sym / .pretty), а не
+      YAML: настройка библиотек — задача инфраструктуры пайплайна,
+      а не описания схемы. Пути пишутся через ${KIPRJMOD}/, чтобы
+      проект оставался переносимым.
 """
 from __future__ import annotations
 
+import os
+import re
+import subprocess
 from pathlib import Path
-from typing import Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 import yaml
 
 from component import Component, ComponentLoadError
-from constants import Axis, DEFAULT_GRID_MM, DEFAULT_NET_TYPE, PathSearch, Symbol
+from constants import (
+    Axis,
+    DEFAULT_GRID_MM,
+    DEFAULT_NET_TYPE,
+    KIPRJMOD_VAR,
+    LIB_TABLE_FILES,
+    LIB_TABLE_ROOT_TOKENS,
+    LIB_TABLE_TYPE_KICAD,
+    LIB_TABLE_VERSION,
+    LibTableKind,
+    PathSearch,
+    Symbol   
+)
 from kicad_source import KiCadSource
 from logging_setup import ctx, get_logger
 from placer import Placer
@@ -55,6 +144,7 @@ from router import Router
 from sheet import Sheet
 from sheet_ref import SheetRefComponent
 from writer import Writer
+from port_component import PortComponent
 
 from designators import DesignatorError, validate_component_designator
 
@@ -74,13 +164,213 @@ class ProjectLoadError(Exception):
         )
 
 
+# =========================================================
+# LibraryManager: ленивая генерация пользовательских библиотек
+# =========================================================
+
+class LibraryManager:
+    """Генерирует .kicad_sym по lcsc_id и отдаёт пути в KiCadSource.
+
+    Жизненный цикл:
+        LibraryManager — вспомогательный объект Project. Создаётся
+        один раз в load(), регистрирует все сгенерированные
+        библиотеки в KiCadSource по мере появления новых типов.
+
+    Раскладка файлов:
+        <base_dir>/libs/symbol/MyMCU.kicad_sym           — символы;
+        <base_dir>/libs/MyFootprints.pretty/             — посадочные
+                                                            места;
+        <base_dir>/libs/MyFootprints.pretty/packages3d/  — 3D-модели.
+
+    base_dir — каталог корневого YAML. Генерируемые библиотеки лежат
+    рядом с исходниками проекта (не в out_dir), потому что это
+    часть исходников, а не артефакт генерации.
+
+    Имена библиотек — константы. В YAML не читаются и не
+    переопределяются: настройка инфраструктуры не смешивается
+    с описанием схемы.
+    """
+
+    SYM_LIB_NAME = "MyMCU"
+    FP_LIB_NAME = "MyFootprints"
+
+    def __init__(self, base_dir: Path) -> None:
+        self.base_dir = Path(base_dir)
+
+        libs_root = self.base_dir / "libs"
+        self.sym_dir = libs_root / "symbol"
+
+        # Явное, без трюков:
+        self.fp_dir = libs_root / f"{self.FP_LIB_NAME}.pretty"
+        self.sym_lib_name = self.SYM_LIB_NAME
+        self.fp_lib_name = self.FP_LIB_NAME
+
+        # Уже разобранные типы — защита от повторного вызова
+        # ensure_type для одного и того же type_name.
+        self._resolved: Set[str] = set()
+
+    # ---------- публичное ----------
+
+    def ensure_type(self, type_name: str, tdef: dict) -> Optional[Path]:
+        """Гарантирует, что для типа есть symbol и footprint.
+
+        Порядок действий:
+            1. Если в tdef уже есть и symbol, и footprint — ничего
+               не делаем.
+            2. Пытаемся найти символ/футпринт по lcsc_id в уже
+               существующих файлах библиотеки.
+            3. Если что-то не найдено — запускаем JLC2KiCadLib
+               и пробуем снова.
+            4. Прописываем найденные symbol/footprint обратно в tdef.
+
+        Returns:
+            Path к .kicad_sym, если файл библиотеки был изменён
+            (только что сгенерирован), иначе None.
+
+        Raises:
+            RuntimeError — JLC2KiCadLib завершилась с ошибкой.
+        """
+        if type_name in self._resolved:
+            return None
+        self._resolved.add(type_name)
+
+        lcsc_id = tdef.get("lcsc_id")
+        if not lcsc_id:
+            return None
+
+        has_symbol = bool(tdef.get("symbol"))
+        has_footprint = bool(tdef.get("footprint"))
+        if has_symbol and has_footprint:
+            return None
+
+        sym_file = self.sym_dir / f"{self.sym_lib_name}.kicad_sym"
+
+        # --- 1. Пытаемся найти в существующих файлах ---
+        if not has_symbol and sym_file.exists():
+            name = self._find_symbol_name(sym_file, lcsc_id)
+            if name:
+                tdef["symbol"] = f"{self.sym_lib_name}:{name}"
+                has_symbol = True
+
+        if not has_footprint and self.fp_dir.exists():
+            name = self._find_footprint_name(self.fp_dir, lcsc_id)
+            if name:
+                tdef["footprint"] = f"{self.fp_lib_name}:{name}"
+                has_footprint = True
+
+        if has_symbol and has_footprint:
+            return None
+
+        # --- 2. Генерация ---
+        self.sym_dir.mkdir(parents=True, exist_ok=True)
+        self.fp_dir.mkdir(parents=True, exist_ok=True)
+
+        cmd = [
+            "JLC2KiCadLib",
+            str(lcsc_id),
+            "-dir", str(self.base_dir / "libs"),
+            "-symbol_lib", self.sym_lib_name,
+            "-footprint_lib", self.fp_lib_name,
+            "-models", "STEP",
+        ]
+        log.info(
+            "LibraryManager: генерация %s (lcsc_id=%s)",
+            type_name, lcsc_id,
+            extra={
+                "stage":     "load",
+                "event":     "lcsc_generate",
+                "type_name": type_name,
+                "lcsc_id":   str(lcsc_id),
+            },
+        )
+        try:
+            subprocess.run(
+                cmd, check=True, capture_output=True, text=True, timeout=120,
+            )
+        except FileNotFoundError as e:
+            raise RuntimeError(
+                f"JLC2KiCadLib не установлен или не найден в PATH: {e}"
+            ) from e
+        except subprocess.TimeoutExpired as e:
+            raise RuntimeError(
+                f"JLC2KiCadLib таймаут при обработке {lcsc_id}"
+            ) from e
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                f"JLC2KiCadLib вернул код {e.returncode} для {lcsc_id}: "
+                f"{(e.stderr or '').strip()[:300]}"
+            ) from e
+
+        # --- 3. Пробуем найти после генерации ---
+        if not has_symbol:
+            name = self._find_symbol_name(sym_file, lcsc_id)
+            if name:
+                tdef["symbol"] = f"{self.sym_lib_name}:{name}"
+        if not has_footprint:
+            name = self._find_footprint_name(self.fp_dir, lcsc_id)
+            if name:
+                tdef["footprint"] = f"{self.fp_lib_name}:{name}"
+
+        return sym_file if sym_file.exists() else None
+
+    # ---------- данные для регистрации в sym/fp-lib-table ----------
+
+    def library_entries(self) -> list[tuple[LibTableKind, str, Path]]:
+        """[(kind, nickname, abs_path), ...] для sym-lib-table / fp-lib-table."""
+        return [
+            (LibTableKind.SYMBOL, self.sym_lib_name,
+             self.sym_dir / f"{self.sym_lib_name}.kicad_sym"),
+            (LibTableKind.FOOTPRINT, self.fp_lib_name,
+             self.fp_dir),
+        ]
+
+    # ---------- поиск в сгенерированных файлах ----------
+
+    def _find_symbol_name(self, sym_file: Path, lcsc_id: str) -> Optional[str]:
+        """Ищет символ в .kicad_sym, в теле которого упомянут lcsc_id."""
+        if not sym_file.exists():
+            return None
+        try:
+            text = sym_file.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            return None
+
+        needle = str(lcsc_id)
+        for m in re.finditer(r'\(symbol\s+"([^"]+)"', text):
+            name = m.group(1)
+            tail = text[m.end():m.end() + 3000]
+            if needle in tail:
+                return name
+        return None
+
+    def _find_footprint_name(
+        self, fp_dir: Path, lcsc_id: str,
+    ) -> Optional[str]:
+        """Ищет .kicad_mod, в тексте которого встречается lcsc_id."""
+        if not fp_dir.exists():
+            return None
+        needle = str(lcsc_id)
+        for f in fp_dir.glob("*.kicad_mod"):
+            try:
+                text = f.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            if needle in text:
+                return f.stem
+        return None
+
+
+# =========================================================
+# Project
+# =========================================================
+
 class Project:
     """Точка входа: загрузка, размещение, роутинг, сохранение."""
 
     def __init__(self, root_yaml: str | Path):
         """
         Args:
-            root_yaml: путь к main.yaml.
+            root_yaml: путь к корневому YAML (sheets/<ROOT_STEM>.yaml).
         """
         self.root_path = Path(root_yaml)
         self.base_dir = self.root_path.parent
@@ -93,6 +383,12 @@ class Project:
         # yaml_key (abs path) -> sheet_path: не грузим один YAML дважды
         self._loaded_yaml: Dict[str, str] = {}
         self._load_errors: list[str] = []
+        # LibraryManager создаётся в load(), после _read_root().
+        self._libraries: Optional[LibraryManager] = None
+
+        # {X_*: {base_ref: project_ref}} — результат _compute_refdes,
+        # фиксируется в save(). До save() пуст.
+        self._refdes_maps: Dict[str, Dict[str, str]] = {}
 
         log.info(
             "Project создан: %s", self.root_path,
@@ -108,7 +404,7 @@ class Project:
     # =========================================================
 
     def load(self) -> "Project":
-        """Полный цикл загрузки: main.yaml + рекурсивно все листы."""
+        """Полный цикл загрузки: корневой YAML + рекурсивно все листы."""
         log.info(
             "Загрузка %s", self.root_path,
             extra={
@@ -120,6 +416,10 @@ class Project:
 
         self._load_errors.clear()
         self._read_root()
+
+        # LibraryManager должен существовать до _load_components —
+        # оттуда вызывается ensure_type() для lcsc_id-типов.
+        self._libraries = LibraryManager(self.base_dir)
 
         grid_mm = float(self.root_data.get("grid_mm", DEFAULT_GRID_MM))
         self.root_sheet = Sheet(sheet_path="", grid_mm=grid_mm)
@@ -136,16 +436,17 @@ class Project:
 
         # Листы вне иерархии (без X_*): внешние силовые модули,
         # тестовые стенды — тоже должны стать .kicad_sch.
-        # В main.yaml — список stem'ов: ['fan_driver_testbench', ...].
         self._load_standalone_sheets(
             self.root_data.get("standalone_sheets") or []
         )
 
         # Связность иерархии: каждый SheetRef должен быть подключён
-        # хотя бы к одной цепи. Иначе он есть в схеме, но не в nets —
-        # это либо опечатка в YAML, либо забытый узел. Прогон такого
-        # проекта создаст «висящий» лист и несогласованный нетлист.
+        # хотя бы к одной цепи.
         self._check_sheet_refs_connected(self.root_sheet)
+
+        # Результат разбора библиотек сохраняем на диск даже при
+        # ошибках — чтобы следующий прогон не парсил те же символы.
+        self.source.flush()
 
         # Никакого place_and_route, пока есть ошибки загрузки.
         if self._load_errors:
@@ -176,10 +477,15 @@ class Project:
         return self
 
     def _read_root(self) -> None:
-        """Читает main.yaml и сохраняет секцию root_page."""
+        """Читает корневой YAML и сохраняет секцию root_page."""
         with open(self.root_path, encoding="utf-8") as f:
-            doc = yaml.safe_load(f)
-        self.root_data = doc["root_page"]
+            doc = yaml.safe_load(f) or {}
+
+        if isinstance(doc, dict) and "root_page" in doc:
+            self.root_data = doc.get("root_page") or {}
+        else:
+            self.root_data = doc
+
         log.debug(
             "root_page: project=%s, version=%s",
             self.root_data.get("project"),
@@ -197,32 +503,41 @@ class Project:
 
     def _load_components(self, sheet: Sheet, data: dict,
                          yaml_path: Path) -> None:
-        """Строит Component для всех записей data['components'].
-
-        X_* (Core:Hierarchical_Sheet) не пропускаются — они создаются
-        как SheetRefComponent: дают габарит, пины по портам дочернего
-        YAML и место в placer.positions.
-
-        После обычных компонентов добавляет PortComponent для каждой
-        записи data['ports'] (порты страницы).
-
-        Политика ошибок:
-            - DesignatorError     — designator не проходит валидацию;
-            - ComponentLoadError  — компонент в принципе не собирается
-              (нет type / type не описан / нет symbol / symbol
-              отсутствует в библиотеке);
-            - отсутствие value_sch у X_* — ошибка конфигурации.
-
-            Все ошибки накапливаются в self._load_errors и логируются
-            на уровне ERROR с полным контекстом. Ветка comp is None —
-            защита от будущих регрессий в Component.from_yaml; она
-            тоже уходит в _load_errors, а не молча пропускается.
-        """
+        """Строит Component для всех записей data['components']."""
         types = data.get("component_types", {})
         for designator, cdef in data.get("components", {}).items():
             if cdef.get("symbol") == Symbol.HIERARCHICAL_SHEET:
                 self._add_sheet_ref(sheet, designator, cdef, yaml_path)
                 continue
+
+            # --- Ленивая генерация библиотеки для этого типа ---
+            tname = cdef.get("type")
+            if (tname and tname in types
+                    and self._libraries is not None):
+                try:
+                    lib_path = self._libraries.ensure_type(
+                        tname, types[tname],
+                    )
+                except RuntimeError as e:
+                    self._load_errors.append(
+                        f"{yaml_path}: components.{designator}: {e}"
+                    )
+                    log.error(
+                        "%s lcsc_generate_failed des=%s type=%s reason=%s",
+                        ctx(page=sheet.page), designator, tname, e,
+                        extra={
+                            "stage":     "load",
+                            "event":     "lcsc_generate_failed",
+                            "component": designator,
+                            "type_name": tname,
+                            "reason":    str(e),
+                        },
+                    )
+                    continue
+
+                if lib_path is not None:
+                    self.source.invalidate_lib(lib_path)
+                    self.source.register_library(lib_path)
 
             try:
                 comp = Component.from_yaml(
@@ -292,17 +607,12 @@ class Project:
 
             sheet.add_component(comp)
 
-        # --- Порты страницы (data['ports']) ---
+        # --- Порты страницы (сети с is_hierarchical_port: true) ---
         self._load_ports(sheet, data, yaml_path)
 
     def _add_sheet_ref(self, sheet: Sheet, designator: str,
                        cdef: dict, yaml_path: Path) -> None:
-        """Создаёт SheetRefComponent для X_* на текущем листе.
-
-        value_sch — единственный источник имени дочернего YAML:
-        <stem>.kicad_sch → <stem>.yaml (сохраняя подкаталог).
-        Отсутствие value_sch — ошибка, X_* в схему не попадает.
-        """
+        """Создаёт SheetRefComponent для X_* на текущем листе."""
         value_sch = cdef.get("value_sch")
         if not value_sch:
             self._load_errors.append(
@@ -378,43 +688,40 @@ class Project:
 
     def _load_ports(self, sheet: Sheet, data: dict,
                     yaml_path: Path | None = None) -> None:
-        """Создаёт PortComponent для каждого порта из data['ports']."""
+        """Создаёт PortComponent для каждой сети-порта листа."""
         from port_component import PortComponent
 
-        ports = data.get("ports", []) or []
-        if not ports:
-            return
+        nets = data.get("nets", {}) or {}
 
-        for p in ports:
-            net_label = p.get("net_label", "")
-            if not net_label:
+        for net_name, ndef in nets.items():
+            if not isinstance(ndef, dict):
+                continue
+            if not ndef.get("is_hierarchical_port"):
                 continue
 
-            ptype = str(p.get("type", "INPUT")).upper()
-            shape = p.get("shape") or _default_port_shape(ptype)
-            side = "left" if ptype in ("INPUT", "POWER") else "right"
+            
+            direction = str(ndef.get("port_direction", "INPUT")).upper()
 
-            designator = f"PORT_{net_label}"
-            where = (f"{yaml_path}: ports.{net_label}"
-                     if yaml_path else f"ports.{net_label}")
+            designator = f"PORT_{net_name}"
+            where = (f"{yaml_path}: nets.{net_name}"
+                    if yaml_path else f"nets.{net_name}")
 
             try:
                 port = PortComponent.create(
                     designator=designator,
-                    net_name=net_label,
-                    shape=shape,
-                    side=side,
+                    net_name=net_name,
+                    direction=direction,
                 )
             except DesignatorError as e:
                 self._load_errors.append(f"{where}: {e}")
                 log.error(
                     "%s port_load_failed des=%s net=%s reason=%s",
-                    ctx(page=sheet.page), designator, net_label, e,
+                    ctx(page=sheet.page), designator, net_name, e,
                     extra={
                         "stage":     "load",
                         "event":     "port_load_failed",
                         "component": designator,
-                        "net":       net_label,
+                        "net":       net_name,
                         "reason":    "designator_invalid",
                     },
                 )
@@ -422,18 +729,16 @@ class Project:
 
             if port is None:
                 self._load_errors.append(
-                    f"{where}: порт не собран "
-                    f"(net_label={net_label!r}, type={ptype!r})"
+                    f"{where}: порт не собран (net_label={net_name!r})"
                 )
                 log.error(
-                    "%s port_load_returned_none des=%s net=%s type=%s",
-                    ctx(page=sheet.page), designator, net_label, ptype,
+                    "%s port_load_returned_none des=%s net=%s",
+                    ctx(page=sheet.page), designator, net_name,
                     extra={
                         "stage":     "load",
                         "event":     "port_load_returned_none",
                         "component": designator,
-                        "net":       net_label,
-                        "port_type": ptype,
+                        "net":       net_name,
                     },
                 )
                 continue
@@ -441,16 +746,17 @@ class Project:
             sheet.add_component(port)
 
             log.debug(
-                "%s port_added des=%s side=%s shape=%s",
-                ctx(page=sheet.page), port.designator, side, shape,
+                "%s port_added des=%s side=%s shape=%s direction=%s",
+                ctx(page=sheet.page), port.designator, port.side, port.shape,
+                direction,
                 extra={
                     "stage":     "load",
                     "event":     "port_added",
                     "component": port.designator,
-                    "net":       net_label,
-                    "side":      side,
-                    "shape":     shape,
-                    "port_type": ptype,
+                    "net":       net_name,
+                    "side":      port.side,
+                    "shape":     port.shape,
+                    "direction": direction,
                 },
             )
 
@@ -472,22 +778,12 @@ class Project:
         self._check_all_pins_connected(sheet)
 
     def _check_all_pins_connected(self, sheet: Sheet) -> None:
-        """Сводка пинов без цепи — WARNING, не ошибка.
-
-        Пин, не упомянутый в nets:, — это сознательно неподключённый
-        пин (NC, резерв, внешний порт). Такое поведение допустимо,
-        загрузка НЕ прерывается.
-
-        Ошибка возникает только в _bind_node: если пин УПОМЯНУТ в nets,
-        но не найден в компоненте. Здесь же мы просто логируем список
-        «висящих» пинов для справки — чтобы автор видел, что не забыл
-        о них, но это не блокирует сборку.
-        """
+        """Сводка пинов без цепи — WARNING, не ошибка."""
         unbound = []
         for designator, comp in sheet.components.items():
             for pin in comp.pins:
                 if pin.net_ref is None:
-                    unbound.append((designator, pin.number, pin.name or "—"))
+                    unbound.append((designator, pin.identifier, pin.name))
 
         if not unbound:
             return
@@ -540,18 +836,19 @@ class Project:
                 )
                 continue
             pin = comp.pins[0]
-            fqn = f"{sheet.fqn(comp.designator)}:{pin.number}"
+            fqn = pin.fqn
             sheet.netlist.assign_pin_to_net(fqn, comp.net_name, pin=pin)
+            pin.net_name = comp.net_name
 
             log.debug(
                 "%s pin_bound port=%s pin=%s net=%s fqn=%s",
-                ctx(page=sheet.page), comp.designator, pin.number,
+                ctx(page=sheet.page), comp.designator, pin.identifier,
                 comp.net_name, fqn,
                 extra={
                     "stage":     "load",
                     "event":     "pin_bound",
                     "component": comp.designator,
-                    "pin":       pin.number,
+                    "pin":       pin.identifier,
                     "fqn":       fqn,
                     "net":       comp.net_name,
                     "kind":      "port",
@@ -559,24 +856,41 @@ class Project:
             )
 
     def _bind_sheet_refs_to_nets(self, sheet: Sheet, data: dict) -> None:
-        """Привязывает FQN пинов SheetRef-ов к их сетям."""
+        """Привязывает FQN пинов SheetRef-ов к их сетям.
+
+        Заодно проставляет shape для каждого порта родителя: маппинг
+        direction → shape живёт в PortComponent.shape_for_direction,
+        а не дублируется здесь. Writer читает готовое port["shape"].
+        """
+        from port_component import PortComponent
+
         for comp in sheet.components.values():
             if not getattr(comp, "is_sheet_ref", False):
                 continue
 
+            # ── Проставить shape портам родителя ────────────────────
+            # Единственное место, где shape для sheet-pin вычисляется.
+            # Тот же classmethod, что PortComponent.create() использует
+            # для ребёнка — оба конца иерархии получают одно значение.
+            for port in getattr(comp, "ports", []):
+                port["shape"] = PortComponent.shape_for_direction(
+                    port["direction"]
+                )
+            # ────────────────────────────────────────────────────────
+
             for pin in comp.pins:
-                net_name = pin.number  # для SheetRef номер = имя порта
+                net_name = pin.identifier
                 net = sheet.netlist.nets.get(net_name)
                 if net is None:
                     log.debug(
                         "%s pin_unbound sheetref=%s pin=%s net=%s",
                         ctx(page=sheet.page), comp.designator,
-                        pin.number, net_name,
+                        pin.identifier, net_name,
                         extra={
                             "stage":     "load",
                             "event":     "pin_unbound",
                             "component": comp.designator,
-                            "pin":       pin.number,
+                            "pin":       pin.identifier,
                             "net":       net_name,
                             "kind":      "sheet_ref",
                             "reason":    "net_not_found",
@@ -584,18 +898,19 @@ class Project:
                     )
                     continue
 
-                fqn = f"{sheet.fqn(comp.designator)}:{pin.number}"
+                fqn = pin.fqn
                 sheet.netlist.assign_pin_to_net(fqn, net_name, pin=pin)
+                pin.net_name = net_name
 
                 log.debug(
                     "%s pin_bound sheetref=%s pin=%s net=%s fqn=%s",
-                    ctx(page=sheet.page), comp.designator, pin.number,
+                    ctx(page=sheet.page), comp.designator, pin.identifier,
                     net_name, fqn,
                     extra={
                         "stage":     "load",
                         "event":     "pin_bound",
                         "component": comp.designator,
-                        "pin":       pin.number,
+                        "pin":       pin.identifier,
                         "fqn":       fqn,
                         "net":       net_name,
                         "kind":      "sheet_ref",
@@ -603,22 +918,7 @@ class Project:
                 )
 
     def _bind_node(self, sheet: Sheet, net_name: str, node: dict) -> None:
-        """Привязывает пин из YAML-узла к сети через FQN страницы.
-
-        Узел задаётся одним из двух способов:
-            {component: Q2, pin: '3'}          — по номеру вывода;
-            {component: Q2, pinfunction: 'D'}  — по имени вывода в символе.
-
-        Приоритет — «pin если задан, иначе pinfunction». Если заданы
-        оба, pin выигрывает, но пишется WARNING: смешанная форма
-        маскирует неоднозначность и её лучше избегать.
-
-        Пропуски (компонента нет на листе, пина нет у компонента,
-        заданы оба ключа, не задано ни одного) пишутся на уровне
-        WARNING: это всегда индикатор проблемы загрузки — либо
-        компонент не был добавлен (что ловится в _load_components),
-        либо в YAML указан несуществующий пин / неоднозначный узел.
-        """
+        """Привязывает пин из YAML-узла к сети через FQN страницы."""
         designator = node.get("component")
         if not designator:
             log.warning(
@@ -637,12 +937,20 @@ class Project:
         pin_fn = node.get("pinfunction")
 
         if pin_no is None and pin_fn is None:
-             # Раньше был WARNING, теперь копим в _load_errors.
-        # Ошибка не теряется, а блокирует load() в конце.
             self._load_errors.append(
-                f"{sheet.page}: net={net_name}: {designator} "
-                f"{key}={key_val!r} — пин не найден в символе "
-                f"(доступные: {sorted(p.name for p in comp.pins if p.name) or '—'})"
+                f"{sheet.page}: net={net_name}: {designator} — "
+                f"узел без pin/pinfunction"
+            )
+            log.error(
+                "%s node_no_pin des=%s net=%s",
+                ctx(page=sheet.page), designator, net_name,
+                extra={
+                    "stage":     "load",
+                    "event":     "node_no_pin",
+                    "component": designator,
+                    "net":       net_name,
+                    "reason":    "no_pin_key",
+                },
             )
             return
 
@@ -661,7 +969,6 @@ class Project:
                     "reason":      "both_keys",
                 },
             )
-            # pin выигрывает, продолжаем
 
         comp = sheet.get_component(designator)
         if comp is None:
@@ -717,6 +1024,7 @@ class Project:
                 },
             )
         else:
+            pin.net_name = net_name
             log.debug(
                 "%s pin_bound des=%s %s=%s net=%s fqn=%s",
                 ctx(page=sheet.page), designator, key, key_val, net_name, fqn,
@@ -739,7 +1047,7 @@ class Project:
 
             def _fmt_pin(pin) -> str:
                 net = pin.net_ref or "-"
-                parts = [f"{designator}.{pin.number}"]
+                parts = [f"{designator}.{pin.identifier}"]
                 if pin.name:
                     parts.append(f"[{pin.name}]")
                 parts.append(
@@ -774,13 +1082,13 @@ class Project:
                     "is_sheet_ref": bool(getattr(comp, "is_sheet_ref", False)),
                     "pins": [
                         {
-                            "number":    p.number,
-                            "name":      p.name or None,
+                            "identifier": p.identifier,
+                            "name":       p.name or None,
                             "offset_mm": {
                                 "x": p.offset_mm[Axis.X],
                                 "y": p.offset_mm[Axis.Y],
                             },
-                            "net":       p.net_ref or None,
+                            "net":        p.net_ref or None,
                         }
                         for p in comp.pins
                     ],
@@ -791,28 +1099,13 @@ class Project:
 
     def _discover_sheets(self, parent: Sheet, data: dict,
                          parent_yaml_path: Path) -> None:
-        """Находит ссылки Core:Hierarchical_Sheet и грузит их содержимое.
-
-        SheetRefComponent для родителя создаётся в _load_components.
-        Здесь читаются дочерние YAML и рекурсивно строятся Sheet.
-
-        Правила:
-          * yaml_rel выводится из value_sch: <stem>.kicad_sch → <stem>.yaml.
-            Никакие 'value:' / 'file:' / 'page_name' из YAML не читаются.
-          * Имя выходного .kicad_sch — всегда <stem>.kicad_sch.
-          * Один YAML грузится один раз: повторный X_* (тот же
-            value_sch) видит yaml_key в _loaded_yaml и пропускается.
-          * Коллизия выходных имён между разными YAML — ошибка,
-            иначе save() перезапишет лист.
-        """
+        """Находит ссылки Core:Hierarchical_Sheet и грузит их содержимое."""
         for designator, cdef in data.get("components", {}).items():
             if cdef.get("symbol") != Symbol.HIERARCHICAL_SHEET:
                 continue
 
             value_sch = cdef.get("value_sch")
             if not value_sch:
-                # уже записано в _add_sheet_ref, но повторим, чтобы
-                # не пытаться открыть YAML с пустым путём ниже
                 continue
 
             yaml_rel = str(Path(str(value_sch)).with_suffix(".yaml"))
@@ -903,19 +1196,7 @@ class Project:
             )
 
     def _load_standalone_sheets(self, items: Iterable) -> None:
-        """Грузит YAML-описания схем, не входящих в иерархию проекта.
-
-        Формат элемента списка в main.yaml:
-            standalone_sheets:
-              - fan_driver_testbench            # stem (рекомендуется)
-              - fan_driver_testbench.yaml       # допускается, эквивалентно
-              - { stem: fan_driver_testbench }  # явная форма
-
-        Резолв:
-            sheets/<stem>.yaml    — всегда в SHEETS_DIR
-                                    (parent от main.yaml).
-            <stem>.kicad_sch      — имя выходного файла.
-        """
+        """Грузит YAML-описания схем, не входящих в иерархию проекта."""
         for item in items:
             if isinstance(item, dict):
                 stem = item.get("stem") or item.get("id")
@@ -991,18 +1272,11 @@ class Project:
     # ---------- проверки связности ----------
 
     def _check_sheet_refs_connected(self, sheet: Sheet) -> None:
-        """SheetRef без единой привязанной цепи — вероятно, забыт в nets.
-
-        Ошибки копятся в self._load_errors с путём к YAML и именем
-        компонента, чтобы пользователь видел все орфаны сразу.
-        """
+        """SheetRef без единой привязанной цепи — вероятно, забыт в nets."""
         for comp in sheet.components.values():
             if not getattr(comp, "is_sheet_ref", False):
                 continue
             if not comp.pins:
-                # SheetRef без портов — сам по себе подозрителен, но
-                # пустой YAML-лист формально валиден; это отдельный
-                # случай, здесь не наш инвариант.
                 continue
             if any(p.net_ref for p in comp.pins):
                 continue
@@ -1020,6 +1294,91 @@ class Project:
                     "component": comp.designator,
                 },
             )
+
+    # =========================================================
+    # Аннотация refdes (по аналогии с KiCad-аннотатором)
+    # =========================================================
+
+    def _compute_refdes(self) -> Dict[str, Dict[str, str]]:
+        counters: Dict[str, int] = {}
+        taken: Set[str] = set()
+        result: Dict[str, Dict[str, str]] = {}
+
+        def next_ref(prefix: str) -> str:
+            n = counters.get(prefix, 0) + 1
+            while f"{prefix}{n}" in taken:
+                n += 1
+            counters[prefix] = n
+            taken.add(f"{prefix}{n}")
+            return f"{prefix}{n}"
+
+        def try_reserve(ref: str) -> bool:
+            """Зарезервировать оригинальный refdes, если он свободен."""
+            if ref in taken:
+                return False
+            prefix = _refdes_prefix(ref)
+            tail = ref[len(prefix):]
+            if tail.isdigit():
+                counters[prefix] = max(counters.get(prefix, 0), int(tail))
+            taken.add(ref)
+            return True
+
+        def is_real(comp) -> bool:
+            return (not getattr(comp, "is_sheet_ref", False)
+                    and not getattr(comp, "is_port", False))
+
+        def annotate(sheet: "Sheet", instance_des: str,
+                    first_instance: bool) -> None:
+            rm = result.setdefault(instance_des, {})
+            for _, comp in sheet.components.items():
+                if not is_real(comp):
+                    continue
+                base = comp.designator
+                if first_instance and try_reserve(base):
+                    rm[base] = base
+                else:
+                    rm[base] = next_ref(_refdes_prefix(base))
+
+        def visit(sheet: "Sheet", instance_des: str,
+                first_instance: bool, seen: Set[str]) -> None:
+            annotate(sheet, instance_des, first_instance)
+            for _, comp in sheet.components.items():
+                if not getattr(comp, "is_sheet_ref", False):
+                    continue
+                child_file = Path(comp.sheet_file).with_suffix(
+                    ".kicad_sch").name
+                child_sheet = self.sheets.get(child_file)
+                if child_sheet is None:
+                    continue
+                cf_first = child_file not in seen
+                seen.add(child_file)
+                visit(child_sheet, comp.designator, cf_first, seen)
+
+        # 1. Корень — резервируем как есть.
+        for _, comp in self.root_sheet.components.items():
+            if is_real(comp):
+                try_reserve(comp.designator)
+
+        # 2. X_* в порядке появления в корневом YAML.
+        seen: Set[str] = set()
+        for _, comp in self.root_sheet.components.items():
+            if not getattr(comp, "is_sheet_ref", False):
+                continue
+            child_file = Path(comp.sheet_file).with_suffix(
+                ".kicad_sch").name
+            child_sheet = self.sheets.get(child_file)
+            if child_sheet is None:
+                continue
+            cf_first = child_file not in seen
+            seen.add(child_file)
+            visit(child_sheet, comp.designator, cf_first, seen)
+
+        log.info(
+            "annotation_done maps=%d refdes_total=%d counters=%s",
+            len(result), sum(len(m) for m in result.values()),
+            {k: v for k, v in sorted(counters.items())},
+        )
+        return result
 
     # =========================================================
     # Размещение и роутинг
@@ -1068,7 +1427,7 @@ class Project:
 
         placer.all_overlaps()
 
-        router = Router.from_placer(placer, PathSearch.ASTAR )
+        router = Router.from_placer(placer, PathSearch.ASTAR)
         wires = router.route_all()
 
         log.info(
@@ -1090,35 +1449,123 @@ class Project:
     # Сохранение
     # =========================================================
 
+    def _clean_previous_schematics(self, out_dir: Path) -> None:
+        """Удалить .kicad_sch прошлого прогона.
+
+        kicad-sch-api дополняет файл при save, а не перезаписывает;
+        поэтому перед прогоном удаляем ровно те .kicad_sch, которые
+        сейчас перезапишем. Посторонние файлы в out_dir не трогаем.
+        """
+        targets: set[str] = set()
+
+        root_name = Path(
+            self.root_data.get("file")
+            or (self.root_path.stem + ".kicad_sch")
+        ).name
+        targets.add(root_name)
+
+        for sheet in self.sheets.values():
+            if sheet.sheet_path:
+                targets.add(Path(sheet.sheet_path).name)
+
+        for name in targets:
+            path = out_dir / name
+            if not path.exists():
+                continue
+            try:
+                path.unlink()
+                log.info(
+                    "Удалён %s перед перезаписью", name,
+                    extra={
+                        "stage": "save",
+                        "event": "previous_sch_removed",
+                        "path":  str(path),
+                    },
+                )
+            except OSError as e:
+                log.warning(
+                    "Не удалось удалить %s: %s", name, e,
+                    extra={
+                        "stage":  "save",
+                        "event":  "previous_sch_remove_failed",
+                        "path":   str(path),
+                        "reason": str(e),
+                    },
+                )
+
     def save(self, out_dir: str | Path = "out") -> Path:
-        """Сохраняет .kicad_sch для каждой страницы + routes.txt."""
+        """Сохраняет .kicad_sch всего проекта + routes.txt.
+
+        Порядок:
+        1. Очистка .kicad_sch предыдущего прогона.
+        2. Регистрация библиотек в sym/fp-lib-table.
+        3. Автоаннотация refdes: _compute_refdes → self._refdes_maps.
+        4. Writer.write_project от основного корня: обход дерева,
+           генерация uuid и page-номеров, запись .kicad_sch.
+        5. Standalone-листы: ещё один проход Writer'а. Тот же
+           инстанс Writer'а не перезапишет уже записанные файлы
+           (writer.written), но даст standalone-листам собственные
+           мини-корни с собственной нумерацией.
+        6. routes.txt — текстовая сводка по всем страницам.
+        """
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        for sheet_path, sheet in self.sheets.items():
-            if sheet_path == "":
-                out_name = Path(
-                    self.root_data.get("file", "root.kicad_sch")
-                ).name
-            else:
-                out_name = sheet.sheet_path
+        self._clean_previous_schematics(out_dir)
+        self._ensure_library_tables(out_dir)
 
-            writer = Writer(sheet)
-            writer.write_sheet(out_dir / out_name)
+        # Автоаннотация refdes.
+        self._refdes_maps = self._compute_refdes()
+
+        root_file_name = Path(
+            self.root_data.get("file")
+            or (self.root_path.stem + ".kicad_sch")
+        ).name
+
+        project_name = self._project_name()
+
+        writer = Writer()
+        writer.write_project(
+            out_dir=out_dir,
+            root_sheet=self.root_sheet,
+            root_file_name=root_file_name,
+            sheets=self.sheets,
+            refdes_maps=self._refdes_maps,
+            project_name=project_name,
+        )
+
+        # Standalone-листы — те, что не были задеты обходом от корня.
+        for sheet_path, sheet in list(self.sheets.items()):
+            if not sheet_path:
+                continue                    # корень уже записан
+            if sheet_path in writer.written:
+                continue                    # записан через иерархию
+
             log.info(
-                "%s save_done out=%s",
-                ctx(page=sheet.page), out_name,
+                "%s standalone_save path=%s",
+                ctx(page=sheet.page), sheet_path,
                 extra={
                     "stage": "save",
-                    "event": "sheet_saved",
-                    "out":   str(out_dir / out_name),
+                    "event": "standalone_save",
+                    "sheet": sheet_path,
                 },
             )
 
+            writer.write_project(
+                out_dir=out_dir,
+                root_sheet=sheet,
+                root_file_name=sheet_path,
+                sheets=self.sheets,
+                refdes_maps=self._refdes_maps,
+                project_name=project_name,
+            )
+
+        # routes.txt — текстовая сводка по всем страницам.
         routes = "\n".join(
             Writer(sheet).write_text() for sheet in self.sheets.values()
         )
         (out_dir / "routes.txt").write_text(routes, encoding="utf-8")
+
         log.info(
             "Сохранение завершено: %s", out_dir,
             extra={
@@ -1130,19 +1577,138 @@ class Project:
         )
         return out_dir
 
+    # ---------- вспомогательное для save ----------
+
+    def _project_name(self) -> str:
+        """Имя проекта для блока (instances (project "...")).
+
+        Источник истины — имя .kicad_pro. По конвенции проекта оно
+        совпадает со stem корневого YAML и с именем .kicad_sch:
+            climate_control_niva_travel.kicad_pro
+            climate_control_niva_travel.yaml
+            climate_control_niva_travel.kicad_sch
+
+        Именно это имя KiCad использует в (instances (project "...")).
+        Поле root_page.project в YAML — человекочитаемое название для
+        титульного блока.
+        """
+        return self.root_path.stem
+
+    # =========================================================
+    # Библиотеки проекта (sym-lib-table / fp-lib-table)
+    # =========================================================
+
+    def _ensure_library_tables(self, out_dir: Path) -> None:
+        """Регистрирует библиотеки LibraryManager в sym/fp-lib-table."""
+        if self._libraries is None:
+            return
+
+        for kind, name, abs_path in self._libraries.library_entries():
+            try:
+                rel_path = os.path.relpath(abs_path, out_dir)
+            except ValueError:
+                rel_path = str(abs_path)
+
+            self._ensure_lib_table(out_dir, kind, {name: rel_path})
+
+    def _ensure_lib_table(
+        self,
+        out_dir: Path,
+        kind: LibTableKind,
+        libs: dict,
+    ) -> None:
+        """Дополняет одну таблицу (sym или fp) записями из libs."""
+        table_file = out_dir / LIB_TABLE_FILES[kind]
+        root_token = LIB_TABLE_ROOT_TOKENS[kind]
+
+        if table_file.exists():
+            content = table_file.read_text(encoding="utf-8")
+        else:
+            content = f"({root_token} (version {LIB_TABLE_VERSION})\n)\n"
+            log.info(
+                "Создаётся %s", table_file.name,
+                extra={
+                    "stage": "save",
+                    "event": "lib_table_created",
+                    "path":  str(table_file),
+                },
+            )
+
+        existing_names = set(re.findall(r'\(name\s+"([^"]+)"\)', content))
+
+        added: list[str] = []
+        for name, rel_path in libs.items():
+            if name in existing_names:
+                log.debug(
+                    "%s: библиотека '%s' уже зарегистрирована — пропуск",
+                    table_file.name, name,
+                    extra={
+                        "stage": "save",
+                        "event": "lib_already_registered",
+                        "lib":   name,
+                        "path":  str(table_file),
+                    },
+                )
+                continue
+
+            full_path = (out_dir / rel_path).resolve()
+            if not full_path.exists():
+                log.warning(
+                    "%s: библиотека '%s' → %s не найдена (запись "
+                    "всё равно будет добавлена)",
+                    table_file.name, name, full_path,
+                    extra={
+                        "stage": "save",
+                        "event": "lib_path_missing",
+                        "lib":   name,
+                        "path":  str(full_path),
+                    },
+                )
+
+            uri = (
+                str(rel_path)
+                if str(rel_path).startswith("$")
+                else f"{KIPRJMOD_VAR}/{rel_path}"
+            )
+
+            entry = (
+                f'  (lib (name "{name}")'
+                f'(type "{LIB_TABLE_TYPE_KICAD}")'
+                f'(uri "{uri}")'
+                f'(options "")(descr ""))\n'
+            )
+
+            idx = content.rfind(")")
+            content = content[:idx] + entry + content[idx:]
+            added.append(name)
+
+        if added:
+            table_file.write_text(content, encoding="utf-8")
+            log.info(
+                "%s: зарегистрированы библиотеки: %s",
+                table_file.name, ", ".join(added),
+                extra={
+                    "stage": "save",
+                    "event": "lib_table_updated",
+                    "path":  str(table_file),
+                    "libs":  added,
+                },
+            )
+
 
 # =========================================================
-# Порты страницы: вспомогательное
+# Вспомогательное: префикс refdes, форма порта
 # =========================================================
 
-def _default_port_shape(ptype: str) -> str:
-    """Форма hierarchical_label по типу порта из YAML."""
+def _refdes_prefix(ref: str) -> str:
+    """Буквенная часть refdes: 'U1' → 'U', 'LED11' → 'LED'."""
+    return "".join(c for c in ref if not c.isdigit()) or ref
+
+
+def _default_port_shape(direction: str) -> str:
+    """Форма hierarchical_label по port_direction сети-порта."""
     return {
-        "POWER": "passive",
-        "GND": "passive",
-        "INPUT": "input",
+        "INPUT":  "input",
         "OUTPUT": "output",
-        "BIDIR": "bidirectional",
-        "ANALOG": "passive",
-        "DIGITAL_SIGNAL": "input",
-    }.get(ptype, "input")
+        "BIDIR":  "bidirectional",
+    }.get(str(direction).upper(), "input")

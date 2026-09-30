@@ -6,7 +6,8 @@ kicad_to_spice.py — генерация Ngspice-тестов из нетлис�
 Источник данных:
   * нетлист KiCad (pin-маппинг, состав компонентов);
   * <stem>.yaml → component_types, components, nets, scenarios;
-  * main.yaml → component_types, mcu_pin_map, j1_pinout (только для MCU).
+  * корневой YAML (<ROOT_STEM>.yaml) → component_types, nets
+    (в узлах U1 — pinfunction/function пинов МК).
 
 Где живут модели:
   * Компонент НА СХЕМЕ → модель в component_types[type].spice:
@@ -16,28 +17,26 @@ kicad_to_spice.py — генерация Ngspice-тестов из нетлис�
       - R/C/L: без spice-секции, узлы pin 1/2 из нетлиста.
   * Модель ТОЛЬКО В ТЕСТЕ (deck, без .kicad_sch) → inline в deck.
 
+Refdes-пространства (per-page vs project):
+  .kicad_sch листа хранит ДВЕ системы имён:
+    * (property "Reference" "X")      — YAML-канонические имена листа;
+    * (instances … (reference "Y"))   — проектные имена в конкретных
+                                        instance-путях.
+  kicad-cli при per-file экспорте подставляет в нетлист одно из
+  instances. Генератор .sub/.cir работает с YAML листа, поэтому
+  refdes нетлиста приводится в YAML-пространство ЭТОЙ страницы —
+  через --sch и build_reverse_refdes_maps_from_sch().
+
+  Для корня карта вырождается в тождество. Механизм локален для
+  per-page пути: это не «глобальная нормализация», а «перевод имён
+  одной страницы в её собственное YAML-пространство».
+
 Конвенции распиновки (для primitive M/Q/D):
 
     primitive   SPICE-порты    Откуда берутся узлы
-    M           D G S B        pinfunction 'D'/'G'/'S' в KiCad-символе
-                               (bulk = source)
+    M           D G S B        pinfunction 'D'/'G'/'S'
     Q           C B E          pinfunction 'C'/'B'/'E'
-    D           A K            pin 1 = K, pin 2 = A (Device:D конвенция)
-
-  spice.nodes для примитивов НЕ нужен и не читается. Он остался
-  только у subckt — там порядок портов не выводится из символа.
-
-Роль типов и моделей:
-  component_types[type].spice — всё о модели этого типа:
-    * subckt       — имя .subckt для X-инстанса;
-    * nodes        — только для subckt: SPICE-порт → {pin|pinfunction};
-    * primitive    — M | Q | D: emit примитива (первая буква строки);
-    * model_def    — inline .model для примитивов;
-    * include      — .lib, который нужно .INCLUDE-ить в .cir;
-    * value        — SPICE-значение (override для R/C/L с текстовым value);
-    * params       — фиксированные значения для subckt;
-    * auto_ports   — (только MCU) маркер, что порты берутся из mcu_pin_map.
-  Значения параметров на конкретный прогон — через scenario.overrides.
+    D           A K            pin 1 = K, pin 2 = A (Device:D)
 
 Приоритет эмита одного компонента в spice_el():
   1. sp["primitive"] in ("M","Q","D") → M/Q/D-строка по конвенции;
@@ -46,42 +45,131 @@ kicad_to_spice.py — генерация Ngspice-тестов из нетлис�
   4. part in ("R","C","L")            → R/C/L-строка, pin 1/2;
   5. part в диодах/транзисторах       → fallback для legacy-схем.
 
-Имена элементов:
-  SPICE определяет тип элемента по первой букве. KiCad-reference может
-  не совпадать с ожидаемой буквой (LED1 → L, FB1 → F), поэтому имя
-  элемента собирается через _element_ref(): приставляет префикс по типу,
-  если его ещё нет.
-
 Выходные файлы:
   * spice/<stem>.sub          — подсхема листа;
   * spice/<scenario>.cir      — по одному на scenarios[i];
   * spice/<scenario>_mcu.sub  — per-scenario модель МК (mcu_model.py).
 
-Пути:
-  LIB_DIR = <PROJ>/spice/lib — общая конвенция скриптов.
-
 Запуск:
-    python3 kicad_to_spice.py <netlist.net> <stem> --yaml <path> [port1 ... portN]
+    python3 kicad_to_spice.py <netlist.net> <stem> --yaml <path> \
+            [--sch <path>] [port1 ... portN]
+
+    --sch — путь к .kicad_sch, из которого экспортирован нетлист.
+            Если задан — refdes нетлиста нормализуются в YAML-пространство
+            страницы. Если не задан — refdes используются как есть.
 """
 import os
 import re
 import sys
+from pathlib import Path
+
 import yaml
 
 import mcu_model
 
+
+# ─────────────────────────────────────────────────────────────────────
+# Корневой YAML: имя проекта = stem <PROJ>/*.kicad_pro
+# ─────────────────────────────────────────────────────────────────────
+
 PROJ = os.path.dirname(os.path.abspath(__file__))
 YAML_DIR = os.path.join(PROJ, "sheets")
-MAIN_YAML = os.path.join(YAML_DIR, "main.yaml")
 LIB_DIR = os.path.join(PROJ, "spice", "lib")
 
 
+def _detect_root_stem(root: Path) -> str:
+    pro_files = sorted(root.glob("*.kicad_pro"))
+    if not pro_files:
+        raise FileNotFoundError(
+            f"В {root} нет *.kicad_pro — не могу определить имя проекта."
+        )
+    if len(pro_files) > 1:
+        names = ", ".join(p.name for p in pro_files)
+        raise RuntimeError(
+            f"В {root} несколько .kicad_pro ({names}); нужен ровно один."
+        )
+    return pro_files[0].stem
+
+
+try:
+    ROOT_STEM = _detect_root_stem(Path(PROJ))
+except (FileNotFoundError, RuntimeError) as e:
+    sys.exit(f"kicad_to_spice.py: {e}")
+
+MAIN_YAML = os.path.join(YAML_DIR, f"{ROOT_STEM}.yaml")
+
+
 # ─────────────────────────────────────────────────────────────────────
-# Загрузка main.yaml
+# Загрузка корневого YAML
 # ─────────────────────────────────────────────────────────────────────
 
 def load_main():
-    return yaml.safe_load(open(MAIN_YAML, encoding="utf-8"))["root_page"]
+    doc = yaml.safe_load(open(MAIN_YAML, encoding="utf-8")) or {}
+    if isinstance(doc, dict) and "root_page" in doc:
+        return doc.get("root_page") or {}
+    return doc
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Per-page нормализация refdes: kicad-cli → YAML-пространство страницы
+# ─────────────────────────────────────────────────────────────────────
+
+def build_reverse_refdes_maps_from_sch(sch_path):
+    """{instance_ref: top_ref} для одного .kicad_sch.
+
+    Для каждого символа-экземпляра находит top-level Reference и все
+    reference из (instances …). Возвращает {Y: X}.
+
+    Для корня карта вырождается в тождество (top-level = instances =
+    project refdes), поэтому вызов безопасен и не меняет поведение.
+    """
+    if not sch_path or not os.path.exists(sch_path):
+        return {}
+    try:
+        text = open(sch_path, encoding="utf-8").read()
+    except OSError:
+        return {}
+
+    out = {}
+    for m in re.finditer(
+        r'\(symbol\s+\(lib_id\s+"[^"]+"\)(.*?)(?=\(symbol\s+\(lib_id|$)',
+        text, re.S,
+    ):
+        block = m.group(1)
+
+        ref_m = re.search(
+            r'\(property\s+"Reference"\s+"([^"]+)"', block,
+        )
+        if not ref_m:
+            continue
+        top = ref_m.group(1)
+
+        for inst_ref in re.findall(
+            r'\(path\s+"[^"]+"\s*\(reference\s+"([^"]+)"\)',
+            block,
+        ):
+            out.setdefault(inst_ref, top)
+
+    return out
+
+
+def _apply_reverse_map(comps, nets, rmap):
+    """Привести refdes нетлиста в YAML-пространство страницы.
+
+    rmap = {instance_ref: top_ref}. Если карта пуста — структуры
+    возвращаются как есть. Узел, чей refdes не попал в карту,
+    остаётся без изменений — данные не теряются.
+    """
+    if not rmap:
+        return comps, nets
+
+    comps2 = {rmap.get(r, r): c for r, c in comps.items()}
+    nets2 = {}
+    for name, nodes in nets.items():
+        nets2[name] = [
+            (rmap.get(r, r), pin, fn) for r, pin, fn in nodes
+        ]
+    return comps2, nets2
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -128,23 +216,17 @@ def _inline_model_name(model_def):
 
 _PINFUNC_SUFFIX = re.compile(r"_\d+$")
 
+
 def _norm_pinfunc(fn):
-    """KiCad 10 экспортирует pinfunction как '<name>_<pin>'.
-    Убираем суффикс: 'S_2' → 'S', 'D_3' → 'D', 'Pin_1_1' → 'Pin_1'."""
     if not fn:
         return fn
     return _PINFUNC_SUFFIX.sub("", fn)
 
-def parse_netlist(text):
-    """Парсит нетлист KiCad.
 
-    Возвращает (comps, nets):
+def parse_netlist(text):
+    """Возвращает (comps, nets):
         comps[ref] = {"value": ..., "lib": ..., "part": ...}
         nets[name] = [(ref, pin, pinfunction_or_None), ...]
-
-    pinfunction нормализуется: 'S_2' → 'S', 'D_3' → 'D',
-    'Pin_1_1' → 'Pin_1' (KiCad 10 добавляет '_<pin>' к имени
-    вывода при экспорте).
     """
     comps = {}
     for m in re.finditer(
@@ -175,11 +257,6 @@ def parse_netlist(text):
 
 
 def parse_val(v, ref="?"):
-    """Строгое KiCad → SPICE.
-
-    Принимает: 1u, 10k, 100n, 4k7, 1M, 0.1, 1R5, 220
-    Отвергает: 'Феррит...', '10 кОм', '1uF 25V', пустое, 'DNP'.
-    """
     s = str(v).strip().replace(",", ".")
     s = re.sub(r"[А-Яа-яЁё].*$", "", s).strip()
     m = re.match(r"([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*"
@@ -194,12 +271,6 @@ def parse_val(v, ref="?"):
 
 
 def net_of(nets, ref, key, by="pin"):
-    """Поиск цепи для (ref, key).
-
-    by="pin"         — key это номер пина ('1','2','3');
-    by="pinfunction" — key это семантическое имя вывода ('D','G','S',
-                       'A','K','C','B','E').
-    """
     for nm, nds in nets.items():
         for nd in nds:
             if nd[0] != ref:
@@ -215,17 +286,6 @@ def cname(nm):
 
 
 def _resolve_node(nets, ref, spec, default="GND"):
-    """Узел для nodes[port] subckt-модели.
-
-    spec:
-      * None                                → default;
-      * str ('3')                           → по номеру пина;
-      * {pin: '3'}                          → по номеру пина;
-      * {pinfunction: 'IN'}                 → по семантическому имени.
-
-    Используется ТОЛЬКО в ветке subckt. Для primitive M/Q/D/R/C/L
-    узлы берутся по конвенции напрямую через net_of().
-    """
     if spec is None:
         return default
     if isinstance(spec, dict):
@@ -300,18 +360,31 @@ def _mcu_instances(sc, main_cfg):
     return result
 
 
+def _mcu_sig_by_net(main_cfg: dict) -> dict:
+    sig_by_net = {}
+    for net_name, ndef in (main_cfg.get("nets") or {}).items():
+        for n in ndef.get("nodes") or []:
+            if not isinstance(n, dict):
+                continue
+            if n.get("component") != "U1":
+                continue
+            pf = n.get("pinfunction")
+            if pf:
+                sig_by_net[net_name] = pf
+            break
+    return sig_by_net
+
+
 def _mcu_args(main_cfg, connect, ref="XU1"):
     ports = mcu_model.mcu_ports(main_cfg)
-    pin_map = main_cfg.get("mcu_pin_map") or {}
-    sig_by_net = {p["net"]: p.get("signal")
-                  for p in pin_map.values() if p.get("net")}
+    sig_by_net = _mcu_sig_by_net(main_cfg)
     valid_keys = set(ports) | {s for s in sig_by_net.values() if s}
 
     unknown = set(connect) - valid_keys
     if unknown:
         raise ValueError(
             f"{ref}: connect содержит неизвестные ключи "
-            f"(нет ни в mcu_pin_map.net, ни в mcu_pin_map.signal): "
+            f"(нет ни среди портов МК, ни среди pinfunction U1): "
             f"{sorted(unknown)}"
         )
 
@@ -344,22 +417,13 @@ def _validate_mcu_state(sc):
 # ─────────────────────────────────────────────────────────────────────
 
 def spice_el(ref, comp, nets, sheet_yaml, main_cfg):
-    """SPICE-строка одного компонента внутри .sub.
-
-    Приоритет:
-      1. sp["primitive"] in ("M","Q","D") → M/Q/D по конвенции;
-      2. sp["subckt"]                     → X-инстанс по sp["nodes"];
-      3. legacy spice.models[model]       → X или .model;
-      4. part in ("R","C","L")            → R/C/L pin 1/2;
-      5. part в диодах/транзисторах       → fallback для legacy-схем.
-    """
     part = comp["part"]
     type_name, ctype = _sheet_type_of(sheet_yaml, ref)
     sp = ctype.get("spice") or {}
     legacy_name = sp.get("model")
     legacy = _lookup_legacy(sheet_yaml, main_cfg, legacy_name)
 
-    # ─── 1. primitive — M / Q / D по конвенциям SPICE↔KiCad ───
+    # ─── 1. primitive — M / Q / D ───
     prim = sp.get("primitive")
     if prim in ("M", "Q", "D"):
         mdl = _inline_model_name(sp.get("model_def", ""))
@@ -372,23 +436,19 @@ def spice_el(ref, comp, nets, sheet_yaml, main_cfg):
             )
 
         if prim == "D":
-            # KiCad Device:D: pin 1 = K (катод), pin 2 = A (анод)
             k = cname(net_of(nets, ref, "1", by="pin") or "GND")
             a = cname(net_of(nets, ref, "2", by="pin") or "GND")
             dref = _element_ref("D", ref)
             return f'{dref} {a} {k} {mdl}'
 
         if prim == "M":
-            # KiCad Transistor_FET:*: pinfunction D/G/S
             d = cname(net_of(nets, ref, "D", by="pinfunction") or "GND")
             g = cname(net_of(nets, ref, "G", by="pinfunction") or "GND")
             s = cname(net_of(nets, ref, "S", by="pinfunction") or "GND")
-            b = s   # bulk = source
+            b = s
             mref = _element_ref("M", ref)
             return f'{mref} {d} {g} {s} {b} {mdl}'
 
-        # prim == "Q"
-        # KiCad Transistor_BJT:*: pinfunction C/B/E
         c = cname(net_of(nets, ref, "C", by="pinfunction") or "GND")
         b = cname(net_of(nets, ref, "B", by="pinfunction") or "GND")
         e = cname(net_of(nets, ref, "E", by="pinfunction") or "GND")
@@ -428,7 +488,7 @@ def spice_el(ref, comp, nets, sheet_yaml, main_cfg):
             line += " " + " ".join(params)
         return line
 
-    # ─── 3. R / C / L — pin 1 / pin 2 ───
+    # ─── 3. R / C / L ───
     if part in ("R", "C", "L"):
         v = sp.get("value") or parse_val(comp["value"], ref=ref)
         p1 = cname(net_of(nets, ref, "1", by="pin") or "GND")
@@ -436,7 +496,7 @@ def spice_el(ref, comp, nets, sheet_yaml, main_cfg):
         eref = _element_ref(part, ref)
         return f'{eref} {p1} {p2} {v}'
 
-    # ─── 4. Диод / LED — fallback для legacy-схем без primitive ───
+    # ─── 4. Диод / LED — legacy ───
     if part in ("D", "D_Schottky", "D_Zener", "LED"):
         k = cname(net_of(nets, ref, "K", by="pinfunction")
                   or net_of(nets, ref, "1", by="pin") or "GND")
@@ -453,7 +513,7 @@ def spice_el(ref, comp, nets, sheet_yaml, main_cfg):
         dref = _element_ref("D", ref)
         return f'{dref} {a} {k} {mdl}'
 
-    # ─── 5. Транзистор — fallback для legacy-схем без primitive ───
+    # ─── 5. Транзистор — legacy ───
     if part in ("Q_NMOS", "Q_NMOS_GSD", "Q_NPN", "Q_PNP"):
         mdl = _inline_model_name(sp.get("model_def", ""))
         if not mdl and legacy_name and _model_kind(legacy) == "model":
@@ -806,6 +866,7 @@ def build_cir(stem, sc, sheet_yaml, main_cfg, ports, comps):
 
 def parse_argv(argv):
     yaml_path = None
+    sch_path = None
     rest = []
     i = 0
     while i < len(argv):
@@ -814,12 +875,16 @@ def parse_argv(argv):
             yaml_path = argv[i + 1]; i += 2; continue
         if a.startswith("--yaml="):
             yaml_path = a.split("=", 1)[1]; i += 1; continue
+        if a == "--sch" and i + 1 < len(argv):
+            sch_path = argv[i + 1]; i += 2; continue
+        if a.startswith("--sch="):
+            sch_path = a.split("=", 1)[1]; i += 1; continue
         rest.append(a); i += 1
-    return rest, yaml_path
+    return rest, yaml_path, sch_path
 
 
 def main():
-    rest, yaml_path = parse_argv(sys.argv[1:])
+    rest, yaml_path, sch_path = parse_argv(sys.argv[1:])
     if len(rest) < 2:
         print(__doc__)
         sys.exit(1)
@@ -846,6 +911,14 @@ def main():
 
     text = open(path, encoding="utf-8").read()
     comps, nets = parse_netlist(text)
+
+    # Привести refdes нетлиста в YAML-пространство ЭТОЙ страницы.
+    # kicad-cli при per-file экспорте .kicad_sch подставляет refdes
+    # одного из instances; YAML листа описывает канонические имена.
+    # Для корня карта вырождается в тождество.
+    rmap = build_reverse_refdes_maps_from_sch(sch_path)
+    if rmap:
+        comps, nets = _apply_reverse_map(comps, nets, rmap)
 
     try:
         sub_lines = build_subckt(stem, comps, nets, sheet_yaml, main_cfg, ports)

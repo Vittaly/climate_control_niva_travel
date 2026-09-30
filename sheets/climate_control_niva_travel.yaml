@@ -1,6 +1,6 @@
 root_page:
   project: Climate Control Niva Travel
-  version: '2.5'
+  version: '2.7'
   file: climate_control_niva_travel.kicad_sch
 
   # ─────────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ root_page:
   #
   # Корневая страница — тоже лист. Модели её компонентов объявлены
   # в component_types[type].spice, как и на любом другом листе.
-  # Модель МК (STM32F103RCT6) генерируется per-scenario модулем
+  # Модель МК (STM32G071RBT6) генерируется per-scenario модулем
   # mcu_model.py — её тип U1 несёт маркер auto_ports.
   #
   # Путь к .lib — общая конвенция скриптов (spice/lib), в YAML не
@@ -36,6 +36,56 @@ root_page:
   # ─────────────────────────────────────────────────────────────────
 
   # ─────────────────────────────────────────────────────────────────
+  # Модель связей листов (порты)
+  #
+  # Порт листа — это сеть ВНУТРИ листа с флагом is_hierarchical_port:
+  # true. Имя порта = имя сети. Направление (для размещения на левом
+  # или правом краю) задаётся полем port_direction: OUTPUT; по
+  # умолчанию — INPUT. Оба поля объявляются в sheets/<stem>.yaml.
+  #
+  # На родительской странице порт используется как узел обычной
+  # сети, через pinfunction: <имя_порта>. Связь «порт ребёнка ↔
+  # корневая сеть» выводится по имени: pinfunction у sheet-узла
+  # ссылается на сеть-порт ребёнка. Ни port_map, ни верхний блок
+  # ports: в YAML больше не используются.
+  #
+  # Имена портов на родителе и внутри листа могут не совпадать
+  # структурно (сеть внутри ребёнка может называться иначе), но
+  # ссылка идёт по имени сети-порта.
+  #
+  # pin: — ТОЛЬКО числовой номер вывода KiCad ('1', '29', '64').
+  # pinfunction: — функциональное имя (VBAT, PA13, OUT1, MOTOR_A, ...).
+  # Резолв имён выполняет Component.pin_by_name() с нормализацией
+  # суффиксов (VSS/VSSA → VSS, PA14-BOOT0 → PA14 и т.п.).
+  #
+  # У sheet-компонента пины не имеют числовых номеров, поэтому
+  # ссылки на них — только через pinfunction.
+  # ─────────────────────────────────────────────────────────────────
+
+  # ─────────────────────────────────────────────────────────────────
+  # Модель данных о пинах МК
+  #
+  # Источник истины о том, какие пины U1 используются и как —
+  # секция `nets`. Отдельного `mcu_pin_map` больше нет: он дублировал
+  # данные, уже содержащиеся в nets.
+  #
+  # Узел U1 в nets описывается полями:
+  #   pinfunction — имя вывода из символа KiCad ('PA13', 'VBAT', ...).
+  #                 Используется Component.pin_by_name() для привязки.
+  #   function    — короткая машинно-читаемая роль ('power_in',
+  #                 'SWDIO', 'reset', 'TIM1_CH1'). Опционально.
+  #   description — человекочитаемое описание логики использования:
+  #                 зачем сигнал, куда идёт, какие ограничения.
+  #                 Не используется pipeline'ом, только для людей
+  #                 и для генерации отчётов.
+  #
+  # Связь идёт по имени вывода, а не по номеру пина: смена корпуса
+  # или ревизии чипа не требует правок (в пределах совпадающей
+  # распиновки), а сверка с официальным XML CubeMX становится
+  # тривиальной.
+  # ─────────────────────────────────────────────────────────────────
+
+  # ─────────────────────────────────────────────────────────────────
   # Листы без X_* — не входят в иерархию основного проекта.
   #
   # Для них нет (sheet ...) в корневой схеме и нет ссылок из nets.
@@ -46,221 +96,6 @@ root_page:
   # ─────────────────────────────────────────────────────────────────
   standalone_sheets:
     - fan_driver_testbench
-
-  mcu_pin_map:
-    '1':
-      signal: VBAT
-      net: VCC_3V3
-      function: power_in
-    '2':
-      signal: PC13
-      net: M4_IN2
-      comment: драйвер U5
-    '3':
-      signal: PC14
-      net: LED_DRY_GLASS_DRV
-    '4':
-      signal: PC15
-      net: LED_AC_DRV
-    '5':
-      signal: PD0
-      net: null
-      function: OSC_IN
-    '6':
-      signal: PD1
-      net: null
-      function: OSC_OUT
-    '7':
-      signal: NRST
-      net: NRST
-      function: reset
-    '8':
-      signal: PC0
-      net: ILLUM_SENSE
-    '9':
-      signal: PC1
-      net: null
-    '10':
-      signal: PC2
-      net: LED_RECIRC_DRV
-    '11':
-      signal: PC3
-      net: M_FAN_CTL
-    '12':
-      signal: VSSA
-      net: GND
-      function: power_in
-    '13':
-      signal: VDDA
-      net: VDDA_3V3
-      function: power_in
-    '14':
-      signal: PA0
-      net: TEMP_SET_ADC
-    '15':
-      signal: PA1
-      net: FAN_SEL_ADC
-    '16':
-      signal: PA2
-      net: NTC_CABIN
-    '17':
-      signal: PA3
-      net: NTC_HEAT
-    '18':
-      signal: VSS_1
-      net: GND
-      function: power_in
-    '19':
-      signal: VDD_1
-      net: VCC_3V3
-      function: power_in
-    '20':
-      signal: PA4
-      net: SOLAR_ADC
-    '21':
-      signal: PA5
-      net: COND_ADC
-    '22':
-      signal: PA6
-      net: FB_M1
-    '23':
-      signal: PA7
-      net: FB_M2
-    '24':
-      signal: PC4
-      net: null
-    '25':
-      signal: PC5
-      net: null
-    '26':
-      signal: PB0
-      net: FB_M3
-    '27':
-      signal: PB1
-      net: FB_M4
-    '28':
-      signal: PB2
-      net: AC_CTL
-      comment: запрос кондиционера
-    '29':
-      signal: PB10
-      net: BTN_DEFROST_GLASS
-    '30':
-      signal: PB11
-      net: BTN_FACE
-    '31':
-      signal: VSS_2
-      net: GND
-      function: power_in
-    '32':
-      signal: VDD_2
-      net: VCC_3V3
-      function: power_in
-    '33':
-      signal: PB12
-      net: BTN_FEET
-    '34':
-      signal: PB13
-      net: BTN_DRY_GLASS
-    '35':
-      signal: PB14
-      net: BTN_AC
-    '36':
-      signal: PB15
-      net: BTN_RECIRC
-    '37':
-      signal: PC6
-      net: null
-    '38':
-      signal: PC7
-      net: null
-    '39':
-      signal: PC8
-      net: null
-    '40':
-      signal: PC9
-      net: null
-    '41':
-      signal: PA8
-      net: FAN_PWM_CTL
-      comment: TIM1_CH1
-    '42':
-      signal: PA9
-      net: M1_IN1
-    '43':
-      signal: PA10
-      net: M1_IN2
-    '44':
-      signal: PA11
-      net: M2_IN1
-    '45':
-      signal: PA12
-      net: M2_IN2
-    '46':
-      signal: PA13
-      net: SWDIO
-      function: SWDIO
-    '47':
-      signal: VSS_3
-      net: GND
-      function: power_in
-    '48':
-      signal: VDD_3
-      net: VCC_3V3
-      function: power_in
-    '49':
-      signal: PA14
-      net: SWCLK
-      function: SWCLK
-    '50':
-      signal: PA15
-      net: LED_DEFROST_GLASS_DRV
-    '51':
-      signal: PC10
-      net: null
-    '52':
-      signal: PC11
-      net: null
-    '53':
-      signal: PC12
-      net: null
-    '54':
-      signal: PD2
-      net: null
-    '55':
-      signal: PB3
-      net: LED_FACE_DRV
-    '56':
-      signal: PB4
-      net: LED_FEET_DRV
-    '57':
-      signal: PB5
-      net: M3_IN1
-    '58':
-      signal: PB6
-      net: M3_IN2
-    '59':
-      signal: PB7
-      net: M4_IN1
-    '60':
-      signal: BOOT0
-      net: BOOT0
-      function: boot
-      comment: через 10k к GND
-    '61':
-      signal: PB8
-      net: CAN_RX
-    '62':
-      signal: PB9
-      net: CAN_TX
-    '63':
-      signal: VSS_4
-      net: GND
-      function: power_in
-    '64':
-      signal: VDD_4
-      net: VCC_3V3
-      function: power_in
 
   j1_pinout:
     '1': +12В_БАТ вход питания
@@ -303,7 +138,9 @@ root_page:
     # spice-секции не требуют (кроме случаев, где value не в
     # KiCad-нотации — тогда задаётся spice.value).
     # Connector не моделируется.
-    # STM32F103RCT6 — единственный, кто несёт spice с auto_ports.
+    # STM32G071RBT6 — единственный, кто несёт spice с auto_ports.
+    # Поля pin→net для SPICE-модели МК берутся из nets: узлы U1
+    # с pinfunction и function. Отдельного mcu_pin_map нет.
 
     TYPE_C_100NF:
       symbol: Device:C
@@ -349,19 +186,19 @@ root_page:
         Power: 0.1W
         Tolerance: 1%
 
-    TYPE_STM32F103RC-D-ETX_STM32F103RCT6:
-      symbol: MCU_ST_STM32F1:STM32F103R_C-D-E_Tx
-      footprint: Package_QFP:LQFP-64_10x10mm_P0.5mm
-      value: STM32F103RCT6
+    TYPE_STM32G071RBT6:
+      lcsc_id: C432213
+      value: STM32G071RBT6
       fields: {}
       spice:
         description: |
-          Модель STM32F103RCT6 по задействованным пинам корневой схемы.
-          Генерируется make_scr/mcu_model.py из mcu_pin_map.
+          Модель STM32G071RBT6 по задействованным пинам корневой схемы.
+          Генерируется make_scr/mcu_model.py: пины и их цепи берутся
+          из узлов U1 в nets (pinfunction + function).
           Входы: 10 МΩ + 5 пФ, выходы: push-pull 40 Ω.
           .INCLUDE spice/<scenario>_mcu.sub ставит kicad_to_spice.
-        auto_ports: mcu_pin_map
-        subckt: STM32F103RCT6
+        auto_ports: nets
+        subckt: STM32G071RBT6
 
   components:
     C10:
@@ -396,14 +233,18 @@ root_page:
       description: сброс МК
     R2:
       type: TYPE_R_10K
-      description: к GND
+      description: pull-down 10k на SWCLK/BOOT0
     U1:
-      type: TYPE_STM32F103RC-D-ETX_STM32F103RCT6
+      type: TYPE_STM32G071RBT6
       description: LQFP-64
 
     # ─── Иерархические листы основного проекта ─────────────────────
     # Ключ X_<STEM_UPPER> — производное от stem'а YAML-файла листа.
     # value_sch — единственное место, где указан .kicad_sch листа.
+    #
+    # Порты листа не описываются здесь: они берутся из дочернего
+    # YAML (nets.*.is_hierarchical_port). Связь с корневыми сетями —
+    # через nets этой страницы, узел {component: X_*, pinfunction: <порт>}.
 
     X_POWER_SUPPLY:
       symbol: Core:Hierarchical_Sheet
@@ -453,60 +294,25 @@ root_page:
     # ─── 4 экземпляра универсального канала заслонки ───────────────
     # Один и тот же actuator_channel.kicad_sch инстанцируется 4 раза.
     # Суффикс _M1.._M4 различает инстансы; конкретные цепи задаются
-    # port_map. Внутри листа имена обобщённые:
-    # IN1, IN2, MOTOR_A, MOTOR_B, FB_RAW, FB.
+    # в nets этой страницы: узел {component: X_ACTUATOR_CHANNEL_M*, pinfunction: <порт>}
+    # подключается к корневой сети. Внутри листа имена портов
+    # обобщённые: IN1, IN2, MOTOR_A, MOTOR_B, FB_RAW, FB.
     X_ACTUATOR_CHANNEL_M1:
       symbol: Core:Hierarchical_Sheet
       description: "Канал заслонки 1 (ТЕПЛО/ХОЛОД)"
       value_sch: actuator_channel.kicad_sch
-      port_map:
-        VCC_12V: VCC_12V
-        GND:     GND
-        IN1:     M1_IN1
-        IN2:     M1_IN2
-        MOTOR_A: MOTOR_1_A
-        MOTOR_B: MOTOR_1_B
-        FB_RAW:  FB_M1_RAW
-        FB:      FB_M1
     X_ACTUATOR_CHANNEL_M2:
       symbol: Core:Hierarchical_Sheet
       description: "Канал заслонки 2 (СТЕКЛО или ЛИЦО+НОГИ)"
       value_sch: actuator_channel.kicad_sch
-      port_map:
-        VCC_12V: VCC_12V
-        GND:     GND
-        IN1:     M2_IN1
-        IN2:     M2_IN2
-        MOTOR_A: MOTOR_2_A
-        MOTOR_B: MOTOR_2_B
-        FB_RAW:  FB_M2_RAW
-        FB:      FB_M2
     X_ACTUATOR_CHANNEL_M3:
       symbol: Core:Hierarchical_Sheet
       description: "Канал заслонки 3 (ЛИЦО или НОГИ)"
       value_sch: actuator_channel.kicad_sch
-      port_map:
-        VCC_12V: VCC_12V
-        GND:     GND
-        IN1:     M3_IN1
-        IN2:     M3_IN2
-        MOTOR_A: MOTOR_3_A
-        MOTOR_B: MOTOR_3_B
-        FB_RAW:  FB_M3_RAW
-        FB:      FB_M3
     X_ACTUATOR_CHANNEL_M4:
       symbol: Core:Hierarchical_Sheet
       description: "Канал заслонки 4 (РЕЦИРКУЛЯЦИЯ)"
       value_sch: actuator_channel.kicad_sch
-      port_map:
-        VCC_12V: VCC_12V
-        GND:     GND
-        IN1:     M4_IN1
-        IN2:     M4_IN2
-        MOTOR_A: MOTOR_4_A
-        MOTOR_B: MOTOR_4_B
-        FB_RAW:  FB_M4_RAW
-        FB:      FB_M4
 
   nets:
     VCC_12V:
@@ -522,19 +328,19 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: VCC_12V
+        pinfunction: VCC_12V
       - component: X_CABIN_SENSOR
-        pin: VCC_12V
+        pinfunction: VCC_12V
       - component: X_POWER_OUTPUTS
-        pin: VCC_12V
+        pinfunction: VCC_12V
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: VCC_12V
+        pinfunction: VCC_12V
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: VCC_12V
+        pinfunction: VCC_12V
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: VCC_12V
+        pinfunction: VCC_12V
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: VCC_12V
+        pinfunction: VCC_12V
 
     VCC_5V:
       name: VCC_5V
@@ -550,9 +356,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_CAN_BUS
-        pin: VCC_5V
+        pinfunction: VCC_5V
       - component: X_POWER_SUPPLY
-        pin: VCC_5V
+        pinfunction: VCC_5V
 
     VCC_3V3:
       name: VCC_3V3
@@ -577,11 +383,18 @@ root_page:
       - component: C9
         pin: '1'
       - component: U1
-        pin: '48'
+        pinfunction: VBAT
+        function: power_in
+        description: |
+          Резервное питание RTC/backup-домена. Внешней батареи нет,
+          поэтому соединён с VDD (VCC_3V3). Керамический конденсатор
+          100 нФ на GND распаян рядом с пином.
       - component: U1
-        pin: '64'
-      - component: U1
-        pin: '1'
+        pinfunction: VDD
+        function: power_in
+        description: |
+          Основное питание цифрового ядра и GPIO. Развязка: C7, C8, C9
+          (100 нФ) и C6 (10 мкФ).
       - component: FB1
         pin: '1'
       - component: R1
@@ -589,15 +402,11 @@ root_page:
       - component: J2
         pin: '1'
       - component: X_POWER_SUPPLY
-        pin: VCC_3V3
+        pinfunction: VCC_3V3
       - component: X_USER_INTERFACE
-        pin: VCC_3V3
+        pinfunction: VCC_3V3
       - component: X_HEATING_SENSOR
-        pin: VCC_3V3
-      - component: U1
-        pin: '19'
-      - component: U1
-        pin: '32'
+        pinfunction: VCC_3V3
 
     VDDA_3V3:
       name: VDDA_3V3
@@ -616,7 +425,12 @@ root_page:
       - component: C10
         pin: '1'
       - component: U1
-        pin: '13'
+        pinfunction: VREF+
+        function: power_in
+        description: |
+          Опорное напряжение АЦП. Питается через феррит FB1
+          (600Ω @ 100 МГц) от VCC_3V3, чтобы отфильтровать импульсные
+          помехи от цифровой части. C10 (100 нФ) — на выходе FB1.
 
     GND:
       name: GND
@@ -630,10 +444,6 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: U1
-        pin: '47'
-      - component: U1
-        pin: '63'
       - component: C5
         pin: '2'
       - component: C6
@@ -653,37 +463,38 @@ root_page:
       - component: J2
         pin: '4'
       - component: U1
-        pin: '12'
+        pinfunction: VSS
+        function: power_in
+        description: |
+          Общая земля. В LQFP-64 единственный вывод VSS (VSSA и VSS
+          объединены внутри чипа). Подключать к сплошному полигону
+          земли через переходные отверстия у пина.
       - component: X_CAN_BUS
-        pin: GND
+        pinfunction: GND
       - component: X_POWER_SUPPLY
-        pin: GND
+        pinfunction: GND
       - component: X_USER_INTERFACE
-        pin: GND
+        pinfunction: GND
       - component: X_CABIN_SENSOR
-        pin: GND
+        pinfunction: GND
       - component: X_HEATING_SENSOR
-        pin: GND
+        pinfunction: GND
       - component: X_SOLAR_SENSOR
-        pin: GND
+        pinfunction: GND
       - component: X_CONDENSATE_SENSOR
-        pin: GND
+        pinfunction: GND
       - component: X_POWER_OUTPUTS
-        pin: GND
+        pinfunction: GND
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: GND
+        pinfunction: GND
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: GND
+        pinfunction: GND
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: GND
+        pinfunction: GND
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: GND
-      - component: U1
-        pin: '18'
-      - component: U1
-        pin: '31'
+        pinfunction: GND
       - component: X_BACKLIGHT
-        pin: GND
+        pinfunction: GND
 
     NRST:
       name: NRST
@@ -698,28 +509,16 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '7'
+        pinfunction: PF2
+        function: reset
+        description: |
+          Активный низкий уровень сброса. RC-цепь: R1 (10 кОм) —
+          подтяжка к VCC_3V3, C21 (100 нФ) — на GND. Внешний
+          сброс — через SWD-разъём J2.
       - component: R1
         pin: '2'
       - component: C21
         pin: '1'
-
-    BOOT0:
-      name: BOOT0
-      description: 'Выбор режима загрузки: подтяжка к GND (загрузка из основной Flash)'
-      attributes:
-        type: DIGITAL_SIGNAL
-        voltage_level: 3.3V
-        current_max: 0.02A
-        spice_simulation:
-          model_stimulus: ''
-          parasitic_r_ohm: 0.05
-          parasitic_l_h: 10n
-      nodes:
-      - component: R2
-        pin: '1'
-      - component: U1
-        pin: '60'
 
     SWDIO:
       name: SWDIO
@@ -736,11 +535,15 @@ root_page:
       - component: J2
         pin: '2'
       - component: U1
-        pin: '46'
+        pinfunction: PA13
+        function: SWDIO
+        description: |
+          Данные SWD. Встроенная подтяжка ~40 кОм к VDD активна
+          после reset, внешняя не требуется. Разъём J2.2.
 
     SWCLK:
       name: SWCLK
-      description: 'Отладочный интерфейс SWD: тактирование'
+      description: 'Отладочный интерфейс SWD: тактирование (совмещено с BOOT0)'
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -753,7 +556,17 @@ root_page:
       - component: J2
         pin: '3'
       - component: U1
-        pin: '49'
+        pinfunction: PA14
+        function: SWCLK
+        description: |
+          Тактирование SWD, совмещено с BOOT0 (отдельного пина BOOT0
+          у G071 нет). При включении уровень на PA14 выбирает режим
+          загрузки: низкий — Flash, высокий — системный загрузчик.
+          Подтяжка R2 (10 кОм) к GND гарантирует загрузку из Flash
+          без участия программатора.
+      - component: R2
+        pin: '1'
+        description: pull-down BOOT0/SWCLK к GND
 
     BTN_DEFROST_GLASS:
       name: BTN_DEFROST_GLASS
@@ -768,9 +581,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '29'
+        pinfunction: PB10
+        description: |
+          Вход кнопки «воздух на стекло». Внутренняя pull-up не
+          используется: подтяжка выполняется на листе UI к VCC_3V3,
+          активный уровень — низкий (кнопка замыкает на GND).
       - component: X_USER_INTERFACE
-        pin: BTN_DEFROST_GLASS
+        pinfunction: BTN_DEFROST_GLASS
 
     BTN_FACE:
       name: BTN_FACE
@@ -785,9 +602,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '30'
+        pinfunction: PB11
+        description: 'Вход кнопки «воздух в лицо», активный низкий, подтяжка на UI.'
       - component: X_USER_INTERFACE
-        pin: BTN_FACE
+        pinfunction: BTN_FACE
 
     BTN_FEET:
       name: BTN_FEET
@@ -802,9 +620,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '33'
+        pinfunction: PB12
+        description: 'Вход кнопки «воздух в ноги», активный низкий, подтяжка на UI.'
       - component: X_USER_INTERFACE
-        pin: BTN_FEET
+        pinfunction: BTN_FEET
 
     BTN_DRY_GLASS:
       name: BTN_DRY_GLASS
@@ -819,9 +638,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '34'
+        pinfunction: PB13
+        description: 'Вход кнопки «сушка стекла», активный низкий, подтяжка на UI.'
       - component: X_USER_INTERFACE
-        pin: BTN_DRY_GLASS
+        pinfunction: BTN_DRY_GLASS
 
     BTN_AC:
       name: BTN_AC
@@ -836,9 +656,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '35'
+        pinfunction: PB14
+        description: 'Вход кнопки «кондиционер», активный низкий, подтяжка на UI.'
       - component: X_USER_INTERFACE
-        pin: BTN_AC
+        pinfunction: BTN_AC
 
     BTN_RECIRC:
       name: BTN_RECIRC
@@ -853,9 +674,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '36'
+        pinfunction: PB15
+        description: 'Вход кнопки «рециркуляция», активный низкий, подтяжка на UI.'
       - component: X_USER_INTERFACE
-        pin: BTN_RECIRC
+        pinfunction: BTN_RECIRC
 
     LED_DEFROST_GLASS_DRV:
       name: LED_DEFROST_GLASS_DRV
@@ -871,9 +693,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_USER_INTERFACE
-        pin: LED_DEFROST_GLASS_DRV
+        pinfunction: LED_DEFROST_GLASS_DRV
       - component: U1
-        pin: '50'
+        pinfunction: PA15
+        description: |
+          Управление светодиодом индикатора. Активный низкий
+          (0 = LED горит). Ток ограничивается резистором на листе UI.
 
     LED_FACE_DRV:
       name: LED_FACE_DRV
@@ -888,9 +713,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_USER_INTERFACE
-        pin: LED_FACE_DRV
+        pinfunction: LED_FACE_DRV
       - component: U1
-        pin: '55'
+        pinfunction: PB3
+        description: 'Управление LED «в лицо», активный низкий.'
 
     LED_FEET_DRV:
       name: LED_FEET_DRV
@@ -905,9 +731,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_USER_INTERFACE
-        pin: LED_FEET_DRV
+        pinfunction: LED_FEET_DRV
       - component: U1
-        pin: '56'
+        pinfunction: PB4
+        description: 'Управление LED «в ноги», активный низкий.'
 
     LED_DRY_GLASS_DRV:
       name: LED_DRY_GLASS_DRV
@@ -922,9 +749,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_USER_INTERFACE
-        pin: LED_DRY_GLASS_DRV
+        pinfunction: LED_DRY_GLASS_DRV
       - component: U1
-        pin: '3'
+        pinfunction: PC14
+        description: |
+          Управление LED «сушка стекла», активный низкий.
+          Пин совмещён с OSC32_IN (LSE). Так как RTC использует
+          внутренний LSI, линия свободна под GPIO.
 
     LED_AC_DRV:
       name: LED_AC_DRV
@@ -939,9 +770,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_USER_INTERFACE
-        pin: LED_AC_DRV
+        pinfunction: LED_AC_DRV
       - component: U1
-        pin: '4'
+        pinfunction: PC15
+        description: |
+          Управление LED «кондиционер», активный низкий.
+          Пин совмещён с OSC32_OUT (LSE). Свободен под GPIO
+          (RTC на внутреннем LSI).
 
     LED_RECIRC_DRV:
       name: LED_RECIRC_DRV
@@ -956,9 +791,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_USER_INTERFACE
-        pin: LED_RECIRC_DRV
+        pinfunction: LED_RECIRC_DRV
       - component: U1
-        pin: '10'
+        pinfunction: PC2
+        description: 'Управление LED «рециркуляция», активный низкий.'
 
     TEMP_SET_ADC:
       name: TEMP_SET_ADC
@@ -974,9 +810,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '14'
+        pinfunction: PA0
+        description: |
+          АЦП задания температуры. Потенциометр подключён между
+          VCC_3V3 и GND (2-проводное включение), движок — на этот пин.
+          ADC1_IN0.
       - component: X_USER_INTERFACE
-        pin: TEMP_SET_ADC
+        pinfunction: TEMP_SET_ADC
 
     FAN_SEL_ADC:
       name: FAN_SEL_ADC
@@ -992,9 +832,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '15'
+        pinfunction: PA1
+        description: |
+          АЦП положения галлетника скорости вентилятора. Резисторный
+          делитель, задающий уровни для AUTO и 0..4. ADC1_IN1.
       - component: X_USER_INTERFACE
-        pin: FAN_SEL_ADC
+        pinfunction: FAN_SEL_ADC
 
     NTC_CABIN:
       name: NTC_CABIN
@@ -1009,11 +852,14 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '16'
+        pinfunction: PA2
+        description: |
+          Сигнал NTC-датчика температуры салона. Делитель
+          NTC + подтяжка на листе SEN_CABIN. ADC1_IN2.
       - component: X_USER_INTERFACE
-        pin: NTC_CABIN
+        pinfunction: NTC_CABIN
       - component: X_CABIN_SENSOR
-        pin: NTC_CABIN
+        pinfunction: NTC_CABIN
 
     NTC_HEAT_W:
       name: NTC_HEAT_W
@@ -1028,9 +874,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: NTC_HEAT_W
+        pinfunction: NTC_HEAT_W
       - component: X_HEATING_SENSOR
-        pin: NTC_HEAT_W
+        pinfunction: NTC_HEAT_W
 
     NTC_HEAT:
       name: NTC_HEAT
@@ -1045,9 +891,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_HEATING_SENSOR
-        pin: NTC_HEAT
+        pinfunction: NTC_HEAT
       - component: U1
-        pin: '17'
+        pinfunction: PA3
+        description: |
+          Сигнал NTC-датчика температуры патрубка печки. Делитель
+          на листе SEN_HEAT. ADC1_IN3.
 
     SOLAR_IN_RAW:
       name: SOLAR_IN_RAW
@@ -1062,9 +911,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: SOLAR_IN_RAW
+        pinfunction: SOLAR_IN_RAW
       - component: X_SOLAR_SENSOR
-        pin: SOLAR_IN_RAW
+        pinfunction: SOLAR_IN_RAW
 
     SOLAR_ADC:
       name: SOLAR_ADC
@@ -1079,9 +928,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '20'
+        pinfunction: PA4
+        description: |
+          Солнечная радиация после делителя 5В→3,3В (на листе
+          SEN_SOLAR). ADC1_IN4.
       - component: X_SOLAR_SENSOR
-        pin: SOLAR_ADC
+        pinfunction: SOLAR_ADC
 
     COND_IN_RAW:
       name: COND_IN_RAW
@@ -1096,9 +948,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: COND_IN_RAW
+        pinfunction: COND_IN_RAW
       - component: X_CONDENSATE_SENSOR
-        pin: COND_IN_RAW
+        pinfunction: COND_IN_RAW
 
     COND_ADC:
       name: COND_ADC
@@ -1113,9 +965,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '21'
+        pinfunction: PA5
+        description: |
+          Сигнал датчика конденсата после делителя 5В→3,3В
+          (на листе SEN_COND). ADC1_IN5.
       - component: X_CONDENSATE_SENSOR
-        pin: COND_ADC
+        pinfunction: COND_ADC
 
     # ─── Канал заслонки 1 ──────────────────────────────────────────
     FB_M1_RAW:
@@ -1131,9 +986,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: FB_M1_RAW
+        pinfunction: FB_M1_RAW
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: FB_RAW
+        pinfunction: FB_RAW
 
     FB_M1:
       name: FB_M1
@@ -1148,9 +1003,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '22'
+        pinfunction: PA6
+        description: |
+          Обратная связь по положению заслонки 1 после делителя
+          5В→3,3В на листе канала. ADC1_IN6.
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: FB
+        pinfunction: FB
 
     M1_IN1:
       name: M1_IN1
@@ -1165,9 +1023,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '42'
+        pinfunction: PA9
+        description: 'Управление драйвером моторедуктора заслонки 1, вход IN1.'
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: IN1
+        pinfunction: IN1
 
     M1_IN2:
       name: M1_IN2
@@ -1182,9 +1041,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '43'
+        pinfunction: PA10
+        description: 'Управление драйвером моторедуктора заслонки 1, вход IN2.'
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: IN2
+        pinfunction: IN2
 
     MOTOR_1_A:
       name: MOTOR_1_A
@@ -1199,9 +1059,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_1_A
+        pinfunction: MOTOR_1_A
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: MOTOR_A
+        pinfunction: MOTOR_A
 
     MOTOR_1_B:
       name: MOTOR_1_B
@@ -1216,9 +1076,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_1_B
+        pinfunction: MOTOR_1_B
       - component: X_ACTUATOR_CHANNEL_M1
-        pin: MOTOR_B
+        pinfunction: MOTOR_B
 
     # ─── Канал заслонки 2 ──────────────────────────────────────────
     FB_M2_RAW:
@@ -1234,9 +1094,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: FB_M2_RAW
+        pinfunction: FB_M2_RAW
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: FB_RAW
+        pinfunction: FB_RAW
 
     FB_M2:
       name: FB_M2
@@ -1251,9 +1111,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '23'
+        pinfunction: PA7
+        description: |
+          Обратная связь по положению заслонки 2 после делителя
+          5В→3,3В на листе канала. ADC1_IN7.
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: FB
+        pinfunction: FB
 
     M2_IN1:
       name: M2_IN1
@@ -1268,9 +1131,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '44'
+        pinfunction: PA11
+        description: 'Управление драйвером моторедуктора заслонки 2, вход IN1.'
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: IN1
+        pinfunction: IN1
 
     M2_IN2:
       name: M2_IN2
@@ -1285,9 +1149,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '45'
+        pinfunction: PA12
+        description: 'Управление драйвером моторедуктора заслонки 2, вход IN2.'
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: IN2
+        pinfunction: IN2
 
     MOTOR_2_A:
       name: MOTOR_2_A
@@ -1302,9 +1167,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_2_A
+        pinfunction: MOTOR_2_A
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: MOTOR_A
+        pinfunction: MOTOR_A
 
     MOTOR_2_B:
       name: MOTOR_2_B
@@ -1319,9 +1184,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_2_B
+        pinfunction: MOTOR_2_B
       - component: X_ACTUATOR_CHANNEL_M2
-        pin: MOTOR_B
+        pinfunction: MOTOR_B
 
     # ─── Канал заслонки 3 ──────────────────────────────────────────
     FB_M3_RAW:
@@ -1337,9 +1202,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: FB_M3_RAW
+        pinfunction: FB_M3_RAW
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: FB_RAW
+        pinfunction: FB_RAW
 
     FB_M3:
       name: FB_M3
@@ -1354,9 +1219,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '26'
+        pinfunction: PB0
+        description: |
+          Обратная связь по положению заслонки 3 после делителя
+          5В→3,3В на листе канала. ADC1_IN8.
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: FB
+        pinfunction: FB
 
     M3_IN1:
       name: M3_IN1
@@ -1371,9 +1239,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '57'
+        pinfunction: PB5
+        description: 'Управление драйвером моторедуктора заслонки 3, вход IN1.'
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: IN1
+        pinfunction: IN1
 
     M3_IN2:
       name: M3_IN2
@@ -1388,9 +1257,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '58'
+        pinfunction: PB6
+        description: 'Управление драйвером моторедуктора заслонки 3, вход IN2.'
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: IN2
+        pinfunction: IN2
 
     MOTOR_3_A:
       name: MOTOR_3_A
@@ -1405,9 +1275,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_3_A
+        pinfunction: MOTOR_3_A
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: MOTOR_A
+        pinfunction: MOTOR_A
 
     MOTOR_3_B:
       name: MOTOR_3_B
@@ -1422,9 +1292,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_3_B
+        pinfunction: MOTOR_3_B
       - component: X_ACTUATOR_CHANNEL_M3
-        pin: MOTOR_B
+        pinfunction: MOTOR_B
 
     # ─── Канал заслонки 4 ──────────────────────────────────────────
     FB_M4_RAW:
@@ -1440,9 +1310,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: FB_M4_RAW
+        pinfunction: FB_M4_RAW
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: FB_RAW
+        pinfunction: FB_RAW
 
     FB_M4:
       name: FB_M4
@@ -1457,9 +1327,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '27'
+        pinfunction: PB1
+        description: |
+          Обратная связь по положению заслонки 4 после делителя
+          5В→3,3В на листе канала. ADC1_IN9.
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: FB
+        pinfunction: FB
 
     M4_IN1:
       name: M4_IN1
@@ -1474,9 +1347,10 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '59'
+        pinfunction: PB7
+        description: 'Управление драйвером моторедуктора заслонки 4, вход IN1.'
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: IN1
+        pinfunction: IN1
 
     M4_IN2:
       name: M4_IN2
@@ -1491,9 +1365,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '2'
+        pinfunction: PC13
+        description: |
+          Управление драйвером моторедуктора заслонки 4, вход IN2.
+          Пин совмещён с RTC_TAMP_IN1/WKUP2; при использовании как
+          GPIO ограничен по току (max ~3 мА на PC13).
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: IN2
+        pinfunction: IN2
 
     MOTOR_4_A:
       name: MOTOR_4_A
@@ -1508,9 +1386,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_4_A
+        pinfunction: MOTOR_4_A
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: MOTOR_A
+        pinfunction: MOTOR_A
 
     MOTOR_4_B:
       name: MOTOR_4_B
@@ -1525,9 +1403,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: MOTOR_4_B
+        pinfunction: MOTOR_4_B
       - component: X_ACTUATOR_CHANNEL_M4
-        pin: MOTOR_B
+        pinfunction: MOTOR_B
 
     # ─── Остальные выходы ──────────────────────────────────────────
     FAN_PWM_CTL:
@@ -1543,9 +1421,13 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '41'
+        pinfunction: PA8
+        function: TIM1_CH1
+        description: |
+          ШИМ управления основным вентилятором. Выход таймера
+          TIM1_CH1 в режиме AF push-pull.
       - component: X_POWER_OUTPUTS
-        pin: FAN_PWM_CTL
+        pinfunction: FAN_PWM_CTL
 
     HEAT_FAN_PWM_CTL:
       name: HEAT_FAN_PWM_CTL
@@ -1561,9 +1443,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: HEAT_FAN_PWM_CTL
+        pinfunction: HEAT_FAN_PWM_CTL
       - component: X_POWER_OUTPUTS
-        pin: HEAT_FAN_PWM_CTL
+        pinfunction: HEAT_FAN_PWM_CTL
 
     M_FAN_CTL:
       name: M_FAN_CTL
@@ -1578,9 +1460,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '11'
+        pinfunction: PC3
+        description: |
+          Включение/выключение мини-вентилятора продувки датчика
+          салона. Через транзисторный ключ на листе SEN_CABIN.
       - component: X_CABIN_SENSOR
-        pin: M_FAN_CTL
+        pinfunction: M_FAN_CTL
 
     AC_CTL:
       name: AC_CTL
@@ -1595,9 +1480,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '28'
+        pinfunction: PB2
+        description: |
+          Управление транзистором запроса кондиционера. Открытие
+          ключа формирует +12В на линии AC_REQ_OUT к ЭБУ двигателя.
       - component: X_POWER_OUTPUTS
-        pin: AC_CTL
+        pinfunction: AC_CTL
 
     AC_REQ_OUT:
       name: AC_REQ_OUT
@@ -1612,9 +1500,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: AC_REQ_OUT
+        pinfunction: AC_REQ_OUT
       - component: X_POWER_OUTPUTS
-        pin: AC_REQ_OUT
+        pinfunction: AC_REQ_OUT
 
     ILLUM_IN_RAW:
       name: ILLUM_IN_RAW
@@ -1629,11 +1517,11 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_POWER_SUPPLY
-        pin: ILLUM_IN_RAW
+        pinfunction: ILLUM_IN_RAW
       - component: X_USER_INTERFACE
-        pin: ILLUM_IN_RAW
+        pinfunction: ILLUM_IN_RAW
       - component: X_BACKLIGHT
-        pin: ILLUM_IN_RAW
+        pinfunction: ILLUM_IN_RAW
 
     ILLUM_SENSE:
       name: ILLUM_SENSE
@@ -1648,9 +1536,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '8'
+        pinfunction: PC0
+        description: |
+          Сигнал наличия подсветки (+12В габаритов) после делителя
+          на листе UI. Используется для диммирования LED индикации.
       - component: X_USER_INTERFACE
-        pin: ILLUM_SENSE
+        pinfunction: ILLUM_SENSE
 
     CAN_TX:
       name: CAN_TX
@@ -1665,9 +1556,12 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '62'
+        pinfunction: PB9
+        description: |
+          Передача CAN. AF push-pull, выход к трансиверу на листе
+          CAN_BUS.
       - component: X_CAN_BUS
-        pin: CAN_TX
+        pinfunction: CAN_TX
 
     CAN_RX:
       name: CAN_RX
@@ -1682,9 +1576,11 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: U1
-        pin: '61'
+        pinfunction: PB8
+        description: |
+          Приём CAN. Вход от трансивера на листе CAN_BUS.
       - component: X_CAN_BUS
-        pin: CAN_RX
+        pinfunction: CAN_RX
 
     CANH:
       name: CANH
@@ -1699,9 +1595,9 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_CAN_BUS
-        pin: CANH
+        pinfunction: CANH
       - component: X_POWER_SUPPLY
-        pin: CANH
+        pinfunction: CANH
 
     CANL:
       name: CANL
@@ -1716,6 +1612,6 @@ root_page:
           parasitic_l_h: 10n
       nodes:
       - component: X_CAN_BUS
-        pin: CANL
+        pinfunction: CANL
       - component: X_POWER_SUPPLY
-        pin: CANL
+        pinfunction: CANL

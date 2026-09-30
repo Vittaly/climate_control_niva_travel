@@ -1,192 +1,293 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-check_pinmap_vs_xml.py — сверка main.yaml с XML STM32F103R(C-D-E)Tx.xml.
+check_pins_vs_xml.py — сверка узлов U1 в nets с официальным XML CubeMX.
 
-Структура XML (плоская):
-  <Mcu>
-    <Pin Name="VBAT" Position="1" Type="Power"/>
-    <Pin Name="PC14-OSC32_IN" Position="3" Type="I/O">
-       <Signal Name="GPIO"/>
-       <Signal Name="RCC_OSC32_IN"/>
-       ...
-    </Pin>
-    ...
-  </Mcu>
+Модель данных: единственный источник истины о том, какие пины МК
+используются и как — секция `nets` в main.yaml. Секция `mcu_pin_map`
+упразднена и не читается.
 
-Проверки:
-  1. Позиция (1..64) есть в XML.
-  2. Норм. имя слева от '->' совпадает с норм. именем пина XML.
-  3. Каждый U1-пин в nets описан в mcu_pin_map.
-  4. Ни один U1-пин не в нескольких цепях.
-  5. INFO: пины с 'OSC'/'OSC32'/'TAMPER' в имени — специальные,
-     проверить, что кварц не нужен.
+Узел U1 в nets описывается полями:
+    pinfunction — имя вывода из символа KiCad ('PA13', 'VBAT', 'VREF+', ...)
+    function    — короткая роль (необязательно): 'power_in', 'SWDIO', ...
+    description — человекочитаемое описание логики (необязательно)
+
+Сверка с XML CubeMX:
+    * Имя из `pinfunction` нормализуется и ищется среди имён пинов XML.
+    * Проверяется, что пин U1 не встречается больше чем в одной цепи.
+    * Если у узла указан `pin` (номер) — он должен совпадать с позицией
+      этого имени в XML.
 
 Запуск:
-    python3 check_pinmap_vs_xml.py
-    python3 check_pinmap_vs_xml.py "STM32F103R(C-D-E)Tx.xml" main.yaml
+    python3 check_pins_vs_xml.py
+    python3 check_pins_vs_xml.py 'STM32G071R(6-8-B)Tx.xml' sheets/main.yaml
 """
 import os
-import re
 import sys
 import xml.etree.ElementTree as ET
 
 import yaml
 
 
+# ─────────────────────────────────────────────────────────────────────
+# Парсинг XML CubeMX
+# ─────────────────────────────────────────────────────────────────────
+
 def strip_ns(tag):
     return tag.split("}")[-1] if "}" in tag else tag
 
 
 def norm(name):
-    """'PA13/SWDIO'→'PA13'; 'PC14-OSC32_IN'→'PC14'; 'VSS_1'→'VSS_1'."""
+    """'PF2 - NRST'→'PF2'; 'PA11 [PA9]'→'PA11'; 'PC14-OSC32_IN (PC14)'→'PC14'."""
     if name is None:
         return ""
     s = str(name).strip().strip("'\"")
-    s = s.split("/", 1)[0]
-    s = s.split("-", 1)[0]
-    return s
+    s = s.split("[", 1)[0]         # PA12 [PA10]
+    s = s.split("/", 1)[0]         # PA13/SWDIO
+    s = s.split("-", 1)[0]         # PF2 - NRST, PC15-OSC32_OUT
+    s = s.split("(", 1)[0]         # ... (PC15)
+    return s.strip()
 
 
 def parse_xml(path):
-    """Плоский поиск <Pin Name=... Position=...>. Возвращает (by_pos, name_funcs)."""
+    """Парсит CubeMX-XML, возвращает:
+        by_pos        — {position(int): xml_name}
+        by_name       — {norm(xml_name): [positions]}
+        type_by_pos   — {position(int): 'I/O'|'Power'|'MonoIO'|'NC'}
+        package, refname
+    """
     tree = ET.parse(path)
     root = tree.getroot()
+
+    package = root.attrib.get("Package", "")
+    refname = root.attrib.get("RefName", "")
+
     by_pos = {}
-    name_funcs = {}
+    type_by_pos = {}
+    is_variant = {}
+
     for el in root.iter():
         if strip_ns(el.tag) != "Pin":
             continue
         nm = el.attrib.get("Name")
         pos = el.attrib.get("Position")
-        if not nm:
+        typ = el.attrib.get("Type", "")
+        variant = el.attrib.get("Variant", "")
+        if not nm or not pos:
             continue
-        # позиция: '1'..'64' — LQFP, 'A1'.. — BGA (пропускаем)
         try:
             pos_i = int(pos)
         except (TypeError, ValueError):
-            continue
+            continue  # BGA-позиции пропускаем
+
+        # Дубликат (Variant): невариантная запись имеет приоритет.
+        if pos_i in by_pos:
+            if variant:
+                continue
+            # пришла невариантная — перезаписываем
         by_pos[pos_i] = nm
-        funcs = set()
-        for sub in el.iter():
-            if strip_ns(sub.tag) == "Signal":
-                s = sub.attrib.get("Name")
-                if s:
-                    funcs.add(s)
-        name_funcs[nm] = funcs
-    return by_pos, name_funcs
+        type_by_pos[pos_i] = typ
+        is_variant[pos_i] = bool(variant)
 
+    by_name = {}
+    for pos, nm in by_pos.items():
+        by_name.setdefault(norm(nm), []).append(pos)
 
-def yaml_left(v):
-    s = str(v).strip()
-    if "->" in s:
-        s = s.split("->", 1)[0]
-    parts = s.split()
-    return parts[0] if parts else ""
+    return by_pos, by_name, type_by_pos, package, refname
 
 
 def find_xml():
-    best = None
-    for name in os.listdir("."):
-        if not (name.startswith("STM32F103R") and name.endswith(".xml")):
-            continue
-        if "C-D-E" in name and "Tx" in name:
-            return name
-        if best is None:
-            best = name
-    return best
+    """Ищет STM32G0*.xml в текущем каталоге, приоритет — LQFP64 (RBTx/RB)."""
+    candidates = [
+        n for n in os.listdir(".")
+        if n.endswith(".xml") and n.startswith("STM32G0")
+    ]
+    for n in candidates:
+        if "RBTx" in n or "R(6-8-B)Tx" in n:
+            return n
+    for n in candidates:
+        if "R" in n and "x" in n:
+            return n
+    return candidates[0] if candidates else None
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Основная логика
+# ─────────────────────────────────────────────────────────────────────
+
+def collect_u1_nodes(nets: dict) -> dict:
+    """Собирает узлы U1 из nets.
+
+    Возвращает {key: {'pinfunction':..., 'pin':..., 'nets':[...]}},
+    где key — нормализованное имя pinfunction (или '?pin=<n>' если
+    pinfunction не задан).
+    """
+    used = {}
+    for net_name, ndef in nets.items():
+        for node in ndef.get("nodes") or []:
+            if not isinstance(node, dict):
+                continue
+            if node.get("component") != "U1":
+                continue
+            pf = node.get("pinfunction")
+            pn = node.get("pin")
+            key = norm(pf) if pf else f"?pin={pn}"
+            entry = used.setdefault(
+                key,
+                {"pinfunction": pf, "pin": pn, "nets": []},
+            )
+            entry["nets"].append(net_name)
+        # при повторной встрече того же ключа сохраняем первый
+        # непустой pinfunction/pin
+    return used
 
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1].endswith(".xml"):
         xml_path = sys.argv[1]
-        yaml_path = sys.argv[2] if len(sys.argv) > 2 else "main.yaml"
+        yaml_path = sys.argv[2] if len(sys.argv) > 2 else "sheets/climate_control_niva_travel.yaml"
     else:
         xml_path = find_xml()
-        yaml_path = sys.argv[1] if len(sys.argv) > 1 else "main.yaml"
+        yaml_path = sys.argv[1] if len(sys.argv) > 1 else "sheets/main.yaml"
 
     if not xml_path or not os.path.exists(xml_path):
-        print("XML не найден. Скачайте:")
+        print("XML не найден. Скачайте, например:")
         print("  curl -O 'https://raw.githubusercontent.com/"
               "STMicroelectronics/STM32_open_pin_data/master/mcu/"
-              "STM32F103R(C-D-E)Tx.xml'")
+              "STM32G071R(6-8-B)Tx.xml'")
         return 2
 
     print(f"XML:  {xml_path}")
     print(f"YAML: {yaml_path}")
 
-    by_pos, name_funcs = parse_xml(xml_path)
-    print(f"  пинов в XML: {len(by_pos)}")
+    by_pos, by_name, type_by_pos, package, refname = parse_xml(xml_path)
+    print(f"  RefName: {refname or '—'}")
+    print(f"  Package: {package or '—'}")
+    print(f"  пинов в LQFP64: {len(by_pos)}")
+
+    if refname and not refname.startswith("STM32G0"):
+        print(f"  !!! RefName={refname!r} — это не STM32G0.")
+        print("      Для STM32G071RBT6 нужен STM32G071R(6-8-B)Tx.xml")
+        return 2
+
     if by_pos:
-        sample = ", ".join(f"{k}={by_pos[k]}"
-                           for k in sorted(by_pos)[:5])
+        sample = ", ".join(
+            f"{k}={by_pos[k]}" for k in sorted(by_pos)[:8]
+        )
         print(f"  пример: {sample}")
 
     with open(yaml_path, encoding="utf-8") as f:
         doc = yaml.safe_load(f) or {}
     root = doc.get("root_page") or {}
-    mcu = root.get("mcu_pin_map") or {}
+
+    if "mcu_pin_map" in root:
+        print("  ~ Внимание: mcu_pin_map в YAML присутствует, "
+              "но больше не используется.")
+
     nets = root.get("nets") or {}
+    used = collect_u1_nodes(nets)
 
     problems = []
+    warnings = []
     infos = []
 
-    # --- 1+2: позиция и имя ---
-    for k, v in mcu.items():
-        try:
-            pos = int(k)
-        except (ValueError, TypeError):
-            problems.append(f"mcu_pin_map[{k!r}]: ключ не число")
-            continue
-        if pos not in by_pos:
-            problems.append(f"mcu_pin_map[{k!r}]: нет в LQFP64")
-            continue
-        xml_name = by_pos[pos]
-        yaml_name = yaml_left(v)
-        if norm(xml_name) != norm(yaml_name):
+    # ─── Проверки по каждому узлу U1 ─────────────────────────────────
+    for key in sorted(used):
+        entry = used[key]
+        label = entry["pinfunction"] or f"(pin={entry['pin']})"
+
+        # A. pinfunction отсутствует
+        if key.startswith("?pin="):
             problems.append(
-                f"mcu_pin_map[{k!r}]: yaml '{yaml_name}' != xml '{xml_name}'")
+                f"U1: узел без pinfunction (pin={entry['pin']}) "
+                f"в цепях {entry['nets']}"
+            )
             continue
-        # спецпины
-        if any(t in xml_name for t in ("OSC", "TAMPER")):
+
+        # B. Имени нет в XML
+        if key not in by_name:
+            problems.append(
+                f"U1 pinfunction='{label}': нет такого пина в XML "
+                f"(цепи {entry['nets']})"
+            )
+            continue
+
+        positions = by_name[key]
+
+        # C. Имя неоднозначно в XML
+        if len(positions) > 1:
+            warnings.append(
+                f"U1 pinfunction='{label}': имя неоднозначно в XML, "
+                f"позиции {positions} — сверка по pin пропущена"
+            )
+            xml_pos = positions[0]
+        else:
+            xml_pos = positions[0]
+
+        # D. Если указан pin (номер) — должен совпадать с позицией
+        if entry["pin"] is not None and len(positions) == 1:
+            try:
+                pn_int = int(entry["pin"])
+            except (ValueError, TypeError):
+                pn_int = None
+            if pn_int is not None and pn_int != xml_pos:
+                problems.append(
+                    f"U1 pinfunction='{label}': указан pin="
+                    f"{entry['pin']}, но в XML это позиция {xml_pos}"
+                )
+                continue
+
+        # E. Пин в нескольких цепях
+        if len(entry["nets"]) > 1:
+            problems.append(
+                f"U1 pinfunction='{label}': в нескольких цепях: "
+                f"{entry['nets']}"
+            )
+
+        # F. Информация по спецпинам
+        xml_name = by_pos[xml_pos]
+        up = xml_name.upper()
+        if any(t in up for t in ("OSC", "TAMPER")):
             infos.append(
-                f"mcu_pin_map[{k!r}]: '{xml_name}' — спецпин "
-                f"(OSC/TAMPER). Использование как GPIO возможно, "
-                f"но с ограничениями (не одновременно с кварцем, "
-                f"ограниченный ток на PC13/14/15).")
+                f"U1 pinfunction='{label}' ({xml_name}): спецпин "
+                f"(OSC/TAMPER), ограничения при использовании как GPIO"
+            )
+        if "NRST" in up:
+            infos.append(
+                f"U1 pinfunction='{label}' ({xml_name}): NRST, "
+                f"проверьте RC-цепь"
+            )
+        if "BOOT" in up:
+            infos.append(
+                f"U1 pinfunction='{label}' ({xml_name}): BOOT0, "
+                f"подтяжка 10k к GND"
+            )
 
-    # --- 3: U1-пины в nets должны быть в mcu_pin_map ---
-    used = {}
-    for net, info in nets.items():
-        for n in info.get("nodes") or []:
-            if isinstance(n, dict) and n.get("component") == "U1":
-                used.setdefault(str(n["pin"]), []).append(net)
+    # ─── G. INFO: неиспользуемые GPIO из XML ─────────────────────────
+    used_pos = set()
+    for key in used:
+        if key in by_name and len(by_name[key]) == 1:
+            used_pos.add(by_name[key][0])
 
-    for pin in sorted(used, key=int):
-        if pin not in mcu:
-            problems.append(
-                f"nets: U1.{pin} используется в {used[pin]}, "
-                f"но не описан в mcu_pin_map")
+    unused = []
+    for pos in sorted(by_pos):
+        if pos in used_pos:
+            continue
+        nm = by_pos[pos]
+        up = nm.upper()
+        if any(up.startswith(p) for p in
+               ("VDD", "VSS", "VBAT", "VREF", "VDDA", "VSSA")):
+            continue
+        if "NRST" in up or "BOOT" in up:
+            continue
+        unused.append(f"{pos}({norm(nm) or nm})")
 
-    # --- 4: один U1-пин — не более одной цепи ---
-    for pin, where in sorted(used.items(), key=lambda kv: int(kv[0])):
-        if len(where) > 1:
-            problems.append(
-                f"nets: U1.{pin} в нескольких цепях: {where}")
+    if unused:
+        infos.append(
+            "не используются в nets (GPIO из XML): " + ", ".join(unused)
+        )
 
-    # --- 5: U1-пины в mcu_pin_map, но не используемые в nets ---
-    # (не проблема, но полезно видеть)
-    for pin in sorted(mcu, key=int):
-        if pin not in used:
-            xml_name = by_pos.get(int(pin), "?")
-            # отдельно отметить питание/землю/BOOT0/NRST — их
-            # в nets.mcu_pin_map может быть не видно (они в VCC/GND)
-            if not any(t in xml_name.upper()
-                       for t in ("VSS", "VDD", "VBAT", "VDDA", "BOOT0")):
-                infos.append(
-                    f"mcu_pin_map[{pin!r}] = {xml_name}: "
-                    f"в цепях U1 не встречается")
-
+    # ─── Отчёт ───────────────────────────────────────────────────────
     print("=" * 76)
     if problems:
         print(f"  ПРОБЛЕМЫ ({len(problems)}):")
@@ -194,6 +295,10 @@ def main():
             print(f"  ! {p}")
     else:
         print("  ✓ проблем не найдено")
+    if warnings:
+        print(f"\n  ПРЕДУПРЕЖДЕНИЯ ({len(warnings)}):")
+        for w in warnings:
+            print(f"  ~ {w}")
     if infos:
         print(f"\n  ИНФО ({len(infos)}):")
         for i in infos:

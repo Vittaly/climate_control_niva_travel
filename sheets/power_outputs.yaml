@@ -28,25 +28,16 @@ functional_purpose: |
     Transistor_BJT:MMBT3906 → pin 1 = B, pin 2 = E, pin 3 = C.
   Имена выводов уникальны → в nets: связи задаются pinfunction.
 
-ports:
-- net_label: VCC_12V
-  type: POWER
-  description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
-- net_label: GND
-  type: POWER
-  description: Общий провод (кузов автомобиля)
-- net_label: FAN_PWM_CTL
-  type: INPUT
-  description: ШИМ управления основным вентилятором с МК (TIM1_CH1)
-- net_label: AC_CTL
-  type: INPUT
-  description: Управление транзистором запроса кондиционера (лог. 3,3В)
-- net_label: AC_REQ_OUT
-  type: OUTPUT
-  description: Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя)
-- net_label: HEAT_FAN_PWM_CTL
-  type: OUTPUT
-  description: ШИМ вентилятора печки на J1:23 (инверсный, открытый сток через R15)
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2', '3').
+    pinfunction: — функциональное имя (G, S, D, B, E, C).
 
 component_types:
   TYPE_QNMOS_BSS138:
@@ -161,6 +152,7 @@ nets:
     name: VCC_12V
     description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 12.0V
@@ -178,6 +170,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -195,6 +188,7 @@ nets:
     name: FAN_PWM_CTL
     description: ШИМ управления основным вентилятором с МК (TIM1_CH1)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -243,6 +237,7 @@ nets:
     name: AC_CTL
     description: Управление транзистором запроса кондиционера (лог. 3,3В с МК)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -308,6 +303,7 @@ nets:
     name: AC_REQ_OUT
     description: Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя)
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 0..12V
@@ -323,6 +319,7 @@ nets:
     name: HEAT_FAN_PWM_CTL
     description: Внешний ШИМ-выход вентилятора печки на J1:23 через защитный R15
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V

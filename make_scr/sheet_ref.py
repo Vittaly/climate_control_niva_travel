@@ -7,15 +7,33 @@ SheetRefComponent — обычный Component для Sheet, Placer, Router:
     - Router видит его пины как endpoints сетей;
     - Writer рисует add_sheet вместо components.add.
 
+Источник истины о портах — дочерний YAML, секция nets:
+    Порт — это сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление (для размещения пина на
+    левом/правом краю) читается из port_direction у той же сети,
+    по умолчанию INPUT.
+
+    Устаревший верхний блок ports: не читается. Миграция
+    завершена: все листы хранят порты в nets.*.is_hierarchical_port.
+
+    Верхний блок port_map в родительском YAML не читается здесь:
+    он обслуживает связь pin↔root_net на уровне родительской
+    страницы, и его обработка — задача расширителя нетлиста,
+    а не SheetRefComponent.
+
 Отличия от PortComponent:
     - не один фиктивный пин, а столько, сколько портов в дочернем YAML;
     - lib_id="" — тот же сигнал «нет symbol в KiCad»;
     - is_sheet_ref=True — отдельный маркер для Writer.
 
 Пины листа соответствуют портам дочерней страницы. Например, если в
-sheets/power_supply.yaml есть порты VCC_3V3, GND, MOTOR_1_A, то у
-X_PWR будет три пина с этими именами. Роутер сможет тянуть провод
-к X_PWR:VCC_3V3 — как к обычному пину.
+sheets/power_supply.yaml есть сети VCC_3V3, GND с флагом
+is_hierarchical_port, то у X_PWR будет два пина с этими именами.
+Роутер сможет тянуть провод к X_PWR:VCC_3V3 — как к обычному пину.
+
+    Для sheet-ref-пина number == name == имя порта. Числовых
+    номеров у пина листа нет по определению. Резолв таких пинов
+    идёт через pin_by_name, никогда через pin_by_number с числом.
 
 Геометрия:
     bbox_size — размер листа в клетках.
@@ -34,7 +52,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import yaml
 
@@ -47,6 +65,60 @@ from component import Component
 log = get_logger(__name__)
 
 
+# ─────────────────────────────────────────────────────────────────────
+# Кэш разобранных YAML-файлов листов
+#
+# Один и тот же лист инстанцируется многократно (actuator_channel ×4).
+# Парсить YAML каждый раз — лишний I/O. Ключ — разрешённый путь,
+# значение — загруженный словарь верхнего уровня.
+# ─────────────────────────────────────────────────────────────────────
+
+_YAML_CACHE: Dict[Path, dict] = {}
+
+
+def _load_yaml_cached(path: Path) -> dict:
+    """Загружает YAML с кэшем. Ошибки чтения → пустой dict."""
+    key = path.resolve()
+    if key in _YAML_CACHE:
+        return _YAML_CACHE[key]
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception as e:
+        log.warning("SheetRef: не прочитал %s: %s", path, e)
+        data = {}
+    _YAML_CACHE[key] = data
+    return data
+
+
+def clear_yaml_cache() -> None:
+    """Сброс кэша (для тестов и hot-reload)."""
+    _YAML_CACHE.clear()
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Ошибка сборки SheetRef
+# ─────────────────────────────────────────────────────────────────────
+
+class SheetRefError(Exception):
+    """SheetRefComponent не смог собрать порты дочернего листа.
+
+    Причины:
+        - дочерний YAML вообще не читается;
+        - в дочернем YAML нет ни одной сети с is_hierarchical_port,
+          а родитель ожидает у листа пины.
+    """
+
+    def __init__(self, designator: str, reason: str, *,
+                 hint: Optional[str] = None):
+        self.designator = designator
+        self.reason = reason
+        self.hint = hint
+        parts = [f"SheetRef {designator!r}: {reason}"]
+        if hint:
+            parts.append(f"({hint})")
+        super().__init__(" ".join(parts))
+
+
 @dataclass(eq=False)
 class SheetRefComponent(Component):
     """Ссылка на вложенный лист как компонент.
@@ -54,7 +126,8 @@ class SheetRefComponent(Component):
     Attributes:
         sheet_file:   имя файла листа (sheets/power_supply.yaml).
         sheet_name:   имя листа в KiCad (X_PWR).
-        ports:        список портов дочернего YAML (сырые dict'ы).
+        ports:        список портов дочернего YAML (нормализованные
+                      dict'ы с ключами net_label, direction, description).
     """
     sheet_file: str = ""
     sheet_name: str = ""
@@ -62,21 +135,22 @@ class SheetRefComponent(Component):
 
     # Габарит листа считается по числу портов — как в Writer
     CHAR_WIDTH_CELLS = 1
-    ROW_HEIGHT_CELLS = 2       # высота одной строки порта, в клетках
-    PADDING_ROWS = 4           # отступы сверху/снизу
-    MIN_WIDTH_CELLS = 16       # минимум 16 клеток в ширину
-    MIN_HEIGHT_CELLS = 8       # минимум 8 клеток в высоту
+    ROW_HEIGHT_CELLS = 2
+    PADDING_ROWS = 4
+    MIN_WIDTH_CELLS = 16
+    MIN_HEIGHT_CELLS = 8
 
     # Зазор между встречными текстами левых и правых портов.
     GAP_CELLS = 2
     # Отступы от краёв bbox до текстов (пиктограмма + поля).
     SIDE_PADDING_CELLS = 1
 
-    # -------- классификация портов --------
+    # ─────────────── классификация портов ───────────────
+
     @staticmethod
     def _is_output(port: dict) -> bool:
         """True, если порт выходной (стоит справа)."""
-        return str(port.get("type", "INPUT")).upper() == "OUTPUT"
+        return str(port.get("direction", "INPUT")).upper() == "OUTPUT"
 
     @classmethod
     def _split_ports(cls, ports: List[dict]) -> Tuple[List[dict], List[dict]]:
@@ -96,20 +170,11 @@ class SheetRefComponent(Component):
 
     @classmethod
     def _compute_bbox_cols(cls, left: List[dict], right: List[dict]) -> int:
-        """Ширина bbox: левый текст + зазор + правый текст + отступы.
-
-        Левые порты стоят у левого края bbox и растут вправо.
-        Правые порты стоят у правого края bbox и растут влево.
-        Их тексты встречаются в середине — нужно, чтобы они
-        не накладывались.
-        """
+        """Ширина bbox: левый текст + зазор + правый текст + отступы."""
         left_cells = cls._label_cells(left)
         right_cells = cls._label_cells(right)
-
-        # если одна сторона пуста — зазор не нужен
         gap = cls.GAP_CELLS if (left and right) else 0
         padding = 2 * cls.SIDE_PADDING_CELLS
-
         return max(
             cls.MIN_WIDTH_CELLS,
             left_cells + gap + right_cells + padding,
@@ -117,26 +182,23 @@ class SheetRefComponent(Component):
 
     @classmethod
     def _compute_bbox_rows(cls, n_ports: int, ports_per_side_max: int) -> int:
-        """Высота bbox: отступы сверху/снизу + строки портов.
-
-        Левые и правые порты нумеруются независимо (index в своей
-        группе), но физически они делят одну колонку строк. Поэтому
-        высота определяется МАКСИМУМОМ из числа левых и правых портов,
-        а не их суммой.
-        """
+        """Высота bbox: отступы сверху/снизу + строки портов."""
         return max(
             cls.MIN_HEIGHT_CELLS,
             cls.PADDING_ROWS + ports_per_side_max * cls.ROW_HEIGHT_CELLS,
         )
 
     def __post_init__(self):
-        """Создаёт пины по портам дочернего YAML и считает габарит."""
+        """Создаёт пины по нормализованным портам и считает габарит.
+
+        На входе self.ports — уже нормализованный список dict'ов с
+        ключами net_label, direction, description (см. _extract_ports).
+        """
         if not self.ports:
             self.ports = []
 
         left, right = self._split_ports(self.ports)
 
-        # ---- габарит ----
         bbox_cols = self._compute_bbox_cols(left, right)
         bbox_rows = self._compute_bbox_rows(
             len(self.ports),
@@ -144,11 +206,8 @@ class SheetRefComponent(Component):
         )
         self.bbox_size = (bbox_cols, bbox_rows)
 
-        # anchor_offset_mm = (0, 0): anchor совпадает с левым-верхним
-        # углом bbox. Пины задаются offset_mm от anchor.
         self.anchor_offset_mm = (0.0, 0.0)
 
-        # ---- пины ----
         self.pins = []
         for i, port in enumerate(left):
             self._add_pin(port, side="left", index=i)
@@ -159,75 +218,75 @@ class SheetRefComponent(Component):
             pin.component = self
 
     def _add_pin(self, port: dict, side: str, index: int) -> None:
-        """Создаёт Pin на границе листа по данным порта.
+        """Создаёт Pin на кромке frame.
 
-        Пин задаётся offset_mm от anchor (anchor = левый-верхний угол).
-        Позиция пина в клетках от anchor:
-            left  → col = 0
-            right → col = bbox_cols - 1
-            row = PADDING_ROWS // 2 + index * ROW_HEIGHT_CELLS
+        Координаты пина считаем в системе frame:
+            left  → col_in_frame = 0
+            right → col_in_frame = frame_cols - 1
 
-        pin.direction — «в тело» компонента (как в PortComponent):
-            left  → RIGHT (внутрь bbox, вправо)
-            right → LEFT  (внутрь bbox, влево)
-        stub.py инвертирует его и получает отводку НАРУЖУ bbox.
+        Затем переводим в координаты anchor (= ЛВ bbox):
+            col_cell = frame_offset_cols + col_in_frame
+        где frame_offset_cols = 1 (bbox = frame + 1 клетка маржи с каждой
+        стороны).
+
+        Аналогично по строкам: row_in_frame → row_cell = 1 + row_in_frame.
         """
         net_label = str(port.get("net_label", ""))
         if not net_label:
             return
 
-        # строка пина в клетках от anchor
-        row_cell = self.PADDING_ROWS // 2 + index * self.ROW_HEIGHT_CELLS
+        fc, _fr = self.frame_size          # frame_cols из рамки, не из bbox
+        row_in_frame = self.PADDING_ROWS // 2 + index * self.ROW_HEIGHT_CELLS
 
         if side == "left":
-            col_cell = 0
-            # «в тело»: пин на левом краю смотрит вправо (внутрь bbox)
+            col_in_frame = 0
             direction = Direction.RIGHT
         else:
-            col_cell = self.bbox_cols
-            # «в тело»: пин на правом краю смотрит влево (внутрь bbox)
+            col_in_frame = fc - 1
             direction = Direction.LEFT
 
-        # смещение от anchor в мм
+        # frame_offset_mm = (grid, grid) — ЛВ frame на 1 клетку внутрь bbox.
+        col_cell = col_in_frame + 1
+        row_cell = row_in_frame + 1
+
         offset_x = col_cell * self.grid_mm
         offset_y = row_cell * self.grid_mm
 
         self.pins.append(Pin(
             owner=self.designator,
-            number=net_label,          # номер пина = имя порта
+            number=None,
             name=net_label,
             offset_mm=(offset_x, offset_y),
             direction=direction,
         ))
-
-    # ---------- удобный конструктор ----------
+    # ─────────────── удобный конструктор ───────────────
 
     @classmethod
     def create(cls, designator: str, sheet_file: str,
                parent_yaml_path: Path) -> "SheetRefComponent":
-        """Создаёт ссылку на лист, читая его порты из YAML.
+        """Создаёт ссылку на лист, читая порты из nets дочернего YAML.
+
+        Порт — это сеть с флагом is_hierarchical_port: true. Имя
+        порта = имя сети. Направление для размещения (для выбора
+        левого/правого края) берётся из port_direction у той же
+        сети; по умолчанию INPUT.
 
         Args:
-            designator:      локальное имя листа ("X_PWR").
-            sheet_file:      относительный путь к YAML
-                             ("sheets/power_supply.yaml").
+            designator:       локальное имя листа ("X_PWR").
+            sheet_file:       относительный путь к YAML
+                              ("sheets/power_supply.yaml").
             parent_yaml_path: путь к main.yaml (для разрешения
-                             относительного пути).
+                              относительного пути).
         """
         yaml_path = Path(parent_yaml_path).parent / sheet_file
-        ports = []
-        try:
-            data = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
-            ports = data.get("ports", []) or []
-        except Exception as e:
-            log.warning("SheetRef %s: не прочитал %s: %s",
-                        designator, yaml_path, e)
+        data = _load_yaml_cached(yaml_path)
+        ports = cls._extract_ports(data, yaml_path, designator)
 
         return cls(
             designator=designator,
             name=designator,
-            lib_id="",                 # нет symbol в KiCad
-            bbox_size=(0, 0),          # пересчитается в __post_init__
+            lib_id="",
+            bbox_size=(0, 0),
             pins=[],
             fields={},
             sheet=None,
@@ -236,9 +295,69 @@ class SheetRefComponent(Component):
             ports=ports,
         )
 
-    # ---------- маркеры ----------
+    @staticmethod
+    def _extract_ports(data: dict, yaml_path: Path,
+                       designator: str) -> List[dict]:
+        """Извлекает порты дочернего листа из nets.*.is_hierarchical_port.
+
+        Возвращает список нормализованных dict'ов:
+            {"net_label": <имя сети-порта>,
+             "direction": <"INPUT"|"OUTPUT"|"BIDIR">,
+             "description": <строка из YAML или "">}
+
+        Порт — это сеть с флагом is_hierarchical_port: true. Устаревший
+        блок ports: не читается: миграция завершена, все листы хранят
+        порты в nets. Лист с нулём таких сетей валиден (лист без
+        портов) — тогда возвращается пустой список с INFO-сообщением.
+        """
+        nets = data.get("nets", {}) or {}
+        ports: List[dict] = []
+
+        for name, net in nets.items():
+            if not isinstance(net, dict):
+                continue
+            if not net.get("is_hierarchical_port"):
+                continue
+
+            direction = str(net.get("port_direction", "INPUT")).upper()
+            if direction not in ("INPUT", "OUTPUT", "BIDIR"):
+                log.warning(
+                    "SheetRef %s: %s: сеть %r имеет "
+                    "port_direction=%r — неизвестное значение, "
+                    "принято INPUT.",
+                    designator, yaml_path, name, direction,
+                )
+                direction = "INPUT"
+
+            ports.append({
+                "net_label":   name,
+                "direction":   direction,
+                "description": net.get("description", "") or "",
+            })
+
+        if not ports:
+            log.info(
+                "SheetRef %s: %s не содержит сетей с "
+                "is_hierarchical_port: true — у листа не будет пинов.",
+                designator, yaml_path,
+            )
+
+        return ports
+
+    # ─────────────── маркеры ───────────────
 
     @property
     def is_sheet_ref(self) -> bool:
         """True — отличает ссылку на лист от обычного компонента."""
         return True
+
+    
+    @property
+    def frame_size(self) -> Tuple[int, int]:
+        fc, fr = self.bbox_size
+        return (fc - 2, fr - 2)
+
+
+    @property
+    def frame_offset_mm(self) -> Tuple[float, float]:
+        return (self.grid_mm, self.grid_mm)

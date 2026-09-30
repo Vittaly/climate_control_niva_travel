@@ -240,7 +240,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": "2.2"
+      "sch_revision": ""
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -648,7 +648,7 @@
         "uuid": "a01b02c3-04d5-4ebd-8db7-000000000000"
       }
     ],
-    "used_designators": "U1,#PWR1,D1-3,SW1",
+    "used_designators": "U1,Q5-6,#PWR1,D1-3,D6-7,C12-15,SW1,L2-3,R31-32",
     "variants": []
   },
   "sheets": [
@@ -657,36 +657,64 @@
       "climate_control_niva_travel"
     ],
     [
-      "040cc0f0-0320-4b80-946a-9af0666896c3",
-      "PWR"
+      "e62dd693-85a8-4e63-881b-73e2fef086f8",
+      "Untitled Sheet"
     ],
     [
-      "45fe1c05-ee7c-4ec1-af90-6960070ad180",
-      "OUT"
+      "edc88843-21b7-48c5-a207-722691abf45a",
+      "Untitled Sheet2"
     ],
     [
-      "e8c1b6f0-a9d6-4a2d-95aa-f8b1dc456fca",
-      "UI"
+      "bd3220f1-21b1-459d-8e0a-b6d5b1962680",
+      "X_POWER_OUTPUTS"
     ],
     [
-      "1032d922-b869-4197-a328-a087df99daaa",
-      "ACT"
+      "8c964ce7-fe11-4ced-a5c1-4a1e7ffa56f7",
+      "X_POWER_SUPPLY"
     ],
     [
-      "4a5bb840-be47-486f-9bdc-0c5520587458",
-      "SEN_CABIN"
+      "ea66a128-4b2a-40c2-b767-70133af2397b",
+      "X_ACTUATOR_CHANNEL_M4"
     ],
     [
-      "b812210f-c90a-4dbf-89ab-66f20a07dc4c",
-      "SEN_HEAT"
+      "db51a6a0-dd01-4a07-ada7-8d16e9159977",
+      "X_CONDENSATE_SENSOR"
     ],
     [
-      "4b030346-a637-4417-a5fe-b017a659af66",
-      "SEN_SOLAR"
+      "da393575-3c4f-4b6d-bbd9-54811c384bc4",
+      "X_ACTUATOR_CHANNEL_M3"
     ],
     [
-      "873eb8ef-f47b-4e3c-bf7b-edf4b03b0158",
-      "SEN_COND"
+      "5049f93f-216c-4932-b971-a7119cf571b5",
+      "X_SOLAR_SENSOR"
+    ],
+    [
+      "e83ac229-a10d-48be-a4b5-b7e0ac74fd24",
+      "X_ACTUATOR_CHANNEL_M2"
+    ],
+    [
+      "641d89f1-ed59-414a-b45c-a52652ca77e7",
+      "X_ACTUATOR_CHANNEL_M1"
+    ],
+    [
+      "7acddf15-04ea-412e-8301-2071dced3333",
+      "X_BACKLIGHT"
+    ],
+    [
+      "51251177-7f7e-4eab-9e76-d8fa0d88446a",
+      "X_CABIN_SENSOR"
+    ],
+    [
+      "e7e25e14-9260-4d84-81ba-42a091b2e777",
+      "X_HEATING_SENSOR"
+    ],
+    [
+      "a7cd940f-a037-4510-a750-632b48f9da31",
+      "X_USER_INTERFACE"
+    ],
+    [
+      "8d90b26d-703d-4c68-8bb5-1a2e690519cc",
+      "X_CAN_BUS"
     ]
   ],
   "text_variables": {},

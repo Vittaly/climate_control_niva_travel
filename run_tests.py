@@ -8,7 +8,11 @@ run_tests.py — запуск Ngspice-сценариев и проверка PAS
 ngspice запускается один раз на файл.
 
 Идентификация сценариев:
-  * Сценарий — scenario.name в одном из sheets/*.yaml (кроме main.yaml).
+  * Сценарий — scenario.name в одном из sheets/*.yaml,
+    кроме корневого YAML проекта.
+    Корневой YAML определяется по имени stem'а: он совпадает с
+    именем .kicad_sch проекта (см. ROOT_STEM ниже). Это следует
+    общей идеологии: sheets/<stem>.yaml ↔ <stem>.kicad_sch.
   * .cir — spice/<scenario>.cir; имя файла = имя сценария.
   * Никакого собственного резолвера YAML: пробегаем все sheets/*.yaml.
   * Если .cir отсутствует, но checks есть → MISSING (не SKIP):
@@ -43,6 +47,13 @@ PROJ = os.path.dirname(os.path.abspath(__file__))
 SHEETS_DIR = os.path.join(PROJ, "sheets")
 SPICE_DIR = os.path.join(PROJ, "spice")
 
+# Stem корневой страницы проекта. Совпадает с именем .kicad_sch и
+# именем <stem>.yaml в sheets/. Единственный YAML, который НЕ
+# содержит scenarios[].checks (там лежит root_page с описанием
+# компонентов корневой схемы), поэтому из обхода исключается.
+ROOT_STEM = "climate_control_niva_travel"
+ROOT_YAML_NAME = ROOT_STEM + ".yaml"
+
 # Сколько строк stderr ngspice показывать при ERROR — чтобы было видно
 # причину («unknown subckt X», «file not found», «timestep too small»),
 # но не залить экран.
@@ -54,9 +65,9 @@ STDERR_TAIL_LINES = 12
 # ─────────────────────────────────────────────────────────────────────
 
 def iter_sheet_yamls():
-    """Все sheets/*.yaml, кроме main.yaml."""
+    """Все sheets/*.yaml, кроме корневого (ROOT_YAML_NAME)."""
     for path in sorted(glob.glob(os.path.join(SHEETS_DIR, "*.yaml"))):
-        if os.path.basename(path) == "main.yaml":
+        if os.path.basename(path) == ROOT_YAML_NAME:
             continue
         yield path
 

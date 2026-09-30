@@ -34,83 +34,21 @@ functional_purpose: |
     D4: A=VCC_5V,  K=V5_SENS       (развязка, не пускает обратно)
     D5: K=V5_SENS, A=GND           (TVS, клиппит V5_SENS)
 
-ports:
-- net_label: VCC_12V
-  type: POWER
-  description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
-- net_label: VCC_5V
-  type: POWER
-  description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора 3,3В)
-- net_label: VCC_3V3
-  type: POWER
-  description: Логическое питание +3,3В микроконтроллера и фронт-панели
-- net_label: GND
-  type: POWER
-  description: Общий провод (кузов автомобиля)
-- net_label: NTC_HEAT_W
-  type: OUTPUT
-  description: 'Датчик патрубка отопителя: узел линии на разъёме J1:19'
-- net_label: SOLAR_IN_RAW
-  type: INPUT
-  description: Вход датчика солнечной радиации (0..5В), J1:20
-- net_label: COND_IN_RAW
-  type: INPUT
-  description: Вход датчика конденсата на стекле (0..5В), J1:21
-- net_label: MOTOR_1_A
-  type: OUTPUT
-  description: 'Заслонка 1: выход А мостового драйвера к моторедуктору, J1:5'
-- net_label: MOTOR_1_B
-  type: OUTPUT
-  description: 'Заслонка 1: выход B мостового драйвера к моторедуктору, J1:6'
-- net_label: FB_M1_RAW
-  type: INPUT
-  description: 'Заслонка 1: выход потенциометра положения (0..5В), J1:7'
-- net_label: MOTOR_2_A
-  type: OUTPUT
-  description: 'Заслонка 2: выход А мостового драйвера к моторедуктору, J1:8'
-- net_label: MOTOR_2_B
-  type: OUTPUT
-  description: 'Заслонка 2: выход B мостового драйвера к моторедуктору, J1:9'
-- net_label: FB_M2_RAW
-  type: INPUT
-  description: 'Заслонка 2: выход потенциометра положения (0..5В), J1:10'
-- net_label: MOTOR_3_A
-  type: OUTPUT
-  description: 'Заслонка 3: выход А мостового драйвера к моторедуктору, J1:11'
-- net_label: MOTOR_3_B
-  type: OUTPUT
-  description: 'Заслонка 3: выход B мостового драйвера к моторедуктору, J1:12'
-- net_label: FB_M3_RAW
-  type: INPUT
-  description: 'Заслонка 3: выход потенциометра положения (0..5В), J1:13'
-- net_label: MOTOR_4_A
-  type: OUTPUT
-  description: 'Заслонка 4: выход А мостового драйвера к моторедуктору, J1:14'
-- net_label: MOTOR_4_B
-  type: OUTPUT
-  description: 'Заслонка 4: выход B мостового драйвера к моторедуктору, J1:15'
-- net_label: FB_M4_RAW
-  type: INPUT
-  description: 'Заслонка 4: выход потенциометра положения (0..5В), J1:16'
-- net_label: AC_REQ_OUT
-  type: INPUT
-  description: Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя)
-- net_label: ILLUM_IN_RAW
-  type: POWER
-  description: |
-    Аналоговое питание подсветки прибора с выхода внешнего
-    регулятора яркости (диммера), J1:22. Диапазон 1..14,4В.
-    Используется как питание LED-каналов в BACKLIGHT и как
-    сигнал детектора габаритов в UI (делитель R39/R40).
-- net_label: CANH
-  type: OUTPUT
-  description: 'CAN: шина High (J1:25)'
-- net_label: CANL
-  type: OUTPUT
-  description: 'CAN: шина Low (J1:26)'
-- net_label: HEAT_FAN_PWM_CTL
-  type: OUTPUT
-  description: ШИМ вентилятора печки к J1:23 (с открытого стока Q1 через R15)
+  Модель связей листов (порты):
+    Порт листа — сеть с флагом is_hierarchical_port: true.
+    Имя порта = имя сети. Направление для размещения пина
+    задаётся полем port_direction: INPUT | OUTPUT; по умолчанию
+    INPUT. Отдельный верхний блок ports: не используется.
+    На родителе порт — это узел сети через pinfunction: <имя_порта>.
+
+    Для этого листа OUTPUT — питающие шины, которые он генерирует
+    (VCC_12V, VCC_5V, VCC_3V3) и сигналы, уходящие к внешним
+    разъёмам; INPUT — входы от внешних датчиков и сигналы,
+    принимаемые с других листов (ILLUM_IN_RAW, AC_REQ_OUT).
+
+  Соглашения YAML:
+    pin:         — только числовой номер вывода KiCad ('1', '2').
+    pinfunction: — функциональное имя (K, A).
 
 component_types:
   TYPE_C_470UF_25V:
@@ -345,6 +283,7 @@ nets:
     name: VCC_12V
     description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: POWER
       voltage_level: 12.0V
@@ -367,6 +306,7 @@ nets:
     name: VCC_5V
     description: Внутреннее стабилизированное питание +5В (логика/питание стабилизатора 3,3В)
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: POWER
       voltage_level: 5.0V
@@ -406,6 +346,7 @@ nets:
     name: VCC_3V3
     description: Логическое питание +3,3В микроконтроллера и фронт-панели
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: POWER
       voltage_level: 3.3V
@@ -421,6 +362,7 @@ nets:
     name: GND
     description: Общий провод (кузов автомобиля)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: GND
       voltage_level: 0V
@@ -452,6 +394,7 @@ nets:
     name: NTC_HEAT_W
     description: 'Датчик патрубка отопителя: узел линии на разъёме J1:19'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..3.3V
@@ -467,6 +410,7 @@ nets:
     name: SOLAR_IN_RAW
     description: Вход датчика солнечной радиации (0..5В), J1:20
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -482,6 +426,7 @@ nets:
     name: COND_IN_RAW
     description: Вход датчика конденсата на стекле (0..5В), J1:21
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -497,6 +442,7 @@ nets:
     name: MOTOR_1_A
     description: 'Заслонка 1: выход А мостового драйвера к моторедуктору, J1:5'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -512,6 +458,7 @@ nets:
     name: MOTOR_1_B
     description: 'Заслонка 1: выход B мостового драйвера к моторедуктору, J1:6'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -527,6 +474,7 @@ nets:
     name: FB_M1_RAW
     description: 'Заслонка 1: выход потенциометра положения (0..5В), J1:7'
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -542,6 +490,7 @@ nets:
     name: MOTOR_2_A
     description: 'Заслонка 2: выход А мостового драйвера к моторедуктору, J1:8'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -557,6 +506,7 @@ nets:
     name: MOTOR_2_B
     description: 'Заслонка 2: выход B мостового драйвера к моторедуктору, J1:9'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -572,6 +522,7 @@ nets:
     name: FB_M2_RAW
     description: 'Заслонка 2: выход потенциометра положения (0..5В), J1:10'
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -587,6 +538,7 @@ nets:
     name: MOTOR_3_A
     description: 'Заслонка 3: выход А мостового драйвера к моторедуктору, J1:11'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -602,6 +554,7 @@ nets:
     name: MOTOR_3_B
     description: 'Заслонка 3: выход B мостового драйвера к моторедуктору, J1:12'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -617,6 +570,7 @@ nets:
     name: FB_M3_RAW
     description: 'Заслонка 3: выход потенциометра положения (0..5В), J1:13'
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -632,6 +586,7 @@ nets:
     name: MOTOR_4_A
     description: 'Заслонка 4: выход А мостового драйвера к моторедуктору, J1:14'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -647,6 +602,7 @@ nets:
     name: MOTOR_4_B
     description: 'Заслонка 4: выход B мостового драйвера к моторедуктору, J1:15'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V
@@ -662,6 +618,7 @@ nets:
     name: FB_M4_RAW
     description: 'Заслонка 4: выход потенциометра положения (0..5В), J1:16'
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: ANALOG_SIGNAL
       voltage_level: 0..5.0V
@@ -677,6 +634,7 @@ nets:
     name: AC_REQ_OUT
     description: Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя)
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 0..12V
@@ -702,6 +660,7 @@ nets:
         * как сигнал детектора габаритов в листе UI через
           делитель R39/R40 (K = 10/57 ≈ 0,175).
     is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 1.0..14.4V
@@ -717,6 +676,7 @@ nets:
     name: CANH
     description: 'CAN: шина High (J1:25)'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -732,6 +692,7 @@ nets:
     name: CANL
     description: 'CAN: шина Low (J1:26)'
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: DIGITAL_SIGNAL
       voltage_level: 3.3V
@@ -747,6 +708,7 @@ nets:
     name: HEAT_FAN_PWM_CTL
     description: ШИМ вентилятора печки к J1:23 (с открытого стока Q1 через R15)
     is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: PWM_POWER
       voltage_level: 0..12.0V

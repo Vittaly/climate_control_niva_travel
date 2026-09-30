@@ -14,6 +14,17 @@
 Правила маршрутизации — в router_impl/rules.py.
 Поиск пути — в router_impl/pathfind.py.
 Логирование — в router_impl/logging_.py.
+
+T-точки (junction) в .kicad_sch:
+    KiCad подключает label к проводу только если label.at совпадает
+    с endpoint сегмента ИЛИ с junction. Если label попадает в середину
+    сегмента (а роутер ставит метки-имена именно туда, «на чистую
+    клетку»), без явной junction он не подключается, и сеть пропадает
+    из нетлиста. Поэтому ЛЮБАЯ метка с on_wire=True должна получать
+    парную T-точку в той же координате. Это делается в трёх местах:
+      * _route_t_junction — успешная врезка (было и раньше);
+      * _route_t_junction — fallback label_on_wire (новое);
+      * _name_internal_nets — метка-имя внутренней сети (новое).
 """
 from typing import Dict, List, Optional, Tuple
 
@@ -184,6 +195,10 @@ class Router(RouterLogMixin):
 
         Метка ставится одна на сеть, на «чистой» клетке её провода
         (без транзита чужой сети — иначе KiCad приклеит имя к обеим).
+
+        Вместе с меткой обязательно ставится T-точка в той же
+        координате: клетка метки — середина сегмента, а не endpoint,
+        и без junction KiCad label не подключит.
         """
         # 1. Сети, у которых уже есть имя на этой странице:
         #    порты и существующие метки.
@@ -215,6 +230,18 @@ class Router(RouterLogMixin):
             x_mm = cell.col * self.grid_mm
             y_mm = cell.row * self.grid_mm
             pin = wires[0].start        # любой пин сети для контекста
+
+            # T-точка под метку.
+            # Клетка метки — середина сегмента; без junction KiCad
+            # label не подключит, и сеть пропадёт из нетлиста.
+            self._ensure_junction(
+                net_name=net_name,
+                target=cell,
+                source=cell,
+                wires=wires,
+                tag="internal_net_name",
+            )
+
             self.sheet.labels.append(FallbackLabel(
                 net_name=net_name,
                 local_key=pin.local_key,
@@ -267,8 +294,60 @@ class Router(RouterLogMixin):
                 if self._cell_is_exclusive(cell, net_name):
                     return cell
 
-        return None    
-    
+        return None
+
+    def _ensure_junction(
+        self,
+        net_name: str,
+        target: Cell,
+        source: Cell,
+        wires: List[Wire],
+        tag: str = "",
+    ) -> None:
+        """Добавляет T-точку в sheet.t_junctions, если её ещё нет.
+
+        KiCad подключает label к проводу только если label.at
+        совпадает с endpoint сегмента или с junction. Все метки
+        с on_wire=True роутер ставит в середину сегмента, поэтому
+        обязана существовать парная T-точка в той же клетке.
+
+        Дедуп по target: у одной клетки не может быть двух junction.
+        host-провод ищется линейно, но вызывается это редко
+        (по одной-двум меткам на сеть), так что O(N) не проблема.
+        """
+        for j in self.sheet.t_junctions:
+            if j.target == target:
+                log.debug(
+                    "%s t_junction_exists tag=%s net=%s cell=%s",
+                    ctx(page=self.page, net=net_name),
+                    tag, net_name, target,
+                )
+                return
+
+        host_wire: Optional[Wire] = None
+        for w in wires:
+            for seg in w.segments():
+                if target in seg.cells():
+                    host_wire = w
+                    break
+            if host_wire is not None:
+                break
+
+        self.sheet.t_junctions.append(TJunction(
+            net_name=net_name,
+            target=target,
+            source=source,
+            wire_key=host_wire.key if host_wire else "",
+        ))
+        log.info(
+            "%s t_junction_added tag=%s net=%s cell=%s "
+            "mm=(%.2f,%.2f) host=%s",
+            ctx(page=self.page, net=net_name),
+            tag, net_name, target,
+            target.col * self.grid_mm,
+            target.row * self.grid_mm,
+            host_wire.key if host_wire else "?",
+        )
 
     # =========================================================
     # Сбор пинов сети
@@ -285,7 +364,7 @@ class Router(RouterLogMixin):
             comp = self.components.get(designator)
             if comp is None:
                 continue
-            pin = comp.pin_by_number(num)
+            pin = comp.pin_by_identifier(num)
             if pin is None:
                 continue
             cell = comp.abs_pin_cell(pin)
@@ -542,6 +621,17 @@ class Router(RouterLogMixin):
             target = exclusive[0]
             t_mm = (target.col * self.grid_mm,
                     target.row * self.grid_mm)
+
+            # T-точка под wire-side метку. Без неё label в середине
+            # сегмента не подключится, и сеть пропадёт из нетлиста.
+            self._ensure_junction(
+                net_name=net_name,
+                target=target,
+                source=stub_c.tip,
+                wires=existing_wires,
+                tag="fallback_on_wire",
+            )
+
             self._mark_fallback(
                 net_name, pin_c, t_mm,
                 "T-junction failed",
@@ -698,6 +788,9 @@ class Router(RouterLogMixin):
 
         direction = pin.direction (без инверсии): anchor = contact_mm,
         текст рисуется против вектора направления, то есть наружу.
+
+        T-точку под on_wire=True роутер добавляет в _ensure_junction
+        или _route_t_junction. Здесь только сама метка.
         """
         if on_wire:
             for lbl in self.sheet.labels:

@@ -17,6 +17,19 @@
 Класс не знает про Component/Cell/Pin. Единственная задача —
 достать метаданные символа из библиотеки KiCad и закэшировать их.
 
+Локальные библиотеки:
+    Проект может генерировать собственные .kicad_sym (например,
+    через JLC2KiCadLib) и складывать их в libs/symbol/. Такие
+    библиотеки kicad-sch-api сам НЕ видит: он сканирует только
+    стандартные пути KiCad и переменные окружения, а sym-lib-table
+    проекта не читает. Поэтому LibraryManager отдаёт пути наружу,
+    а KiCadSource регистрирует их через register_library().
+
+    register_library() идемпотентен по абсолютному пути. Если файл
+    библиотеки изменился (JLC2KiCadLib дописал символ), вызывающий
+    должен дёрнуть invalidate_lib(path) — иначе kicad-sch-api
+    отдаст старое содержимое из своего кэша.
+
 Двухуровневый кэш:
     * _pins_memo / _bbox_memo — в памяти процесса, мемоизация на
       время одного прогона;
@@ -38,12 +51,18 @@
     формата pin_dict — старые файлы игнорируются. Для ручного
     сброса: удалить ~/.cache/make_scr/ или вызвать
     clear_persistent_cache().
+
+    Отдельно: сгенерированные проектом библиотеки (MyMCU и т.п.)
+    живут вне стандартных путей KiCad, поэтому их содержимое
+    в _pins_memo тоже может устареть. Если вы перегенерировали
+    .kicad_sym — либо bump CACHE_VERSION, либо вызовите
+    clear_persistent_cache() перед прогоном.
 """
 from __future__ import annotations
 
 import pickle
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import kicad_sch_api as ksa
 
@@ -93,22 +112,155 @@ class KiCadSource:
         * _pins_memo / _bbox_memo — в памяти процесса;
         * CACHE_FILE (pickle)     — на диске, между запусками.
 
+    Локальные библиотеки:
+        Передаются в конструктор (local_lib_paths) или добавляются
+        позже через register_library(). Регистрация нужна ДО первого
+        обращения к символам из этой библиотеки через get_pins().
+
     flush() вызывается явно в Project.load() перед возможным
     raise ProjectLoadError — чтобы результат разбора сохранился
     даже при ошибке в YAML.
     """
 
-    def __init__(self) -> None:
-        """Открывает кэш символов kicad_sch_api и подгружает диск-кэш."""
+    def __init__(
+        self,
+        local_lib_paths: Optional[Iterable[Path]] = None,
+    ) -> None:
+        """Открывает кэш символов kicad_sch_api и подгружает диск-кэш.
+
+        Args:
+            local_lib_paths: необязательный список путей к .kicad_sym,
+                которые нужно зарегистрировать в kicad-sch-api до
+                первого get_pins(). Обычно сюда приходит результат
+                LibraryManager.resolve_all() при полном прогреве.
+        """
         self._cache = ksa.get_symbol_cache()
         self._pins_memo: Dict[str, List[dict]] = {}
         self._bbox_memo: Dict[str, Tuple[float, float, float, float]] = {}
         self._dirty = False
+
+        # Зарегистрированные локальные библиотеки: abs path → True.
+        # Регистрируем ДО первого get_pins — иначе символы из них
+        # будут не видны kicad-sch-api.
+        self._registered_libs: Set[str] = set()
+        for p in (local_lib_paths or ()):
+            self.register_library(Path(p))
+
         self._load_persistent_cache()
         log.debug(
-            "KiCadSource инициализирован (кэш на диске: %d символов)",
-            len(self._pins_memo),
+            "KiCadSource инициализирован (кэш: %d символов, libs: %d)",
+            len(self._pins_memo), len(self._registered_libs),
         )
+
+    # ---------- регистрация локальных библиотек ----------
+
+    def register_library(self, path: Path) -> None:
+        """Добавляет .kicad_sym в кэш kicad-sch-api.
+
+        Идемпотентно по абсолютному пути. Ошибки не пробрасываются:
+        отсутствие файла или несовместимость API kicad-sch-api не
+        должны валить прогон. В худшем случае символ не найдётся
+        в get_pins() — Component.from_yaml упадёт с понятным
+        ComponentLoadError.
+
+        Если файл библиотеки изменился после регистрации, вызовите
+        invalidate_lib(path), чтобы kicad-sch-api перечитал его.
+        """
+        p = Path(path).resolve()
+        key = str(p)
+        if key in self._registered_libs:
+            return
+        if not p.exists():
+            log.warning("Локальная библиотека не найдена: %s", p)
+            return
+
+        # В разных версиях kicad-sch-api метод называется по-разному.
+        # Основной путь — add_library_path(<file>); fallback —
+        # discover_libraries([<dir>]).
+        registered = False
+        if hasattr(self._cache, "add_library_path"):
+            try:
+                self._cache.add_library_path(key)
+                registered = True
+            except Exception as e:
+                log.warning(
+                    "add_library_path(%s) не удался: %s", key, e,
+                )
+
+        if not registered and hasattr(self._cache, "discover_libraries"):
+            try:
+                self._cache.discover_libraries([str(p.parent)])
+                registered = True
+            except Exception as e:
+                log.warning(
+                    "discover_libraries(%s) не удался: %s",
+                    p.parent, e,
+                )
+
+        if not registered:
+            log.warning(
+                "kicad-sch-api не умеет регистрировать %s: "
+                "нет подходящего метода в SymbolLibraryCache", p,
+            )
+            return
+
+        self._registered_libs.add(key)
+        log.info("Локальная библиотека зарегистрирована: %s", p.name)
+
+    def invalidate_lib(self, path: Path) -> None:
+        """Сбрасывает кэш kicad-sch-api для одной библиотеки.
+
+        Вызывать после того, как JLC2KiCadLib дописал символ в уже
+        зарегистрированный файл — иначе get_symbol отдаст старое
+        содержимое.
+
+        Также удаляет из memo все lib_id, относящиеся к этой
+        библиотеке, чтобы следующая get_pins перечитала пины
+        из обновлённого файла.
+        """
+        p = Path(path).resolve()
+        key = str(p)
+        if key not in self._registered_libs:
+            return
+
+        lib_stem = p.stem  # "MyMCU" для MyMCU.kicad_sym
+
+        # 1. Сбрасываем внутренний кэш kicad-sch-api.
+        #    Порядок методов также версионно-зависим; пробуем
+        #    несколько вариантов.
+        try:
+            if hasattr(self._cache, "clear_cache"):
+                self._cache.clear_cache()
+                if hasattr(self._cache, "add_library_path"):
+                    self._cache.add_library_path(key)
+            elif hasattr(self._cache, "reload"):
+                self._cache.reload(key)
+            elif hasattr(self._cache, "forget"):
+                self._cache.forget(key)
+                if hasattr(self._cache, "add_library_path"):
+                    self._cache.add_library_path(key)
+            else:
+                log.debug(
+                    "invalidate_lib: неизвестный API для сброса кэша; "
+                    "пробую добавить путь повторно",
+                )
+                if hasattr(self._cache, "add_library_path"):
+                    self._cache.add_library_path(key)
+        except Exception as e:
+            log.warning("invalidate_lib(%s): %s", p, e)
+
+        # 2. Чистим наш memo по этой библиотеке.
+        prefix = f"{lib_stem}:"
+        stale = [k for k in self._pins_memo if k.startswith(prefix)]
+        for k in stale:
+            self._pins_memo.pop(k, None)
+        stale_bbox = [k for k in self._bbox_memo if k.startswith(prefix)]
+        for k in stale_bbox:
+            self._bbox_memo.pop(k, None)
+        if stale or stale_bbox:
+            self._dirty = True
+
+        log.info("Kicad-sch-api кэш сброшен для %s", p.name)
 
     # ---------- диск-кэш ----------
 

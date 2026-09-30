@@ -83,7 +83,7 @@ class Net:
 
         log.debug(
             "%s wire %s -> %s segments=%d cells=%d",
-            ctx(page=page, net=self.name, comp=comp, pin=start_pin.number),
+            ctx(page=page, net=self.name, comp=comp, pin=start_pin.identifier),
             src, dst, len(wire.segments()), wire.length,
         )
 
