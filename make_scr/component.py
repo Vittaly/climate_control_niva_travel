@@ -2,8 +2,18 @@
 """Компонент: собирается из YAML-описания типа.
 
 Компонент знает свою страницу (двусторонняя связь Sheet ↔ Component).
-Автоматический __eq__ отключён (eq=False) — сравнение по идентичности.
-__hash__ строится по designator: он неизменяем после создания.
+
+Проектные refdes и instance-пути:
+    Помимо локального designator'а ("U1") компонент может быть
+    инстанцирован несколько раз (если лист переиспользуется).
+    Каждое присутствие — это SheetInstance, в котором компонент
+    присутствует. Список self.instances: List[SheetInstance]
+    заполняется Sheet.register_instance в момент загрузки.
+
+    Refdes — производное: make_refdes(self.designator, inst.page).
+    Path — тоже производное: инстанс знает свой path через цепочку
+    parent'ов. Компонент не хранит ни то, ни другое — только
+    ссылки на SheetInstance, где он присутствует.
 
 Alias-пины:
     Схлопывание пинов, сидящих на одном паде, выполняет Netlist
@@ -101,6 +111,7 @@ from designators import validate_component_designator
 if TYPE_CHECKING:
     from kicad_source import KiCadSource
     from sheet import Sheet
+    from sheet_instance import SheetInstance
 
 log = get_logger(__name__)
 
@@ -208,6 +219,7 @@ def _compute_outward_angle(
     closest.sort(key=lambda c: priority[c[2]])
     return closest[0][1]
 
+
 # =========================================================
 # Нормализация имён выводов KiCad-символа
 # =========================================================
@@ -243,6 +255,8 @@ def _norm_pin_name(name: Optional[str]) -> str:
     s = s.split("-", 1)[0]         # PF2 - NRST, PC15-OSC32_OUT
     s = s.split("(", 1)[0]         # ... (PC15)
     return s.strip()
+
+
 # =========================================================
 # Компонент
 # =========================================================
@@ -259,6 +273,12 @@ class Component:
         pins:              список Pin со смещением от якоря (мм, Y↓).
         fields:            дополнительные поля из YAML.
         sheet:             страница-владелец.
+        instances:         SheetInstance[] — присутствия компонента
+                           в инстансах его листа. Заполняется
+                           Sheet.register_instance в момент загрузки.
+                           Пустой до регистрации. Refdes и path —
+                           производные от (designator, inst.page)
+                           и (inst.path); собственных копий нет.
         rotation:          угол поворота экземпляра (0/90/180/270).
         mirror:            отражение экземпляра: None / "x" / "y".
         anchor_offset_mm:  (x_mm, y_mm) — смещение якоря от левого-верхнего
@@ -274,6 +294,9 @@ class Component:
     pins: List[Pin] = field(default_factory=list)
     fields: Dict[str, str] = field(default_factory=dict)
     sheet: Optional["Sheet"] = field(default=None, repr=False)
+    instances: List["SheetInstance"] = field(
+        default_factory=list, repr=False,
+    )
     rotation: int = 0
     mirror: Optional[str] = None
     anchor_offset_mm: Tuple[float, float] = (0.0, 0.0)
@@ -305,13 +328,93 @@ class Component:
 
     @property
     def fqn(self) -> str:
-        """Полное имя с префиксом страницы."""
-        sp = self.sheet_path
-        return f"{sp}/{self.designator}" if sp else self.designator
+        if self.sheet is None:
+            return self.designator
+        prefix = self.sheet.fqn_prefix
+        return f"{prefix}/{self.designator}" if prefix else self.designator
 
     def fqn_pin(self, pin: Pin) -> str:
         """FQN пина этого компонента: "X_ACT/U2:5"."""
         return f"{self.fqn}:{pin.number}"
+
+    # ---------- инстансы и проектные refdes ----------
+
+    @property
+    def has_instances(self) -> bool:
+        """Есть ли у компонента хотя бы один зарегистрированный инстанс."""
+        return bool(self.instances)
+
+    @property
+    def sheet_instances(self) -> List["SheetInstance"]:
+        """Все SheetInstance, в которых присутствует компонент.
+
+        Порядок — как в self.instances, то есть в порядке регистрации
+        (DFS-обход дерева).
+        """
+        return list(self.instances)
+
+    @property
+    def project_refdes(self) -> List[str]:
+        """Все проектные имена компонента, по одному на инстанс.
+
+        Refdes — производное от (designator, inst.page); не хранится.
+        """
+        from refdes import make_refdes
+        return [make_refdes(self.designator, inst.page)
+                for inst in self.instances]
+
+    def refdes_in(self, inst: "SheetInstance") -> Optional[str]:
+        """Проектное имя компонента в конкретном инстансе листа.
+
+        Возвращает None, если компонент в этом инстансе не присутствует.
+        """
+        from refdes import make_refdes
+        for i in self.instances:
+            if i is inst:
+                return make_refdes(self.designator, inst.page)
+        return None
+
+    def refdes_at_page(self, page: int) -> Optional[str]:
+        """Проектное имя компонента на странице с указанным номером.
+
+        Удобно, когда известен только номер страницы (например, из
+        E2E-сценария). Возвращает None, если ни один инстанс не
+        имеет этого page.
+        """
+        from refdes import make_refdes
+        for i in self.instances:
+            if i.page == page:
+                return make_refdes(self.designator, i.page)
+        return None
+
+    def path_in(self, inst: "SheetInstance") -> Optional[str]:
+        """Instance-путь листа в конкретном инстансе.
+
+        Делегация к inst.path — сам компонент path не хранит.
+        Возвращает None, если компонент в этом инстансе не присутствует.
+        """
+        for i in self.instances:
+            if i is inst:
+                return i.path
+        return None
+
+    def path_at_page(self, page: int) -> Optional[str]:
+        """Instance-путь листа на странице с указанным номером."""
+        for i in self.instances:
+            if i.page == page:
+                return i.path
+        return None
+
+    def add_instance(self, inst: "SheetInstance") -> None:
+        """Зарегистрировать присутствие компонента в инстансе листа.
+
+        Хранит ссылку на SheetInstance. Refdes и path — производные,
+        не хранятся. Идемпотентно: повторный вызов с тем же inst — no-op.
+        """
+        for existing in self.instances:
+            if existing is inst:
+                return
+        self.instances.append(inst)
 
     # ---------- поиск пинов ----------
 
@@ -355,7 +458,7 @@ class Component:
         # 2. Fallback без учёта регистра
         lower = name.lower()
         ci = [p for p in self.pins
-            if p.name and p.name.lower() == lower]
+              if p.name and p.name.lower() == lower]
         if len(ci) == 1:
             log.warning(
                 "%s: pinfunction=%r найдено как %r — "
@@ -377,7 +480,7 @@ class Component:
         if not target:
             return None
         normed = [p for p in self.pins
-                if p.name and _norm_pin_name(p.name) == target]
+                  if p.name and _norm_pin_name(p.name) == target]
         if len(normed) == 1:
             log.debug(
                 "%s: pinfunction=%r найдено как %r — через нормализацию.",
@@ -412,17 +515,7 @@ class Component:
             * из local_key: "U1:42";
             * из ключа словаря сети.
 
-        Приоритет — номер, затем имя:
-            * обычный пин: number="42", name="PB9". Запрос "42" → по номеру;
-            запрос "PB9" → по имени.
-            * sheet-пин: number=None, name="VCC_12V". Запрос "VCC_12V" → по имени.
-
-        В обоих случаях находит правильный пин.
-
-        Для YAML-узлов использовать НЕ ЭТОТ метод, а pin_by_number /
-        pin_by_name: там пользователь явно указывает pin: или
-        pinfunction: — семантика известна заранее, и приоритеты
-        задаются в project._bind_node.
+        Приоритет — номер, затем имя.
         """
         if not ident:
             return None
@@ -445,38 +538,13 @@ class Component:
     ) -> "Component":
         """Собирает компонент из описания типа в component_types.
 
-        Что РАССЧИТЫВАЕТСЯ:
-            - bbox_sym (min/max по пинам, система символа, Y↑);
-            - границы bbox снапаются к сетке: floor для min,
-              ceil для max; размер = диапазон [min .. max]
-              ВКЛЮЧИТЕЛЬНО, то есть max - min + 1 клеток.
-              Так клетка любого пина (в смысле abs_pin_cell)
-              попадает в bbox, даже если пин не кратен сетке;
-            - если ширина/высота bbox меньше клетки, bbox
-              СИММЕТРИЧНО расширяется на одну клетку С КАЖДОЙ стороны;
-            - bbox_size (cols, rows) в клетках;
-            - anchor_offset_mm (смещение якоря от левого-верхнего
-              угла bbox, мм, Y↓) — считается от СНАПНУТЫХ границ;
-            - pin.offset_mm (смещение пина от якоря, мм, Y↓);
-            - pin.direction (из геометрии, на сырых координатах).
-
-        Args:
-            designator: локальное обозначение ("U1").
-            cdef:       словарь вида {"type": "TYPE_R_10K", ...}.
-            types:      таблица component_types из YAML.
-            source:     KiCadSource для доступа к библиотеке символов.
-            grid_mm:    шаг сетки в мм.
-            page:       имя страницы-владельца (для контекста логов).
-
-        Returns:
-            Построенный Component.
+        См. докстринг модуля — расчёт bbox, anchor_offset_mm,
+        pin.offset_mm, pin.direction.
 
         Raises:
             ComponentLoadError: тип не указан, тип не описан,
                 symbol не указан в типе, symbol не найден в
-                библиотеке. Компонент молча НЕ теряется — ошибка
-                летит наружу с полным контекстом
-                (designator/type/symbol/value/reason/hint).
+                библиотеке.
             DesignatorError: designator не проходит валидацию KiCad.
         """
         # --- 1. type обязателен ---
@@ -548,8 +616,6 @@ class Component:
             min_x = max_x = min_y = max_y = 0.0
 
         # --- 6. СИММЕТРИЧНОЕ расширение, если ширина меньше клетки ---
-        # (все пины в одной точке — bbox всё равно должен быть хоть
-        #  размером с клетку)
         if max_x - min_x < grid_mm:
             min_x -= grid_mm
             max_x += grid_mm
@@ -590,11 +656,9 @@ class Component:
                 pin_ctx, x_lib, y_lib, p["name"], p.get("orientation", 0),
             )
 
-            # смещение пина от якоря (система страницы, Y↓)
             pin_offset_x = x_lib - anchor_x_sym
             pin_offset_y = anchor_y_sym - y_lib
 
-            # outward — на сырых координатах (система символа, Y↑)
             outward = _compute_outward_angle(
                 x_mm=x_lib, y_mm=y_lib,
                 min_x=min_x, min_y=min_y, max_x=max_x, max_y=max_y,
@@ -603,7 +667,6 @@ class Component:
                 wire_angle_to_direction(outward)
             )
 
-            # что дала библиотека
             lib_orientation = p.get("orientation", 0)
             try:
                 lib_orientation_int = int(lib_orientation)
@@ -650,11 +713,9 @@ class Component:
             anchor_offset_mm=anchor_offset_mm,
             grid_mm=grid_mm,
         )
-        # двусторонняя связь: пин знает своего компонента
         for pin in pins:
             pin.component = comp
 
-        # диагностика дефектов библиотеки: пины на одном паде
         comp._warn_duplicate_pin_positions()
 
         return comp
@@ -663,12 +724,8 @@ class Component:
         """Валидация инвариантов компонента при создании.
 
         Reference компонента обязан быть KiCad-совместимым
-        (<1..4 латинских буквы><номер>). Если это не так —
-        падаем сразу, а не молча теряем компонент в Writer.
-
-        Порты (PORT_*) — отдельный класс; сюда попадать не должны.
-        Если сюда попал designator, начинающийся с PORT_, это ошибка
-        вызывающего кода: порт создаётся не как Component.
+        (<1..4 латинских буквы><номер>). Порты (PORT_*) — отдельный
+        класс; сюда попадать не должны.
         """
         page = self.sheet_path or None
 
@@ -723,12 +780,6 @@ class Component:
 
         Вызывается Placer'ом. Принимает bbox_origin (левый-верхний угол
         bbox в клетках), вычисляет anchor_page_mm и сохраняет только его.
-        bbox_origin НЕ хранится — он нужен только для вычисления.
-
-        Args:
-            bbox_origin: левый-верхний угол bbox (клетки).
-            rotation:    угол поворота (0/90/180/270).
-            mirror:      отражение (None / "x" / "y").
         """
         self.rotation = rotation
         self.mirror = mirror
@@ -743,13 +794,6 @@ class Component:
         """Точка якоря на странице для данного bbox_origin.
 
         anchor_page_mm = bbox_origin_mm + anchor_offset_mm.
-
-        Args:
-            bbox_origin: левый-верхний угол bbox (клетки).
-            grid_mm:     шаг сетки в мм.
-
-        Returns:
-            (x_mm, y_mm) — точка якоря на странице, Y↓.
         """
         bx = bbox_origin.col * grid_mm
         by = bbox_origin.row * grid_mm
@@ -775,12 +819,7 @@ class Component:
     def bbox_origin_cell(self) -> Cell:
         """Левый-верхний угол bbox на странице (клетки).
 
-        Вычисляется из anchor_page_mm и anchor_offset_mm:
-            bbox_origin_mm = anchor_page_mm - anchor_offset_mm
-            bbox_origin_cell = round(bbox_origin_mm / grid_mm)
-
-        Raises:
-            RuntimeError: если anchor_page_mm не установлен.
+        Вычисляется из anchor_page_mm и anchor_offset_mm.
         """
         if self.anchor_page_mm is None:
             raise RuntimeError(
@@ -795,11 +834,7 @@ class Component:
     def bbox_page_cell(self) -> Tuple[int, int, int, int]:
         """(col0, row0, col1, row1) — прямоугольник на странице (клетки).
 
-        col1, row1 — ИСКЛЮЧАЮЩИЕ границы: клетки bbox лежат в
-        [col0, col1) x [row0, row1). Размер bbox = (col1-col0, row1-row0).
-
-        Raises:
-            RuntimeError: если anchor_page_mm не установлен.
+        col1, row1 — ИСКЛЮЧАЮЩИЕ границы.
         """
         origin = self.bbox_origin_cell()
         return (origin.col, origin.row,
@@ -810,9 +845,6 @@ class Component:
         """Реальная точка пина на странице (мм).
 
         abs_pin_mm = anchor_page_mm + pin.offset_mm.
-
-        Raises:
-            RuntimeError: если anchor_page_mm не установлен.
         """
         if self.anchor_page_mm is None:
             raise RuntimeError(
@@ -824,39 +856,19 @@ class Component:
                 ay + pin.offset_mm[Axis.Y])
 
     def abs_pin_cell(self, pin: Pin) -> Cell:
-        """Клетка пина на странице (округление от abs_pin_mm).
-
-        Использует round. Границы bbox снапаются через floor/ceil
-        так, чтобы клетка любого пина гарантированно лежала внутри
-        bbox — см. from_yaml.
-
-        Raises:
-            RuntimeError: если anchor_page_mm не установлен.
-        """
+        """Клетка пина на странице (округление от abs_pin_mm)."""
         x, y = self.abs_pin_mm(pin)
         return Cell(round(x / self.grid_mm), round(y / self.grid_mm))
 
     def iter_occupied_cells(self) -> Iterator[Tuple[int, int]]:
-        """Генерирует клетки, занятые габаритом компонента.
-
-        Диапазон [origin.col, origin.col + bbox_cols) ×
-                 [origin.row, origin.row + bbox_rows)
-        включает все клетки bbox, в том числе клетки пинов.
-
-        Raises:
-            RuntimeError: если anchor_page_mm не установлен.
-        """
+        """Генерирует клетки, занятые габаритом компонента."""
         origin = self.bbox_origin_cell()
         for c in range(origin.col, origin.col + self.bbox_cols):
             for r in range(origin.row, origin.row + self.bbox_rows):
                 yield (c, r)
 
     def iter_pin_cells(self) -> Iterator[Tuple[int, int]]:
-        """Генерирует абсолютные клетки пинов компонента.
-
-        Raises:
-            RuntimeError: если anchor_page_mm не установлен.
-        """
+        """Генерирует абсолютные клетки пинов компонента."""
         for pin in self.pins:
             cell = self.abs_pin_cell(pin)
             yield (cell.col, cell.row)
@@ -873,19 +885,14 @@ class Component:
         """Обычный компонент — не ссылка на лист."""
         return False
 
-    # component.py
-
     @property
     def frame_size(self) -> Tuple[int, int]:
         """Габарит фигуры, которую рисует Writer.
 
-        Для обычного символа совпадает с bbox: пины сидят на кромке
-        bbox и считаются частью символа.
-
+        Для обычного символа совпадает с bbox.
         Для SheetRef переопределяется: рамка внутри bbox (см. sheet_ref.py).
         """
         return self.bbox_size
-
 
     @property
     def frame_offset_mm(self) -> Tuple[float, float]:

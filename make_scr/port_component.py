@@ -62,6 +62,8 @@ class PortComponent(Component):
     net_name: str = ""
     shape: str = ""
     side: str = "right"
+    direction: str = "INPUT"      # ← исходное port_direction из YAML
+    description: str = ""         # ← description из YAML
 
     # ---- маппинг port_direction → shape hierarchical_label / sheet-pin ----
     # Единственное место в проекте, где этот маппинг определён.
@@ -161,14 +163,19 @@ class PortComponent(Component):
     # ---------- удобный конструктор ----------
 
     @classmethod
-    def create(cls, designator: str, net_name: str,
-               direction: str) -> "PortComponent":
+    def create(
+        cls,
+        designator: str,
+        net_name: str,
+        direction: str,
+        description: str = "",
+    ) -> "PortComponent":
         """Создаёт порт из port_direction.
 
         shape и side вычисляются из direction — рассинхронизация
-        между ними невозможна по построению. lib_id="" — сигнал
-        «нет symbol в библиотеке»: в writer.py это ветка
-        hierarchical_label, не components.add.
+        невозможна по построению. lib_id="" — сигнал «нет symbol».
+        direction и description сохраняются как исходные — Sheet.read_ports
+        отдаёт их дальше без пересчёта.
 
         Raises:
             ValueError: если direction не из _DIRECTION_TO_SHAPE.
@@ -176,14 +183,16 @@ class PortComponent(Component):
         return cls(
             designator=designator,
             name=net_name,
-            lib_id="",            # у порта нет symbol
-            bbox_size=(0, 0),     # пересчитается в __post_init__
+            lib_id="",
+            bbox_size=(0, 0),
             pins=[],
             fields={},
             sheet=None,
             net_name=net_name,
             shape=cls.shape_for_direction(direction),
             side=cls.side_for_direction(direction),
+            direction=str(direction).upper(),
+            description=description,
         )
 
     # ---------- маркеры для writer / stub ----------

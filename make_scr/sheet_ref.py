@@ -7,38 +7,54 @@ SheetRefComponent — обычный Component для Sheet, Placer, Router:
     - Router видит его пины как endpoints сетей;
     - Writer рисует add_sheet вместо components.add.
 
-Источник истины о портах — дочерний YAML, секция nets:
-    Порт — это сеть с флагом is_hierarchical_port: true.
-    Имя порта = имя сети. Направление (для размещения пина на
-    левом/правом краю) читается из port_direction у той же сети,
-    по умолчанию INPUT.
+Создание — через конструктор:
+    SheetRefComponent(designator, parent_sheet, sheet_file)
 
-    Устаревший верхний блок ports: не читается. Миграция
-    завершена: все листы хранят порты в nets.*.is_hierarchical_port.
+    Конструктор сам делает всё, что относится к X_*:
+      1. Резолвит дочерний YAML относительно YAML родительского Sheet.
+      2. Просит Sheet.load получить/загрузить дочерний Sheet
+         (один YAML = один Sheet, find_sheet от корня).
+      3. Читает порты дочернего Sheet из его netlist
+         (child_sheet.read_ports()).
+      4. Заполняет унаследованные поля Component через super().__init__.
+         В конце Component.__init__ вызывает __post_init__ — уже
+         SheetRef-версию (метод переопределён), где считаются bbox
+         и пины.
+      5. Создаёт SheetInstance ребёнка (в контексте parent_sheet) и
+         регистрирует его через child_sheet.register_instance.
+         Ссылка на этот SheetInstance сохраняется в self.child_instance.
 
-    Верхний блок port_map в родительском YAML не читается здесь:
-    он обслуживает связь pin↔root_net на уровне родительской
-    страницы, и его обработка — задача расширителя нетлиста,
-    а не SheetRefComponent.
+Идентичность и инстанцирование:
+    SheetRefComponent описывает X_* в родительском файле. У него
+    три ссылки, отражающие стороны отношения:
+        - sheet:           родительский Sheet (унаследовано от Component,
+                           проставляется в super().__init__);
+        - uuid:            uuid этого X_* в родителе. Назначается один
+                           раз при создании. Используется как
+                           (sheet (uuid ...)) в родительском .kicad_sch
+                           и как сегмент instance-путей потомков;
+        - child_instance:  SheetInstance ребёнка, созданный этим X_*.
+                           Из него доступны child_sheet, child_page.
+
+    Лист может быть инстанцирован через несколько X_*. У каждого —
+    свой SheetRefComponent со своим uuid и своим child_instance.
+    Один child_sheet. Число SheetInstance у ребёнка равно числу X_*,
+    которые на него ссылаются.
+
+Источник истины о портах — дочерний Sheet, уже загруженный из YAML:
+    Порт — это сеть с флагом is_hierarchical_port: true в дочернем
+    YAML. Имя порта = имя сети. Направление (для размещения пина на
+    левом/правом краю) — из port_direction у той же сети, по
+    умолчанию INPUT.
 
 Отличия от PortComponent:
-    - не один фиктивный пин, а столько, сколько портов в дочернем YAML;
+    - не один фиктивный пин, а столько, сколько портов в дочернем Sheet;
     - lib_id="" — тот же сигнал «нет symbol в KiCad»;
     - is_sheet_ref=True — отдельный маркер для Writer.
 
-Пины листа соответствуют портам дочерней страницы. Например, если в
-sheets/power_supply.yaml есть сети VCC_3V3, GND с флагом
-is_hierarchical_port, то у X_PWR будет два пина с этими именами.
-Роутер сможет тянуть провод к X_PWR:VCC_3V3 — как к обычному пину.
-
-    Для sheet-ref-пина number == name == имя порта. Числовых
-    номеров у пина листа нет по определению. Резолв таких пинов
-    идёт через pin_by_name, никогда через pin_by_number с числом.
-
-Геометрия:
-    bbox_size — размер листа в клетках.
-    anchor_offset_mm = (0, 0) — anchor совпадает с левым-верхним
-        углом bbox. Пины задаются offset_mm от anchor (мм, Y↓).
+Пины листа соответствуют портам дочерней страницы. Для sheet-ref-пина
+number == name == имя порта. Резолв таких пинов идёт через
+pin_by_name, никогда через pin_by_number с числом.
 
 Семантика pin.direction:
     Как в PortComponent и в символах KiCad, pin.direction смотрит
@@ -50,49 +66,23 @@ is_hierarchical_port, то у X_PWR будет два пина с этими и�
 """
 from __future__ import annotations
 
+import uuid as uuid_mod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-
-import yaml
+from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple
 
 from constants import Axis, DEFAULT_GRID_MM, Direction
 from logging_setup import get_logger
 from pin import Pin
 
 from component import Component
+from sheet_instance import SheetInstance
+
+if TYPE_CHECKING:
+    from sheet import Sheet
+
 
 log = get_logger(__name__)
-
-
-# ─────────────────────────────────────────────────────────────────────
-# Кэш разобранных YAML-файлов листов
-#
-# Один и тот же лист инстанцируется многократно (actuator_channel ×4).
-# Парсить YAML каждый раз — лишний I/O. Ключ — разрешённый путь,
-# значение — загруженный словарь верхнего уровня.
-# ─────────────────────────────────────────────────────────────────────
-
-_YAML_CACHE: Dict[Path, dict] = {}
-
-
-def _load_yaml_cached(path: Path) -> dict:
-    """Загружает YAML с кэшем. Ошибки чтения → пустой dict."""
-    key = path.resolve()
-    if key in _YAML_CACHE:
-        return _YAML_CACHE[key]
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except Exception as e:
-        log.warning("SheetRef: не прочитал %s: %s", path, e)
-        data = {}
-    _YAML_CACHE[key] = data
-    return data
-
-
-def clear_yaml_cache() -> None:
-    """Сброс кэша (для тестов и hot-reload)."""
-    _YAML_CACHE.clear()
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -103,9 +93,9 @@ class SheetRefError(Exception):
     """SheetRefComponent не смог собрать порты дочернего листа.
 
     Причины:
-        - дочерний YAML вообще не читается;
-        - в дочернем YAML нет ни одной сети с is_hierarchical_port,
-          а родитель ожидает у листа пины.
+        - родительский Sheet не связан с yaml_path;
+        - дочерний YAML не найден;
+        - дочерний Sheet не читается.
     """
 
     def __init__(self, designator: str, reason: str, *,
@@ -124,14 +114,25 @@ class SheetRefComponent(Component):
     """Ссылка на вложенный лист как компонент.
 
     Attributes:
-        sheet_file:   имя файла листа (sheets/power_supply.yaml).
-        sheet_name:   имя листа в KiCad (X_PWR).
-        ports:        список портов дочернего YAML (нормализованные
-                      dict'ы с ключами net_label, direction, description).
+        sheet_file:      относительный путь к YAML дочернего листа
+                         ("power_supply.yaml" или "sheets/power_supply.yaml").
+        sheet_name:      имя листа в KiCad (X_PWR).
+        ports:           список портов дочернего Sheet (нормализованные
+                         dict'ы с ключами net_label, direction, description).
+        uuid:            uuid этого X_* в родителе. Назначается один раз
+                         при создании, не меняется. Идёт в (sheet (uuid ...))
+                         родительского .kicad_sch и как сегмент
+                         instance-путей.
+        child_instance:  SheetInstance ребёнка, созданный этим X_*.
+                         Устанавливается в конструкторе.
     """
     sheet_file: str = ""
     sheet_name: str = ""
     ports: List[dict] = field(default_factory=list)
+    uuid: str = ""
+    child_instance: Optional[SheetInstance] = field(
+        default=None, repr=False,
+    )
 
     # Габарит листа считается по числу портов — как в Writer
     CHAR_WIDTH_CELLS = 1
@@ -144,6 +145,127 @@ class SheetRefComponent(Component):
     GAP_CELLS = 2
     # Отступы от краёв bbox до текстов (пиктограмма + поля).
     SIDE_PADDING_CELLS = 1
+
+    # ─────────────── конструктор ───────────────
+
+    def __init__(self, designator, parent_sheet, sheet_file):
+        from sheet import Sheet
+
+        # Корень: если у parent_sheet есть instances — он дочерний,
+        # берём корень через подъём. Если instances пусто — parent_sheet
+        # сам корень.
+        if parent_sheet.instances:
+            root_sheet = parent_sheet.instances[0].root_sheet
+        else:
+            root_sheet = parent_sheet
+
+        parent_yaml = parent_sheet.yaml_path
+        child_yaml = (parent_yaml.parent
+                      / Path(sheet_file).with_suffix(".yaml")).resolve()
+        if not child_yaml.exists():
+            raise SheetRefError(designator, f"нет {child_yaml.name}")
+
+        # find_sheet — обход дерева от root_sheet через child_instance.
+        child_sheet = SheetRefComponent.find_sheet(root_sheet,
+                                                   child_yaml.stem)
+        if child_sheet is None:
+            child_sheet = Sheet.load(
+                child_yaml,
+                source=root_sheet.source,
+                libraries=root_sheet.libraries,
+                load_errors=root_sheet.load_errors,
+            )
+
+        ports = child_sheet.read_ports()
+
+        # Свои поля — ДО super().__init__, чтобы __post_init__ (наш)
+        # уже видел self.ports.
+        self.sheet_file = sheet_file
+        self.sheet_name = designator
+        self.ports = ports
+        self.uuid = str(uuid_mod.uuid4())
+
+        super().__init__(
+            designator=designator, name=designator, lib_id="",
+            bbox_size=(0, 0), pins=[], fields={}, sheet=parent_sheet,
+        )
+
+        # Контекст parent_sheet: его instance, либо None (корень).
+        parent_inst = (parent_sheet.instances[0]
+                       if parent_sheet.instances else None)
+
+        child_inst = SheetInstance(
+            sheet=child_sheet,
+            via=self,
+            parent=parent_inst,
+            page=SheetRefComponent._next_page_number(root_sheet),
+        )
+        self.child_instance = child_inst
+        child_sheet.register_instance(child_inst)
+
+    # ─────────────── производные доступы к ребёнку ───────────────
+
+    @property
+    def child_sheet(self) -> Optional["Sheet"]:
+        """Sheet ребёнка — через child_instance."""
+        return self.child_instance.sheet if self.child_instance else None
+
+    @property
+    def child_page(self) -> Optional[int]:
+        """Page инстанса ребёнка."""
+        return self.child_instance.page if self.child_instance else None
+
+    # ─────────────── поиск по дереву ───────────────
+
+    @classmethod
+    def find_sheet(
+        cls,
+        root_sheet: "Sheet",
+        stem: str,
+    ) -> Optional["Sheet"]:
+        """Найти Sheet по stem в дереве от root_sheet.
+
+        Обход вниз через components → child_instance.
+        """
+        for comp in root_sheet.components.values():
+            if not isinstance(comp, cls):
+                continue
+            ci = comp.child_instance
+            if ci is None:
+                continue
+            if ci.sheet.stem == stem:
+                return ci.sheet
+            found = cls.find_sheet(ci.sheet, stem)
+            if found is not None:
+                return found
+        return None
+
+    # ─────────────── нумерация страниц ───────────────
+
+    @classmethod
+    def _next_page_number(cls, root_sheet: "Sheet") -> int:
+        """Следующий свободный номер страницы в дереве от root_sheet.
+
+        Корень занял page=1, остальные SheetInstance — по одному на
+        каждый созданный. Обходим дерево вниз через components →
+        child_instance → child_sheet.
+        """
+        n = 1                              # корень
+        for _ in cls._walk_all_instances(root_sheet):
+            n += 1
+        return n + 1
+
+    @classmethod
+    def _walk_all_instances(cls, sheet: "Sheet") -> Iterator[SheetInstance]:
+        """DFS всех SheetInstance дерева от sheet."""
+        for comp in sheet.components.values():
+            if not isinstance(comp, cls):
+                continue
+            ci = comp.child_instance
+            if ci is None:
+                continue
+            yield ci
+            yield from cls._walk_all_instances(ci.sheet)
 
     # ─────────────── классификация портов ───────────────
 
@@ -191,8 +313,12 @@ class SheetRefComponent(Component):
     def __post_init__(self):
         """Создаёт пины по нормализованным портам и считает габарит.
 
+        Вызывается автоматически из Component.__init__ (при вызове
+        super().__init__() родителя — тот вызывает self.__post_init__,
+        то есть эту версию).
+
         На входе self.ports — уже нормализованный список dict'ов с
-        ключами net_label, direction, description (см. _extract_ports).
+        ключами net_label, direction, description.
         """
         if not self.ports:
             self.ports = []
@@ -226,8 +352,7 @@ class SheetRefComponent(Component):
 
         Затем переводим в координаты anchor (= ЛВ bbox):
             col_cell = frame_offset_cols + col_in_frame
-        где frame_offset_cols = 1 (bbox = frame + 1 клетка маржи с каждой
-        стороны).
+        где frame_offset_cols = 1.
 
         Аналогично по строкам: row_in_frame → row_cell = 1 + row_in_frame.
         """
@@ -245,7 +370,6 @@ class SheetRefComponent(Component):
             col_in_frame = fc - 1
             direction = Direction.LEFT
 
-        # frame_offset_mm = (grid, grid) — ЛВ frame на 1 клетку внутрь bbox.
         col_cell = col_in_frame + 1
         row_cell = row_in_frame + 1
 
@@ -259,90 +383,6 @@ class SheetRefComponent(Component):
             offset_mm=(offset_x, offset_y),
             direction=direction,
         ))
-    # ─────────────── удобный конструктор ───────────────
-
-    @classmethod
-    def create(cls, designator: str, sheet_file: str,
-               parent_yaml_path: Path) -> "SheetRefComponent":
-        """Создаёт ссылку на лист, читая порты из nets дочернего YAML.
-
-        Порт — это сеть с флагом is_hierarchical_port: true. Имя
-        порта = имя сети. Направление для размещения (для выбора
-        левого/правого края) берётся из port_direction у той же
-        сети; по умолчанию INPUT.
-
-        Args:
-            designator:       локальное имя листа ("X_PWR").
-            sheet_file:       относительный путь к YAML
-                              ("sheets/power_supply.yaml").
-            parent_yaml_path: путь к main.yaml (для разрешения
-                              относительного пути).
-        """
-        yaml_path = Path(parent_yaml_path).parent / sheet_file
-        data = _load_yaml_cached(yaml_path)
-        ports = cls._extract_ports(data, yaml_path, designator)
-
-        return cls(
-            designator=designator,
-            name=designator,
-            lib_id="",
-            bbox_size=(0, 0),
-            pins=[],
-            fields={},
-            sheet=None,
-            sheet_file=sheet_file,
-            sheet_name=designator,
-            ports=ports,
-        )
-
-    @staticmethod
-    def _extract_ports(data: dict, yaml_path: Path,
-                       designator: str) -> List[dict]:
-        """Извлекает порты дочернего листа из nets.*.is_hierarchical_port.
-
-        Возвращает список нормализованных dict'ов:
-            {"net_label": <имя сети-порта>,
-             "direction": <"INPUT"|"OUTPUT"|"BIDIR">,
-             "description": <строка из YAML или "">}
-
-        Порт — это сеть с флагом is_hierarchical_port: true. Устаревший
-        блок ports: не читается: миграция завершена, все листы хранят
-        порты в nets. Лист с нулём таких сетей валиден (лист без
-        портов) — тогда возвращается пустой список с INFO-сообщением.
-        """
-        nets = data.get("nets", {}) or {}
-        ports: List[dict] = []
-
-        for name, net in nets.items():
-            if not isinstance(net, dict):
-                continue
-            if not net.get("is_hierarchical_port"):
-                continue
-
-            direction = str(net.get("port_direction", "INPUT")).upper()
-            if direction not in ("INPUT", "OUTPUT", "BIDIR"):
-                log.warning(
-                    "SheetRef %s: %s: сеть %r имеет "
-                    "port_direction=%r — неизвестное значение, "
-                    "принято INPUT.",
-                    designator, yaml_path, name, direction,
-                )
-                direction = "INPUT"
-
-            ports.append({
-                "net_label":   name,
-                "direction":   direction,
-                "description": net.get("description", "") or "",
-            })
-
-        if not ports:
-            log.info(
-                "SheetRef %s: %s не содержит сетей с "
-                "is_hierarchical_port: true — у листа не будет пинов.",
-                designator, yaml_path,
-            )
-
-        return ports
 
     # ─────────────── маркеры ───────────────
 
@@ -351,12 +391,10 @@ class SheetRefComponent(Component):
         """True — отличает ссылку на лист от обычного компонента."""
         return True
 
-    
     @property
     def frame_size(self) -> Tuple[int, int]:
         fc, fr = self.bbox_size
         return (fc - 2, fr - 2)
-
 
     @property
     def frame_offset_mm(self) -> Tuple[float, float]:

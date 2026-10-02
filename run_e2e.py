@@ -10,8 +10,11 @@
   * value_sch у X_* — единственная связь компонента со схемой.
   * Список листов к прогону НЕ хранится отдельно: он выводится как
     {X_*, встречающиеся в nets} ∪ standalone_sheets ∪ {ROOT_STEM}.
-  * Stem корня совпадает с именем проекта KiCad (и .kicad_sch):
+  * Stem главного корня совпадает с именем проекта KiCad (и .kicad_sch):
     climate_control_niva_travel. Имя файла .kicad_sch менять нельзя.
+  * Standalone_sheets — дополнительные независимые корни; их
+    .kicad_sch пишутся отдельно и сверяются как отдельные плоские
+    нетлисты (шаг 3b).
 
 Реестр моделей:
   * <ROOT_STEM>.yaml:spice.models — модели корневой страницы и общие.
@@ -61,13 +64,17 @@ MCU-модель:
       .kicad_sch нечего схлопывать, нетлист соответствует YAML
       после нормализации refdes.
 
-  3b. Плоская сверка корневой схемы — для листов с вложенными
-      X_*. Строит ожидаемую карту сетей из графа Project
-      (net_map.build_from_project) и сравнивает с плоским
-      нетлистом kicad-cli по РАЗБИЕНИЮ множества пинов — без
-      имён сетей. Имена в плоском нетлисте нестабильны (KiCad
-      переименовывает VCC_12V → /X_FOO/VCC_12V), классы
-      эквивалентности пинов — стабильны.
+  3b. Плоская сверка корней — для главного корня и для каждого
+      standalone-корня. Ожидаемая карта строится из графа YAML
+      через Project.flatten_roots() (Sheet.flatten под капотом).
+      Сверка идёт в два шага:
+        * по РАЗБИЕНИЮ множества пинов — ловит обрывы и лишние
+          связи;
+        * по именам групп (с нормализацией пути) — ловит случай
+          «топология та же, а имена перепутаны».
+      Имена сетей в плоском нетлисте нестабильны (KiCad
+      переименовывает VCC_12V → /X_FOO/VCC_12V), поэтому сравнение
+      имён нормализуется через net_map._norm_net_name.
 
 Шаги:
   0. Очистка stale * _mcu.sub.
@@ -181,10 +188,6 @@ def run(cmd, label=None):
     """Запустить процесс. Каждая строка stdout/stderr — с меткой [label]."""
     r = subprocess.run(cmd, cwd=PROJ, capture_output=True, text=True)
     tag = f"[{label}] " if label else ""
-
-
-
-    
 
     if r.stdout:
         _emit_stream(sys.stdout, r.stdout)
@@ -707,27 +710,50 @@ def per_file_applicable(stem: str) -> tuple[bool, str]:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Плоская сверка корня
+# Плоская сверка корней
 # ─────────────────────────────────────────────────────────────────────
 
+def _find_sch_for_root(sheet_path: str, root_file: str,
+                       is_main: bool) -> str | None:
+    """Найти .kicad_sch на диске для одного корня.
+
+    Для главного корня сначала пробуем root_file (имя из YAML),
+    затем sheet_path — на случай, если они разошлись. Для
+    standalone — только sheet_path (это "<stem>.kicad_sch").
+
+    Смотрим сначала out/ (свежая генерация), затем корень проекта.
+    """
+    candidates = []
+    if is_main and root_file:
+        candidates.append(root_file)
+    candidates.append(sheet_path)
+
+    for base in (OUT_DIR, PROJ):
+        for name in candidates:
+            cand = os.path.join(base, name)
+            if os.path.exists(cand):
+                return cand
+    return None
+
+
 def run_flat_check():
-    """Плоская сверка корневой схемы.
+    """Плоская сверка каждого корня проекта.
 
-    Строит ожидаемую карту сетей из графа YAML
-    (net_map.build_from_project) и сравнивает с плоским нетлистом
-    kicad-cli. Сверка идёт по РАЗБИЕНИЮ множества пинов — без имён
-    сетей; KiCad переименовывает сети, но классы эквивалентности
-    пинов сохраняет.
+    Ожидаемые карты — из Project.flatten_roots(): по одной на каждый
+    корень (главный + standalone). Каждый корень экспортируется
+    kicad-cli отдельно и сравнивается со своей картой. Смешивать
+    карты разных корней нельзя: refdes и имена сетей между ними
+    независимы.
 
-    Project загружается здесь же: он нужен только для этой сверки,
-    и per-file (3a) его не использует.
+    Сверка — diff_against_kicad: сначала по разбиению пинов
+    (топология), затем по именам групп с нормализацией пути.
 
     Возвращает (ok: bool, diffs: list[str], error: str | None).
     """
     try:
         from project import Project, ProjectLoadError
         from net_map import (
-            build_from_project, diff_against_kicad,
+            diff_against_kicad,
             parse_kicad_netlist_to_pinrefs,
         )
     except ImportError as e:
@@ -750,39 +776,62 @@ def run_flat_check():
         _buf = io.StringIO()
         with contextlib.redirect_stdout(_buf), \
             contextlib.redirect_stderr(_buf):
-            expected = build_from_project(proj)
+            flat_maps = proj.flatten_roots()
         _emit_stream(sys.stdout, _buf.getvalue(), label="root-flat")
     except Exception as e:
         _emit_stream(sys.stdout, _buf.getvalue(), label="root-flat")
-        return False, [], f"build_from_project упал: {e}"
+        return False, [], f"Project.flatten_roots() упал: {e}"
 
     root_yaml = load_main()
     root_file = root_yaml.get("file") or (ROOT_STEM + ".kicad_sch")
+    main_sheet_path = proj.root_sheet.sheet_path
 
-    root_sch = None
-    for base in (OUT_DIR, PROJ):
-        cand = os.path.join(base, root_file)
-        if os.path.exists(cand):
-            root_sch = cand
-            break
-    if root_sch is None:
-        return False, [], f"нет {root_file} (ни в out/, ни в корне)"
+    diffs_all: list[str] = []
+    errors: list[str] = []
+    checked_any = False
 
-    flat_net = os.path.join(SPICE, ROOT_STEM + "_flat.net")
-    rc = run(["kicad-cli", "sch", "export", "netlist",
-              "--output", flat_net, root_sch], label="root-flat")
-    if rc != 0:
-        return False, [], f"kicad-cli вернул {rc}"
-    if not os.path.exists(flat_net):
-        return False, [], f"нет {rel(flat_net)} после экспорта"
+    for sheet_path, expected in flat_maps.items():
+        is_main = (sheet_path == main_sheet_path)
+        sch = _find_sch_for_root(sheet_path, root_file, is_main)
+        if sch is None:
+            errors.append(f"{sheet_path}: нет .kicad_sch "
+                          f"(ни в out/, ни в корне)")
+            continue
 
-    try:
-        actual = parse_kicad_netlist_to_pinrefs(flat_net)
-    except Exception as e:
-        return False, [], f"не разобрал плоский нетлист: {e}"
+        stem = os.path.splitext(sheet_path)[0]
+        flat_net = os.path.join(SPICE, stem + "_flat.net")
+        rc = run(["kicad-cli", "sch", "export", "netlist",
+                  "--output", flat_net, sch], label=f"flat:{stem}")
+        if rc != 0:
+            errors.append(f"{sheet_path}: kicad-cli вернул {rc}")
+            continue
+        if not os.path.exists(flat_net):
+            errors.append(f"{sheet_path}: нет {rel(flat_net)} "
+                          f"после экспорта")
+            continue
 
-    diffs = diff_against_kicad(expected, actual)
-    return (not diffs), diffs, None
+        try:
+            actual = parse_kicad_netlist_to_pinrefs(flat_net)
+        except Exception as e:
+            errors.append(f"{sheet_path}: не разобрал нетлист: {e}")
+            continue
+
+        checked_any = True
+        sub = diff_against_kicad(expected, actual)
+        if sub:
+            diffs_all.append(f"  [{sheet_path}]:")
+            for d in sub:
+                diffs_all.append("  " + d)
+
+    if errors and not checked_any:
+        return False, [], "; ".join(errors)
+
+    if errors:
+        # Часть корней не проверили — не блокируем, но пишем.
+        for e in errors:
+            diffs_all.append(f"  (пропущено) {e}")
+
+    return (not diffs_all), diffs_all, None
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -937,26 +986,26 @@ def main():
                     print(d)
 
         if skipped:
-            print("    Пропущены (покрыты плоской сверкой корня):")
+            print("    Пропущены (покрыты плоской сверкой корней):")
             for stem, reason in skipped:
                 print("      %-30s %s" % (stem, reason))
         if checked == 0 and not skipped:
             print("    нет листьев для per-file сверки")
 
-        # ── 3b. Плоская сверка корня ──
+        # ── 3b. Плоская сверка корней ──
         # Запускается при полном прогоне или при явном --sheet ROOT_STEM.
         do_flat_check = (
             opts["sheet"] is None or opts["sheet"] == ROOT_STEM
         )
         if do_flat_check:
-            print("  -- 3b. Плоская сверка корневой схемы --")
+            print("  -- 3b. Плоская сверка корней --")
             ok, diffs, error = run_flat_check()
             if error is not None:
                 print("    Сверка не выполнена: %s" % error)
                 any_diff = True
             elif not ok:
                 any_diff = True
-                print("    РАСХОЖДЕНИЯ (по разбиению пинов):")
+                print("    РАСХОЖДЕНИЯ:")
                 for d in diffs:
                     print(d)
             else:

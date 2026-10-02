@@ -307,3 +307,24 @@ def port_shape(direction: str | None) -> str:
 def port_side(direction: str | None) -> str:
     """OUTPUT ставится на правый край листа, всё остальное — на левый."""
     return "right" if (direction or "INPUT").upper() == "OUTPUT" else "left"
+
+
+class NetNameSourcePriority(IntEnum):
+    """Приоритет источника имени сети — KiCad SCH_CONNECTION::PRIORITY.
+
+    Значения упорядочены по важности: чем больше, тем весомее
+    голос при выборе имени группы, объединённой union-find.
+    Порядок повторяет KiCad 7/8/10:
+
+        PIN         — обычный пин компонента;
+        SHEET_PIN   — вывод на символе листа (X_*);
+        HIER_LABEL  — иерархическая метка внутри листа;
+        LOCAL_LABEL — локальная метка на проводе.
+
+    Глобальных меток и power-символов (GLOBAL в KiCad) в этом
+    проекте нет — соответствующего яруса не заводим.
+    """
+    PIN         = 0
+    SHEET_PIN   = 1
+    HIER_LABEL  = 2
+    LOCAL_LABEL = 3
