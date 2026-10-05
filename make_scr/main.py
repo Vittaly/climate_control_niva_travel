@@ -18,6 +18,18 @@
     │   ├── out/                               ← логи (debug.log, router.log)
     │   └── ...
     └── out/                                   ← результаты (в cwd)
+
+Политика ошибок загрузки:
+    Project.load() собирает все проблемы YAML (отсутствующие symbol,
+    неописанные типы, потерянные X_* и т.п.) в self.load_errors и
+    в конце бросает ProjectLoadError с полным списком. main()
+    ловит его, печатает текст в stderr и завершается с кодом 1 —
+    без traceback. Тот же текст уже записан в debug.log, потому
+    что load() логирует каждую ошибку до raise.
+
+    Ошибки на последующих стадиях (place_and_route, save) не
+    ловятся здесь: их падение — баг, а не ошибка конфигурации,
+    и traceback уместен.
 """
 import sys
 from pathlib import Path
@@ -29,7 +41,8 @@ if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
 from logging_setup import add_router_log, setup
-from project import Project
+from project import Project, ProjectLoadError
+from constants import ComponentKind
 
 
 def _detect_root_stem(root: Path) -> str:
@@ -66,7 +79,7 @@ def _iter_sheets(root_sheet):
         seen.add(id(sheet))
         yield sheet
         for comp in sheet.components.values():
-            if not getattr(comp, "is_sheet_ref", False):
+            if getattr(comp, "kind", None) != ComponentKind.SHEET_REF:
                 continue
             child = getattr(comp, "child_sheet", None)
             if child is not None:
@@ -75,7 +88,7 @@ def _iter_sheets(root_sheet):
     yield from visit(root_sheet)
 
 
-def main() -> None:
+def main() -> int:
     root_yaml = ROOT_YAML
     log_dir = _HERE / "out"
     out_dir = Path.cwd()
@@ -87,7 +100,7 @@ def main() -> None:
             f"  Имя проекта (stem .kicad_pro): {ROOT_STEM}",
             file=sys.stderr,
         )
-        sys.exit(1)
+        return 1
 
     # ---------- логирование ----------
     debug_log = setup(level=10, log_file=log_dir / "debug.log")
@@ -102,18 +115,31 @@ def main() -> None:
     print(f"Каталог вывода: {out_dir}")
 
     # ---------- проект ----------
-    project = (
-        Project(root_yaml)
-        .load()
-        .place_and_route()
-    )
+    # load() бросает ProjectLoadError, если YAML несовместим с KiCad
+    # (нет symbol, не описан тип, потерян X_*, ...). Ловим и выходим
+    # штатно: текст ошибки уже собран в исключении и продублирован
+    # в debug.log.
+    try:
+        project = Project(root_yaml).load()
+    except ProjectLoadError as e:
+        print(file=sys.stderr)
+        print(e, file=sys.stderr)
+        print(file=sys.stderr)
+        print(
+            "Загрузка прервана. Детали — в debug.log.",
+            file=sys.stderr,
+        )
+        return 1
+
+    # ---------- размещение, роутинг, сохранение ----------
+    project.place_and_route()
     project.save(out_dir)
 
     # ---------- сводка ----------
     root = project.root_sheet
     if root is None:
         print("!! project.root_sheet == None после load()", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     sheets = list(_iter_sheets(root))
     total_components = sum(len(s.components) for s in sheets)
@@ -125,11 +151,12 @@ def main() -> None:
     for sheet in sheets:
         is_root = (sheet is root)
         marker = "root" if is_root else "    "
-        # page и out_file — вычисляемые property от yaml_path.
         page = getattr(sheet, "page", "-")
         out_file = getattr(sheet, "out_file", "-")
         print(f"  [{marker}] {sheet.stem:<32} page={page:<24} → {out_file}")
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

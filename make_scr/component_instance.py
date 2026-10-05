@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from make_scr.component import Component
-from make_scr.refdes import make_refdes
-from make_scr.sheet_instance import SheetInstance
+from component import Component
+from refdes import make_refdes
+from sheet_instance import SheetInstance
 
 
 @dataclass(eq=False)

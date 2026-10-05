@@ -26,8 +26,8 @@
     * X_* — маркер границы, не даёт PinRef. Его пины регистрируют
       родительские сети как якоря union-find, чтобы _join_ports
       мог склеить их с одноимёнными сетями-портами ребёнка.
-    * Порт (is_hierarchical_port) — тоже маркер, не пин. Он
-      существует в карте как сущность, но без своих пинов.
+    * Порт (kind == PORT) — тоже маркер, не пин. Он существует
+      в карте как сущность, но без своих пинов.
     * Идентификатор пина — pin.identifier: number для обычных,
       name (имя порта) для sheet-пинов. Совпадает с (pin "…")
       в нетлисте KiCad.
@@ -57,6 +57,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 
+from constants import ComponentKind
 from logging_setup import get_logger
 
 if TYPE_CHECKING:
@@ -274,15 +275,19 @@ class Flattener:
             if priorities.get(net_name, -1) < prio:
                 priorities[net_name] = prio
 
-        # Метки на проводах (роутер пишет их в sheet.labels).
+        # Метки на проводах (роутер и create_sheet_pin_labels
+        # пишут их в sheet.labels). У LabelComponent поле — name,
+        # не net_name: имя метки есть проекция net.name.
         for lbl in getattr(sheet, "labels", []) or []:
-            net_name = getattr(lbl, "net_name", None)
+            net_name = getattr(lbl, "name", None)
             if net_name:
                 bump(net_name, PRIORITY_LOCAL_LABEL)
 
         for des, comp in sheet.components.items():
+            kind = getattr(comp, "kind", None)
+
             # ── порт листа: иерархический ──
-            if getattr(comp, "is_port", False):
+            if kind == ComponentKind.PORT:
                 net_name = getattr(comp, "net_name", None)
                 if net_name:
                     port_nets.add(net_name)
@@ -295,12 +300,12 @@ class Flattener:
             # на самом деле представлена в .kicad_sch ДВУМЯ
             # элементами: sheet-pin'ом с именем порта (IN1) и
             # обычным локальным label с именем сети (M1_IN1).
-            # Writer ставит label безусловно (writer._add_sheet_pins).
-            # В терминах KiCad это LOCAL_LABEL, и по приоритету
-            # он выше HIER_LABEL из подлиста. Регистрируем якорь
-            # с этим приоритетом, чтобы _choose_name выбрал
+            # Метка теперь отдельный LabelComponent (см.
+            # Sheet.create_sheet_pin_labels), и по приоритету
+            # LOCAL_LABEL выше HIER_LABEL из подлиста. Регистрируем
+            # якорь с этим приоритетом, чтобы _choose_name выбрал
             # читаемое имя M1_IN1, а не "/X_ACTUATOR_CHANNEL_M1/IN1".
-            if getattr(comp, "is_sheet_ref", False):
+            if kind == ComponentKind.SHEET_REF:
                 for pin in comp.pins:
                     net_ref = _pin_net(pin)
                     if net_ref:
@@ -308,7 +313,7 @@ class Flattener:
                         bump(net_ref, PRIORITY_LOCAL_LABEL)
                 continue
 
-            # ── обычный компонент ──
+            # ── обычный компонент (SYMBOL или None) ──
             for pin in comp.pins:
                 net_ref = _pin_net(pin)
                 if net_ref is None:
@@ -335,7 +340,7 @@ class Flattener:
 
         # Рекурсия в детей — по прямым ссылкам comp.child_sheet.
         for des, comp in sheet.components.items():
-            if not getattr(comp, "is_sheet_ref", False):
+            if getattr(comp, "kind", None) != ComponentKind.SHEET_REF:
                 continue
             child = getattr(comp, "child_sheet", None)
             if child is None:
@@ -376,7 +381,7 @@ class Flattener:
         нельзя: неверная привязка даст искажённую карту.
         """
         for des, comp in sheet.components.items():
-            if not getattr(comp, "is_sheet_ref", False):
+            if getattr(comp, "kind", None) != ComponentKind.SHEET_REF:
                 continue
 
             child = getattr(comp, "child_sheet", None)

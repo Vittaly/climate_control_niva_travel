@@ -25,6 +25,7 @@ from constants import (
     WireAngle,
     WireOrientation,
 )
+from primitive import Primitive
 
 if TYPE_CHECKING:
     from pin import Pin
@@ -124,7 +125,7 @@ class WireSegment:
 
 
 @dataclass(eq=False)
-class Wire:
+class Wire(Primitive):
     """Провод сети: путь + отростки + точки врезок.
 
     Attributes:

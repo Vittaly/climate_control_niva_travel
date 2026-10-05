@@ -71,7 +71,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple
 
-from constants import Axis, DEFAULT_GRID_MM, Direction
+from constants import Axis, DEFAULT_GRID_MM, ComponentKind, Direction
 from logging_setup import get_logger
 from pin import Pin
 
@@ -109,7 +109,7 @@ class SheetRefError(Exception):
         super().__init__(" ".join(parts))
 
 
-@dataclass(eq=False)
+@dataclass(eq=False, kw_only=True)
 class SheetRefComponent(Component):
     """Ссылка на вложенный лист как компонент.
 
@@ -386,10 +386,7 @@ class SheetRefComponent(Component):
 
     # ─────────────── маркеры ───────────────
 
-    @property
-    def is_sheet_ref(self) -> bool:
-        """True — отличает ссылку на лист от обычного компонента."""
-        return True
+   
 
     @property
     def frame_size(self) -> Tuple[int, int]:
@@ -399,3 +396,13 @@ class SheetRefComponent(Component):
     @property
     def frame_offset_mm(self) -> Tuple[float, float]:
         return (self.grid_mm, self.grid_mm)
+
+    @property
+    def kind(self) -> "ComponentKind":
+        """Тип компонента. Переопределяется наследниками.
+
+        У обычного символа — SYMBOL; PortComponent, SheetRefComponent,
+        LabelComponent возвращают свой тип.
+        """
+        
+        return ComponentKind.SHEET_REF

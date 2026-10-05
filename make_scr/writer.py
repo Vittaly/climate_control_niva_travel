@@ -6,7 +6,7 @@
         — текстовая сводка по одной странице (routes.txt).
 
     Writer().write_project(...)
-        — записать все .kicad_sch проекта рекурсивно от root_sheet.
+        — записать все .kicad_sch одного дерева от указанного корня.
 
 Модель иерархии:
     Writer получает корневой Sheet и обходит дерево вниз через
@@ -24,11 +24,19 @@
 
     Writer ничего не пересчитывает — читает готовое.
 
-Корень:
-    У корневого Sheet instances пусты — его никто не инстанцировал.
-    Для символов корня Writer синтезирует один instance-блок с
-    path=f"/{root.uuid}" и reference=designator. Формат совпадает
-    с KiCad: у любого символа есть (instances ...).
+Корни:
+    Writer используется Project.save для записи ВСЕХ корней проекта
+    (главный + standalone) в один прогон. Метод write_project
+    вызывается по одному разу на каждый корень, но состояние
+    (в первую очередь _written) между вызовами НЕ сбрасывается:
+    файл, попавший в два обхода, пишется один раз. Для нового
+    прогона создаётся новый Writer() — тогда кеш пуст с самого
+    начала.
+
+    Для каждого вызова _root_sheet переустанавливается на текущий
+    корень. Он нужен _out_name_for (имя файла корня) и
+    _apply_instances (синтетический instance path для символов
+    корня).
 
 Мульти-инстанс:
     Один .kicad_sch может быть инстанцирован несколько раз
@@ -48,19 +56,34 @@ Frame vs bbox:
       * для sheet  — sch.add_sheet(position=anchor+frame_offset,
                                    size=(frame-1)*grid).
 
+SPICE-привязка:
+    Каждый обычный символ несёт Component.simProperties — пары
+    "Sim.Xxx" → "value", собранные в Component.from_yaml из
+    component_types[type].spice. Writer проецирует их в .kicad_sch
+    как properties символа (set_property в цикле по парам). В этой
+    версии kicad_sch_api метод add_properties отсутствует, а
+    set_property пишет напрямую в _data.properties инстанса —
+    именно то поле, которое сериализуется в (property "…").
+    kicad-cli выгружает их в нетлист, откуда их читает
+    kicad_to_spice.py.
+
 Sheet-pin и имя сети на родителе:
-    sheet-pin получает имя pin.identifier. Рядом ставится локальная
-    метка с именем pin.net_name — именем КОРНЕВОЙ сети на родителе.
+    sheet-pin получает имя pin.identifier. Локальные метки имён
+    КОРНЕВЫХ сетей у пинов X_* — теперь самостоятельные
+    LabelComponent в sheet.labels (reason=SHEET_PIN_NAME), создаются
+    в Sheet.create_sheet_pin_labels() после роутинга. Writer их
+    просто читает в блоке 5, как любые другие метки, и НЕ создаёт
+    их сам в _add_sheet_pins.
 
 Логирование:
     Все лог-строки — одна строка, префикс ctx():
         [page] [net] [comp] [pin]
 """
 from pathlib import Path
-from typing import Dict, List, Optional, Set, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
 
 from cell import Cell
-from constants import Axis, Direction
+from constants import Axis, ComponentKind, Direction
 from logging_setup import get_logger, ctx
 from refdes import make_refdes
 
@@ -75,7 +98,7 @@ log = get_logger(__name__)
 
 
 class Writer:
-    """Пишет .kicad_sch: одну страницу (text) или всё дерево (project)."""
+    """Пишет .kicad_sch: одну страницу (text) или дерево (project)."""
 
     def __init__(self, sheet: Optional["Sheet"] = None):
         # Для write_text (routes.txt) — конструктор с одной страницей.
@@ -89,6 +112,9 @@ class Writer:
             self.netlist = None
 
         # Состояние обхода (актуально после write_project).
+        # _written НЕ сбрасывается между вызовами write_project:
+        # Project.save использует один Writer для всех корней,
+        # чтобы файлы, попавшие в два обхода, писались один раз.
         self._written: Set[str] = set()
         self._out_dir: Optional[Path] = None
         self._root_sheet: Optional["Sheet"] = None
@@ -124,7 +150,7 @@ class Writer:
             f"# cell_size_mm={self.cell_size_mm}",
             f"# components={len(self.sheet.components)}",
             f"# labels={len(self.sheet.labels)}",
-            f"# t_junctions={len(self.sheet.t_junctions)}",
+            f"# junctions={len(self.sheet.junctions)}",
         ]
         for designator, comp in self.sheet.components.items():
             anchor = comp.anchor_page_mm
@@ -186,11 +212,24 @@ class Writer:
         root_file_name: str,
         project_name: str,
     ) -> None:
-        """Записать все .kicad_sch проекта рекурсивно от root_sheet.
+        """Записать дерево .kicad_sch от указанного корня.
+
+        Вызывается Project.save для каждого корня проекта (главного
+        и standalone). Кеш _written НЕ сбрасывается между вызовами:
+        если файл уже писался в предыдущем вызове (например, один
+        Sheet в двух деревьях), второй раз не пишется.
+
+        _root_sheet переустанавливается на текущий корень: он нужен
+        _out_name_for (имя файла корня) и _apply_instances
+        (синтетический instance path для символов корня). Для
+        standalone-корня это сам standalone, а не главный корень.
+
+        Для нового прогона создаётся новый Writer() — тогда кеш
+        пуст с самого начала.
 
         Args:
             out_dir:         каталог для сохранения.
-            root_sheet:      корень обхода.
+            root_sheet:      корень текущего обхода.
             root_file_name:  имя .kicad_sch корня.
             project_name:    имя проекта KiCad.
 
@@ -201,12 +240,26 @@ class Writer:
         self._out_dir = Path(out_dir)
         self._out_dir.mkdir(parents=True, exist_ok=True)
 
+        # Переустанавливаем корень и параметры текущего вызова.
+        # _written СОХРАНЯЕТСЯ: см. докстринг выше.
         self._root_sheet = root_sheet
         self._root_file_name = root_file_name
         self._project_name = project_name
-        self._written.clear()
 
         self._visit(root_sheet)
+
+    def reset(self) -> None:
+        """Сбросить состояние обхода.
+
+        Нужен, если Writer переиспользуется в новом прогоне.
+        Project.save создаёт новый Writer() на каждый save(), так
+        что явный reset обычно не требуется — метод оставлен для
+        случаев прямого использования Writer вне Project.
+        """
+        self._written.clear()
+        self._root_sheet = None
+        self._root_file_name = ""
+        self._project_name = "project"
 
     @property
     def written(self) -> Set[str]:
@@ -232,7 +285,7 @@ class Writer:
 
         # Рекурсия в дочерние Sheet через SheetRefComponent.child_sheet.
         for comp in sheet.components.values():
-            if not getattr(comp, "is_sheet_ref", False):
+            if getattr(comp, "kind", None) != ComponentKind.SHEET_REF:
                 continue
             child = comp.child_sheet
             if child is None:
@@ -279,6 +332,19 @@ class Writer:
         # ---------- 1. Компоненты, порты, листы ----------
         sheet_refs_to_place = []
         for designator, comp in sheet.components.items():
+            kind = getattr(comp, "kind", None)
+
+            # Метки — не компоненты: они живут в sheet.labels и
+            # пишутся в блоке 5. Если по какой-то причине метка
+            # оказалась в components — пропускаем, чтобы не писать
+            # её как обычный символ.
+            if kind == ComponentKind.LABEL:
+                log.warning(
+                    "%s label_in_components des=%s — skip",
+                    ctx(page=label, comp=designator), designator,
+                )
+                continue
+
             anchor_mm = comp.anchor_page_mm
             if anchor_mm is None:
                 log.warning("%s no_anchor skip_write",
@@ -287,7 +353,7 @@ class Writer:
             x_mm, y_mm = anchor_mm
 
             # --- Порт ---
-            if getattr(comp, "is_port", False):
+            if kind == ComponentKind.PORT:
                 if not comp.pins:
                     log.warning("%s port_no_pins",
                                 ctx(page=label, net=comp.net_name,
@@ -319,15 +385,15 @@ class Writer:
                 continue
 
             # --- Ссылка на лист ---
-            if getattr(comp, "is_sheet_ref", False):
+            if kind == ComponentKind.SHEET_REF:
                 sheet_refs_to_place.append((designator, comp, anchor_mm))
                 continue
 
-            # --- Обычный компонент ---
+            # --- Обычный компонент (kind == SYMBOL или None) ---
             lib_id = comp.lib_id or self._guess_lib_id(designator, comp)
             rotation = comp.rotation
             try:
-                sch.components.add(
+                kicad_comp = sch.components.add(
                     lib_id,
                     reference=comp.designator,
                     value=comp.name,
@@ -335,12 +401,32 @@ class Writer:
                     rotation=rotation,
                     mirror=comp.mirror,
                 )
+                # SPICE-привязка: simProperties записываем как
+                # properties символа. В этой версии kicad_sch_api
+                # метода add_properties нет, а set_property пишет
+                # напрямую в _data.properties инстанса — это то же
+                # поле, куда сам kicad_sch_api кладёт Reference и
+                # Value, и оно сериализуется в (property "…").
+                # kicad-cli потом выгружает эти properties в нетлист.
+                sim_props = getattr(comp, "simProperties", None) or {}
+                if sim_props:
+                    try:
+                        for pname, pval in sim_props.items():
+                            kicad_comp.set_property(pname, pval)
+                    except Exception as e:
+                        log.warning(
+                            "%s sim_props des=%s error=%s",
+                            ctx(page=label, comp=designator),
+                            designator, e,
+                        )
                 log.info(
                     "%s write_symbol lib_id=%s anchor_mm=(%.2f,%.2f) "
-                    "rotation=%d mirror=%s bbox_size=%dx%d cells",
+                    "rotation=%d mirror=%s bbox_size=%dx%d cells "
+                    "sim_props=%d",
                     ctx(page=label, comp=designator),
                     lib_id, x_mm, y_mm, rotation, comp.mirror,
                     comp.bbox_cols, comp.bbox_rows,
+                    len(sim_props),
                 )
                 placed += 1
             except Exception as e:
@@ -399,47 +485,61 @@ class Writer:
 
         # ---------- 4. T-врезки ----------
         n_junctions = 0
-        for tj in getattr(sheet, "t_junctions", []) or []:
-            x_mm, y_mm = self.cell_to_mm(tj.target)
+        for j in getattr(sheet, "junctions", []) or []:
             try:
-                sch.junctions.add(position=(x_mm, y_mm))
+                sch.junctions.add(
+                    position=j.anchor_mm,
+                    diameter=j.diameter,
+                    color=j.color,
+                    uuid=j.uuid,
+                )
                 log.info(
-                    "%s write_junction net=%s target_cell=(%d,%d) "
-                    "target_mm=(%.2f,%.2f)",
-                    ctx(page=label, net=tj.net_name),
-                    tj.net_name, tj.target.col, tj.target.row,
-                    x_mm, y_mm,
+                    "%s write_junction net=%s reason=%s mm=(%.2f,%.2f)",
+                    ctx(page=label, net=j.net_name),
+                    j.net_name, j.reason,
+                    j.anchor_x, j.anchor_y,
                 )
                 n_junctions += 1
             except Exception as e:
-                log.warning("%s junction target=%s error=%s",
-                            ctx(page=label, net=tj.net_name),
-                            tj.target, e)
+                log.warning(
+                    "%s junction net=%s mm=(%.2f,%.2f) error=%s",
+                    ctx(page=label, net=j.net_name),
+                    j.anchor_x, j.anchor_y, e,
+                )
 
         # ---------- 5. Метки сети ----------
+        # LabelComponent: имя = net.name, точка = anchor_page_mm,
+        # направление = direction, происхождение = reason.
+        # Сюда попадают все метки страницы: SHEET_PIN_NAME (созданы
+        # в Sheet.create_sheet_pin_labels после роутинга),
+        # INTERNAL_NET_NAME и FALLBACK (созданы роутером), USER
+        # (если когда-нибудь появятся).
         n_labels = 0
         for lbl in getattr(sheet, "labels", []) or []:
-            x_mm, y_mm = lbl.contact_mm
+            x_mm, y_mm = lbl.anchor_page_mm
             rotation = float(self._label_angle(lbl.direction))
             justify = "right" if rotation == 180.0 else "left"
             try:
-                sch.add_label(lbl.net_name, (x_mm, y_mm),
-                              rotation=rotation,
-                              effects={"justify": justify})
+                sch.add_label(
+                    lbl.name, (x_mm, y_mm),
+                    rotation=rotation,
+                    effects={"justify": justify},
+                )
                 log.info(
-                    "%s write_label net=%s pin=%s on_wire=%s "
-                    "contact_mm=(%.2f,%.2f) dir=%s rotation=%.0f "
+                    "%s write_label net=%s reason=%s "
+                    "anchor_mm=(%.2f,%.2f) dir=%s rotation=%.0f "
                     "justify=%s",
-                    ctx(page=label, net=lbl.net_name,
-                        pin=lbl.local_key),
-                    lbl.net_name, lbl.local_key, lbl.on_wire,
+                    ctx(page=label, net=lbl.name),
+                    lbl.name, lbl.reason.value,
                     x_mm, y_mm, lbl.direction, rotation, justify,
                 )
                 n_labels += 1
             except Exception as e:
-                log.warning("%s label error=%s",
-                            ctx(page=label, net=lbl.net_name,
-                                pin=lbl.local_key), e)
+                log.warning(
+                    "%s label net=%s reason=%s error=%s",
+                    ctx(page=label, net=lbl.name),
+                    lbl.name, lbl.reason.value, e,
+                )
 
         # ---------- 6. instances per symbol ----------
         # Читает готовое: comp.instances — список SheetInstance,
@@ -489,10 +589,17 @@ class Writer:
         by_designator: Dict[str, Any] = {
             c.designator: c
             for c in sheet.components.values()
-            if not getattr(c, "is_sheet_ref", False)
-            and not getattr(c, "is_port", False)
+            if getattr(c, "kind", None) not in (
+                ComponentKind.SHEET_REF,
+                ComponentKind.PORT,
+                ComponentKind.LABEL,
+            )
         }
 
+        # _root_sheet установлен в write_project на текущий корень:
+        # для главного дерева это главный Sheet, для standalone —
+        # сам standalone. Именно его uuid идёт в синтетический
+        # instance path символов корня.
         root_uuid = self._root_sheet.uuid
 
         n_sym = 0
@@ -543,10 +650,16 @@ class Writer:
                         x_mm: float, y_mm: float,
                         w_mm: float, h_mm: float,
                         label: str) -> int:
-        """Добавляет sheet_pin'ы и локальные метки имён корневых сетей.
+        """Добавляет sheet_pin'ы X_*-компоненту.
 
         Пины сидят на кромке frame; их абсолютные координаты берём
         из comp.abs_pin_mm(pin).
+
+        Локальные метки имён корневых сетей у этих пинов Writer
+        здесь больше НЕ создаёт — они теперь самостоятельные
+        LabelComponent в sheet.labels (reason=SHEET_PIN_NAME),
+        создаются в Sheet.create_sheet_pin_labels() и пишутся
+        общим блоком 5 в _write_one.
         """
         uid = comp.uuid
         if not uid:
@@ -639,30 +752,6 @@ class Writer:
                             ctx(page=label, comp=comp.designator,
                                 pin=pin.local_key), e)
                 continue
-
-            rotation = 180.0 if side == "left" else 0.0
-            justify = "right" if rotation == 180.0 else "left"
-
-            try:
-                sch.add_label(
-                    net_root,
-                    (pin_x_mm, pin_y_mm),
-                    rotation=rotation,
-                    effects={"justify": justify},
-                )
-                log.info(
-                    "%s write_root_label pin=%s net_root=%s net_pin=%s "
-                    "pin_mm=(%.2f,%.2f) rotation=%.0f justify=%s",
-                    ctx(page=label, net=net_root,
-                        comp=comp.designator, pin=pin.local_key),
-                    pin.local_key, net_root, net_pin,
-                    pin_x_mm, pin_y_mm, rotation, justify,
-                )
-            except Exception as e:
-                log.warning("%s root_label pin=%s net_root=%s error=%s",
-                            ctx(page=label, comp=comp.designator,
-                                pin=pin.local_key),
-                            pin.local_key, net_root, e)
 
         return n_added
 
@@ -779,8 +868,15 @@ class Writer:
     def _out_name_for(self, sheet: "Sheet") -> str:
         """Имя выходного .kicad_sch для страницы.
 
-        Для корня — root_file_name (может отличаться от <stem>.kicad_sch,
-        если так задано в YAML). Для остальных — sheet.out_file.
+        Для корня текущего вызова — root_file_name (может отличаться
+        от <stem>.kicad_sch, если так задано в YAML для главного
+        корня). Для остальных страниц — sheet.out_file.
+
+        _root_sheet установлен в write_project на текущий корень:
+        при обходе главного дерева это главный Sheet, при обходе
+        standalone — сам standalone. Соответственно у standalone
+        корневая страница получает root_file_name = sheet.out_file
+        (то есть <stem>.kicad_sch), что совпадает с ожидаемым именем.
         """
         if sheet is self._root_sheet:
             return self._root_file_name
@@ -830,7 +926,7 @@ class Writer:
         """
         wanted: dict[str, str] = {}
         for comp in sheet.components.values():
-            if getattr(comp, "is_port", False):
+            if getattr(comp, "kind", None) == ComponentKind.PORT:
                 wanted[comp.net_name] = comp.shape
 
         if not wanted:

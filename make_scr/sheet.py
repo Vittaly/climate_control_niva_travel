@@ -36,9 +36,13 @@
     comp.add_instance(inst). Компонент сам вычисляет своё проектное
     имя (make_refdes(designator, inst.page)).
 
-Роутер пишет в страницу:
-    - sheet.labels       — метки-заглушки на неудачных пинах;
-    - sheet.t_junctions  — T-врезки в существующие сети.
+Роутер и структурные метки пишут в страницу:
+    - sheet.labels     — метки сети (LabelComponent):
+                          * SHEET_PIN_NAME — создаются здесь, в
+                            create_sheet_pin_labels() после route_all;
+                          * INTERNAL_NET_NAME, FALLBACK — создаёт роутер;
+                          * USER — пока не используется.
+    - sheet.junctions  — T-врезки (Junction).
 
 Схлопывание поддерева (flatten):
     Sheet.flatten() собирает FlatNetMap для этого листа и всего его
@@ -66,12 +70,19 @@ import yaml
 
 from cell import Cell
 from component import Component, ComponentLoadError
-from constants import Axis, DEFAULT_GRID_MM, Symbol
+from constants import (
+    Axis,
+    ComponentKind,
+    DEFAULT_GRID_MM,
+    Direction,
+    Symbol,
+)
 from designators import DesignatorError
 from logging_setup import ctx, get_logger
+from junction import Junction
+from label_component import LabelComponent
 from netlist import Netlist
-
-from routing_types import FallbackLabel, TJunction
+from primitive import Primitive
 
 if TYPE_CHECKING:
     from flat import FlatNetMap
@@ -82,15 +93,14 @@ if TYPE_CHECKING:
 log = get_logger(__name__)
 
 
-@dataclass(eq=False)
-class Sheet:
+@dataclass(eq=False, kw_only=True)
+class Sheet(Primitive):
     """Одна страница проекта — файл .kicad_sch.
 
     Сравнение — по идентичности (eq=False). Хэш — по yaml_path.
     """
 
     yaml_path: Path
-    uuid: str = ""
     grid_mm: float = DEFAULT_GRID_MM
 
     components: Dict[str, Component] = field(default_factory=dict, repr=False)
@@ -98,8 +108,8 @@ class Sheet:
     netlist: Netlist = field(default_factory=Netlist, repr=False)
 
     paths: List[List[Cell]] = field(default_factory=list, repr=False)
-    labels: List[FallbackLabel] = field(default_factory=list, repr=False)
-    t_junctions: List[TJunction] = field(default_factory=list, repr=False)
+    labels: List[LabelComponent] = field(default_factory=list, repr=False)
+    junctions: List[Junction] = field(default_factory=list, repr=False)
 
     source: Optional["KiCadSource"] = field(default=None, repr=False)
     libraries: Optional["LibraryManager"] = field(default=None, repr=False)
@@ -176,14 +186,13 @@ class Sheet:
         return sheet
 
     def _load_contents(self, data: dict, yaml_path: Path) -> None:
-        """Сети до компонентов: _bind_node вяжет пины к сетям, а
+        """Компоненты до сетей: _bind_node вяжет пины к сетям, а
         SheetRefComponent читает порты из netlist ДОЧЕРНЕГО Sheet —
         у него они уже готовы, потому что load(child) рекурсивен и
         вернул полностью загруженный Sheet.
         """
         self._load_components(data, yaml_path)
         self._load_nets(data, yaml_path)
-        
 
     def _load_components(self, data: dict, yaml_path: Path) -> None:
         """Компоненты листа: обычные + X_*."""
@@ -294,9 +303,6 @@ class Sheet:
             if not ndef.get("is_hierarchical_port"):
                 continue
 
-            direction = str(ndef.get("port_direction", "INPUT")).upper()
-            designator = f"PORT_{net_name}"
-
             try:
                 direction = str(ndef.get("port_direction", "INPUT")).upper()
                 description = ndef.get("description", "") or ""
@@ -307,7 +313,7 @@ class Sheet:
                     net_name=net_name,
                     direction=direction,
                     description=description,
-)
+                )
             except DesignatorError as e:
                 log.error(
                     "%s port_load_failed des=%s net=%s reason=%s",
@@ -388,10 +394,16 @@ class Sheet:
             pin.net_name = comp.net_name
 
     def _bind_sheet_refs_to_nets(self, data: dict) -> None:
+        """Проставить ports[*]['shape'] и связать пины X_* с сетями.
+
+        Пины X_*-компонента ссылаются на имена сетей родителя. Тут
+        же вычисляется shape каждого порта — writer читает его без
+        дополнительных проверок.
+        """
         from port_component import PortComponent
 
         for comp in self.components.values():
-            if not getattr(comp, "is_sheet_ref", False):
+            if getattr(comp, "kind", None) != ComponentKind.SHEET_REF:
                 continue
 
             for port in getattr(comp, "ports", []):
@@ -446,7 +458,7 @@ class Sheet:
         comp.sheet = self
         self.components[comp.designator] = comp
 
-        if not getattr(comp, "is_sheet_ref", False) \
+        if getattr(comp, "kind", None) != ComponentKind.SHEET_REF \
                 and not comp.designator.startswith("X_"):
             for inst in self.instances:
                 comp.add_instance(inst)
@@ -467,7 +479,7 @@ class Sheet:
         self.instances.append(inst)
 
         for local, comp in self.components.items():
-            if getattr(comp, "is_sheet_ref", False):
+            if getattr(comp, "kind", None) == ComponentKind.SHEET_REF:
                 continue
             if local.startswith("X_"):
                 continue
@@ -535,46 +547,35 @@ class Sheet:
         ).build()
 
     def _compute_refdes_maps(self) -> Dict[str, Dict[str, str]]:
-        """{X_des: {local_des: project_ref}} для X_* в этом поддереве.
-
-        Для каждого X_*-компонента в поддереве от self:
-            * собирается множество страниц его инстансов (inst.page);
-            * для каждого локального компонента дочернего листа
-              выбирается инстанс, page которого попадает в это
-              множество, и refdes вычисляется через
-              make_refdes(local_des, inst.page).
-
-        Для одноинстансных листов карта тождественна (local ==
-        project), но всё равно заполняется — чтобы не разветвлять
-        логику у потребителя (Flattener).
-
-        Обход идёт рекурсивно от self вниз; внешние X_* (в
-        анцесторах self) сюда не попадают — они не порождают
-        листов этого поддерева.
-        """
-
-    def _compute_refdes_maps(self) -> Dict[str, Dict[str, str]]:
         """Плоский dict {X_designator: {local_des: project_ref}}.
 
-        Каждый Sheet отвечает только за свои X_* и за своих прямых детей:
-        для каждого X_* строит карту переименования локальных refdes
-        дочернего листа в проектные, потом складывает с тем, что вернули
-        дети. Ключи (designators X_*) уникальны в дереве, так что merge
-        безопасен.
+        Каждый Sheet отвечает только за свои X_* и за своих прямых
+        детей: для каждого X_* строит карту переименования локальных
+        refdes дочернего листа в проектные, потом складывает с тем,
+        что вернули дети. Ключи (designators X_*) уникальны в
+        дереве, так что merge безопасен.
+
+        Для каждого X_*-компонента:
+            * X_* пропускается, если у него нет child_sheet или
+              child_instance (метка появится, но без маппинга —
+              Flattener оставит X_* как есть);
+            * page инстанса берётся у child_instance, а не у
+              comp.instances (у SheetRefComponent instances пуст);
+            * для каждого локального компонента дочернего листа
+              выбирается инстанс с этим page, и refdes вычисляется
+              через make_refdes(local_des, inst.page).
         """
         from refdes import make_refdes
 
         out: Dict[str, Dict[str, str]] = {}
 
         for des, comp in self.components.items():
-            if not getattr(comp, "is_sheet_ref", False):
+            if getattr(comp, "kind", None) != ComponentKind.SHEET_REF:
                 continue
             child = getattr(comp, "child_sheet", None)
             if child is None:
                 continue
 
-            # Page этого инстанса ребёнка — child_instance, не comp.instances
-            # (у SheetRefComponent instances всегда пуст).
             child_inst = getattr(comp, "child_instance", None)
             if child_inst is None:
                 continue
@@ -582,9 +583,11 @@ class Sheet:
 
             rm: Dict[str, str] = {}
             for local_des, local_comp in child.components.items():
-                if getattr(local_comp, "is_sheet_ref", False):
+                if getattr(local_comp, "kind", None) == ComponentKind.SHEET_REF:
                     continue
                 if local_des.startswith("X_"):
+                    continue
+                if getattr(local_comp, "kind", None) == ComponentKind.LABEL:
                     continue
 
                 project_ref = None
@@ -600,16 +603,135 @@ class Sheet:
             out.update(child._compute_refdes_maps())
 
         return out
-    
 
     # =========================================================
-    # Накопители роутера
+    # Накопители роутера и структурных меток
     # =========================================================
 
-    def reset_routing_marks(self) -> None:
-        self.labels.clear()
-        self.t_junctions.clear()
-        log.debug("[%s] накопители роутера сброшены", self.page)
+    def add_junction(self, j: Junction) -> None:
+        """Добавить точку соединения на страницу.
+
+        Проставляет j.sheet = self (обратная ссылка для writer'а
+        и логов) и кладёт в список. Дедуп — на вызывающем: роутер
+        сам решает, ставить junction или она уже есть.
+        """
+        j.sheet = self
+        self.junctions.append(j)
+
+    def add_label(self, lbl: LabelComponent) -> None:
+        """Добавить метку на страницу.
+
+        Проставляет обратную ссылку lbl.sheet = self (используется
+        writer'ом для контекста логов) и кладёт в список.
+        Дедуп — на вызывающем: роутер или create_sheet_pin_labels
+        сам решает, ставить метку или она уже есть.
+        """
+        lbl.sheet = self
+        self.labels.append(lbl)
+
+    def create_sheet_pin_labels(self) -> None:
+        """Создать структурные метки SHEET_PIN_NAME у пинов X_*.
+
+        Для каждого SheetRefComponent на этой странице и каждого его
+        пина — найти корневую сеть в self.netlist по имени pin.net_name
+        и положить LabelComponent в self.labels.
+
+        Вызывается ПОСЛЕ route_all: netlist уже наполнен, роутер к
+        моменту вызова закончил работу, метки не мешают трассировке.
+        Каскад по дереву — снаружи, через Project._collect_sheets().
+
+        Направление метки берётся из геометрии пина (левая/правая
+        кромка frame) — тем же правилом, что и writer для rotation:
+            side == left  → Direction.RIGHT (rotation 180);
+            side == right → Direction.LEFT  (rotation 0).
+
+        Дедуп: если в этой же точке уже есть метка с тем же именем
+        (например FALLBACK от роутера, если X_*-пин не удалось
+        трассировать), новую не создаём.
+        """
+        from label_component import LabelComponent, LabelReason
+
+        grid = self.grid_mm
+        created = 0
+
+        for comp in self.components.values():
+            if getattr(comp, "kind", None) != ComponentKind.SHEET_REF:
+                continue
+
+            anchor = getattr(comp, "anchor_page_mm", None)
+            if anchor is None:
+                continue
+            fc, fr = comp.frame_size
+            ox, oy = comp.frame_offset_mm
+            fx = anchor[Axis.X] + ox
+            fw = (fc - 1) * grid
+
+            for pin in comp.pins:
+                net_name = getattr(pin, "net_name", None) or pin.identifier
+                if not net_name:
+                    continue
+                net = self.netlist.nets.get(net_name)
+                if net is None:
+                    log.warning(
+                        "%s sheet_pin_label net_missing net=%s pin=%s",
+                        ctx(page=self.page), net_name, pin.local_key,
+                    )
+                    continue
+
+                try:
+                    pin_mm = comp.abs_pin_mm(pin)
+                except Exception as e:
+                    log.warning(
+                        "%s sheet_pin_label geom_failed pin=%s err=%s",
+                        ctx(page=self.page, comp=comp.designator),
+                        pin.local_key, e,
+                    )
+                    continue
+
+                if abs(pin_mm[Axis.X] - fx) < grid / 2:
+                    direction = Direction.RIGHT   # side=left
+                elif abs(pin_mm[Axis.X] - (fx + fw)) < grid / 2:
+                    direction = Direction.LEFT    # side=right
+                else:
+                    log.warning(
+                        "%s sheet_pin_label off_frame pin=%s x=%.3f "
+                        "frame=[%.3f..%.3f]",
+                        ctx(page=self.page, comp=comp.designator,
+                            pin=pin.local_key),
+                        pin.local_key, pin_mm[Axis.X], fx, fx + fw,
+                    )
+                    continue
+
+                # Дедуп: уже есть метка с этим именем в этой точке?
+                # (FALLBACK от роутера, если X_*-пин не трассировался.)
+                already = any(
+                    lbl.name == net.name
+                    and abs(lbl.anchor_page_mm[0] - pin_mm[0]) < 1e-9
+                    and abs(lbl.anchor_page_mm[1] - pin_mm[1]) < 1e-9
+                    for lbl in self.labels
+                )
+                if already:
+                    log.debug(
+                        "%s sheet_pin_label dup_skip net=%s pin=%s",
+                        ctx(page=self.page, net=net.name),
+                        net.name, pin.local_key,
+                    )
+                    continue
+
+                lbl = LabelComponent(
+                    net=net,
+                    direction=direction,
+                    reason=LabelReason.SHEET_PIN_NAME,
+                    anchor_page_mm=pin_mm,
+                )
+                self.add_label(lbl)
+                created += 1
+
+        if created:
+            log.info(
+                "%s sheet_pin_labels created=%d",
+                ctx(page=self.page), created,
+            )
 
     # =========================================================
     # Делегирование геометрии в Component

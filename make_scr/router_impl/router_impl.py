@@ -22,20 +22,37 @@ T-точки (junction) в .kicad_sch:
     клетку»), без явной junction он не подключается, и сеть пропадает
     из нетлиста. Поэтому ЛЮБАЯ метка с on_wire=True должна получать
     парную T-точку в той же координате. Это делается в трёх местах:
-      * _route_t_junction — успешная врезка (было и раньше);
-      * _route_t_junction — fallback label_on_wire (новое);
-      * _name_internal_nets — метка-имя внутренней сети (новое).
+      * _route_t_junction — успешная врезка;
+      * _route_t_junction — fallback label_on_wire;
+      * _name_internal_nets — метка-имя внутренней сети.
+
+    Сама Junction — самостоятельный элемент .kicad_sch (см. junction.py),
+    не Component. Роутер создаёт её через self.sheet.add_junction().
+
+Метки (LabelComponent):
+    Метка — самостоятельный элемент листа (см. label_component.py),
+    не Component. Хранится в sheet.labels, добавляется через
+    sheet.add_label(). Ссылается на Net объектом; текст метки —
+    property над net.name.
+
+Состояние накопителей Sheet:
+    Sheet.labels и Sheet.junctions накапливают метки и T-точки за
+    один прогон. Прогон один, сброса между вызовами нет: метод
+    Sheet.reset_routing_marks удалён. Структурные метки пинов X_*
+    (reason=SHEET_PIN_NAME) добавляются ПОСЛЕ route_all —
+    в Sheet.create_sheet_pin_labels, вызываемом из project.py.
 """
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from cell import Cell
 from component import Component
-from constants import PathSearch, WireOrientation
+from constants import ComponentKind, PathSearch, WireOrientation
 from logging_setup import ctx, get_logger
+from junction import Junction
+from label_component import LabelComponent, LabelReason
 from netlist import Netlist
 from occupant import WireCell
 from router_map import RouterMap
-from routing_types import FallbackLabel, TJunction
 from stub import plan_stub
 from wire import Wire
 
@@ -77,14 +94,7 @@ class Router(RouterLogMixin):
         self.page = self.sheet.page              # "root" или имя файла
         self.bounds = self._compute_bounds(pad_div=3)
 
-        # блокеры, встреченные за весь прогон (для отчёта)
-        self.frontier = set()
-
-        # страница, к которой привязан роутер (ставится в route_all)
-        self.page = self.sheet.page               # сразу, не в route_all
-
         # границы поля: bbox компонентов + 1/3 размера с каждой стороны
-        self.bounds = self._compute_bounds(pad_div=3)
         log.info("%s router field cols=[%d..%d] rows=[%d..%d]",
                  ctx(page=self.page),
                  self.bounds[0], self.bounds[1],
@@ -146,12 +156,13 @@ class Router(RouterLogMixin):
         """Трассирует все сети одной страницы.
 
         Метки и T-врезки пишутся в sheet и у роутера не сохраняются.
-        В начале прогона накопители sheet сбрасываются.
+        Прогон один: Sheet.labels и Sheet.junctions не сбрасываются
+        (reset_routing_marks удалён). Структурные метки SHEET_PIN_NAME
+        у пинов X_* добавляются позже — в Sheet.create_sheet_pin_labels,
+        вызываемом из project.py после этого метода.
         """
         log.info("%s routing nets=%d",
                 ctx(page=self.page), len(self.netlist.nets))
-
-        self.sheet.reset_routing_marks()
 
         all_wires: List[Wire] = []
 
@@ -174,24 +185,52 @@ class Router(RouterLogMixin):
                     ctx(page=self.page, net=net_name),
                     _rss_mb(), len(net_wires), len(all_wires))
 
-        # Имена внутренних сетей (нет порта и нет fallback-метки):
-        # KiCad иначе сгенерирует Net-(U1-ILIM) вместо /ILIM.
+        # Имена внутренних сетей: без порта, без X_*-пина и без
+        # уже существующей метки. Иначе KiCad сгенерирует
+        # Net-(U1-ILIM) вместо /ILIM.
         self._name_internal_nets()
 
-        log.info("%s routing_done wires=%d labels=%d t_junctions=%d",
+        log.info("%s routing_done wires=%d labels=%d junctions=%d",
                 ctx(page=self.page),
                 len(all_wires),
-                len(self.sheet.labels), len(self.sheet.t_junctions))
+                len(self.sheet.labels), len(self.sheet.junctions))
         return all_wires
 
+
+    def _is_external_net(self, net) -> bool:
+        """True, если имя сети на этой странице уже зафиксировано.
+
+        Внешние сети — те, у которых на этой странице есть порт
+        (PortComponent, kind=PORT) или X_*-пин (SheetRefComponent,
+        kind=SHEET_REF). Имя такой сети не генерируется: у порта оно
+        рисуется hierarchical_label'ом в writer'е, а у X_*-пина —
+        структурной меткой SHEET_PIN_NAME, которая появится позже,
+        в Sheet.create_sheet_pin_labels (после route_all).
+
+        Внутренняя метка на такую сеть не нужна и вредна: KiCad
+        увидит два имени и выберет не то.
+        """
+        for fqn in net.pins:
+            local = self.sheet.local_key(fqn)
+            if local is None:
+                continue
+            designator = local.split(":", 1)[0]
+            comp = self.components.get(designator)
+            if comp is None:
+                continue
+            kind = getattr(comp, "kind", None)
+            if kind in (ComponentKind.PORT, ComponentKind.SHEET_REF):
+                return True
+        return False
 
     def _name_internal_nets(self) -> None:
         """Ставит метку-имя на провод внутренних сетей.
 
-        Внутренняя сеть — та, у которой на этой странице нет
-        PortComponent и нет ни одной FallbackLabel. Такие сети
-        остаются без имени в .kicad_sch, и KiCad генерирует
-        Net-(U1-ILIM). Метка на проводе фиксирует имя из YAML.
+        Внутренняя сеть — та, у которой на этой странице нет ни
+        одной метки (sheet.labels), нет порта и нет X_*-пина
+        (см. _is_external_net). Такие сети остаются без имени
+        в .kicad_sch, и KiCad генерирует Net-(U1-ILIM).
+        Метка на проводе фиксирует имя из YAML.
 
         Метка ставится одна на сеть, на «чистой» клетке её провода
         (без транзита чужой сети — иначе KiCad приклеит имя к обеим).
@@ -200,18 +239,20 @@ class Router(RouterLogMixin):
         координате: клетка метки — середина сегмента, а не endpoint,
         и без junction KiCad label не подключит.
         """
-        # 1. Сети, у которых уже есть имя на этой странице:
-        #    порты и существующие метки.
+        # 1. Сети, у которых уже есть метка на этой странице.
+        #    Метки SHEET_PIN_NAME появятся только в
+        #    create_sheet_pin_labels (после route_all) — они
+        #    покрываются _is_external_net ниже.
         named: set[str] = set()
-        for comp in self.components.values():
-            if getattr(comp, "is_port", False):
-                named.add(comp.net_name)
         for lbl in self.sheet.labels:
-            named.add(lbl.net_name)
+            named.add(lbl.name)
 
-        # 2. Сети, которые надо назвать: есть провода, нет имени.
+        # 2. Сети, которые надо назвать: есть провода, нет имени,
+        #    имя ещё не зафиксировано портом или X_*-пином.
         for net_name, net in self.netlist.nets.items():
-            if net_name in named:
+            if net.name in named:
+                continue
+            if self._is_external_net(net):
                 continue
             wires = getattr(net, "wires", []) or []
             if not wires:
@@ -237,18 +278,15 @@ class Router(RouterLogMixin):
             self._ensure_junction(
                 net_name=net_name,
                 target=cell,
-                source=cell,
                 wires=wires,
                 tag="internal_net_name",
             )
 
-            self.sheet.labels.append(FallbackLabel(
-                net_name=net_name,
-                local_key=pin.local_key,
-                contact_mm=(x_mm, y_mm),
+            self.sheet.add_label(LabelComponent(
+                net=net,
                 direction=pin.direction,
-                reason="internal_net_name",
-                on_wire=True,
+                reason=LabelReason.INTERNAL_NET_NAME,
+                anchor_page_mm=(x_mm, y_mm),
             ))
             log.info(
                 "%s net_name_label net=%s cell=%s mm=(%.2f,%.2f)",
@@ -300,23 +338,27 @@ class Router(RouterLogMixin):
         self,
         net_name: str,
         target: Cell,
-        source: Cell,
         wires: List[Wire],
         tag: str = "",
     ) -> None:
-        """Добавляет T-точку в sheet.t_junctions, если её ещё нет.
+        """Добавляет T-точку в sheet.junctions, если её ещё нет.
 
         KiCad подключает label к проводу только если label.at
         совпадает с endpoint сегмента или с junction. Все метки
         с on_wire=True роутер ставит в середину сегмента, поэтому
         обязана существовать парная T-точка в той же клетке.
 
-        Дедуп по target: у одной клетки не может быть двух junction.
-        host-провод ищется линейно, но вызывается это редко
-        (по одной-двум меткам на сеть), так что O(N) не проблема.
+        Дедуп по anchor_mm: у одной клетки не может быть двух
+        junction. Живёт всё в sheet.junctions (список Junction),
+        создание — через sheet.add_junction, чтобы проставить
+        обратную ссылку j.sheet = sheet.
         """
-        for j in self.sheet.t_junctions:
-            if j.target == target:
+        x_mm = target.col * self.grid_mm
+        y_mm = target.row * self.grid_mm
+
+        for j in self.sheet.junctions:
+            if (abs(j.anchor_x - x_mm) < 1e-9 and
+                    abs(j.anchor_y - y_mm) < 1e-9):
                 log.debug(
                     "%s t_junction_exists tag=%s net=%s cell=%s",
                     ctx(page=self.page, net=net_name),
@@ -324,29 +366,15 @@ class Router(RouterLogMixin):
                 )
                 return
 
-        host_wire: Optional[Wire] = None
-        for w in wires:
-            for seg in w.segments():
-                if target in seg.cells():
-                    host_wire = w
-                    break
-            if host_wire is not None:
-                break
-
-        self.sheet.t_junctions.append(TJunction(
+        self.sheet.add_junction(Junction.create(
+            anchor_mm=(x_mm, y_mm),
             net_name=net_name,
-            target=target,
-            source=source,
-            wire_key=host_wire.key if host_wire else "",
+            reason=tag or "junction",
         ))
         log.info(
-            "%s t_junction_added tag=%s net=%s cell=%s "
-            "mm=(%.2f,%.2f) host=%s",
+            "%s t_junction_added tag=%s net=%s cell=%s mm=(%.2f,%.2f)",
             ctx(page=self.page, net=net_name),
-            tag, net_name, target,
-            target.col * self.grid_mm,
-            target.row * self.grid_mm,
-            host_wire.key if host_wire else "?",
+            tag, net_name, target, x_mm, y_mm,
         )
 
     # =========================================================
@@ -505,8 +533,6 @@ class Router(RouterLogMixin):
         return wire
 
 
-    
-
     # =========================================================
     # T-врезка
     # =========================================================
@@ -525,8 +551,8 @@ class Router(RouterLogMixin):
             if w.net_name != net_name:
                 return False
         return True
-    
-    
+
+
     def _route_t_junction(self, net_name: str,
                       cell_c: Cell, pin_c: "Pin",
                       existing_wires: List[Wire]) -> Optional[Wire]:
@@ -583,11 +609,11 @@ class Router(RouterLogMixin):
             self._log_wire_full(net_name, wire)
 
             host = self._find_host_wire(target, existing_wires)
-            self.sheet.t_junctions.append(TJunction(
+            self.sheet.add_junction(Junction.create(
+                anchor_mm=(target.col * self.grid_mm,
+                           target.row * self.grid_mm),
                 net_name=net_name,
-                target=target,
-                source=stub_c.tip,
-                wire_key=host.key if host else "",
+                reason="t_junction",
             ))
             log.info("%s t_junction recorded net=%s target=%s host=%s",
                     ctx(page=self.page,
@@ -627,7 +653,6 @@ class Router(RouterLogMixin):
             self._ensure_junction(
                 net_name=net_name,
                 target=target,
-                source=stub_c.tip,
                 wires=existing_wires,
                 tag="fallback_on_wire",
             )
@@ -715,7 +740,7 @@ class Router(RouterLogMixin):
 
         return None
 
-    
+
     def _check_cross(self, cell, new_wire, existing_wc):
         """Проверяет совместимость двух проводов в клетке.
 
@@ -723,9 +748,6 @@ class Router(RouterLogMixin):
         Запрещено: endpoint у любой из сетей; параллельные ориентации;
                 диагональ.
         """
-        #from constants import WireOrientation
-        #from router_impl.router_rules import orientations_at, is_endpoint_at
-
         new_orients = _orientations_at(new_wire, cell)
         new_endpoint = _is_endpoint_at(new_wire, cell)
 
@@ -778,38 +800,55 @@ class Router(RouterLogMixin):
     def _mark_fallback(self, net_name: str, pin,
                        contact_mm: Tuple[float, float],
                        reason: str, on_wire: bool = False) -> None:
-        """Ставит метку fallback.
+        """Ставит метку fallback на пин или на провод.
 
         on_wire=False — метка на пине. Пин не подключён к сети проводом
-            и связывается с ней по имени. Дедуп по local_key: у каждого
-            пина своя метка.
-        on_wire=True — метка на проводе сети (T-точка). Дедуп по net_name:
-            на сеть достаточно одной такой метки.
+            и связывается с ней по имени. Дедуп по (name, anchor_mm)
+            БЕЗ учёта reason: любая уже стоящая в этой точке метка
+            с тем же именем делает новую излишней (в том числе
+            SHEET_PIN_NAME и INTERNAL_NET_NAME).
+        on_wire=True — метка на проводе сети (T-точка). Дедуп по
+            (name, reason=FALLBACK): на сеть достаточно одной
+            fallback-метки на проводе.
 
         direction = pin.direction (без инверсии): anchor = contact_mm,
         текст рисуется против вектора направления, то есть наружу.
 
+        Параметр reason здесь — диагностическая строка ("route failed",
+        "T-junction failed"), она идёт в лог, но в саму метку не
+        попадает: у всех fallback-меток LabelReason.FALLBACK.
+
         T-точку под on_wire=True роутер добавляет в _ensure_junction
         или _route_t_junction. Здесь только сама метка.
         """
+        net = self.netlist.nets.get(net_name)
+        if net is None:
+            log.warning("%s label_skipped net=%s reason=no_net",
+                        ctx(page=self.page, net=net_name), net_name)
+            return
+
+        # Дедуп.
         if on_wire:
+            # одна fallback-метка на провод сети
             for lbl in self.sheet.labels:
-                if lbl.net_name == net_name and lbl.on_wire:
+                if (lbl.name == net.name
+                        and lbl.reason == LabelReason.FALLBACK):
                     log.debug("%s label_skipped net=%s already_on_wire",
                             ctx(page=self.page, net=net_name), net_name)
                     return
         else:
+            # одна метка на точку пина — reason не важен
             for lbl in self.sheet.labels:
-                if lbl.local_key == pin.local_key:
+                if (lbl.name == net.name
+                        and abs(lbl.anchor_page_mm[0] - contact_mm[0]) < 1e-9
+                        and abs(lbl.anchor_page_mm[1] - contact_mm[1]) < 1e-9):
                     return
 
-        self.sheet.labels.append(FallbackLabel(
-            net_name=net_name,
-            local_key=pin.local_key,
-            contact_mm=contact_mm,
+        self.sheet.add_label(LabelComponent(
+            net=net,
             direction=pin.direction,
-            reason=reason,
-            on_wire=on_wire,
+            reason=LabelReason.FALLBACK,
+            anchor_page_mm=contact_mm,
         ))
         log.info("%s label net=%s reason=%s on_wire=%s "
                  "contact_mm=%s dir=%s",

@@ -84,10 +84,60 @@ Alias-пины:
     Возврат None запрещён: молчаливая потеря компонента приводила
     к «расхождениям в сетях» (node_skipped reason=no_component)
     без внятной причины.
+
+SPICE-привязка:
+    На этапе from_yaml из component_types[type].spice собирается
+    simProperties: Dict[str, str] — готовые пары "Sim.Xxx" → "value".
+    Writer проецирует их в .kicad_sch как properties символа;
+    kicad-cli выгружает их в нетлист; kicad_to_spice.py читает
+    оттуда.
+
+    Ветки spice-секции (по порядку проверки):
+
+        primitive + model_def   → встроенный прибор с явной моделью:
+            primitive: D
+            model_def: ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6)"
+            → Sim.Device=D, Sim.Model=LED_WHITE,
+              Sim.Params="IS=1e-22 N=2.5 RS=6"
+            Значения IS/N/RS идут в .model; .cir собирает строку
+            ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6)" и D<ref> на неё.
+            Если primitive есть, а model_def пуст — Sim.Model из
+            spice.model или type_name без TYPE_, Sim.Params из
+            spice.params. value НЕ используется: у диодов/транзисторов
+            value — парт-номер или описание, не SPICE-идентификатор.
+
+        subckt+include          → X-инстанс:
+            Sim.Device=X, Sim.Name, Sim.Library,
+            Sim.Pins (pin=port, порядок из spice.nodes),
+            Sim.Params (spice.params + required_params с дефолтами),
+            Sim.Enable=1.
+
+        model (spice.model)     → встроенный прибор + .model:
+            Sim.Device из spice.device или lib_id,
+            Sim.Model из spice.model,
+            Sim.Params из spice.params.
+
+        lib_id Device:D/LED/…   → без spice-секции:
+            Sim.Device из _infer_spice_device,
+            Sim.Model из type_name без TYPE_,
+            Sim.Params из spice.params.
+
+        lib_id Device:R/C/L     → примитивы без модели:
+            Sim.Device=R/C/L,
+            Sim.Params="<dev>=<value>" (spice.value → value типа).
+
+        иначе                   → пусто, kicad_to_spice пропустит
+                                  компонент или выведет «не моделируется».
+
+    Спец-случай U1 (STM32G071RBT6): тип несёт subckt+auto_ports,
+    но Sim.Library зависит от сценария (сгенерированный per-scenario
+    .sub). Здесь пишется только Sim.Device/Sim.Name; Sim.Library
+    подставляет kicad_to_spice.py на этапе сборки .cir.
 """
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass, field
 from typing import Dict, Iterator, List, Optional, Tuple, TYPE_CHECKING
 
@@ -97,13 +147,16 @@ from constants import (
     DEFAULT_DIRECTION,
     DEFAULT_GRID_MM,
     GRID_EPSILON_MM,
+    ComponentKind,
     Direction,
     WireAngle,
+    new_uuid,
     orientation_to_direction,
     opposite_direction,
     wire_angle_to_direction,
 )
 from logging_setup import get_logger, ctx
+from primitive import Primitive
 from pin import Pin
 
 from designators import validate_component_designator
@@ -258,11 +311,65 @@ def _norm_pin_name(name: Optional[str]) -> str:
 
 
 # =========================================================
+# Разбор строки .model из spice.model_def
+# =========================================================
+
+def _parse_model_def(
+    model_def: Optional[str],
+) -> Tuple[Optional[str], Optional[str], str]:
+    """Разобрать строку .model из spice.model_def.
+
+    Возвращает (имя_модели, тип_модели, строка_параметров):
+
+        '.model LED_WHITE D(IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p)'
+            → ('LED_WHITE', 'D', 'IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p')
+        '.model MMBT3906 PNP(BF=200 VAF=100)'
+            → ('MMBT3906', 'PNP', 'BF=200 VAF=100')
+        '.model BSS138 NMOS(VTO=1.3 KP=0.5)'
+            → ('BSS138', 'NMOS', 'VTO=1.3 KP=0.5')
+        '.model SS54 D'
+            → ('SS54', 'D', '')
+        мусор/None
+            → (None, None, '')
+
+    Тип модели — второе слово в .model: D, NPN, PNP, NMOS, PMOS,
+    VDMOS, NJF, PJF, … Извлекается ВСЕГДА, потому что иначе
+    kicad_to_spice.py не может отличить PNP от NPN и подставляет
+    дефолт по префиксу элемента (Q → NPN), ломая PNP-транзисторы.
+
+    Регистр .MODEL/.model не важен.
+    """
+    if not model_def:
+        return None, None, ""
+
+    s = str(model_def).strip()
+
+    # Вариант с параметрами: .model NAME TYPE(...)
+    m = re.match(
+        r'\.\s*model\s+(\S+)\s+(\w+)\s*\(([^)]*)\)',
+        s, re.IGNORECASE,
+    )
+    if m:
+        return m.group(1), m.group(2), m.group(3).strip()
+
+    # Вариант без параметров: .model NAME TYPE
+    m = re.match(
+        r'\.\s*model\s+(\S+)\s+(\w+)\s*(.*)',
+        s, re.IGNORECASE,
+    )
+    if m:
+        tail = m.group(3).strip().strip("()").strip()
+        return m.group(1), m.group(2), tail
+
+    return None, None, ""
+
+
+# =========================================================
 # Компонент
 # =========================================================
 
 @dataclass(eq=False)
-class Component:
+class Component(Primitive):
     """Экземпляр компонента на странице.
 
     Attributes:
@@ -286,6 +393,11 @@ class Component:
         anchor_page_mm:    (x_mm, y_mm) — координаты якоря на странице (мм),
                            заполняются Placer'ом через set_position().
         grid_mm:           шаг сетки в мм.
+        simProperties:     пары "Sim.Xxx" → "value" — SPICE-привязка
+                           компонента. Заполняется в from_yaml из
+                           component_types[type].spice; writer
+                           проецирует их в .kicad_sch как properties,
+                           kicad-cli выгружает в нетлист.
     """
     designator: str
     name: str
@@ -302,6 +414,7 @@ class Component:
     anchor_offset_mm: Tuple[float, float] = (0.0, 0.0)
     anchor_page_mm: Optional[Tuple[float, float]] = None
     grid_mm: float = DEFAULT_GRID_MM
+    simProperties: Dict[str, str] = field(default_factory=dict, repr=False)
 
     # ---------- удобные свойства ----------
 
@@ -539,7 +652,7 @@ class Component:
         """Собирает компонент из описания типа в component_types.
 
         См. докстринг модуля — расчёт bbox, anchor_offset_mm,
-        pin.offset_mm, pin.direction.
+        pin.offset_mm, pin.direction, simProperties.
 
         Raises:
             ComponentLoadError: тип не указан, тип не описан,
@@ -712,6 +825,7 @@ class Component:
             mirror=cdef.get("mirror"),
             anchor_offset_mm=anchor_offset_mm,
             grid_mm=grid_mm,
+            simProperties=cls._build_sim_props(tname, tinfo, cdef, lib_id),
         )
         for pin in pins:
             pin.component = comp
@@ -727,6 +841,8 @@ class Component:
         (<1..4 латинских буквы><номер>). Порты (PORT_*) — отдельный
         класс; сюда попадать не должны.
         """
+        super().__post_init__()
+
         page = self.sheet_path or None
 
         if self.designator.startswith("PORT_"):
@@ -767,6 +883,253 @@ class Component:
         """Совпадают ли смещения пинов от якоря."""
         return (abs(a.offset_mm[Axis.X] - b.offset_mm[Axis.X]) <= GRID_EPSILON_MM
                 and abs(a.offset_mm[Axis.Y] - b.offset_mm[Axis.Y]) <= GRID_EPSILON_MM)
+
+    # ---------- SPICE-привязка ----------
+
+    @staticmethod
+    def _build_sim_props(
+        type_name: str,
+        tdef: dict,
+        cdef: dict,
+        lib_id: str,
+    ) -> Dict[str, str]:
+        """Собрать Sim.* свойства компонента.
+
+        Источники, в порядке приоритета (позже перекрывает раньше):
+            tdef["spice"] — общее описание типа;
+            cdef["spice"] — разовый override на конкретный инстанс.
+
+        Возвращает готовые пары "Sim.Xxx" -> "value" ровно в том
+        виде, в каком они пишутся в .kicad_sch (writer) и выгружаются
+        в нетлист kicad-cli. Пустой словарь, если у компонента нет
+        SPICE-модели.
+
+        Ветки по структуре spice-секции:
+
+            primitive + model_def   → Sim.Device из primitive,
+                Sim.Model и Sim.Params — из model_def (или spice.model
+                и spice.params). Пример: LED-тип с
+                primitive: D,
+                model_def: ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6)"
+                → Sim.Device=D, Sim.Model=LED_WHITE,
+                  Sim.Params="IS=1e-22 N=2.5 RS=6".
+
+            subckt+include          → Sim.Device=X, Sim.Name, Sim.Library,
+                Sim.Pins, Sim.Params (spice.params + required_params),
+                Sim.Enable=1.
+
+            model (spice.model)     → Sim.Device, Sim.Model, Sim.Params.
+
+            по lib_id (D/Q/M)       → Sim.Device из _infer_spice_device,
+                Sim.Model из type_name без TYPE_, Sim.Params из
+                spice.params. value НЕ используется: у диодов/
+                транзисторов value — парт-номер или описание,
+                не SPICE-идентификатор.
+
+            по lib_id (R/C/L)       → Sim.Device, Sim.Params =
+                "<dev>=<value>" (spice.value → value типа/инстанса).
+
+            иначе                   → пусто, kicad_to_spice пропустит
+                компонент или выведет «не моделируется».
+
+        Спец-случай U1 (STM32G071RBT6): тип несёт subckt+auto_ports,
+        но Sim.Library зависит от сценария (сгенерированный per-scenario
+        .sub). Здесь пишется только Sim.Device/Sim.Name; Sim.Library
+        подставляет kicad_to_spice.py на этапе сборки .cir.
+        """
+        spice = {**(tdef.get("spice") or {}), **(cdef.get("spice") or {})}
+        out: Dict[str, str] = {}
+
+        # ── 0. primitive + model_def — встроенный прибор с .model ──
+        # Самый явный случай: в spice заданы primitive ("D"/"Q"/"M"/…)
+        # и model_def (строка ".model NAME TYPE(params)"). Из model_def
+        # извлекаем имя и параметры; сам .model соберёт
+        # kicad_to_spice.collect_model_defs_from_comps как
+        # ".model <Sim.Model> <type>(<Sim.Params>)".
+        #
+        # Пример LED-типа:
+        #     primitive: D
+        #     model_def: ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p)"
+        # → Sim.Device="D", Sim.Model="LED_WHITE",
+        #   Sim.Params="IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p".
+        primitive = spice.get("primitive")
+        if primitive in ("D", "Z", "Q", "M", "J"):
+            out["Sim.Device"] = str(primitive)
+
+            model_def = spice.get("model_def")
+            mname, mtype, mparams = _parse_model_def(model_def or "")
+
+            # Имя модели: spice.model > из model_def > type_name без TYPE_.
+            if spice.get("model"):
+                out["Sim.Model"] = str(spice["model"])
+            elif mname:
+                out["Sim.Model"] = mname
+            else:
+                fallback = type_name.removeprefix("TYPE_")
+                if fallback:
+                    out["Sim.Model"] = fallback
+
+            # spice.params дополняет параметры из model_def.
+            extra_parts: List[str] = []
+            for k, v in (spice.get("params") or {}).items():
+                extra_parts.append(f"{k}={v}")
+            extra = " ".join(extra_parts)
+
+            # Sim.Params = "TYPE(params)" — тип из model_def, а не
+            # из _model_type_for. Иначе MMBT3906 (PNP) превратится
+            # в NPN и вся логика перевернётся.
+            if mtype:
+                params_body = mparams
+                if extra:
+                    params_body = (params_body + " " + extra).strip()
+                out["Sim.Params"] = f"{mtype}({params_body})"
+            elif extra:
+                default_type = {
+                    "D": "D", "Z": "D",
+                    "Q": "NPN",
+                    "M": "NMOS",
+                    "J": "NJF",
+                }.get(primitive, "D")
+                out["Sim.Params"] = f"{default_type}({extra})"
+
+            return out
+
+        subckt = spice.get("subckt")
+        model = spice.get("model")
+        device = spice.get("device")
+
+        # ── 1. .subckt (X-инстанс) ──
+        if subckt:
+            out["Sim.Device"] = str(device) if device else "X"
+            out["Sim.Name"] = str(subckt)
+
+            if spice.get("include"):
+                out["Sim.Library"] = (
+                    "${KIPRJMOD}/spice/lib/" + str(spice["include"])
+                )
+
+            # Sim.Pins — строка целиком, в порядке портов из YAML.
+            # dict сохраняет порядок вставки в Python 3.7+, поэтому
+            # проходим по spice["nodes"].items() без сортировок.
+            nodes = spice.get("nodes") or {}
+            if isinstance(nodes, dict) and nodes:
+                pairs = []
+                for port, spec in nodes.items():
+                    if not isinstance(spec, dict):
+                        continue
+                    pnum = spec.get("pin")
+                    if pnum is None:
+                        continue
+                    pairs.append(f"{pnum}={port}")
+                if pairs:
+                    out["Sim.Pins"] = " ".join(pairs)
+
+            # Sim.Params: сначала spice.params (k=v), затем
+            # required_params (name=default, либо name без default).
+            params_parts: List[str] = []
+            for k, v in (spice.get("params") or {}).items():
+                params_parts.append(f"{k}={v}")
+            for p in spice.get("required_params", []) or []:
+                pname = p.get("name")
+                if not pname:
+                    continue
+                default = p.get("default")
+                if default is None or default == "":
+                    params_parts.append(str(pname))
+                else:
+                    params_parts.append(f"{pname}={default}")
+            if params_parts:
+                out["Sim.Params"] = " ".join(params_parts)
+
+            out["Sim.Enable"] = "1"
+            return out
+
+        # ── 2. .model (явный spice.model) ──
+        if model:
+            out["Sim.Device"] = (
+                str(device) if device
+                else (Component._infer_spice_device(lib_id) or "D")
+            )
+            out["Sim.Model"] = str(model)
+
+            if spice.get("include"):
+                out["Sim.Library"] = (
+                    "${KIPRJMOD}/spice/lib/" + str(spice["include"])
+                )
+
+            if spice.get("params"):
+                out["Sim.Params"] = " ".join(
+                    f"{k}={v}" for k, v in spice["params"].items()
+                )
+            return out
+
+        # ── 3. D / Q / M / J / Z по lib_id — без spice.model ──
+        # Имя модели: spice.model уже рассмотрен выше, значит либо
+        # производное от имени типа (TYPE_SS54 → SS54), либо
+        # ничего. value НЕ используется: у диодов/транзисторов value —
+        # парт-номер или описание («Индикатор зелёный 1206»),
+        # не SPICE-идентификатор.
+        prim = Component._infer_spice_device(lib_id)
+        if prim in ("D", "Z", "Q", "M", "J"):
+            out["Sim.Device"] = prim
+            model_name = type_name.removeprefix("TYPE_")
+            if model_name:
+                out["Sim.Model"] = str(model_name)
+            if spice.get("params"):
+                out["Sim.Params"] = " ".join(
+                    f"{k}={v}" for k, v in spice["params"].items()
+                )
+            return out
+
+        # ── 4. R / C / L — примитивы с номиналом ──
+        # Значение берём из spice.value (уже в SPICE-нотации),
+        # иначе из value типа/инстанса (KiCad-нотация = SPICE
+        # для типовых номиналов: 10k, 100n, 1u).
+        prim = Component._infer_spice_device(lib_id)
+        if prim in ("R", "C", "L"):
+            out["Sim.Device"] = prim
+            sp_value = spice.get("value")
+            value = sp_value or tdef.get("value") or cdef.get("value")
+            if value:
+                out["Sim.Params"] = f"{prim}={value}"
+            return out
+
+        return out
+
+    @staticmethod
+    def _infer_spice_device(lib_id: str) -> Optional[str]:
+        """Вывести SPICE-префикс прибора из lib_id символа.
+
+        Используется как fallback, когда в spice-секции не задан
+        явно device. Возвращает:
+            "R"/"C"/"L" — для Device:R / Device:C / Device:L;
+            "D"          — для Device:D*, Device:LED;
+            "Q"          — для Device:Q_*;
+            "M"          — для Device:M_*;
+            None         — если символ не опознан.
+        """
+        if not lib_id:
+            return None
+
+        exact = {
+            "Device:R": "R",
+            "Device:C": "C",
+            "Device:L": "L",
+            "Device:R_Small": "R",
+            "Device:C_Small": "C",
+            "Device:L_Small": "L",
+        }
+        if lib_id in exact:
+            return exact[lib_id]
+
+        part = lib_id.split(":", 1)[-1]
+        if part == "D" or part == "LED" or part.startswith("D_"):
+            return "D"
+        if part.startswith("Q_"):
+            return "Q"
+        if part.startswith("M_"):
+            return "M"
+        return None
 
     # ---------- позиционирование ----------
 
@@ -873,18 +1236,6 @@ class Component:
             cell = self.abs_pin_cell(pin)
             yield (cell.col, cell.row)
 
-    # ---------- признаки ----------
-
-    @property
-    def is_port(self) -> bool:
-        """Обычный компонент — не порт."""
-        return False
-
-    @property
-    def is_sheet_ref(self) -> bool:
-        """Обычный компонент — не ссылка на лист."""
-        return False
-
     @property
     def frame_size(self) -> Tuple[int, int]:
         """Габарит фигуры, которую рисует Writer.
@@ -902,3 +1253,12 @@ class Component:
         SheetRef — (grid_mm, grid_mm): рамка на 1 клетку внутрь bbox.
         """
         return (0.0, 0.0)
+
+    @property
+    def kind(self) -> "ComponentKind":
+        """Тип компонента. Переопределяется наследниками.
+
+        У обычного символа — SYMBOL; PortComponent, SheetRefComponent,
+        LabelComponent возвращают свой тип.
+        """
+        return ComponentKind.SYMBOL

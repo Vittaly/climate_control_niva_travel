@@ -12,7 +12,8 @@
     WireAngle ↔ Direction (для расчёта отростков);
     противоположное направление (для outward = opposite(direction)).
 """
-from enum import IntEnum, StrEnum
+from enum import Enum, IntEnum, StrEnum
+import uuid as _uuid_mod
 
 
 # =========================================================
@@ -328,3 +329,20 @@ class NetNameSourcePriority(IntEnum):
     SHEET_PIN   = 1
     HIER_LABEL  = 2
     LOCAL_LABEL = 3
+
+
+class ComponentKind(str, Enum):
+    """Тип компонента на листе.
+
+    Обычный символ KiCad (Device:R, MyMCU:STM32…) — SYMBOL.
+    Остальные — не символы, но полноправные компоненты листа:
+    у каждого своя позиция и свой способ сериализации.
+    """
+    SYMBOL    = "symbol"       # обычный Component.from_yaml
+    PORT      = "port"         # PortComponent
+    SHEET_REF = "sheet_ref"    # SheetRefComponent
+    LABEL     = "label"        # LabelComponent
+
+def new_uuid() -> str:
+    """Свежий UUID в формате KiCad: 8-4-4-4-12 через дефис."""
+    return str(_uuid_mod.uuid4())

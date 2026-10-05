@@ -39,7 +39,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from component import Component
-from constants import Axis, DEFAULT_GRID_MM, Direction
+from constants import Axis, DEFAULT_GRID_MM, ComponentKind, Direction
 from logging_setup import get_logger
 from pin import Pin
 
@@ -213,3 +213,13 @@ class PortComponent(Component):
         от границы поля компонентов, чтобы текст не обрезался.
         """
         return self.bbox_cols
+
+    @property
+    def kind(self) -> "ComponentKind":
+        """Тип компонента. Переопределяется наследниками.
+
+        У обычного символа — SYMBOL; PortComponent, SheetRefComponent,
+        LabelComponent возвращают свой тип.
+        """
+        
+        return ComponentKind.PORT

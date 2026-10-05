@@ -26,14 +26,16 @@ from constants import (
     DEFAULT_GRID_MM,
     Direction,
     GRID_EPSILON_MM,
+    new_uuid,
 )
+from primitive import Primitive
 
 if TYPE_CHECKING:
     from component import Component
 
 
-@dataclass(eq=False)
-class Pin:
+@dataclass(eq=False, kw_only=True)
+class Pin(Primitive):
     """Пин компонента.
 
     Attributes:
@@ -60,6 +62,8 @@ class Pin:
     net_ref: Optional[str] = None
     component: Optional["Component"] = field(default=None, repr=False)
     alias_of: Optional["Pin"] = field(default=None, repr=False)
+    uuid: str = field(default_factory=new_uuid)
+    sim_port: Optional[str] = None
 
     # ---------- хэш / идентичность ----------
 
@@ -67,6 +71,7 @@ class Pin:
         return hash((self.owner, self.number))
 
     def __post_init__(self):
+        super().__post_init__()
         if not self.number and not self.name:
             raise ValueError(
                 f"Pin без number и name: owner={self.owner!r} — "
