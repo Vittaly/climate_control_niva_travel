@@ -3,14 +3,20 @@
 
 Модель:
     - Sheet  — страница KiCad (.kicad_sch). Идентифицируется yaml_path.
-               Один Sheet = один файл. Может быть инстанцирован N раз,
-               это выражается списком sheet.instances.
+               Один Sheet = один файл. Может быть инстансован N раз;
+               контексты хранятся в sheet.sheet_ref_instances
+               (SheetRefInstance), а не в «списке экземпляров» —
+               сама страница всегда одна.
     - SheetRefComponent — ссылка на вложенный лист (X_*). Создаёт
-               дочерний Sheet при загрузке и регистрирует его инстансы.
+               дочерний Sheet при загрузке и инстанцирует его поддерево
+               одним вызовом Sheet.load(parent_sri=..., first_child_counter=...).
+               При повторной регистрации (multi-instance) — через
+               Sheet.register_from.
     - Placer — размещает на одной Sheet.
     - Router — трассирует одну Sheet.
-    - Writer — пишет .kicad_sch; читает готовые comp.instances и
-               sheet.instances, сериализует в блок (instances …).
+    - Writer — пишет .kicad_sch; читает готовые comp.instances
+               (ComponentInstance / SheetRefInstance) и сериализует
+               их в (instances …) и (path …) (page …).
     - Project — тонкий оркестратор.
 
 Идентификация листов:
@@ -28,6 +34,11 @@
         деревья, лежащие рядом с главным.
     Все корни лежат в self.roots = [root_sheet] + standalone.
 
+    Каждый корень — это Sheet.load(...) с parent_sri=None
+    (страница сама себя инстанцирует: создаёт 0-й SheetRefInstance
+    и каскадно раздаёт вхождения компонентам). Никакого отдельного
+    прохода «register_from для корня» снаружи не делается.
+
     Все операции, затрагивающие проект целиком (place_and_route,
     save, routes.txt, чистка предыдущих .kicad_sch), идут через
     _collect_all_sheets() — обход каждого корня и объединение
@@ -36,22 +47,25 @@
     _collect_sheets(root) с нужным корнем.
 
 Загрузка:
-    Единая, рекурсивная. Project.load создаёт корневой Sheet и
-    передаёт ему инфраструктуру (source, libraries, load_errors,
-    page_counter). Дальше Sheet сам грузит компоненты; встречая X_*,
-    вызывает SheetRefComponent(...) — тот находит/грузит дочерний
-    Sheet и регистрирует его инстансы.
+    Единая, рекурсивная. Project.load создаёт корневой Sheet через
+    Sheet.load и передаёт ему инфраструктуру (source, libraries,
+    load_errors). Дальше Sheet сам грузит компоненты; встречая X_*,
+    вызывает SheetRefComponent(..., parent_sri=…,
+    sheet_ref_start_counter=…) — тот находит/грузит дочерний Sheet
+    и инстанцирует поддерево одним вызовом.
 
     Standalone-страницы (root_page.standalone_sheets) загружаются
-    отдельно, как независимые корни. Их YAML — <stem>.yaml рядом
-    с корневым. Каждый корень порождает своё поддерево; в дерево
-    главного корня они не входят.
+    отдельно, как независимые корни (тоже Sheet.load с
+    parent_sri=None). Их YAML — <stem>.yaml рядом с корневым.
+    Каждый корень порождает своё поддерево; в дерево главного
+    корня они не входят.
 
-Проектные refdes:
-    Свойство КОМПОНЕНТА в конкретном инстансе. Вычисляется как
-    make_refdes(designator, inst.page) через ComponentInstance.
-    Project их не считает — они раздаются Sheet.register_instance
-    в момент создания SheetInstance.
+Проектные refdef:
+    Свойство КОМПОНЕНТА в конкретном контексте. Вычисляется как
+    ComponentInstance.refdef: designator для page=1, иначе
+    make_refdes(designator, page). Project их не считает — они
+    раздаются Sheet._load_components в момент инстанцирования
+    (создание ComponentInstance с sheet_ref=parent_sri).
 
 Схлопывание (flatten):
     Project.flatten() — плоская карта главного корня;
@@ -145,7 +159,9 @@ class Project:
     def __init__(self, root_yaml: str | Path):
         self.root_path = Path(root_yaml).resolve()
         self.yaml_dir = self.root_path.parent
-        self.project_root = self._find_project_root(self.yaml_dir)
+        self.project_root = self._find_project_root(
+            self.yaml_dir, yaml_stem=self.root_path.stem,
+        )
 
         self.source: Optional[KiCadSource] = None
         self.libraries: Optional[LibraryManager] = None
@@ -169,20 +185,30 @@ class Project:
     # Загрузка
     # =========================================================
 
-    @staticmethod
-    def _find_project_root(start: Path) -> Path:
-        """Ближайший .kicad_pro вверх по дереву от start.
+    @classmethod
+    def _find_project_root(
+        cls,
+        start: Path,
+        yaml_stem: str,
+    ) -> Path:
+        """Каталог проекта — там, где лежит <yaml_stem>.kicad_pro.
 
-        Корень проекта — каталог, где лежит .kicad_pro. От этого
-        каталога считается libs/, и туда же указывает
-        ${KIPRJMOD} в sym-lib-table / fp-lib-table.
+        Правило единственное: имя .kicad_pro должно совпадать с
+        именем корневого YAML. Ищем вверх по дереву от start.
 
-        Если .kicad_pro нет нигде — fallback на start. Файлы
-        создадутся рядом с YAML.
+        Любые другие .kicad_pro в каталоге игнорируются — они
+        относятся к другим проектам, лежащим рядом.
+
+        Каталог проекта нужен, чтобы:
+          * считать libs/ от ${KIPRJMOD};
+          * регистрировать библиотеки в sym-lib-table / fp-lib-table.
+
+        Если нигде вверх по дереву нет <yaml_stem>.kicad_pro —
+        возвращаем start (файлы создадутся рядом с YAML).
         """
         cur = Path(start).resolve()
         while True:
-            if any(cur.glob("*.kicad_pro")):
+            if (cur / f"{yaml_stem}.kicad_pro").exists():
                 return cur
             if cur.parent == cur:
                 return Path(start).resolve()
@@ -211,12 +237,16 @@ class Project:
         self.libraries = LibraryManager(self.project_root)
         self.load_errors.clear()
 
-        # Главный корень: рекурсивная загрузка дерева.
+        # Главный корень: Sheet.load с parent_sri=None (по умолчанию)
+        # создаёт 0-й SheetRefInstance и каскадно инстанцирует всё
+        # поддерево — никакого внешнего register_from не нужно.
         self.root_sheet = Sheet.load(
             self.root_path,
             source=self.source,
             libraries=self.libraries,
             load_errors=self.load_errors,
+            # parent_sri=None по умолчанию — корень проекта
+            # first_child_counter=2 по умолчанию — номер первого X_*
         )
 
         # Standalone-корни: независимые деревья рядом с главным.
@@ -298,6 +328,9 @@ class Project:
         Каждый элемент — путь к .kicad_sch; соответствующий YAML
         ищется рядом с корневым: <yaml_dir>/<stem>.yaml.
 
+        Каждый standalone грузится Sheet.load с parent_sri=None —
+        он корень своего дерева, сам себя инстанцирует.
+
         Ошибки (нет YAML, ошибка загрузки) складываются в общий
         self.load_errors — как и для главного дерева.
         """
@@ -326,6 +359,7 @@ class Project:
                     source=self.source,
                     libraries=self.libraries,
                     load_errors=self.load_errors,
+                    # parent_sri=None → этот Sheet — корень дерева
                 )
             except Exception as e:
                 msg = f"standalone {stem}: {e}"
@@ -551,14 +585,12 @@ class Project:
         """
         targets: Set[str] = set()
 
-        # Имя корневого файла главного дерева.
         root_name = Path(
             self.root_data.get("file")
             or (self.root_path.stem + ".kicad_sch")
         ).name
         targets.add(root_name)
 
-        # out_file всех страниц всех корней.
         for sheet in self._collect_all_sheets():
             targets.add(sheet.sheet_path)
 

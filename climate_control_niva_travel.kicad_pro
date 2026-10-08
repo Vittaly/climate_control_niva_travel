@@ -533,7 +533,7 @@
   "schematic": {
     "annotate_start_num": 0,
     "annotation": {
-      "method": 0,
+      "method": 1,
       "sort_order": 0
     },
     "bom_export_filename": "${PROJECTNAME}.csv",
@@ -636,6 +636,14 @@
     "meta": {
       "version": 1
     },
+    "ngspice": {
+      "fix_include_paths": true,
+      "meta": {
+        "version": 0
+      },
+      "model_mode": 4,
+      "workbook_filename": ""
+    },
     "page_layout_descr_file": "",
     "plot_directory": "",
     "reuse_designators": true,
@@ -645,75 +653,67 @@
       {
         "filename": "climate_control_niva_travel.kicad_sch",
         "name": "climate_control_niva_travel",
-        "uuid": "a01b02c3-04d5-4ebd-8db7-000000000000"
+        "uuid": "32538135-52e9-4f29-a0ce-f23bea6207db"
       }
     ],
-    "used_designators": "U1,Q5-6,#PWR1,D1-3,D6-7,C12-15,SW1,L2-3,R31-32",
+    "used_designators": "RT1,RT1101,J1-5,J101,J301,J1101,J1301-1302,LED1-48,LED1001-1042,LED1301-1306,R1-58,R101-102,R201-207,R401-403,R501-502,R601-603,R701-702,R801-803,R901-903,R1001-1014,R1101-1102,R1201-1202,R1301-1315,L1-3,L301,SW1-6,SW1301-1306,C1-32,C101-107,C301-310,C401-402,C501,C601-602,C701,C801-802,C901-902,C1201,C1301-1304,D1-7,D301-304,D501,D701,D1101,FB1,FB101,#PWR1,Q1-6,Q201-203,Q1101,U1-8,U101,U301-302,U401,U601,U801,U901,U1401",
     "variants": []
   },
   "sheets": [
     [
-      "a01b02c3-04d5-4ebd-8db7-000000000000",
+      "32538135-52e9-4f29-a0ce-f23bea6207db",
       "climate_control_niva_travel"
     ],
     [
-      "e62dd693-85a8-4e63-881b-73e2fef086f8",
-      "Untitled Sheet"
-    ],
-    [
-      "edc88843-21b7-48c5-a207-722691abf45a",
-      "Untitled Sheet2"
-    ],
-    [
-      "bd3220f1-21b1-459d-8e0a-b6d5b1962680",
+      "b7ffdaec-61e0-4d62-8856-be8d6bddce45",
       "X_POWER_OUTPUTS"
     ],
     [
-      "8c964ce7-fe11-4ced-a5c1-4a1e7ffa56f7",
+      "a3ef5349-aec1-4974-9f52-741f92b07f32",
       "X_POWER_SUPPLY"
     ],
     [
-      "ea66a128-4b2a-40c2-b767-70133af2397b",
+      "32660339-d42b-407a-9f17-3ae897e0b361",
       "X_ACTUATOR_CHANNEL_M4"
     ],
     [
-      "db51a6a0-dd01-4a07-ada7-8d16e9159977",
+      "f0651d5d-c562-4a63-88e7-fc6b1c1b24ae",
       "X_CONDENSATE_SENSOR"
     ],
     [
-      "da393575-3c4f-4b6d-bbd9-54811c384bc4",
+      "3adb7bd5-23c5-45e7-9718-f752df4f73f8",
       "X_ACTUATOR_CHANNEL_M3"
     ],
     [
-      "5049f93f-216c-4932-b971-a7119cf571b5",
+      "c843c320-08ea-4d1c-b2d7-742e0a28e5ac",
       "X_SOLAR_SENSOR"
     ],
     [
-      "e83ac229-a10d-48be-a4b5-b7e0ac74fd24",
+      "f36ed474-3e9c-4b53-ba2d-954d135d8a68",
       "X_ACTUATOR_CHANNEL_M2"
     ],
     [
-      "641d89f1-ed59-414a-b45c-a52652ca77e7",
+      "5bbf0851-8db5-4631-af0d-6294daeb5a80",
       "X_ACTUATOR_CHANNEL_M1"
     ],
     [
-      "7acddf15-04ea-412e-8301-2071dced3333",
+      "97ae9199-071f-48de-ab5f-4ed1b0839e89",
       "X_BACKLIGHT"
     ],
     [
-      "51251177-7f7e-4eab-9e76-d8fa0d88446a",
+      "b12c1029-f4e1-4f1d-a2b4-292de6a97b99",
       "X_CABIN_SENSOR"
     ],
     [
-      "e7e25e14-9260-4d84-81ba-42a091b2e777",
+      "7931196f-efe5-46dd-9bf1-f61932c0780a",
       "X_HEATING_SENSOR"
     ],
     [
-      "a7cd940f-a037-4510-a750-632b48f9da31",
+      "0f283cda-ed4d-4308-be36-03c39059c2fc",
       "X_USER_INTERFACE"
     ],
     [
-      "8d90b26d-703d-4c68-8bb5-1a2e690519cc",
+      "d8268edf-d0a7-4463-a33d-38f78870ff60",
       "X_CAN_BUS"
     ]
   ],

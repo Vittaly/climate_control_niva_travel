@@ -1,41 +1,40 @@
 # make_scr/main.py
 """Точка входа: поднимает логирование, собирает проект, трассирует, сохраняет.
 
-Идентификация листов — по stem'у YAML-файла. Project хранит
-единственный корневой Sheet (project.root_sheet). Дочерние листы
-находятся обходом дерева через SheetRefComponent.child_sheet.
-
-Раскладка:
+Идентификация проекта — по имени каталога, в котором лежит make_scr/.
 
     <project>/
     ├── <project>.kicad_pro                    ← главный файл проекта KiCad
-    ├── <project>.kicad_sch                    ← корневая схема
+    ├── <project>.kicad_sch
     ├── sheets/
     │   ├── <project>.yaml                     ← корневой YAML
     │   └── <stem>.yaml                        ← остальные листы
     ├── make_scr/
     │   ├── main.py                            ← этот файл
-    │   ├── out/                               ← логи (debug.log, router.log)
+    │   ├── out/                               ← логи
     │   └── ...
     └── out/                                   ← результаты (в cwd)
 
-Политика ошибок загрузки:
-    Project.load() собирает все проблемы YAML (отсутствующие symbol,
-    неописанные типы, потерянные X_* и т.п.) в self.load_errors и
-    в конце бросает ProjectLoadError с полным списком. main()
-    ловит его, печатает текст в stderr и завершается с кодом 1 —
-    без traceback. Тот же текст уже записан в debug.log, потому
-    что load() логирует каждую ошибку до raise.
+ROOT_STEM = имя каталога-проекта (родитель make_scr/). Рядом с
+make_scr/ обычно лежит <ROOT_STEM>.kicad_pro — наличие проверяется,
+отсутствие не критично (файлы библиотек создадутся по ${KIPRJMOD}).
+Посторонние .kicad_pro в каталоге игнорируются.
 
-    Ошибки на последующих стадиях (place_and_route, save) не
-    ловятся здесь: их падение — баг, а не ошибка конфигурации,
-    и traceback уместен.
+Политика ошибок загрузки:
+    Project.load() собирает все проблемы YAML в self.load_errors и
+    в конце бросает ProjectLoadError с полным списком. main() ловит
+    его, печатает текст в stderr и завершается с кодом 1 — без
+    traceback. Тот же текст уже записан в debug.log.
+
+    Ошибки на последующих стадиях (place_and_route, save) не ловятся
+    здесь: их падение — баг, а не ошибка конфигурации, и traceback
+    уместен.
 """
 import sys
 from pathlib import Path
 
-_HERE = Path(__file__).resolve().parent
-_ROOT = _HERE.parent
+_HERE = Path(__file__).resolve().parent   # <project>/make_scr
+_ROOT = _HERE.parent                       # <project>
 
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
@@ -45,24 +44,61 @@ from project import Project, ProjectLoadError
 from constants import ComponentKind
 
 
+class ProjectConfigError(Exception):
+    """Не удалось определить корень проекта по имени каталога."""
+    pass
+
+
 def _detect_root_stem(root: Path) -> str:
-    pro_files = sorted(root.glob("*.kicad_pro"))
-    if not pro_files:
-        raise FileNotFoundError(
-            f"В {root} нет файла *.kicad_pro — не могу определить "
-            f"имя проекта."
+    """Корневой stem = имя каталога-проекта.
+
+    Каталог-проект — тот, что содержит make_scr/. Имя этого каталога
+    должно совпадать:
+        * с именем корневого YAML — <root>/sheets/<name>.yaml;
+        * с именем главного .kicad_pro — <root>/<name>.kicad_pro.
+
+    Если YAML нет — ошибка (нечего грузить).
+    Если .kicad_pro нет — это не ошибка: файлы проекта могут ещё не
+    существовать, библиотеки создадутся в out_dir по ${KIPRJMOD}.
+
+    Raises:
+        ProjectConfigError: каталог sheets/ отсутствует, или в нём
+            нет <name>.yaml.
+    """
+    name = root.name
+    if not name:
+        raise ProjectConfigError(
+            f"не удалось получить имя каталога-проекта из {root}"
         )
-    if len(pro_files) > 1:
-        names = ", ".join(p.name for p in pro_files)
-        raise RuntimeError(
-            f"В {root} найдено несколько .kicad_pro ({names})."
+
+    sheets_dir = root / "sheets"
+    if not sheets_dir.is_dir():
+        raise ProjectConfigError(
+            f"нет каталога {sheets_dir} — не могу найти корневой YAML "
+            f"<name>.yaml для проекта {name!r}"
         )
-    return pro_files[0].stem
+
+    root_yaml = sheets_dir / f"{name}.yaml"
+    if not root_yaml.exists():
+        raise ProjectConfigError(
+            f"нет {root_yaml} — имя корневого YAML должно совпадать "
+            f"с именем каталога-проекта {name!r}"
+        )
+
+    pro = root / f"{name}.kicad_pro"
+    if not pro.exists():
+        print(
+            f"Замечание: рядом нет {pro.name} — "
+            f"библиотеки создадутся по ${KIPRJMOD} из out_dir.",
+            file=sys.stderr,
+        )
+
+    return name
 
 
 try:
     ROOT_STEM = _detect_root_stem(_ROOT)
-except (FileNotFoundError, RuntimeError) as e:
+except ProjectConfigError as e:
     print(f"Ошибка конфигурации проекта: {e}", file=sys.stderr)
     sys.exit(1)
 
@@ -96,8 +132,8 @@ def main() -> int:
     if not root_yaml.exists():
         print(f"Не найден {root_yaml}", file=sys.stderr)
         print(
-            f"  Ожидается: sheets/<имя проекта>.yaml\n"
-            f"  Имя проекта (stem .kicad_pro): {ROOT_STEM}",
+            f"  Ожидается: sheets/<имя каталога-проекта>.yaml\n"
+            f"  Имя каталога-проекта: {ROOT_STEM}",
             file=sys.stderr,
         )
         return 1
@@ -115,10 +151,6 @@ def main() -> int:
     print(f"Каталог вывода: {out_dir}")
 
     # ---------- проект ----------
-    # load() бросает ProjectLoadError, если YAML несовместим с KiCad
-    # (нет symbol, не описан тип, потерян X_*, ...). Ловим и выходим
-    # штатно: текст ошибки уже собран в исключении и продублирован
-    # в debug.log.
     try:
         project = Project(root_yaml).load()
     except ProjectLoadError as e:

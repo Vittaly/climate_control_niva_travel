@@ -3,17 +3,34 @@
 
 Компонент знает свою страницу (двусторонняя связь Sheet ↔ Component).
 
-Проектные refdes и instance-пути:
+Проектные refdef и instance-пути:
     Помимо локального designator'а ("U1") компонент может быть
-    инстанцирован несколько раз (если лист переиспользуется).
-    Каждое присутствие — это SheetInstance, в котором компонент
-    присутствует. Список self.instances: List[SheetInstance]
-    заполняется Sheet.register_instance в момент загрузки.
+    инстанцирован несколько раз — если его лист попадает в дерево
+    через несколько X_* или переиспользуется.
 
-    Refdes — производное: make_refdes(self.designator, inst.page).
-    Path — тоже производное: инстанс знает свой path через цепочку
-    parent'ов. Компонент не хранит ни то, ни другое — только
-    ссылки на SheetInstance, где он присутствует.
+    Каждое присутствие — ComponentInstance:
+
+        self.instances: List[ComponentInstance]
+
+    Вхождения создаются не здесь, а при инстанцировании страницы:
+        * Sheet._load_components — при первом визите контекста
+          (страница загружается впервые; компонент получает
+          ComponentInstance с sheet_ref=parent_sri);
+        * Sheet.register_from — при повторной регистрации страницы
+          (multi-instance; к существующим вхождениям добавляется
+          ещё по одному).
+
+    from_yaml только собирает структуру компонента — без вхождений.
+    Компонент, загруженный в память, имеет instances == [] до тех
+    пор, пока его страница не будет проинстанцирована.
+
+    Refdef и путь — производные:
+        ci.refdef          — проектный идентификатор вхождения
+                             ("R1" или "R1_M2");
+        ci.container_path  — instance-путь страницы, где нарисован
+                             символ.
+    Компонент не хранит ни то, ни другое: только ссылки на
+    ComponentInstance.
 
 Alias-пины:
     Схлопывание пинов, сидящих на одном паде, выполняет Netlist
@@ -164,7 +181,7 @@ from designators import validate_component_designator
 if TYPE_CHECKING:
     from kicad_source import KiCadSource
     from sheet import Sheet
-    from sheet_instance import SheetInstance
+    from component_instance import ComponentInstance
 
 log = get_logger(__name__)
 
@@ -380,12 +397,16 @@ class Component(Primitive):
         pins:              список Pin со смещением от якоря (мм, Y↓).
         fields:            дополнительные поля из YAML.
         sheet:             страница-владелец.
-        instances:         SheetInstance[] — присутствия компонента
-                           в инстансах его листа. Заполняется
-                           Sheet.register_instance в момент загрузки.
-                           Пустой до регистрации. Refdes и path —
-                           производные от (designator, inst.page)
-                           и (inst.path); собственных копий нет.
+        instances:         ComponentInstance[] — вхождения компонента
+                           в дереве. Заполняется при инстанцировании
+                           страницы: Sheet._load_components создаёт
+                           ComponentInstance(sheet_ref=parent_sri) —
+                           по одному на каждый контекст, в котором
+                           появилась страница. from_yaml вхождения не
+                           создаёт: компонент без инстанцирования
+                           имеет instances == [].
+                           Refdef и путь — производные от вхождений;
+                           собственных копий нет.
         rotation:          угол поворота экземпляра (0/90/180/270).
         mirror:            отражение экземпляра: None / "x" / "y".
         anchor_offset_mm:  (x_mm, y_mm) — смещение якоря от левого-верхнего
@@ -406,7 +427,7 @@ class Component(Primitive):
     pins: List[Pin] = field(default_factory=list)
     fields: Dict[str, str] = field(default_factory=dict)
     sheet: Optional["Sheet"] = field(default=None, repr=False)
-    instances: List["SheetInstance"] = field(
+    instances: List["ComponentInstance"] = field(
         default_factory=list, repr=False,
     )
     rotation: int = 0
@@ -450,84 +471,46 @@ class Component(Primitive):
         """FQN пина этого компонента: "X_ACT/U2:5"."""
         return f"{self.fqn}:{pin.number}"
 
-    # ---------- инстансы и проектные refdes ----------
+    # ---------- вхождения и проектные refdef ----------
 
     @property
-    def has_instances(self) -> bool:
-        """Есть ли у компонента хотя бы один зарегистрированный инстанс."""
-        return bool(self.instances)
+    def project_refdefs(self) -> List[str]:
+        """Проектные идентификаторы по всем вхождениям.
 
-    @property
-    def sheet_instances(self) -> List["SheetInstance"]:
-        """Все SheetInstance, в которых присутствует компонент.
-
-        Порядок — как в self.instances, то есть в порядке регистрации
-        (DFS-обход дерева).
+        Refdef — производное: ci.refdef. Для корневой страницы
+        (page=1) это designator, для вложенных (page≥2) —
+        make_refdes(designator, page). Не хранится на компоненте.
         """
-        return list(self.instances)
+        return [ci.refdef for ci in self.instances]
 
-    @property
-    def project_refdes(self) -> List[str]:
-        """Все проектные имена компонента, по одному на инстанс.
+    def instance_at_page(self, page: int) -> Optional["ComponentInstance"]:
+        """Вхождение с указанным page (KiCad-номер страницы) или None.
 
-        Refdes — производное от (designator, inst.page); не хранится.
+        page — именно KiCad-номер (1 у корня, 2+ у вложенных),
+        совпадает с page соответствующего SheetRefInstance.
         """
-        from refdes import make_refdes
-        return [make_refdes(self.designator, inst.page)
-                for inst in self.instances]
-
-    def refdes_in(self, inst: "SheetInstance") -> Optional[str]:
-        """Проектное имя компонента в конкретном инстансе листа.
-
-        Возвращает None, если компонент в этом инстансе не присутствует.
-        """
-        from refdes import make_refdes
-        for i in self.instances:
-            if i is inst:
-                return make_refdes(self.designator, inst.page)
+        for ci in self.instances:
+            if ci.page == page:
+                return ci
         return None
 
-    def refdes_at_page(self, page: int) -> Optional[str]:
-        """Проектное имя компонента на странице с указанным номером.
-
-        Удобно, когда известен только номер страницы (например, из
-        E2E-сценария). Возвращает None, если ни один инстанс не
-        имеет этого page.
-        """
-        from refdes import make_refdes
-        for i in self.instances:
-            if i.page == page:
-                return make_refdes(self.designator, i.page)
-        return None
-
-    def path_in(self, inst: "SheetInstance") -> Optional[str]:
-        """Instance-путь листа в конкретном инстансе.
-
-        Делегация к inst.path — сам компонент path не хранит.
-        Возвращает None, если компонент в этом инстансе не присутствует.
-        """
-        for i in self.instances:
-            if i is inst:
-                return i.path
-        return None
+    def refdef_at_page(self, page: int) -> Optional[str]:
+        """Проектный идентификатор вхождения с указанным page.
+        None, если вхождения с таким номером нет."""
+        ci = self.instance_at_page(page)
+        return ci.refdef if ci is not None else None
 
     def path_at_page(self, page: int) -> Optional[str]:
-        """Instance-путь листа на странице с указанным номером."""
-        for i in self.instances:
-            if i.page == page:
-                return i.path
-        return None
+        """Instance-путь страницы, где нарисован символ, по page."""
+        ci = self.instance_at_page(page)
+        return ci.container_path if ci is not None else None
 
-    def add_instance(self, inst: "SheetInstance") -> None:
-        """Зарегистрировать присутствие компонента в инстансе листа.
-
-        Хранит ссылку на SheetInstance. Refdes и path — производные,
-        не хранятся. Идемпотентно: повторный вызов с тем же inst — no-op.
-        """
+    def add_instance(self, ci: "ComponentInstance") -> None:
+        """Зарегистрировать вхождение (идемпотентно по идентичности)."""
         for existing in self.instances:
-            if existing is inst:
+            if existing is ci:
                 return
-        self.instances.append(inst)
+        self.instances.append(ci)
 
     # ---------- поиск пинов ----------
 
@@ -653,6 +636,11 @@ class Component(Primitive):
 
         См. докстринг модуля — расчёт bbox, anchor_offset_mm,
         pin.offset_mm, pin.direction, simProperties.
+
+        Вхождения (ComponentInstance) здесь НЕ создаются: их сделает
+        Sheet._load_components / Sheet.register_from в момент
+        инстанцирования страницы. from_yaml только наполняет
+        структуру компонента.
 
         Raises:
             ComponentLoadError: тип не указан, тип не описан,
@@ -941,17 +929,6 @@ class Component(Primitive):
         out: Dict[str, str] = {}
 
         # ── 0. primitive + model_def — встроенный прибор с .model ──
-        # Самый явный случай: в spice заданы primitive ("D"/"Q"/"M"/…)
-        # и model_def (строка ".model NAME TYPE(params)"). Из model_def
-        # извлекаем имя и параметры; сам .model соберёт
-        # kicad_to_spice.collect_model_defs_from_comps как
-        # ".model <Sim.Model> <type>(<Sim.Params>)".
-        #
-        # Пример LED-типа:
-        #     primitive: D
-        #     model_def: ".model LED_WHITE D(IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p)"
-        # → Sim.Device="D", Sim.Model="LED_WHITE",
-        #   Sim.Params="IS=1e-22 N=2.5 RS=6 BV=5 CJO=10p".
         primitive = spice.get("primitive")
         if primitive in ("D", "Z", "Q", "M", "J"):
             out["Sim.Device"] = str(primitive)
@@ -959,7 +936,6 @@ class Component(Primitive):
             model_def = spice.get("model_def")
             mname, mtype, mparams = _parse_model_def(model_def or "")
 
-            # Имя модели: spice.model > из model_def > type_name без TYPE_.
             if spice.get("model"):
                 out["Sim.Model"] = str(spice["model"])
             elif mname:
@@ -969,15 +945,11 @@ class Component(Primitive):
                 if fallback:
                     out["Sim.Model"] = fallback
 
-            # spice.params дополняет параметры из model_def.
             extra_parts: List[str] = []
             for k, v in (spice.get("params") or {}).items():
                 extra_parts.append(f"{k}={v}")
             extra = " ".join(extra_parts)
 
-            # Sim.Params = "TYPE(params)" — тип из model_def, а не
-            # из _model_type_for. Иначе MMBT3906 (PNP) превратится
-            # в NPN и вся логика перевернётся.
             if mtype:
                 params_body = mparams
                 if extra:
@@ -1008,9 +980,6 @@ class Component(Primitive):
                     "${KIPRJMOD}/spice/lib/" + str(spice["include"])
                 )
 
-            # Sim.Pins — строка целиком, в порядке портов из YAML.
-            # dict сохраняет порядок вставки в Python 3.7+, поэтому
-            # проходим по spice["nodes"].items() без сортировок.
             nodes = spice.get("nodes") or {}
             if isinstance(nodes, dict) and nodes:
                 pairs = []
@@ -1024,8 +993,6 @@ class Component(Primitive):
                 if pairs:
                     out["Sim.Pins"] = " ".join(pairs)
 
-            # Sim.Params: сначала spice.params (k=v), затем
-            # required_params (name=default, либо name без default).
             params_parts: List[str] = []
             for k, v in (spice.get("params") or {}).items():
                 params_parts.append(f"{k}={v}")
@@ -1064,11 +1031,6 @@ class Component(Primitive):
             return out
 
         # ── 3. D / Q / M / J / Z по lib_id — без spice.model ──
-        # Имя модели: spice.model уже рассмотрен выше, значит либо
-        # производное от имени типа (TYPE_SS54 → SS54), либо
-        # ничего. value НЕ используется: у диодов/транзисторов value —
-        # парт-номер или описание («Индикатор зелёный 1206»),
-        # не SPICE-идентификатор.
         prim = Component._infer_spice_device(lib_id)
         if prim in ("D", "Z", "Q", "M", "J"):
             out["Sim.Device"] = prim
@@ -1082,9 +1044,6 @@ class Component(Primitive):
             return out
 
         # ── 4. R / C / L — примитивы с номиналом ──
-        # Значение берём из spice.value (уже в SPICE-нотации),
-        # иначе из value типа/инстанса (KiCad-нотация = SPICE
-        # для типовых номиналов: 10k, 100n, 1u).
         prim = Component._infer_spice_device(lib_id)
         if prim in ("R", "C", "L"):
             out["Sim.Device"] = prim

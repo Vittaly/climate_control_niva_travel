@@ -14,13 +14,13 @@
     и рекурсивно пишет. Каждый файл пишется ровно один раз (кэш по
     sheet.out_file).
 
-    Все instance-данные уже посчитаны при загрузке:
-      * Sheet.uuid                      — uuid файла;
-      * SheetRefComponent.uuid          — uuid X_* в родителе;
-      * SheetRefComponent.child_instance — SheetInstance ребёнка
-                                           (page, path, uuid);
-      * Component.instances             — List[SheetInstance], в которых
-                                           компонент присутствует.
+    Вхождения уже посчитаны при загрузке:
+      * Sheet.uuid             — uuid файла;
+      * SheetRefComponent.uuid — uuid символа X_* в родителе;
+      * Component.instances    — List[ComponentInstance];
+                                 у каждого вхождения — container_path
+                                 и refdef (designator при page=1,
+                                 иначе designator_M<page>).
 
     Writer ничего не пересчитывает — читает готовое.
 
@@ -33,16 +33,15 @@
     прогона создаётся новый Writer() — тогда кеш пуст с самого
     начала.
 
-    Для каждого вызова _root_sheet переустанавливается на текущий
-    корень. Он нужен _out_name_for (имя файла корня) и
-    _apply_instances (синтетический instance path для символов
-    корня).
+    _root_sheet переустанавливается на текущий корень: он нужен
+    _out_name_for (имя файла корня).
 
 Мульти-инстанс:
-    Один .kicad_sch может быть инстанцирован несколько раз
-    (actuator_channel × 4). Файл пишется ОДИН раз. В каждом символе
-    пишется N instance-блоков, по одному на SheetInstance листа.
-    Writer берёт их из Component.instances.
+    Один .kicad_sch может быть инстансован несколько раз
+    (actuator_channel × 4). Файл пишется ОДИН раз. В каждом обычном
+    символе пишется N instance-блоков (по одному на ComponentInstance);
+    в каждом SheetRefComponent — N instance-блоков (path, page)
+    на SheetRefInstance. Writer берёт их из comp.instances.
 
 Frame vs bbox:
     У каждого Component есть frame_size и frame_offset_mm.
@@ -60,18 +59,15 @@ SPICE-привязка:
     Каждый обычный символ несёт Component.simProperties — пары
     "Sim.Xxx" → "value", собранные в Component.from_yaml из
     component_types[type].spice. Writer проецирует их в .kicad_sch
-    как properties символа (set_property в цикле по парам). В этой
-    версии kicad_sch_api метод add_properties отсутствует, а
-    set_property пишет напрямую в _data.properties инстанса —
-    именно то поле, которое сериализуется в (property "…").
+    как properties символа (set_property в цикле по парам).
     kicad-cli выгружает их в нетлист, откуда их читает
     kicad_to_spice.py.
 
 Sheet-pin и имя сети на родителе:
     sheet-pin получает имя pin.identifier. Локальные метки имён
-    КОРНЕВЫХ сетей у пинов X_* — теперь самостоятельные
-    LabelComponent в sheet.labels (reason=SHEET_PIN_NAME), создаются
-    в Sheet.create_sheet_pin_labels() после роутинга. Writer их
+    КОРНЕВЫХ сетей у пинов X_* — самостоятельные LabelComponent
+    в sheet.labels (reason=SHEET_PIN_NAME), создаются в
+    Sheet.create_sheet_pin_labels() после роутинга. Writer их
     просто читает в блоке 5, как любые другие метки, и НЕ создаёт
     их сам в _add_sheet_pins.
 
@@ -85,13 +81,12 @@ from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
 from cell import Cell
 from constants import Axis, ComponentKind, Direction
 from logging_setup import get_logger, ctx
-from refdes import make_refdes
+from writer_instances_fix import merge_project_instances_file
 
 import re
 
 if TYPE_CHECKING:
     from sheet import Sheet
-    from sheet_instance import SheetInstance
     from sheet_ref import SheetRefComponent
 
 log = get_logger(__name__)
@@ -216,16 +211,12 @@ class Writer:
 
         Вызывается Project.save для каждого корня проекта (главного
         и standalone). Кеш _written НЕ сбрасывается между вызовами:
-        если файл уже писался в предыдущем вызове (например, один
-        Sheet в двух деревьях), второй раз не пишется.
+        если файл уже писался в предыдущем вызове, второй раз не
+        пишется.
 
         _root_sheet переустанавливается на текущий корень: он нужен
-        _out_name_for (имя файла корня) и _apply_instances
-        (синтетический instance path для символов корня). Для
-        standalone-корня это сам standalone, а не главный корень.
-
-        Для нового прогона создаётся новый Writer() — тогда кеш
-        пуст с самого начала.
+        _out_name_for (имя файла корня). Для standalone-корня это
+        сам standalone, а не главный корень.
 
         Args:
             out_dir:         каталог для сохранения.
@@ -233,9 +224,10 @@ class Writer:
             root_file_name:  имя .kicad_sch корня.
             project_name:    имя проекта KiCad.
 
-        Instance-данные уже готовы к моменту вызова: sheet.instances,
-        comp.instances заполнены при загрузке через SheetRefComponent
-        и Sheet.register_instance.
+        Instance-данные уже готовы к моменту вызова: comp.instances
+        заполнены каскадно внутри Sheet.load (первый визит) и
+        Sheet.register_from (multi-instance). Writer читает готовое
+        и ничего не пересчитывает.
         """
         self._out_dir = Path(out_dir)
         self._out_dir.mkdir(parents=True, exist_ok=True)
@@ -336,8 +328,7 @@ class Writer:
 
             # Метки — не компоненты: они живут в sheet.labels и
             # пишутся в блоке 5. Если по какой-то причине метка
-            # оказалась в components — пропускаем, чтобы не писать
-            # её как обычный символ.
+            # оказалась в components — пропускаем.
             if kind == ComponentKind.LABEL:
                 log.warning(
                     "%s label_in_components des=%s — skip",
@@ -402,12 +393,7 @@ class Writer:
                     mirror=comp.mirror,
                 )
                 # SPICE-привязка: simProperties записываем как
-                # properties символа. В этой версии kicad_sch_api
-                # метода add_properties нет, а set_property пишет
-                # напрямую в _data.properties инстанса — это то же
-                # поле, куда сам kicad_sch_api кладёт Reference и
-                # Value, и оно сериализуется в (property "…").
-                # kicad-cli потом выгружает эти properties в нетлист.
+                # properties символа.
                 sim_props = getattr(comp, "simProperties", None) or {}
                 if sim_props:
                     try:
@@ -446,9 +432,12 @@ class Writer:
 
             filename = Path(comp.sheet_file).with_suffix(".kicad_sch").name
 
-            # page и uuid — из SheetInstance ребёнка (child_instance),
-            # созданного конструктором SheetRefComponent.
-            page_num = str(comp.child_page) if comp.child_page is not None else ""
+            # Сам символ (sheet (uuid ...)) пишется один раз, с uuid
+            # символа X_*. page_number здесь — информативное значение
+            # первого вхождения; фактический набор (path, page) для
+            # каждого вхождения идёт в instances-блоке ниже.
+            first = comp.instances[0] if comp.instances else None
+            page_num = str(first.page) if first is not None else ""
             sheet_uuid = comp.uuid
 
             try:
@@ -463,11 +452,11 @@ class Writer:
                 )
                 log.info(
                     "%s write_sheet name=%s file=%s uuid=%s "
-                    "page=%s frame_at_mm=(%.2f,%.2f) "
-                    "frame_size_mm=(%.2f,%.2f) "
-                    "frame=%dx%d bbox=%dx%d cells",
+                    "instances=%d frame_at_mm=(%.2f,%.2f) "
+                    "frame_size_mm=(%.2f,%.2f) frame=%dx%d bbox=%dx%d cells",
                     ctx(page=label, comp=designator),
-                    comp.sheet_name, filename, sheet_uuid, page_num,
+                    comp.sheet_name, filename, sheet_uuid,
+                    len(comp.instances),
                     x_mm, y_mm, w_mm, h_mm,
                     fc, fr, comp.bbox_cols, comp.bbox_rows,
                 )
@@ -476,6 +465,24 @@ class Writer:
                 log.error("%s add_sheet error=%s",
                           ctx(page=label, comp=designator), e)
                 continue
+
+            # Мульти-инстанс: по одной записи (path, page) на каждое
+            # вхождение X_*. Path — container_path вхождения (путь
+            # страницы, где нарисован сам X_*); page — KiCad-номер
+            # целевой страницы.
+            try:
+                sobj._data["instances"] = [
+                    {
+                        "path": sri.container_path,
+                        "page": str(sri.page),
+                    }
+                    for sri in comp.instances
+                ]
+            except Exception as e:
+                log.warning(
+                    "%s sheet_instances des=%s error=%s",
+                    ctx(page=label, comp=designator), designator, e,
+                )
 
             n_sheet_pins += self._add_sheet_pins(
                 sch, sobj, comp, x_mm, y_mm, w_mm, h_mm, label)
@@ -508,12 +515,6 @@ class Writer:
                 )
 
         # ---------- 5. Метки сети ----------
-        # LabelComponent: имя = net.name, точка = anchor_page_mm,
-        # направление = direction, происхождение = reason.
-        # Сюда попадают все метки страницы: SHEET_PIN_NAME (созданы
-        # в Sheet.create_sheet_pin_labels после роутинга),
-        # INTERNAL_NET_NAME и FALLBACK (созданы роутером), USER
-        # (если когда-нибудь появятся).
         n_labels = 0
         for lbl in getattr(sheet, "labels", []) or []:
             x_mm, y_mm = lbl.anchor_page_mm
@@ -527,8 +528,7 @@ class Writer:
                 )
                 log.info(
                     "%s write_label net=%s reason=%s "
-                    "anchor_mm=(%.2f,%.2f) dir=%s rotation=%.0f "
-                    "justify=%s",
+                    "anchor_mm=(%.2f,%.2f) dir=%s rotation=%.0f justify=%s",
                     ctx(page=label, net=lbl.name),
                     lbl.name, lbl.reason.value,
                     x_mm, y_mm, lbl.direction, rotation, justify,
@@ -542,15 +542,14 @@ class Writer:
                 )
 
         # ---------- 6. instances per symbol ----------
-        # Читает готовое: comp.instances — список SheetInstance,
-        # в которых компонент присутствует. Проектный refdes
-        # вычисляется как make_refdes(designator, inst.page);
-        # path берётся у SheetInstance.
         self._apply_instances(sch, sheet)
 
         # ---------- 7. Сохранить ----------
         try:
             sch.save(str(out_path))
+            if merge_project_instances_file(out_path):
+                log.info("%s merged_project_instances file=%s",
+                 ctx(page=label), out_path.name)
             self._fix_hierarchical_label_shapes(out_path, sheet)
             log.info(
                 "%s saved file=%s components=%d sheets=%d "
@@ -568,17 +567,22 @@ class Writer:
     # =========================================================
 
     def _apply_instances(self, sch, sheet: "Sheet") -> None:
-        """Проставить каждому символу блок (instances ...).
+        """Проставить каждому обычному символу блок (instances ...).
 
-        Для символов с instances (все дочерние листы) — по одному
-        SymbolInstance на каждый SheetInstance в comp.instances.
-        Refdes — make_refdes(designator, inst.page); path — inst.path.
+        comp.instances — список ComponentInstance, по одному на
+        каждый контекст, в котором символ появился. Каждое
+        вхождение знает свой container_path (путь страницы, где
+        нарисован символ) и refdef (designator при page=1, иначе
+        designator_M<page>).
 
-        Для символов корня (instances пуст) — один синтетический блок
-        с path=f"/{root.uuid}" и reference=designator.
+        Port и SheetRef пропускаются: у портов (instances ...)
+        нет — они пишутся как hierarchical_label; у sheet-ref
+        свой блок (path, page) пишется в _write_one, блок 2.
         """
         try:
-            from kicad_sch_api.core.types import SymbolInstance
+            from kicad_sch_api.core.types import (
+                SymbolInstance as KsaSymbolInstance,
+            )
         except Exception as e:
             log.error(
                 "%s _apply_instances: SymbolInstance недоступен: %s",
@@ -586,54 +590,28 @@ class Writer:
             )
             return
 
-        by_designator: Dict[str, Any] = {
-            c.designator: c
-            for c in sheet.components.values()
-            if getattr(c, "kind", None) not in (
-                ComponentKind.SHEET_REF,
-                ComponentKind.PORT,
-                ComponentKind.LABEL,
-            )
-        }
-
-        # _root_sheet установлен в write_project на текущий корень:
-        # для главного дерева это главный Sheet, для standalone —
-        # сам standalone. Именно его uuid идёт в синтетический
-        # instance path символов корня.
-        root_uuid = self._root_sheet.uuid
-
         n_sym = 0
-        for kicad_comp in sch.components:
-            our = by_designator.get(kicad_comp.reference)
-            if our is None:
+        for comp in sheet.components.values():
+            kind = getattr(comp, "kind", None)
+            if kind in (ComponentKind.SHEET_REF,
+                        ComponentKind.PORT,
+                        ComponentKind.LABEL):
                 continue
 
-            if our.instances:
-                inst_list = [
-                    SymbolInstance(
-                        path=inst.path,
-                        reference=make_refdes(our.designator, inst.page),
-                        unit=1,
-                        project=self._project_name,
-                    )
-                    for inst in our.instances
-                ]
-            elif sheet is self._root_sheet:
-                inst_list = [SymbolInstance(
-                    path=f"/{root_uuid}",
-                    reference=our.designator,
+            kicad_comp = self._kicad_component_by_ref(
+                sch, comp.designator)
+            if kicad_comp is None:
+                continue
+
+            inst_list = [
+                KsaSymbolInstance(
+                    path=ci.container_path,
+                    reference=ci.refdef,
                     unit=1,
                     project=self._project_name,
-                )]
-            else:
-                log.warning(
-                    "%s symbol %s: no instances and not root — "
-                    "no (instances ...) block written",
-                    ctx(page=sheet.page, comp=our.designator),
-                    our.designator,
                 )
-                continue
-
+                for ci in comp.instances
+            ]
             kicad_comp._data.instances = inst_list
             n_sym += 1
 
@@ -641,6 +619,13 @@ class Writer:
             "%s apply_instances symbols=%d",
             ctx(page=sheet.page), n_sym,
         )
+
+    @staticmethod
+    def _kicad_component_by_ref(sch, reference: str):
+        for kicad_comp in sch.components:
+            if getattr(kicad_comp, "reference", None) == reference:
+                return kicad_comp
+        return None
 
     # =========================================================
     # Sheet pins для SheetRefComponent
@@ -656,10 +641,10 @@ class Writer:
         из comp.abs_pin_mm(pin).
 
         Локальные метки имён корневых сетей у этих пинов Writer
-        здесь больше НЕ создаёт — они теперь самостоятельные
-        LabelComponent в sheet.labels (reason=SHEET_PIN_NAME),
-        создаются в Sheet.create_sheet_pin_labels() и пишутся
-        общим блоком 5 в _write_one.
+        здесь НЕ создаёт — они самостоятельные LabelComponent в
+        sheet.labels (reason=SHEET_PIN_NAME), создаются в
+        Sheet.create_sheet_pin_labels() и пишутся общим блоком 5
+        в _write_one.
         """
         uid = comp.uuid
         if not uid:
@@ -871,31 +856,10 @@ class Writer:
         Для корня текущего вызова — root_file_name (может отличаться
         от <stem>.kicad_sch, если так задано в YAML для главного
         корня). Для остальных страниц — sheet.out_file.
-
-        _root_sheet установлен в write_project на текущий корень:
-        при обходе главного дерева это главный Sheet, при обходе
-        standalone — сам standalone. Соответственно у standalone
-        корневая страница получает root_file_name = sheet.out_file
-        (то есть <stem>.kicad_sch), что совпадает с ожидаемым именем.
         """
         if sheet is self._root_sheet:
             return self._root_file_name
         return sheet.out_file
-
-    @staticmethod
-    def _sheet_uuid_of(sobj) -> Optional[str]:
-        if sobj is None:
-            return None
-        if isinstance(sobj, str):
-            return sobj
-        for attr in ("uuid", "sheet_uuid", "id"):
-            val = getattr(sobj, attr, None)
-            if not val:
-                continue
-            s = str(val)
-            if len(s) >= 32 and "-" in s:
-                return s
-        return None
 
     @staticmethod
     def _guess_lib_id(designator: str, comp) -> str:
