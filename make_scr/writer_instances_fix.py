@@ -1,5 +1,15 @@
 # writer_instances_fix.py
-"""Постобработка .kicad_sch: слияние повторных (project "X" ...) блоков.
+"""Постобработка .kicad_sch после sch.save():
+
+1) merge_project_instances_file(path) — слияние повторных
+   (project "X" ...) блоков в один с общим списком путей.
+
+2) fix_sheet_instance_paths_file(path) — дописать uuid листа вторым
+   сегментом instance path у (sheet ...) в главном файле.
+
+─────────────────────────────────────────────────────────────
+1. Слияние (project ...) блоков
+─────────────────────────────────────────────────────────────
 
 Проблема:
     kicad_sch_api пишет по одному (project "…") на каждый instance:
@@ -21,12 +31,31 @@
     переключение контекстов (переключение между X_*) не меняет
     reference символа.
 
-Функция merge_project_instances_file(path) — вызывается после
-sch.save(): читает файл, находит все (instances ...), сливает
-повторные project по имени, перезаписывает.
+─────────────────────────────────────────────────────────────
+2. Дописать uuid листа в instance path у (sheet ...)
+─────────────────────────────────────────────────────────────
+
+Проблема:
+    kicad_sch_api при sch.save() пишет (sheet (instances) (project "…"
+    (path "/<root>" (page "N")))) — только корневой сегмент.
+
+    KiCad 7+ ожидает для листа, лежащего внутри страницы, полный
+    путь до листа: /<root>/<sheet-uuid>. Именно такой префикс
+    стоит у символов внутри дочернего .kicad_sch. Если в главном
+    файле путь укорочен — KiCad не находит нужный инстанс
+    символа в дочернем файле и показывает первый попавшийся
+    Reference всем экземплярам листа.
+
+Решение:
+    Проходим по всем (sheet ...) блокам. Для каждого:
+      1. читаем его (uuid "X");
+      2. внутри его же (instances …) каждое (path "P" заменяем
+         на (path "P/X", если /X там ещё нет.
+    Идемпотентно.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -79,8 +108,12 @@ def _parse_head(s: str, idx: int) -> Tuple[str, int]:
     return s[start:i], i
 
 
-def _find_instances_blocks(s: str) -> List[Tuple[int, int]]:
-    """Все (start, end) блоков (instances ...) на любом уровне вложенности."""
+def _find_blocks_by_name(s: str, name: str) -> List[Tuple[int, int]]:
+    """Все блоки (name ...) на любом уровне вложенности.
+
+    Учитывает строки в двойных кавычках — не путает скобки внутри
+    строк с границами блоков.
+    """
     result: List[Tuple[int, int]] = []
     i = 0
     n = len(s)
@@ -100,8 +133,8 @@ def _find_instances_blocks(s: str) -> List[Tuple[int, int]]:
             i += 1
             continue
         if c == "(":
-            name, _ = _parse_head(s, i)
-            if name == "instances":
+            head, _ = _parse_head(s, i)
+            if head == name:
                 end = _find_matching_paren(s, i)
                 if end < 0:
                     break
@@ -110,6 +143,11 @@ def _find_instances_blocks(s: str) -> List[Tuple[int, int]]:
                 continue
         i += 1
     return result
+
+
+def _find_instances_blocks(s: str) -> List[Tuple[int, int]]:
+    """Все (start, end) блоков (instances ...) на любом уровне вложенности."""
+    return _find_blocks_by_name(s, "instances")
 
 
 def _parse_top_children(body: str) -> List[Tuple[str, str]]:
@@ -127,7 +165,6 @@ def _parse_top_children(body: str) -> List[Tuple[str, str]]:
         if i >= n:
             break
         if body[i] != "(":
-            # что-то неожиданное — прекращаем разбор
             break
         name, after_name = _parse_head(body, i)
         end = _find_matching_paren(body, i)
@@ -215,7 +252,7 @@ def _extract_path_blocks(inner: str) -> List[str]:
 
 
 # ─────────────────────────────────────────────────────────────
-# Пересборка одного блока (instances ...)
+# 1. Пересборка одного блока (instances ...) — слияние project
 # ─────────────────────────────────────────────────────────────
 
 def _rebuild_instances(block: str, indent: str) -> Optional[str]:
@@ -233,7 +270,7 @@ def _rebuild_instances(block: str, indent: str) -> Optional[str]:
     if not children:
         return None
 
-    # Группируем project по имени; остальные (на всякий случай) сохраняем как есть
+    # Группируем project по имени; остальные сохраняем как есть
     groups: dict[str, List[str]] = {}
     order: List[str] = []
     other: List[Tuple[str, str]] = []
@@ -244,7 +281,6 @@ def _rebuild_instances(block: str, indent: str) -> Optional[str]:
             if pname not in groups:
                 groups[pname] = []
                 order.append(pname)
-            # Собираем все path-блоки внутри rest
             groups[pname].extend(_extract_path_blocks(rest))
         else:
             other.append((cname, cinner))
@@ -260,15 +296,10 @@ def _rebuild_instances(block: str, indent: str) -> Optional[str]:
             lines.append(f"{indent}\t\t{path_block}")
         lines.append(f"{indent}\t)")
     for cname, cinner in other:
-        # редкий случай — сохраняем как было (в одну строку)
         lines.append(f"{indent}({cname}{cinner})")
     lines.append(f"{indent})")
     return "\n".join(lines)
 
-
-# ─────────────────────────────────────────────────────────────
-# Верхнеуровневая функция
-# ─────────────────────────────────────────────────────────────
 
 def merge_project_instances_text(text: str) -> str:
     """Обработать весь текст .kicad_sch, слить project-блоки.
@@ -283,11 +314,8 @@ def merge_project_instances_text(text: str) -> str:
     prev_end = 0
 
     for start, end in blocks:
-        # Определяем отступ по строке, где начинается (instances
         line_start = text.rfind("\n", 0, start) + 1
         indent_str = text[line_start:start]
-        # Если перед (instances на строке есть только табы — берём их;
-        # иначе отступа нет и indent = ""
         indent = indent_str if indent_str.strip() == "" else ""
 
         block = text[start:end + 1]
@@ -316,6 +344,100 @@ def merge_project_instances_file(path: Path) -> bool:
         return False
 
     new_text = merge_project_instances_text(text)
+    if new_text == text:
+        return False
+
+    try:
+        path.write_text(new_text, encoding="utf-8")
+    except OSError:
+        return False
+
+    return True
+
+
+# ─────────────────────────────────────────────────────────────
+# 2. Фикс instance path у (sheet ...) — дописать uuid листа
+# ─────────────────────────────────────────────────────────────
+
+def _append_sheet_uuid(m: "re.Match", sheet_uuid: str) -> str:
+    """Заменитель для re.sub: (path "P" -> (path "P/<sheet_uuid>".
+
+    Не трогает, если /<sheet_uuid> уже присутствует в P.
+    """
+    prefix = m.group(1)
+    path = m.group(2)
+    suffix = m.group(3)
+    if path.endswith("/" + sheet_uuid):
+        return m.group(0)
+    if ("/" + sheet_uuid) in path:
+        return m.group(0)
+    return f"{prefix}{path}/{sheet_uuid}{suffix}"
+
+
+def _fix_one_sheet_block(block: str) -> str:
+    """В одном (sheet ...) блоке: взять uuid, дописать его ко всем
+    (path "..." внутри его (instances ...).
+    """
+    m = re.search(r'\(uuid\s+"([^"]+)"\)', block)
+    if not m:
+        return block
+    sheet_uuid = m.group(1)
+
+    inst_blocks = _find_blocks_by_name(block, "instances")
+    if not inst_blocks:
+        return block
+
+    out: List[str] = []
+    prev = 0
+    for istart, iend in inst_blocks:
+        iblock = block[istart:iend + 1]
+        fixed_iblock = re.sub(
+            r'(\(path\s+")(/[^"]*)(")',
+            lambda mm, _u=sheet_uuid: _append_sheet_uuid(mm, _u),
+            iblock,
+        )
+        out.append(block[prev:istart])
+        out.append(fixed_iblock)
+        prev = iend + 1
+    out.append(block[prev:])
+    return "".join(out)
+
+
+def fix_sheet_instance_paths_text(text: str) -> str:
+    """Обработать весь текст .kicad_sch: в каждом (sheet ...) блоке
+    дописать uuid листа ко всем (path "...") в его (instances …).
+
+    Идемпотентно: если путь уже полный, вернёт text без изменений.
+    """
+    sheets = _find_blocks_by_name(text, "sheet")
+    if not sheets:
+        return text
+
+    out: List[str] = []
+    prev = 0
+    for start, end in sheets:
+        block = text[start:end + 1]
+        fixed = _fix_one_sheet_block(block)
+        out.append(text[prev:start])
+        out.append(fixed)
+        prev = end + 1
+    out.append(text[prev:])
+    return "".join(out)
+
+
+def fix_sheet_instance_paths_file(path: Path) -> bool:
+    """Прочитать файл, дописать uuid листа в (path …) у (sheet …),
+    перезаписать.
+
+    Возвращает True, если файл изменился.
+    """
+    path = Path(path)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+
+    new_text = fix_sheet_instance_paths_text(text)
     if new_text == text:
         return False
 

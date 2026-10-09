@@ -71,6 +71,41 @@ Sheet-pin и имя сети на родителе:
     просто читает в блоке 5, как любые другие метки, и НЕ создаёт
     их сам в _add_sheet_pins.
 
+Синхронизация .kicad_pro:
+    Модуль writer_project_file.ProjectFileSync принимает корневые
+    Sheet-объекты и сам извлекает из них всё, что нужно для
+    .kicad_pro:
+      * uuid, имя и имя файла корня — из корневого Sheet;
+      * плоский список всех листов — рекурсивным обходом дерева
+        SHEET_REF-компонентов от каждого корня.
+
+    Writer передаёт только объекты — никаких строковых UUID.
+    Синхронизируются поля:
+      meta.filename
+      schematic.top_level_sheets[]
+      schematic.sheets[]
+      sheets[]                 (project-level, то же содержимое)
+
+    Один экземпляр ProjectFileSync на весь Writer. register_root
+    вызывается в write_project для каждого корня, flush — один раз
+    после обхода текущего корня. Когда Project.save вызывает
+    write_project несколько раз (main + standalone), каждый flush
+    записывает полную картину по всем зарегистрированным корням.
+    Идемпотентно: если поля не изменились, .kicad_pro не перезаписывается.
+
+Постобработка после sch.save():
+    kicad_sch_api при сохранении формирует (instances …) из своих
+    внутренних атрибутов, а не из _data, который Writer мог бы
+    подправить. Поэтому шаг нормализации делается над уже
+    записанным файлом (модуль writer_instances_fix):
+
+      merge_project_instances_file(out_path)
+         — сливает повторные (project "X" …) в один с общим
+           списком (path …).
+
+    Шаг идемпотентен: если формат уже правильный, файл не
+    перезаписывается.
+
 Логирование:
     Все лог-строки — одна строка, префикс ctx():
         [page] [net] [comp] [pin]
@@ -81,7 +116,10 @@ from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
 from cell import Cell
 from constants import Axis, ComponentKind, Direction
 from logging_setup import get_logger, ctx
-from writer_instances_fix import merge_project_instances_file
+from writer_instances_fix import (
+    merge_project_instances_file
+)
+from writer_project_file import ProjectFileSync
 
 import re
 
@@ -115,6 +153,12 @@ class Writer:
         self._root_sheet: Optional["Sheet"] = None
         self._root_file_name: str = ""
         self._project_name: str = "project"
+
+        # Накопитель данных для .kicad_pro. Создаётся лениво в
+        # write_project — до этого нет смысла. Живёт на весь прогон
+        # (main + standalone), чтобы flush после каждого корня
+        # имел полную картину корней.
+        self._pro_sync: Optional[ProjectFileSync] = None
 
     # =========================================================
     # Координаты
@@ -238,7 +282,29 @@ class Writer:
         self._root_file_name = root_file_name
         self._project_name = project_name
 
+        # Ленивая инициализация sync: один экземпляр на весь Writer,
+        # чтобы копить корни между вызовами write_project.
+        if self._pro_sync is None:
+            self._pro_sync = ProjectFileSync(self._out_dir, project_name)
+
+        # Регистрируем корень ОБЪЕКТОМ. Проектный модуль сам извлечёт
+        # uuid, имя листа (Sheet.page) и имя файла. root_file_name
+        # передаём отдельно — он может отличаться от sheet.out_file,
+        # если так задано в YAML для главного корня.
+        self._pro_sync.register_root(root_sheet, root_file_name)
+
         self._visit(root_sheet)
+
+        # Один flush на обход текущего корня. Если корней несколько
+        # (main + standalone), вызывающий код вызовет write_project
+        # по разу на каждый, а после последнего flush'а .kicad_pro
+        # получит полную картину по всем корням.
+        if self._pro_sync.flush():
+            log.info(
+                "%s project_file_synced file=%s",
+                ctx(page=root_sheet.page or project_name),
+                self._pro_sync.pro_path.name,
+            )
 
     def reset(self) -> None:
         """Сбросить состояние обхода.
@@ -252,6 +318,7 @@ class Writer:
         self._root_sheet = None
         self._root_file_name = ""
         self._project_name = "project"
+        self._pro_sync = None
 
     @property
     def written(self) -> Set[str]:
@@ -433,15 +500,17 @@ class Writer:
             filename = Path(comp.sheet_file).with_suffix(".kicad_sch").name
 
             # Сам символ (sheet (uuid ...)) пишется один раз, с uuid
-            # символа X_*. page_number здесь — информативное значение
+            # символа X_*. page_number — информативное значение
             # первого вхождения; фактический набор (path, page) для
-            # каждого вхождения идёт в instances-блоке ниже.
+            # каждого вхождения формируется постобработкой файла
+            # после save, потому что kicad_sch_api игнорирует
+            # _data["instances"], который Writer мог бы выставить здесь.
             first = comp.instances[0] if comp.instances else None
             page_num = str(first.page) if first is not None else ""
             sheet_uuid = comp.uuid
 
             try:
-                sobj = sch.add_sheet(
+                sch.add_sheet(
                     project_name=self._project_name,
                     name=comp.sheet_name or designator,
                     filename=filename,
@@ -466,26 +535,8 @@ class Writer:
                           ctx(page=label, comp=designator), e)
                 continue
 
-            # Мульти-инстанс: по одной записи (path, page) на каждое
-            # вхождение X_*. Path — container_path вхождения (путь
-            # страницы, где нарисован сам X_*); page — KiCad-номер
-            # целевой страницы.
-            try:
-                sobj._data["instances"] = [
-                    {
-                        "path": sri.container_path,
-                        "page": str(sri.page),
-                    }
-                    for sri in comp.instances
-                ]
-            except Exception as e:
-                log.warning(
-                    "%s sheet_instances des=%s error=%s",
-                    ctx(page=label, comp=designator), designator, e,
-                )
-
             n_sheet_pins += self._add_sheet_pins(
-                sch, sobj, comp, x_mm, y_mm, w_mm, h_mm, label)
+                sch, comp, x_mm, y_mm, w_mm, h_mm, label)
 
         # ---------- 3. Провода ----------
         n_wires = self._emit_all_wires(sch, label)
@@ -549,7 +600,8 @@ class Writer:
             sch.save(str(out_path))
             if merge_project_instances_file(out_path):
                 log.info("%s merged_project_instances file=%s",
-                 ctx(page=label), out_path.name)
+                         ctx(page=label), out_path.name)
+
             self._fix_hierarchical_label_shapes(out_path, sheet)
             log.info(
                 "%s saved file=%s components=%d sheets=%d "
@@ -561,6 +613,13 @@ class Writer:
         except Exception as e:
             log.error("%s save_failed file=%s error=%s",
                       ctx(page=label), out_path.name, e)
+            return
+
+        # ---------- 8. Синхронизация .kicad_pro ----------
+        # Делается централизованно в write_project: ProjectFileSync
+        # сам обходит дерево Sheet-объектов от зарегистрированных
+        # корней и собирает UUID/имена. Writer передаёт только
+        # объекты, ничего дополнительно регистрировать здесь не нужно.
 
     # =========================================================
     # instances per symbol
@@ -577,7 +636,8 @@ class Writer:
 
         Port и SheetRef пропускаются: у портов (instances ...)
         нет — они пишутся как hierarchical_label; у sheet-ref
-        свой блок (path, page) пишется в _write_one, блок 2.
+        свой блок (path, page) формируется постобработкой файла
+        после save.
         """
         try:
             from kicad_sch_api.core.types import (
@@ -631,7 +691,7 @@ class Writer:
     # Sheet pins для SheetRefComponent
     # =========================================================
 
-    def _add_sheet_pins(self, sch, sobj, comp,
+    def _add_sheet_pins(self, sch, comp,
                         x_mm: float, y_mm: float,
                         w_mm: float, h_mm: float,
                         label: str) -> int:
