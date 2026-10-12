@@ -12,17 +12,21 @@
 
         self.instances: List[ComponentInstance]
 
-    Вхождения создаются не здесь, а при инстанцировании страницы:
-        * Sheet._load_components — при первом визите контекста
-          (страница загружается впервые; компонент получает
-          ComponentInstance с sheet_ref=parent_sri);
-        * Sheet.register_from — при повторной регистрации страницы
-          (multi-instance; к существующим вхождениям добавляется
-          ещё по одному).
+    Вхождения:
+        * 0-е — «страница сама по себе» (0-й SheetRefInstance
+          страницы). Создаётся в from_yaml для ЛЮБОЙ страницы,
+          и корневой, и вложенной. Refdef — чистый designator
+          (без _M<page>), container_path — /<sheet.uuid>, page = 1.
+          Именно этого вхождения не хватало у вложенных страниц.
+        * родительский контекст — тоже создаётся в from_yaml, если
+          страница вложена (parent_sri is not own_sri). Refdef —
+          designator_M<page>, container_path — путь от корня.
+        * дополнительные контексты — Sheet.register_from
+          (multi-instance, поверх первых двух).
 
-    from_yaml только собирает структуру компонента — без вхождений.
-    Компонент, загруженный в память, имеет instances == [] до тех
-    пор, пока его страница не будет проинстанцирована.
+    Инвариант: у любого построенного компонента comp.instances
+    непуст, причём comp.instances[0].sheet_ref —
+    0-й SheetRefInstance его страницы.
 
     Refdef и путь — производные:
         ci.refdef          — проектный идентификатор вхождения
@@ -101,6 +105,10 @@ Alias-пины:
     Возврат None запрещён: молчаливая потеря компонента приводила
     к «расхождениям в сетях» (node_skipped reason=no_component)
     без внятной причины.
+
+    sheet и parent_sri — keyword-only и обязательные: компонент
+    всегда рождается на конкретной странице, её идентификатор
+    известен в момент создания.
 
 SPICE-привязка:
     На этапе from_yaml из component_types[type].spice собирается
@@ -182,6 +190,7 @@ if TYPE_CHECKING:
     from kicad_source import KiCadSource
     from sheet import Sheet
     from component_instance import ComponentInstance
+    from sheet_ref_instance import SheetRefInstance
 
 log = get_logger(__name__)
 
@@ -398,13 +407,12 @@ class Component(Primitive):
         fields:            дополнительные поля из YAML.
         sheet:             страница-владелец.
         instances:         ComponentInstance[] — вхождения компонента
-                           в дереве. Заполняется при инстанцировании
-                           страницы: Sheet._load_components создаёт
-                           ComponentInstance(sheet_ref=parent_sri) —
-                           по одному на каждый контекст, в котором
-                           появилась страница. from_yaml вхождения не
-                           создаёт: компонент без инстанцирования
-                           имеет instances == [].
+                           в дереве. instances[0] — «страница сама
+                           по себе» (0-й SheetRefInstance), создаётся
+                           в from_yaml. Далее — родительский контекст
+                           (тоже в from_yaml, если страница вложена)
+                           и дополнительные контексты от
+                           Sheet.register_from (multi-instance).
                            Refdef и путь — производные от вхождений;
                            собственных копий нет.
         rotation:          угол поворота экземпляра (0/90/180/270).
@@ -629,18 +637,42 @@ class Component(Primitive):
         cdef: dict,
         types: dict,
         source: "KiCadSource",
+        *,
+        sheet: "Sheet",
+        parent_sri: "SheetRefInstance",
         grid_mm: float = DEFAULT_GRID_MM,
         page: Optional[str] = None,
     ) -> "Component":
         """Собирает компонент из описания типа в component_types.
 
+        sheet — страница, на которой рождается компонент.
+        parent_sri — SheetRefInstance-контекст этой страницы
+        (либо её 0-й SRI, если страница корень, либо SRI того X_*,
+        через который страница вложена). Оба keyword-only и
+        обязательные: компонент всегда рождается на конкретной
+        странице, и её идентификатор известен здесь же.
+
+        Создаются вхождения:
+
+          1. «Своё» — контекст 0-го SheetRefInstance страницы
+             (sheet.sheet_ref_instances[0]). Это страница, как
+             если бы она была корнем сама по себе:
+                 container_path = /<sheet.uuid>
+                 refdef         = designator (чистый, без _M<page>)
+                 page           = 1
+             Именно этого вхождения не хватало у вложенных страниц.
+
+          2. Контекст родителя (parent_sri) — только если страница
+             реально вложена (parent_sri is not own_sri):
+                 container_path = /<root.uuid>/<sheetref.uuid>/…
+                 refdef         = designator_M<page>
+                 page           = sheetref-номер (2 и выше)
+
+        Дополнительные вхождения (multi-instance) добавляет
+        Sheet.register_from — поверх уже имеющихся.
+
         См. докстринг модуля — расчёт bbox, anchor_offset_mm,
         pin.offset_mm, pin.direction, simProperties.
-
-        Вхождения (ComponentInstance) здесь НЕ создаются: их сделает
-        Sheet._load_components / Sheet.register_from в момент
-        инстанцирования страницы. from_yaml только наполняет
-        структуру компонента.
 
         Raises:
             ComponentLoadError: тип не указан, тип не описан,
@@ -819,6 +851,32 @@ class Component(Primitive):
             pin.component = comp
 
         comp._warn_duplicate_pin_positions()
+
+        # ── ВХОЖДЕНИЯ ────────────────────────────────────────
+        # 1. «Своё» вхождение — контекст 0-го SheetRefInstance
+        #    страницы. Создаётся ВСЕГДА (корневая и вложенная).
+        #    Именно этого вхождения не хватало у вложенных
+        #    страниц: container_path = /<sheet.uuid>, refdef =
+        #    чистый designator, page = 1.
+        #
+        # 2. Родительский контекст — только если страница вложена
+        #    (parent_sri не совпадает с 0-м SRI). У корня страницы
+        #    context_sri == own_sri, второе вхождение не создаётся.
+        #
+        # Дополнительные контексты (multi-instance) добавит
+        # Sheet.register_from.
+        from component_instance import ComponentInstance
+
+        own_sri = sheet.sheet_ref_instances[0]
+        comp.add_instance(ComponentInstance(
+            component=comp,
+            sheet_ref=own_sri,
+        ))
+        if parent_sri is not own_sri:
+            comp.add_instance(ComponentInstance(
+                component=comp,
+                sheet_ref=parent_sri,
+            ))
 
         return comp
 

@@ -6,13 +6,36 @@ map/bounds/page.
 и entry (направление, по которому вошли в клетку). Это нужно
 для проверки выхода из чужого WireCell: после перпендикулярного
 входа выход параллельно чужому проводу запрещён.
+
+Два условия остановки — независимые:
+
+  * target — конкретная клетка-ориентир. Штатная цель,
+    выбирается вызывающим кодом (`_route_t_junction`) заранее.
+    Если нигде по пути не сработал goal — pathfind дойдёт
+    до target и остановится.
+
+  * goal — состояние клетки: «лежит на host-проводе И вход
+    в неё перпендикулярен host-сегменту». Это «везение»:
+    роутер уже пришёл в сеть, хотя до target ещё не дошёл.
+    Проверяется на КАЖДОЙ вытащенной клетке, ДО `cur == target`.
+
+Если сработало goal — останавливаемся раньше target, потому что
+в этой клетке T-врезка будет корректной (перпендикулярный вход).
+Если дошли до target без срабатывания goal — тоже успех,
+но подход может быть параллельным; вызывающий код решает,
+ставить junction или уходить в fallback.
 """
 from collections import deque
 import heapq
 from typing import Dict, Optional, Set, Tuple
 
 from cell import Cell
-from constants import PathSearch, WireAngle
+from constants import (
+    PathSearch,
+    WireAngle,
+    WIRE_ANGLE_TO_ORIENTATION,
+    WireOrientation,
+)
 from logging_setup import ctx, get_logger
 from stub import ANGLE_DELTA, ANGLE_NAME
 from wire import WireSegment, segment_angle
@@ -30,13 +53,38 @@ PROGRESS_STEP = 10000
 # Точка входа
 # =========================================================
 
-def find_path(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
-    """Выбирает алгоритм по router.search."""
+def find_path(
+    router,
+    net: str,
+    start: Cell,
+    goal: Cell,
+    *,
+    host_cells: Optional[Dict[Cell, Tuple[WireOrientation, ...]]] = None,
+) -> RouteAttempt:
+    """Выбирает алгоритм по router.search.
+
+    Args:
+        router:     роутер (map/bounds/page/search).
+        net:        имя сети (для can_enter/can_leave).
+        start:      начальная клетка.
+        goal:       штатная цель — конкретная клетка-ориентир.
+        host_cells: необязательная карта «клетка → ориентации
+                    host-сегментов, проходящих через неё».
+                    Если задана, то на каждой вытащенной клетке
+                    сначала проверяется goal-условие: «клетка в
+                    host_cells И вход перпендикулярен хотя бы
+                    одному host-сегменту». При срабатывании —
+                    остановка раньше target.
+
+    Возвращает RouteAttempt:
+        success=True,  path=[...], goal_reached_by="target"|"goal"
+        success=False, visited=..., frontier=...
+    """
     if router.search == PathSearch.BFS:
-        return bfs(router, net, start, goal)
+        return bfs(router, net, start, goal, host_cells=host_cells)
     if router.search == PathSearch.ASTAR:
-        return astar(router, net, start, goal)
-    return dijkstra(router, net, start, goal)
+        return astar(router, net, start, goal, host_cells=host_cells)
+    return dijkstra(router, net, start, goal, host_cells=host_cells)
 
 
 # =========================================================
@@ -78,11 +126,53 @@ def _heuristic(a: Cell, b: Cell) -> int:
     return abs(a.col - b.col) + abs(a.row - b.row)
 
 
+def _is_goal_state(
+    cell: Cell,
+    entry_angle: Optional[WireAngle],
+    host_cells: Optional[Dict[Cell, Tuple[WireOrientation, ...]]],
+) -> bool:
+    """Сработало ли goal-условие на клетке.
+
+    Goal = клетка принадлежит host-проводу сети И вход в неё
+    перпендикулярен хотя бы одному host-сегменту в этой клетке.
+
+    Если host_cells не задан (случай _route_pair) — goal
+    никогда не срабатывает, и остановка идёт только по target.
+
+    Args:
+        cell:        текущая клетка.
+        entry_angle: направление входа в клетку (WireAngle) или None
+                     для старта.
+        host_cells:  карта «клетка → ориентации host-сегментов».
+
+    Returns:
+        True, если сработал goal.
+    """
+    if host_cells is None:
+        return False
+    if cell not in host_cells:
+        return False
+    if entry_angle is None:
+        # стартовая клетка: входа не было, goal не считаем.
+        return False
+
+    entry_orient = WIRE_ANGLE_TO_ORIENTATION[entry_angle]
+    host_orients = host_cells[cell]
+    # Перпендикулярно — значит, ориентация входа отличается
+    # от ориентации host-сегмента. H != V.
+    for ho in host_orients:
+        if ho != entry_orient:
+            return True
+    return False
+
+
 # =========================================================
 # BFS
 # =========================================================
 
-def bfs(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
+def bfs(router, net: str, start: Cell, goal: Cell, *,
+        host_cells: Optional[Dict[Cell, Tuple[WireOrientation, ...]]] = None,
+        ) -> RouteAttempt:
     """Поиск в ширину: кратчайший путь при единичных весах."""
     map_ = router.map
     bounds = router.bounds
@@ -92,7 +182,8 @@ def bfs(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
 
     if start == goal:
         log.debug("%s bfs start_eq_goal", ctx(page=page, net=net))
-        return RouteAttempt(success=True, path=[start])
+        return RouteAttempt(success=True, path=[start],
+                            goal_reached_by="target")
 
     q = deque([start])
     prev: Dict[Tuple[int, int], Optional[Cell]] = {
@@ -115,16 +206,28 @@ def bfs(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
             log.trace("%s bfs progress visited=%d queue=%d cur=%s",
                       ctx(page=page, net=net), visited, len(q), cur)
 
-        if cur == goal:
+        cur_key = (cur.col, cur.row)
+        cur_entry = entry[cur_key]
+
+        # 1. Goal — «везение»: пришли в host-провод перпендикулярно.
+        if _is_goal_state(cur, cur_entry, host_cells):
             path = _reconstruct(cur, prev)
-            log.debug("%s bfs done steps=%d cells=%d",
+            log.debug("%s bfs done_by_goal steps=%d cells=%d",
                       ctx(page=page, net=net), visited, len(path))
             return RouteAttempt(success=True, path=path,
                                 segments=_segments_of(path),
-                                visited=visited)
+                                visited=visited,
+                                goal_reached_by="goal")
 
-        cur_key = (cur.col, cur.row)
-        cur_entry = entry[cur_key]
+        # 2. Target — штатная цель.
+        if cur == goal:
+            path = _reconstruct(cur, prev)
+            log.debug("%s bfs done_by_target steps=%d cells=%d",
+                      ctx(page=page, net=net), visited, len(path))
+            return RouteAttempt(success=True, path=path,
+                                segments=_segments_of(path),
+                                visited=visited,
+                                goal_reached_by="target")
 
         for angle, (dc, dr) in ANGLE_DELTA.items():
             nxt = Cell(cur.col + dc, cur.row + dr)
@@ -175,7 +278,9 @@ def bfs(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
 # A*
 # =========================================================
 
-def astar(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
+def astar(router, net: str, start: Cell, goal: Cell, *,
+          host_cells: Optional[Dict[Cell, Tuple[WireOrientation, ...]]] = None,
+          ) -> RouteAttempt:
     """A* с манхэттенской эвристикой."""
     map_ = router.map
     bounds = router.bounds
@@ -185,7 +290,8 @@ def astar(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
 
     if start == goal:
         log.debug("%s astar start_eq_goal", ctx(page=page, net=net))
-        return RouteAttempt(success=True, path=[start])
+        return RouteAttempt(success=True, path=[start],
+                            goal_reached_by="target")
 
     counter = 0
     heap = [(_heuristic(start, goal), counter, start)]
@@ -215,15 +321,27 @@ def astar(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
             log.debug("%s astar progress visited=%d queue=%d cur=%s",
                       ctx(page=page, net=net), visited, len(heap), cur)
 
-        if cur == goal:
+        cur_entry = entry[key]
+
+        # 1. Goal — «везение».
+        if _is_goal_state(cur, cur_entry, host_cells):
             path = _reconstruct(cur, prev)
-            log.debug("%s astar done steps=%d cells=%d",
+            log.debug("%s astar done_by_goal steps=%d cells=%d",
                       ctx(page=page, net=net), visited, len(path))
             return RouteAttempt(success=True, path=path,
                                 segments=_segments_of(path),
-                                visited=visited)
+                                visited=visited,
+                                goal_reached_by="goal")
 
-        cur_entry = entry[key]
+        # 2. Target.
+        if cur == goal:
+            path = _reconstruct(cur, prev)
+            log.debug("%s astar done_by_target steps=%d cells=%d",
+                      ctx(page=page, net=net), visited, len(path))
+            return RouteAttempt(success=True, path=path,
+                                segments=_segments_of(path),
+                                visited=visited,
+                                goal_reached_by="target")
 
         for angle, (dc, dr) in ANGLE_DELTA.items():
             nxt = Cell(cur.col + dc, cur.row + dr)
@@ -262,7 +380,9 @@ def astar(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
 # Dijkstra
 # =========================================================
 
-def dijkstra(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
+def dijkstra(router, net: str, start: Cell, goal: Cell, *,
+             host_cells: Optional[Dict[Cell, Tuple[WireOrientation, ...]]] = None,
+             ) -> RouteAttempt:
     """Ищет путь между клетками.
 
     Стоимость: свободная клетка — 1; клетка своей сети — 1;
@@ -277,7 +397,8 @@ def dijkstra(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
 
     if start == goal:
         log.debug("%s dijkstra start_eq_goal", ctx(page=page, net=net))
-        return RouteAttempt(success=True, path=[start])
+        return RouteAttempt(success=True, path=[start],
+                            goal_reached_by="target")
 
     counter = 0
     heap = [(0, counter, start)]
@@ -302,16 +423,28 @@ def dijkstra(router, net: str, start: Cell, goal: Cell) -> RouteAttempt:
             log.debug("%s dijkstra progress visited=%d queue=%d cur=%s",
                       ctx(page=page, net=net), visited, len(heap), cur)
 
-        if cur == goal:
+        cur_key = (cur.col, cur.row)
+        cur_entry = entry[cur_key]
+
+        # 1. Goal — «везение».
+        if _is_goal_state(cur, cur_entry, host_cells):
             path = _reconstruct(cur, prev)
-            log.debug("%s dijkstra done steps=%d cost=%d cells=%d",
+            log.debug("%s dijkstra done_by_goal steps=%d cost=%d cells=%d",
                       ctx(page=page, net=net), visited, cost, len(path))
             return RouteAttempt(success=True, path=path,
                                 segments=_segments_of(path),
-                                visited=visited)
+                                visited=visited,
+                                goal_reached_by="goal")
 
-        cur_key = (cur.col, cur.row)
-        cur_entry = entry[cur_key]
+        # 2. Target.
+        if cur == goal:
+            path = _reconstruct(cur, prev)
+            log.debug("%s dijkstra done_by_target steps=%d cost=%d cells=%d",
+                      ctx(page=page, net=net), visited, cost, len(path))
+            return RouteAttempt(success=True, path=path,
+                                segments=_segments_of(path),
+                                visited=visited,
+                                goal_reached_by="target")
 
         for angle, (dc, dr) in ANGLE_DELTA.items():
             nxt = Cell(cur.col + dc, cur.row + dr)

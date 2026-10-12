@@ -35,9 +35,14 @@
 
     _load_components(data, path, *, parent_sri,
                      sheet_ref_start_counter) -> next_counter:
-        * обычным компонентам сразу даёт ComponentInstance
-          с sheet_ref=parent_sri;
-        * для каждого X_* создаёт SheetRefComponent(parent_sri=…,
+        * обычные компоненты конструируются через
+          Component.from_yaml(..., sheet=self, parent_sri=parent_sri) —
+          там же создаются вхождения:
+             1) «своё» (0-й SRI страницы) — для любой страницы;
+             2) родительский контекст (parent_sri), если страница
+                вложена (parent_sri is not own_sri);
+          Sheet снаружи ComponentInstance не добавляет;
+        * для каждого X_* создаётся SheetRefComponent(parent_sri=…,
           sheet_ref_start_counter=…), который сам в своём
           конструкторе создаёт SheetRefInstance и инстанцирует
           целевую страницу;
@@ -63,7 +68,8 @@ Multi-instance:
     register_from:
         * добавляет parent_sri в self.sheet_ref_instances;
         * обычным компонентам даёт ЕЩЁ ОДИН ComponentInstance
-          с sheet_ref=parent_sri;
+          с sheet_ref=parent_sri — поверх уже имеющихся (0-го и,
+          для вложенной страницы, первого родительского);
         * у вложенных X_* вызывает on_new_context, который создаёт
           ещё один SheetRefInstance и рекурсивно дёргает
           register_from в целевой странице.
@@ -283,11 +289,14 @@ class Sheet(Primitive):
     ) -> int:
         """Загрузить компоненты листа и инстанцировать поддерево.
 
-        Обычные компоненты сразу получают ComponentInstance с
-        sheet_ref=parent_sri. X_* создаются как SheetRefComponent
-        с проброшенными parent_sri и sheet_ref_start_counter — их
-        конструктор сам создаст SheetRefInstance и инстанцирует
-        целевое поддерево.
+        Обычные компоненты конструируются через Component.from_yaml
+        с sheet=self и parent_sri=parent_sri: вхождения
+        (ComponentInstance) создаются внутри from_yaml — Sheet
+        снаружи их НЕ добавляет.
+
+        X_* создаются как SheetRefComponent с проброшенными
+        parent_sri и sheet_ref_start_counter — их конструктор сам
+        создаст SheetRefInstance и инстанцирует целевое поддерево.
 
         Возвращает next_counter — следующий свободный номер после
         всего поддерева этого листа.
@@ -361,6 +370,8 @@ class Sheet(Primitive):
                     source=self.source,
                     grid_mm=self.grid_mm,
                     page=self.page,
+                    sheet=self,                       # ← добавлено
+                    parent_sri=parent_sri,
                 )
             except (DesignatorError, ComponentLoadError) as e:
                 self.load_errors.append(f"{yaml_path}: {e}")
@@ -370,10 +381,10 @@ class Sheet(Primitive):
                 )
                 continue
 
-            comp.instances.append(ComponentInstance(
-                component=comp,
-                sheet_ref=parent_sri,
-            ))
+            # 0-е (и, для вложенных, первое родительское) вхождение
+            # уже создано внутри from_yaml. Здесь ComponentInstance
+            # НЕ добавляем.
+
             self.add_component(comp)
 
         self._load_ports(data, yaml_path, parent_sri=parent_sri)
@@ -411,8 +422,8 @@ class Sheet(Primitive):
 
         Порт — тоже Component; ему сразу даётся ComponentInstance
         с sheet_ref=parent_sri (тем же контекстом, что и обычные
-        компоненты). Без этого PortComponent не имеет доступа к
-        своему page / контексту.
+        компоненты). Порты идут своим путём — не через
+        Component.from_yaml, поэтому вхождение добавляется здесь.
         """
         from port_component import PortComponent
 
@@ -629,7 +640,10 @@ class Sheet(Primitive):
             * добавляет parent_sri в self.sheet_ref_instances
               (0-й SRI уже лежит там — он создан в Sheet.load);
             * каждому обычному компоненту даёт ЕЩЁ ОДИН
-              ComponentInstance с sheet_ref=parent_sri;
+              ComponentInstance с sheet_ref=parent_sri — это
+              дополнительный контекст поверх 0-го (и, для
+              вложенной страницы, первого родительского),
+              созданных в Component.from_yaml;
             * каждому вложенному X_* — вызывает on_new_context,
               который создаёт ещё один SheetRefInstance и рекурсивно
               дёргает register_from в целевой странице.

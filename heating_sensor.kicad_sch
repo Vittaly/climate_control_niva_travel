@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
-	(uuid "e8089edf-82a9-4ab2-a4c6-492fb8460e51")
+	(uuid "d978731e-2b44-43df-ac1e-7ebc58fad63b")
 	(paper "A4")
 	(title_block
 		(title "climate_control_niva_travel")
@@ -313,7 +313,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "31ed0c2c-e429-4032-bfca-b0b04b22d9fa")
+		(uuid "4f670ff1-01f0-4e76-83f2-a2e448af0ed3")
 		(property "Reference" "C25"
 			(at 18.415 20.32 0.0000)
 			(effects
@@ -360,14 +360,15 @@
 			)
 		)
 		(pin "1"
-			(uuid "0b2f6e78-ef4c-4d85-8d60-70fd0bbc83a9")
+			(uuid "69c170ee-6bd9-4299-be55-4490eede17d5")
 		)
 		(pin "2"
-			(uuid "61f919d3-4a01-4d7e-bb75-e30e66120d63")
+			(uuid "ddd1b499-5931-49d3-bede-566b0a5a15a9")
 		)
 				(instances
 			(project "climate_control_niva_travel"
-				(path "/a20a8d43-2e18-4318-8ef3-7f434a470dab/1469a1ed-0edc-4b26-9fa4-af555b72a5f7"(reference "C0425") (unit 1) )
+				(path "/d978731e-2b44-43df-ac1e-7ebc58fad63b"(reference "C25") (unit 1) )
+				(path "/aece091b-8e26-4b21-9786-1b0efc647a51/25ffff2c-bc01-4b6e-82ac-0a5cb114cf15"(reference "C0425") (unit 1) )
 			)
 		)
 	)
@@ -380,7 +381,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "f08ec179-8bc7-4a79-a3fb-1d1f9d9b6c3c")
+		(uuid "d31c61d5-44a4-423c-b033-89377c39f0c2")
 		(property "Reference" "R25"
 			(at 16.002 17.78 90)
 			(effects
@@ -427,14 +428,15 @@
 			)
 		)
 		(pin "1"
-			(uuid "59c43444-08bb-4704-aa6c-fc1db98937d8")
+			(uuid "ee0af878-6ca0-4e3a-841b-f8b5ca7a942f")
 		)
 		(pin "2"
-			(uuid "7b5e35c4-c175-4878-be24-286dba9feff4")
+			(uuid "8a07d763-4a16-41ca-aaa4-c8a8ff32bada")
 		)
 				(instances
 			(project "climate_control_niva_travel"
-				(path "/a20a8d43-2e18-4318-8ef3-7f434a470dab/1469a1ed-0edc-4b26-9fa4-af555b72a5f7"(reference "R0425") (unit 1) )
+				(path "/d978731e-2b44-43df-ac1e-7ebc58fad63b"(reference "R25") (unit 1) )
+				(path "/aece091b-8e26-4b21-9786-1b0efc647a51/25ffff2c-bc01-4b6e-82ac-0a5cb114cf15"(reference "R0425") (unit 1) )
 			)
 		)
 	)
@@ -447,7 +449,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "7a2d94c1-f9c7-4acf-9bfc-071e6c1f2633")
+		(uuid "4a41e765-bd22-4dd9-b5c5-778a21802451")
 		(property "Reference" "R26"
 			(at 23.622 13.97 90)
 			(effects
@@ -494,14 +496,15 @@
 			)
 		)
 		(pin "1"
-			(uuid "c945ee7f-d652-4314-b451-9c012198c558")
+			(uuid "9e8e775b-3d78-4f5d-b4ea-5dcf5c3e884e")
 		)
 		(pin "2"
-			(uuid "868538b0-53e9-4503-a21b-d5c21ccd99e8")
+			(uuid "019f01be-9596-41e0-8894-2ee646f35639")
 		)
 				(instances
 			(project "climate_control_niva_travel"
-				(path "/a20a8d43-2e18-4318-8ef3-7f434a470dab/1469a1ed-0edc-4b26-9fa4-af555b72a5f7"(reference "R0426") (unit 1) )
+				(path "/d978731e-2b44-43df-ac1e-7ebc58fad63b"(reference "R26") (unit 1) )
+				(path "/aece091b-8e26-4b21-9786-1b0efc647a51/25ffff2c-bc01-4b6e-82ac-0a5cb114cf15"(reference "R0426") (unit 1) )
 			)
 		)
 	)
@@ -513,7 +516,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "b8ce6117-5fb6-4cd0-b72d-dd39739cc043")
+		(uuid "9625e242-d73c-47ab-ba9e-d1202d3c847c")
 	)
 	(wire
 		(pts
@@ -523,7 +526,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "a834f2cf-f556-4f0f-aeb6-0e203eef36c2")
+		(uuid "f4a97c0b-f60c-4701-92dd-2f5fbbc9492e")
 	)
 	(wire
 		(pts
@@ -533,7 +536,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "bb0a7680-10ed-4b7e-9981-58d9dec002e1")
+		(uuid "c859c8f4-472f-43eb-8e69-b280d66a4a62")
 	)
 	(wire
 		(pts
@@ -543,7 +546,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9f29697e-21b5-4efe-9866-cac06423a2fe")
+		(uuid "38fcfa19-9521-4c2b-8136-c7f9e876dc41")
 	)
 	(wire
 		(pts
@@ -553,7 +556,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "7f43dd5b-cc84-41eb-8f94-a419b14d8702")
+		(uuid "721d8673-aea0-46d7-a1a0-4f2d96a0e66e")
 	)
 	(wire
 		(pts
@@ -563,7 +566,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "606b857e-94df-4706-b034-d0bd7b560fcc")
+		(uuid "f7137a48-e602-4d17-af95-ca2156012a53")
 	)
 	(wire
 		(pts
@@ -573,7 +576,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "a4166f5d-4093-4efd-9b46-2a40edf4775e")
+		(uuid "b8aaba20-e3a8-41fc-beea-5b0515ebe54b")
 	)
 	(wire
 		(pts
@@ -583,7 +586,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "36099772-c3f8-4875-8a73-0b2ebcd28c5c")
+		(uuid "cd4490b8-6b75-4382-9f4e-e0c8e6e25190")
 	)
 	(wire
 		(pts
@@ -593,7 +596,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9cc470a3-e930-46b3-bcc8-ce28a97d6f41")
+		(uuid "9b7eba67-b7b1-4559-800d-f425646b9b29")
 	)
 	(wire
 		(pts
@@ -603,7 +606,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "852307b2-1f9c-454a-8120-ccff70ad9d48")
+		(uuid "193b673f-8248-42b2-bf8d-491f1b44a119")
 	)
 	(wire
 		(pts
@@ -613,7 +616,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "dbc24484-d5ee-4eff-944a-e4d8cb262061")
+		(uuid "ba2e9458-c122-4b74-bebe-5c1aa9e74403")
 	)
 	(wire
 		(pts
@@ -623,7 +626,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "0f8a6ad4-aa7b-456a-8e31-e77fd746275e")
+		(uuid "7671fdbf-ca16-4a00-a9ad-73e4ba90b101")
 	)
 	(wire
 		(pts
@@ -633,7 +636,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "73fa8c13-385b-4b51-84bb-d77bf84a2b0c")
+		(uuid "5628e60b-2869-4ef2-8337-c6455aa4cc56")
 	)
 	(wire
 		(pts
@@ -643,7 +646,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "3ff26683-57e2-49af-b49f-3e6c165cf169")
+		(uuid "5b00cc60-1003-4640-8833-7a62d2d1dc97")
 	)
 	(wire
 		(pts
@@ -653,7 +656,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "731ad945-46f5-4aa5-b811-6ea86c862b44")
+		(uuid "896f5c04-e020-4212-8c25-7328b7bfbb8d")
 	)
 	(wire
 		(pts
@@ -663,7 +666,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "bfa03f21-21ef-4b9b-9200-c66ae977de83")
+		(uuid "1d9845fb-8973-4931-b833-61cc53e37db2")
 	)
 	(wire
 		(pts
@@ -673,59 +676,29 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "3d19e796-e984-4632-a245-a2d21415ee25")
+		(uuid "b3849ecc-7ba4-4913-93fd-627c521bd99e")
 	)
 	(wire
 		(pts
-			(xy 33.02 17.78) (xy 33.02 21.59)
+			(xy 33.02 17.78) (xy 33.02 24.13)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "a3842d04-964d-48af-ba78-b4da5aa3b2ba")
-	)
-	(wire
-		(pts
-			(xy 33.02 21.59) (xy 30.48 21.59)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f368f342-4cd9-492d-8fc1-ed9f8ddfdf64")
-	)
-	(wire
-		(pts
-			(xy 30.48 21.59) (xy 30.48 24.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ffd27d2c-ec12-48d9-b1c2-9aa5939199cd")
-	)
-	(wire
-		(pts
-			(xy 30.48 24.13) (xy 21.59 24.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b1dce76d-4cdd-4656-a8f6-a3132d1e648d")
+		(uuid "74e8b81a-ebb3-40fc-a14e-b5f4a08f02fc")
 	)
 	(junction
 		(at 17.78 24.13)
 		(diameter 0.0000)
 		(color 0 0 0 0)
-		(uuid "ca33be86-04af-4985-8d5e-edb3c1b66dd5")
+		(uuid "e79d78c8-4613-45b1-b893-62e116191f35")
 	)
 	(junction
-		(at 21.59 24.13)
+		(at 33.02 24.13)
 		(diameter 0.0000)
 		(color 0 0 0 0)
-		(uuid "742807e4-795e-4714-b2d5-d670050b0578")
+		(uuid "eae83923-747e-4f0b-bce2-fc37297dbf78")
 	)
 	(label "NTC_HEAT_W"
 		(at 17.78 13.97 90)
@@ -735,7 +708,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "8079028b-caad-4e8f-9e4d-35360932e549")
+		(uuid "445ee206-f551-4101-80c4-70af18b77252")
 	)
 	(label "NTC_HEAT_W"
 		(at 21.59 10.16 90)
@@ -745,7 +718,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "28943f2c-5b01-4a33-bc1b-8cbb66ed4f04")
+		(uuid "9731630e-49b4-4395-8940-88e07a43efdf")
 	)
 	(label "NTC_HEAT_W"
 		(at 20.32 19.05 0.0000)
@@ -755,7 +728,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "5cb16110-6d2c-4b5c-a402-ecda51802d2f")
+		(uuid "6050c4f1-0d35-4988-944f-e07b02190f79")
 	)
 	(label "NTC_HEAT"
 		(at 21.59 17.78 270)
@@ -765,7 +738,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "ed281289-f3d6-4c5a-99f3-86bfeaa31f0d")
+		(uuid "7a86b30d-da5a-4ec5-8f9c-3585578c5685")
 	)
 	(label "NTC_HEAT"
 		(at 20.32 21.59 0.0000)
@@ -775,7 +748,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "902235f3-8d1e-4846-aefb-9f78966d4466")
+		(uuid "e6859720-6f6a-44c3-bee8-f3661c109332")
 	)
 	(hierarchical_label "VCC_3V3"
 		(shape input)
@@ -786,7 +759,7 @@
 			)
 			(justify left)
 		)
-		(uuid "30694e71-d60c-4a02-b415-6d026e91e506")
+		(uuid "5e181374-5f83-4437-a0d0-85133f6ded4c")
 	)
 	(hierarchical_label "GND"
 		(shape input)
@@ -797,7 +770,7 @@
 			)
 			(justify left)
 		)
-		(uuid "cc60461e-a1c0-4d1c-8ce7-0880e39936d8")
+		(uuid "c09c786e-32ca-4e6b-987b-4c59e44679c3")
 	)
 	(hierarchical_label "NTC_HEAT_W"
 		(shape output)
@@ -808,7 +781,7 @@
 			)
 			(justify left)
 		)
-		(uuid "3f55a5a9-aacb-45e3-bcb2-b51a6b683c21")
+		(uuid "3b90671a-49bf-4ed6-aef9-955d0a8e3966")
 	)
 	(hierarchical_label "NTC_HEAT"
 		(shape output)
@@ -819,7 +792,7 @@
 			)
 			(justify left)
 		)
-		(uuid "68ef621b-af4b-4ba9-91e8-ed7dae22373e")
+		(uuid "7200d50a-571d-4de0-83e3-7fb34e0c5970")
 	)
 	(sheet_instances
 		(path "/"

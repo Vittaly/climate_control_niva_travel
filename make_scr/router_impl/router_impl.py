@@ -29,6 +29,30 @@ T-точки (junction) в .kicad_sch:
     Сама Junction — самостоятельный элемент .kicad_sch (см. junction.py),
     не Component. Роутер создаёт её через self.sheet.add_junction().
 
+Goal-состояние и target в T-врезке:
+    Pathfind останавливается по двум независимым условиям:
+
+      * goal — состояние клетки: «на host-проводе сети И вход
+        перпендикулярен host-сегменту». Это «везение»: роутер
+        уже пришёл в сеть, не дойдя до предвыбранной target.
+        Проверяется на каждой вытащенной клетке, ДО `cur == target`.
+
+      * target — конкретная клетка-ориентир из host-провода,
+        выбирается заранее по манхэттенскому расстоянию до tip.
+
+    Если goal сработал — pathfind возвращает `goal_reached_by="goal"`
+    и путь заканчивается на клетке, где вход в host-провод
+    перпендикулярен. Это правильная T-врезка.
+
+    Если goal не сработал нигде — pathfind доходит до target
+    (`goal_reached_by="target"`) и останавливается. Подход мог
+    получиться параллельным host-сегменту — тогда KiCad такую
+    junction проигнорирует. Это состояние сохраняется как fallback
+    на случай, когда перпендикулярный подход не нашёлся.
+
+    Точка врезки — всегда `attempt.path[-1]`, а не предвыбранная
+    target. Потому что goal мог сработать раньше target.
+
 Метки (LabelComponent):
     Метка — самостоятельный элемент листа (см. label_component.py),
     не Component. Хранится в sheet.labels, добавляется через
@@ -42,7 +66,7 @@ T-точки (junction) в .kicad_sch:
     (reason=SHEET_PIN_NAME) добавляются ПОСЛЕ route_all —
     в Sheet.create_sheet_pin_labels, вызываемом из project.py.
 """
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from cell import Cell
 from component import Component
@@ -479,6 +503,8 @@ class Router(RouterLogMixin):
         stub_a = plan_stub(pin_a, self.placer, self.map)
         stub_b = plan_stub(pin_b, self.placer, self.map)
 
+        # host_cells не передаём: для соединения двух пинов цель —
+        # конкретная клетка (stub_b.tip). Goal-предикат тут не нужен.
         attempt = self._find_path(net_name, stub_a.tip, stub_b.tip)
         if not attempt.success:
             log.warning("%s fail %s → %s",
@@ -556,6 +582,29 @@ class Router(RouterLogMixin):
     def _route_t_junction(self, net_name: str,
                       cell_c: Cell, pin_c: "Pin",
                       existing_wires: List[Wire]) -> Optional[Wire]:
+        """T-врезка пина в существующую сеть.
+
+        Логика:
+            1. Построить host_cells — карту «клетка → ориентации
+               host-сегментов, проходящих через неё». Это состояние
+               для goal-предиката pathfind'а.
+            2. Выбрать candidates — host-клетки, отсортированные
+               по манхэттенскому расстоянию до tip-отростка.
+               Это ориентиры-target.
+            3. Для каждого target (до max_tries):
+               - pathfind ищет путь от stub_c.tip до target,
+                 останавливаясь по goal-предикату (если по пути
+                 попался host с перпендикулярным входом — стоп
+                 раньше target);
+               - точка врезки — фактический конец пути
+                 (attempt.path[-1]);
+               - junction ставится в эту точку;
+               - wire регистрируется в карте.
+            4. Если ни одна попытка не удалась — fallback:
+               - метка на пине;
+               - метка на ближайшей «чистой» host-клетке
+                 + T-точка под неё.
+        """
         log.info("%s t_connect",
                 ctx(page=self.page, net=net_name,
                     comp=self._designator(pin_c),
@@ -563,11 +612,19 @@ class Router(RouterLogMixin):
 
         stub_c = plan_stub(pin_c, self.placer, self.map)
 
-        candidates: List[Cell] = []
+        # host_cells: карта «клетка → ориентации host-сегментов».
+        # Одна клетка может принадлежать нескольким сегментам —
+        # например, углу, где стыкуются H и V. Все ориентации
+        # собираем в кортеж.
+        host_cells: Dict[Cell, Tuple[WireOrientation, ...]] = {}
         for w in existing_wires:
             for seg in w.segments():
-                candidates.extend(seg.cells())
+                orient = seg.orientation
+                for c in seg.cells():
+                    host_cells[c] = host_cells.get(c, ()) + (orient,)
 
+        # candidates: host-клетки, ближайшие к tip.
+        candidates: List[Cell] = list(host_cells.keys())
         candidates.sort(key=lambda c: abs(c.col - stub_c.tip.col) +
                                     abs(c.row - stub_c.tip.row))
 
@@ -578,15 +635,24 @@ class Router(RouterLogMixin):
 
         max_tries = 5
         for i, target in enumerate(exclusive[:max_tries]):
-            attempt = self._find_path(net_name, stub_c.tip, target)
+            attempt = self._find_path(
+                net_name, stub_c.tip, target,
+                host_cells=host_cells,
+            )
             if not attempt.success:
                 continue
 
-            log.info("%s t_junction target=%s try=%d",
-                    ctx(page=self.page, net=net_name,
-                        comp=self._designator(pin_c),
-                        pin=self._pin_num(pin_c)),
-                    target, i + 1)
+            # Точка врезки — фактический конец пути.
+            # Если goal сработал раньше target, end_cell != target.
+            end_cell = attempt.path[-1]
+            log.info(
+                "%s t_junction target=%s end=%s by=%s try=%d",
+                ctx(page=self.page, net=net_name,
+                    comp=self._designator(pin_c),
+                    pin=self._pin_num(pin_c)),
+                target, end_cell,
+                attempt.goal_reached_by or "?", i + 1,
+            )
 
             wire = Wire(
                 net_name=net_name,
@@ -600,26 +666,28 @@ class Router(RouterLogMixin):
             reason = self._occupy(wire)
             if reason is not None:
                 log.warning(
-                    "%s wire_rejected key=%s target=%s %s",
+                    "%s wire_rejected key=%s target=%s end=%s %s",
                     ctx(page=self.page, net=net_name),
-                    wire.key, target, reason,
+                    wire.key, target, end_cell, reason,
                 )
                 continue
 
             self._log_wire_full(net_name, wire)
 
-            host = self._find_host_wire(target, existing_wires)
+            host = self._find_host_wire(end_cell, existing_wires)
             self.sheet.add_junction(Junction.create(
-                anchor_mm=(target.col * self.grid_mm,
-                           target.row * self.grid_mm),
+                anchor_mm=(end_cell.col * self.grid_mm,
+                           end_cell.row * self.grid_mm),
                 net_name=net_name,
                 reason="t_junction",
             ))
-            log.info("%s t_junction recorded net=%s target=%s host=%s",
-                    ctx(page=self.page,
-                        comp=self._designator(pin_c),
-                        pin=self._pin_num(pin_c)),
-                    net_name, target, host.key if host else "?")
+            log.info(
+                "%s t_junction recorded net=%s target=%s end=%s host=%s",
+                ctx(page=self.page,
+                    comp=self._designator(pin_c),
+                    pin=self._pin_num(pin_c)),
+                net_name, target, end_cell,
+                host.key if host else "?")
             return wire
 
         log.warning("%s fail %s → net tries=%d",
@@ -684,9 +752,27 @@ class Router(RouterLogMixin):
     # Поиск пути (тонкая обёртка над pathfind)
     # =========================================================
 
-    def _find_path(self, net: str, start: Cell,
-                   goal: Cell) -> RouteAttempt:
-        return router_pathfind.find_path(self, net, start, goal)
+    def _find_path(
+        self,
+        net: str,
+        start: Cell,
+        goal: Cell,
+        *,
+        host_cells: Optional[Dict[Cell, Tuple[WireOrientation, ...]]] = None,
+    ) -> RouteAttempt:
+        """Обёртка над router_pathfind.find_path.
+
+        host_cells — необязательная карта «клетка → ориентации
+        host-сегментов». Если задана, pathfind останавливается
+        на первой клетке host-провода, куда вошёл перпендикулярно
+        (goal-состояние), не дожидаясь target.
+
+        Для _route_pair host_cells не передаётся — там цель
+        строго конкретная клетка (stub_b.tip).
+        """
+        return router_pathfind.find_path(
+            self, net, start, goal, host_cells=host_cells,
+        )
 
     # =========================================================
     # Заполнение карты
