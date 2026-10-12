@@ -1,22 +1,22 @@
 functional_purpose: |
-  Модуль питания и автомобильного разъёма J1.
+  Модуль питания и защиты входных цепей (без внешнего разъёма).
 
   Состав:
-    * Вход +12В (J1:1,2) → защита от переполюсовки D1 (SS54) →
-      фильтр помех L1 (феррит/дроссель) → TVS D2 (SMBJ15A) →
-      выход VCC_12V.
+    * Вход VBAT_IN (порт от главной страницы, приходит от J1) →
+      защита от переполюсовки D1 (SS54) → фильтр помех L1
+      (феррит/дроссель) → TVS D2 (SMBJ15A) → выход VCC_12V.
     * Стабилизатор +5В U6 (MC78M05CDTG, 0,5А) → VCC_5V.
     * Далее LDO +3,3В U7 (AMS1117-3.3) → VCC_3V3.
     * Диодная развязка D4 (SS14) между VCC_5V и линией питания
       датчиков V5_SENS: защищает внутренний +5В от обратной
-      подачи +12В через разъём J1:17.
+      подачи +12В снаружи.
     * TVS D5 (SMBJ5.0A) защищает V5_SENS.
-    * Набор конденсаторов C1..C11, C16..C20 по питанию и
+    * Набор конденсаторов C1..C4, C11, C16..C20 по питанию и
       фильтрам опор потенциометров ОС.
 
-  Через J1 (2×16) выходят все внешние подключения:
-  питание, мотор-выходы, ОС потенциометров, датчики,
-  ШИМ вентилятора, подсветка, CAN, AC_REQ_OUT.
+  Разъём J1 (2×16) к автомобилю вынесен на главную страницу
+  проекта; сюда приходят только входные/выходные питающие
+  шины через порты листа.
 
   В SPICE:
     * U6, U7 — subckt-модели в mc78m05_ngspice.lib и
@@ -41,10 +41,14 @@ functional_purpose: |
     INPUT. Отдельный верхний блок ports: не используется.
     На родителе порт — это узел сети через pinfunction: <имя_порта>.
 
-    Для этого листа OUTPUT — питающие шины, которые он генерирует
-    (VCC_12V, VCC_5V, VCC_3V3) и сигналы, уходящие к внешним
-    разъёмам; INPUT — входы от внешних датчиков и сигналы,
-    принимаемые с других листов (ILLUM_IN_RAW, AC_REQ_OUT).
+    Порты этого листа:
+      VBAT_IN  INPUT   — вход от J1 на главной странице
+      VCC_12V  OUTPUT  — питающая шина
+      VCC_5V   OUTPUT  — питающая шина
+      VCC_3V3  OUTPUT  — питающая шина
+      V5_SENS  OUTPUT  — питание датчиков и краёв потенциометров
+                         (на главной подключается к J1:17)
+      GND      INPUT   — общая шина
 
   Соглашения YAML:
     pin:         — только числовой номер вывода KiCad ('1', '2').
@@ -138,12 +142,6 @@ component_types:
       primitive: D
       model_def: ".model TVS5 D(IS=4.35e-9 RS=0.05 BV=5.6 IBV=1m N=1.05 CJO=200p)"
 
-  TYPE_CONN_02X16:
-    symbol: Connector_Generic:Conn_02x16_Odd_Even
-    footprint: Connector_PinHeader_2.54mm:PinHeader_2x16_P2.54mm_Horizontal
-    value: Разъём к автомобилю 2x16 (32 конт.)
-    fields: {}
-
   TYPE_L_FERRITE_12V:
     symbol: Device:L
     footprint: Inductor_SMD:L_1210_3225Metric
@@ -232,9 +230,6 @@ components:
   D5:
     type: TYPE_D_ZENER_TVS5
     description: "TVS защиты линии +5В датчиков V5_SENS"
-  J1:
-    type: TYPE_CONN_02X16
-    description: "Разъём к автомобилю 2x16 (32 конт.)"
   L1:
     type: TYPE_L_FERRITE_12V
     description: "Феррит/дроссель по входу +12В (подавление помех)"
@@ -248,8 +243,11 @@ components:
 nets:
   VBAT_IN:
     name: VBAT_IN
-    description: Входное бортовое питание +12В, выводы 1-2 разъёма J1
-    is_hierarchical_port: false
+    description: |
+      Входное бортовое питание +12В, приходит с главной страницы
+      (от J1.1, J1.2). До защиты от переполюсовки D1.
+    is_hierarchical_port: true
+    port_direction: INPUT
     attributes:
       type: POWER
       voltage_level: 12.0V
@@ -259,8 +257,6 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: J1, pin: '1' }
-    - { component: J1, pin: '2' }
     - { component: D1, pinfunction: 'A' }    # анод на вход — ток идёт от входа в диод
 
   VBAT_PROT:
@@ -323,8 +319,12 @@ nets:
 
   V5_SENS:
     name: V5_SENS
-    description: Общий выход +5В на датчики и края потенциометров ОС (J1:17). D4 исключает обратную подачу +12В снаружи
-    is_hierarchical_port: false
+    description: |
+      Общий выход +5В на датчики и края потенциометров ОС
+      (на главной странице подключается к J1:17).
+      D4 исключает обратную подачу +12В снаружи.
+    is_hierarchical_port: true
+    port_direction: OUTPUT
     attributes:
       type: POWER
       voltage_level: 5.0V
@@ -340,7 +340,6 @@ nets:
     - { component: C17, pin: '1' }
     - { component: C18, pin: '1' }
     - { component: C19, pin: '1' }
-    - { component: J1,  pin: '17' }
 
   VCC_3V3:
     name: VCC_3V3
@@ -372,9 +371,6 @@ nets:
         parasitic_r_ohm: 0.05
         parasitic_l_h: 10n
     nodes:
-    - { component: J1,  pin: '3' }
-    - { component: J1,  pin: '4' }
-    - { component: J1,  pin: '18' }
     - { component: U6,  pin: '2' }
     - { component: U7,  pin: '2' }
     - { component: C20, pin: '2' }
@@ -390,336 +386,6 @@ nets:
     - { component: C18, pin: '2' }
     - { component: C19, pin: '2' }
 
-  NTC_HEAT_W:
-    name: NTC_HEAT_W
-    description: 'Датчик патрубка отопителя: узел линии на разъёме J1:19'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..3.3V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '19' }
-
-  SOLAR_IN_RAW:
-    name: SOLAR_IN_RAW
-    description: Вход датчика солнечной радиации (0..5В), J1:20
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..5.0V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '20' }
-
-  COND_IN_RAW:
-    name: COND_IN_RAW
-    description: Вход датчика конденсата на стекле (0..5В), J1:21
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..5.0V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '21' }
-
-  MOTOR_1_A:
-    name: MOTOR_1_A
-    description: 'Заслонка 1: выход А мостового драйвера к моторедуктору, J1:5'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '5' }
-
-  MOTOR_1_B:
-    name: MOTOR_1_B
-    description: 'Заслонка 1: выход B мостового драйвера к моторедуктору, J1:6'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '6' }
-
-  FB_M1_RAW:
-    name: FB_M1_RAW
-    description: 'Заслонка 1: выход потенциометра положения (0..5В), J1:7'
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..5.0V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '7' }
-
-  MOTOR_2_A:
-    name: MOTOR_2_A
-    description: 'Заслонка 2: выход А мостового драйвера к моторедуктору, J1:8'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '8' }
-
-  MOTOR_2_B:
-    name: MOTOR_2_B
-    description: 'Заслонка 2: выход B мостового драйвера к моторедуктору, J1:9'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '9' }
-
-  FB_M2_RAW:
-    name: FB_M2_RAW
-    description: 'Заслонка 2: выход потенциометра положения (0..5В), J1:10'
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..5.0V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '10' }
-
-  MOTOR_3_A:
-    name: MOTOR_3_A
-    description: 'Заслонка 3: выход А мостового драйвера к моторедуктору, J1:11'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '11' }
-
-  MOTOR_3_B:
-    name: MOTOR_3_B
-    description: 'Заслонка 3: выход B мостового драйвера к моторедуктору, J1:12'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '12' }
-
-  FB_M3_RAW:
-    name: FB_M3_RAW
-    description: 'Заслонка 3: выход потенциометра положения (0..5В), J1:13'
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..5.0V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '13' }
-
-  MOTOR_4_A:
-    name: MOTOR_4_A
-    description: 'Заслонка 4: выход А мостового драйвера к моторедуктору, J1:14'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '14' }
-
-  MOTOR_4_B:
-    name: MOTOR_4_B
-    description: 'Заслонка 4: выход B мостового драйвера к моторедуктору, J1:15'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 5.0A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '15' }
-
-  FB_M4_RAW:
-    name: FB_M4_RAW
-    description: 'Заслонка 4: выход потенциометра положения (0..5В), J1:16'
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: ANALOG_SIGNAL
-      voltage_level: 0..5.0V
-      current_max: 0.005A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '16' }
-
-  AC_REQ_OUT:
-    name: AC_REQ_OUT
-    description: Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя)
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 0..12V
-      current_max: 0.05A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '24' }
-
-  ILLUM_IN_RAW:
-    name: ILLUM_IN_RAW
-    description: |
-      Аналоговое питание подсветки прибора с выхода внешнего
-      регулятора яркости (диммера), J1:22. Напряжение зависит
-      от положения регулятора и состояния бортсети:
-        1..9В   — LED-каналы закрыты (V < 3·Vf белого LED);
-        10..14,4В — LED-каналы открыты, яркость растёт с напряжением.
-
-      Используется:
-        * как питание 14 каналов подсветки в листе BACKLIGHT;
-        * как сигнал детектора габаритов в листе UI через
-          делитель R39/R40 (K = 10/57 ≈ 0,175).
-    is_hierarchical_port: true
-    port_direction: INPUT
-    attributes:
-      type: POWER
-      voltage_level: 1.0..14.4V
-      current_max: 0.5A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '22' }
-
-  CANH:
-    name: CANH
-    description: 'CAN: шина High (J1:25)'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '25' }
-
-  CANL:
-    name: CANL
-    description: 'CAN: шина Low (J1:26)'
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: DIGITAL_SIGNAL
-      voltage_level: 3.3V
-      current_max: 0.02A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '26' }
-
-  HEAT_FAN_PWM_CTL:
-    name: HEAT_FAN_PWM_CTL
-    description: ШИМ вентилятора печки к J1:23 (с открытого стока Q1 через R15)
-    is_hierarchical_port: true
-    port_direction: OUTPUT
-    attributes:
-      type: PWM_POWER
-      voltage_level: 0..12.0V
-      current_max: 0.1A
-      spice_simulation:
-        model_stimulus: ''
-        parasitic_r_ohm: 0.05
-        parasitic_l_h: 10n
-    nodes:
-    - { component: J1, pin: '23' }
-
 # ─────────────────────────────────────────────────────────────────────
 # Тестовые сценарии Ngspice
 #
@@ -730,7 +396,7 @@ nets:
 #            TVS D2 клиппит VCC_12V ≈ 24–26В
 #   PWR_P3 — стабильность VCC_5V: VBAT_IN = 14,4В + нагрузка
 #   PWR_P5 — стабильность VCC_3V3: VCC_5V подаётся, U7 выдаёт 3,3В
-#   PWR_P6 — обратная подача +12В на V5_SENS через J1:17:
+#   PWR_P6 — обратная подача +12В на V5_SENS:
 #            D4 (SS14) блокирует, V(VCC_5V) не растёт,
 #            D5 ограничивает V5_SENS
 #
@@ -742,7 +408,7 @@ scenarios:
 
   - name: PWR_P1
     description: |
-      Переполюсовка входа: на J1:1,2 подан −14В.
+      Переполюсовка входа: на VBAT_IN подан −14В.
       D1 (SS54) в обратном включении — ток ≈ 0,
       VBAT_PROT и VCC_12V остаются в нуле.
     analysis: op
@@ -858,9 +524,9 @@ scenarios:
 
   - name: PWR_P6
     description: |
-      Обратная подача +12В на линию датчиков V5_SENS (J1:17).
+      Обратная подача +12В на линию датчиков V5_SENS.
       Штатно V5_SENS питается через D4 (SS14) от VCC_5V.
-      Аварийный случай: снаружи через разъём приходит +12В.
+      Аварийный случай: снаружи приходит +12В.
       Источник V2 подключён через R_INJ=100 Ом (имитация жгута
       и Ri внешнего драйвера) — TVS D5 в пробое прижимает
       V5_SENS к ~5,6В. Проверяем, что D4 заперт и обратная
@@ -878,7 +544,7 @@ scenarios:
           net: V5_EXT
           type: dc
           value: 12.0
-          description: "Аварийная обратная подача +12В через J1:17"
+          description: "Аварийная обратная подача +12В на V5_SENS"
       - resistor:
           ref: R_INJ
           net_pos: V5_EXT

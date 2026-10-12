@@ -79,7 +79,12 @@ Sheet-pin и имя сети на родителе:
       * плоский список всех листов — рекурсивным обходом дерева
         SHEET_REF-компонентов от каждого корня.
 
-    Writer передаёт только объекты — никаких строковых UUID.
+    Writer передаёт только объекты — никаких строковых UUID и
+    никаких имён файлов отдельным аргументом. register_root
+    вызывается в write_project для каждого корня и получает
+    ТОЛЬКО объект Sheet; uuid, имя файла и прочее ProjectFileSync
+    читает из объекта в момент flush.
+
     Синхронизируются поля:
       meta.filename
       schematic.top_level_sheets[]
@@ -265,7 +270,11 @@ class Writer:
         Args:
             out_dir:         каталог для сохранения.
             root_sheet:      корень текущего обхода.
-            root_file_name:  имя .kicad_sch корня.
+            root_file_name:  имя .kicad_sch корня (используется
+                             Writer'ом для выходного файла; для
+                             синхронизации .kicad_pro не нужно —
+                             ProjectFileSync читает имя файла из
+                             самого объекта Sheet).
             project_name:    имя проекта KiCad.
 
         Instance-данные уже готовы к моменту вызова: comp.instances
@@ -287,11 +296,11 @@ class Writer:
         if self._pro_sync is None:
             self._pro_sync = ProjectFileSync(self._out_dir, project_name)
 
-        # Регистрируем корень ОБЪЕКТОМ. Проектный модуль сам извлечёт
-        # uuid, имя листа (Sheet.page) и имя файла. root_file_name
-        # передаём отдельно — он может отличаться от sheet.out_file,
-        # если так задано в YAML для главного корня.
-        self._pro_sync.register_root(root_sheet, root_file_name)
+        # Регистрируем корень ОБЪЕКТОМ. Ни UUID, ни имя файла не
+        # передаём — ProjectFileSync прочитает их из объекта в
+        # момент flush. Это устраняет рассинхрон между UUID файла
+        # в .kicad_sch и UUID корня в .kicad_pro.
+        self._pro_sync.register_root(root_sheet)
 
         self._visit(root_sheet)
 

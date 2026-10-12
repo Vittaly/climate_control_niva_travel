@@ -9,40 +9,41 @@ validate_kicad_sheets.py
 Использование:
     python validate_kicad_sheets.py PROJ.kicad_pro
     python validate_kicad_sheets.py ROOT.kicad_sch
-    python validate_kicad_sheets.py PATH --project-dir DIR
     python validate_kicad_sheets.py PATH -v
     python validate_kicad_sheets.py PATH --json
 
 Что проверяется (эталон — проект KiCad 10):
 
-  Файловая структура:
-    • <basename>.kicad_pro существует;
-    • каждый top_level_sheets[].filename существует на диске;
-    • каждое Sheetfile из (sheet …) существует рядом с корнем.
+  Уровень 1 — внутренняя согласованность .kicad_pro:
+    • meta.filename == имя файла .kicad_pro;
+    • schematic.top_level_sheets не пусто;
+    • каждый top_level_sheets[i] имеет filename и uuid;
+    • filename каждого top_level_sheets[i] существует на диске.
 
-  Согласованность .kicad_pro ↔ .kicad_sch:
-    • basename .kicad_pro == имя проекта в (project "…") во всех схемах;
-    • top_level_sheets[i].uuid == верхнеуровневое (uuid "…") соответствующего .kicad_sch;
-    • top_level_sheets[0].filename == <basename>.kicad_sch.
+  Уровень 2 — .kicad_pro ↔ корневые .kicad_sch (ВСЕ top_level_sheets):
+    • top_level_sheets[i].uuid == верхнеуровневое (uuid "…")
+      соответствующего .kicad_sch.
+    • Несовпадение — ERROR. Это отдельная проверка, независимая
+      от instance-путей в подлистах.
 
-  Пути у листов в корневом .kicad_sch:
-    • (instances (project "P" (path "/R" (page "N")))) — путь ТОЛЬКО
-      корневой UUID, БЕЗ /<uuid листа> на конце.
+  Уровень 3 — instance-пути в подлистах:
+    • Источник корневого UUID для построения путей — .kicad_pro
+      (как в KiCad). Если уровень 2 разошёлся, пути всё равно
+      строятся от .kicad_pro, чтобы дать полную картину.
+    • Листы в корневом .kicad_sch имеют (instances (project "P"
+      (path "/R" (page "N")))) — путь ТОЛЬКО корневой UUID,
+      БЕЗ /<uuid листа> на конце.
+    • У каждого (symbol …) в дочернем .kicad_sch в (instances …)
+      набор (path "P_i") ровно соответствует набору листов корня,
+      чей Sheetfile == этот файл.
+    • P_i == "/R/S_i", где S_i — uuid соответствующего листа в корне.
+    • Для каждого standalone-корня — та же проверка от его
+      собственного uuid.
 
-  Пути в дочерних .kicad_sch:
-    • у каждого (symbol …) в (instances …) набор (path "P_i") ровно
-      соответствует набору листов корня, чей Sheetfile == этот файл;
-    • P_i == "/R/S_i", где S_i — uuid соответствующего листа в корне;
-    • у каждого вложенного (sheet …) в дочернем файле путь ==
-      "/R[/S_parent…]" — путь до родителя, без собственного uuid.
-
-  Имена страниц (sheets[] в .kicad_pro):
-    • каждый (uuid "…") из sheets[] присутствует в какой-либо схеме
-      (как (uuid …) корня или (sheet (uuid …)) в корне/родителе);
-    • для не-корневых листов sheets[][1] == (property "Sheetname" …);
-    • один и тот же uuid с разными name → ERROR (несогласованность);
-    • одно и то же name с разными uuid → WARN (легально при
-      мульти-инстансах одного файла, но требует проверки).
+  Уровень 4 — sheets[] в .kicad_pro:
+    • UUID из sheets[] присутствуют в известных схемах;
+    • один uuid — одно name;
+    • расхождения — WARN (KiCad перезапишет при сохранении).
 
 Коды выхода:
     0 — ошибок нет;
@@ -53,7 +54,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -222,10 +222,7 @@ def _direct_child_property(inner: str, prop_name: str) -> Optional[str]:
 
 
 def _all_project_names(children: List[Tuple[str, str]]) -> Set[str]:
-    """Все имена проектов из (project "…") во всех (instances …).
-
-    Ищем в корне документа и в каждом (symbol …) / (sheet …).
-    """
+    """Все имена проектов из (project "…") во всех (instances …)."""
     names: Set[str] = set()
 
     def scan(inner: str) -> None:
@@ -238,11 +235,7 @@ def _all_project_names(children: List[Tuple[str, str]]) -> Set[str]:
                 scan(sub)
 
     for nm, sub in children:
-        if nm in ("symbol", "sheet"):
-            scan(sub)
-    # также проверяем сам корень — на случай нестандартной вложенности
-    for nm, sub in children:
-        if nm == "instances":
+        if nm in ("symbol", "sheet", "instances"):
             scan(sub)
     return names
 
@@ -269,7 +262,8 @@ def _sheet_instance_paths(sheet_inner: str) -> List[Dict[str, Optional[str]]]:
             page = None
             for pgstart, pgend in _find_blocks_by_name(pblock, "page"):
                 pgblock = pblock[pgstart:pgend + 1]
-                pg_strings = _strings_from_body(pgblock[pgblock.find("(") + 1:-1])
+                pg_strings = _strings_from_body(
+                    pgblock[pgblock.find("(") + 1:-1])
                 if pg_strings:
                     page = pg_strings[0]
                     break
@@ -290,7 +284,8 @@ def _symbol_instance_paths(symbol_inner: str) -> List[Dict[str, Optional[str]]]:
             ref = None
             for rstart, rend in _find_blocks_by_name(pblock, "reference"):
                 rblock = pblock[rstart:rend + 1]
-                rstrings = _strings_from_body(rblock[rblock.find("(") + 1:-1])
+                rstrings = _strings_from_body(
+                    rblock[rblock.find("(") + 1:-1])
                 if rstrings:
                     ref = rstrings[0]
                     break
@@ -329,22 +324,16 @@ class Report:
 
 
 # ─────────────────────────────────────────────────────────────
-# Вспомогательное: загрузка .kicad_pro
+# Вспомогательное
 # ─────────────────────────────────────────────────────────────
 
 def _find_project_file(start: Path) -> Optional[Path]:
-    """Найти .kicad_pro рядом с указанным .kicad_sch.
-
-    Если start — .kicad_pro, вернуть его как есть.
-    Если start — .kicad_sch, искать <stem>.kicad_pro в той же папке.
-    """
     if start.suffix == ".kicad_pro":
         return start
     if start.suffix == ".kicad_sch":
         cand = start.with_suffix(".kicad_pro")
         if cand.exists():
             return cand
-    # иначе — первый .kicad_pro в директории
     for p in sorted(start.parent.glob("*.kicad_pro")):
         return p
     return None
@@ -368,7 +357,7 @@ def validate(root_input: Path) -> Report:
     project_name = pro_path.stem
     report.project_name = project_name
 
-    # ── .kicad_pro ────────────────────────────────────────
+    # ── Уровень 1: .kicad_pro ─────────────────────────────
     try:
         pro_data = json.loads(pro_path.read_text(encoding="utf-8"))
     except Exception as e:
@@ -391,40 +380,86 @@ def validate(root_input: Path) -> Report:
         report.error(pro_path.name, "schematic.top_level_sheets empty")
         return report
 
-    # ── root .kicad_sch по первому top-level ──────────────
-    main_root = tls[0]
-    main_filename = main_root.get("filename")
-    if not main_filename:
-        report.error(pro_path.name, "top_level_sheets[0].filename missing")
+    # ── Уровень 2: top_level_sheets ↔ корневые .kicad_sch ─
+    # Читаем каждый top_level_sheets[i], сверяем с файлом.
+    top_level_files: List[Dict[str, Any]] = []
+    for i, tls_entry in enumerate(tls):
+        fn = tls_entry.get("filename")
+        uid = tls_entry.get("uuid")
+        name = tls_entry.get("name")
+
+        if not fn:
+            report.error(
+                pro_path.name,
+                f"top_level_sheets[{i}].filename missing"
+            )
+            continue
+        if not uid:
+            report.error(
+                pro_path.name,
+                f"top_level_sheets[{i}].uuid missing"
+            )
+            continue
+
+        sch_path = project_dir / fn
+        if not sch_path.exists():
+            report.error(
+                pro_path.name,
+                f"top_level_sheets[{i}].filename={fn!r} not found"
+            )
+            continue
+
+        try:
+            children = _read_root_children(sch_path)
+        except Exception as e:
+            report.error(fn, f"cannot parse: {e}")
+            continue
+
+        sha = _top_level_uuid(children)
+        if sha != uid:
+            report.error(
+                fn,
+                f"root .kicad_sch uuid={sha} != "
+                f"top_level_sheets[{i}].uuid={uid}"
+            )
+
+        if i == 0:
+            if name and name != project_name:
+                report.warn(
+                    pro_path.name,
+                    f"top_level_sheets[0].name={name!r} != "
+                    f"project_name={project_name!r}"
+                )
+            if fn != f"{project_name}.kicad_sch":
+                report.warn(
+                    pro_path.name,
+                    f"top_level_sheets[0].filename={fn!r} != "
+                    f"{project_name}.kicad_sch"
+                )
+
+        top_level_files.append({
+            "index": i,
+            "filename": fn,
+            "uuid": uid,
+            "name": name,
+            "children": children,
+            "sch_path": sch_path,
+        })
+
+    if not top_level_files:
         return report
-    if main_filename != f"{project_name}.kicad_sch":
-        report.warn(
-            pro_path.name,
-            f"top_level_sheets[0].filename={main_filename!r} != "
-            f"{project_name}.kicad_sch"
-        )
 
-    main_sch_path = project_dir / main_filename
-    if not main_sch_path.exists():
-        report.error(pro_path.name, f"root schema not found: {main_filename}")
-        return report
-
-    report.root_sch = str(main_sch_path)
-
-    # Читаем корневой .kicad_sch
-    try:
-        main_children = _read_root_children(main_sch_path)
-    except Exception as e:
-        report.error(main_filename, f"cannot parse: {e}")
-        return report
-
-    main_root_uuid = _top_level_uuid(main_children)
+    # Источник корневого UUID для построения путей — .kicad_pro,
+    # как в KiCad. Даже если уровень 2 разошёлся, пути строятся
+    # от значения из .kicad_pro, чтобы картина была полной.
+    main_entry = top_level_files[0]
+    main_filename = main_entry["filename"]
+    main_root_uuid = main_entry["uuid"]
+    main_children = main_entry["children"]
+    report.root_sch = str(main_entry["sch_path"])
     report.root_uuid = main_root_uuid
-    if not main_root_uuid:
-        report.error(main_filename, "no top-level (uuid …)")
-        return report
 
-    # ── basename .kicad_pro vs (project "…") во всех схемах ─
+    # ── basename .kicad_pro vs (project "…") в main-корне ─
     all_project_names = _all_project_names(main_children)
     for pn in all_project_names:
         if pn != project_name:
@@ -434,39 +469,7 @@ def validate(root_input: Path) -> Report:
                 f"(\"{project_name}\")"
             )
 
-    # ── SHA корня vs top_level_sheets[].uuid ──────────────
-    for i, tls_entry in enumerate(tls):
-        fn = tls_entry.get("filename")
-        uid = tls_entry.get("uuid")
-        name = tls_entry.get("name")
-        sch_path = project_dir / (fn or "")
-        if not fn or not sch_path.exists():
-            report.error(
-                pro_path.name,
-                f"top_level_sheets[{i}].filename={fn!r} not found"
-            )
-            continue
-        try:
-            ch = _read_root_children(sch_path)
-        except Exception as e:
-            report.error(fn, f"cannot parse: {e}")
-            continue
-        sha = _top_level_uuid(ch)
-        if sha != uid:
-            report.error(
-                pro_path.name,
-                f"top_level_sheets[{i}].uuid={uid} != "
-                f"{fn} SHA uuid={sha}"
-            )
-        if i == 0 and name != project_name:
-            report.warn(
-                pro_path.name,
-                f"top_level_sheets[0].name={name!r} != "
-                f"project_name={project_name!r}"
-            )
-
-    # ── Собираем все листы из корневого .kicad_sch ────────
-    # Список листов корня: [{uuid, name, file, instances:[{path,page}]}]
+    # ── Собираем листы main-корня ─────────────────────────
     root_sheets: List[Dict[str, Any]] = []
     for nm, sub in main_children:
         if nm != "sheet":
@@ -484,7 +487,7 @@ def validate(root_input: Path) -> Report:
     if not root_sheets:
         report.warn(main_filename, "no hierarchical sheets in root")
 
-    # ── Пути у листов корня: должны быть "/<main_root_uuid>" ─
+    # ── Уровень 3: instance-пути листов main-корня ────────
     expected_root_prefix = f"/{main_root_uuid}"
     for s in root_sheets:
         if not s["instances"]:
@@ -517,11 +520,10 @@ def validate(root_input: Path) -> Report:
                     f"with '{expected_root_prefix}'"
                 )
 
-    # ── Ожидаемые контексты для каждого дочернего файла ──
-    # file → {expected_path: [sheet_name,…]}
+    # ── Уровень 3: подлисты main-корня ────────────────────
     expected_by_file: Dict[str, Dict[str, List[str]]] = {}
-    # uuid листа → name (для проверки sheets[])
     uuid_to_name: Dict[str, str] = {}
+
     for s in root_sheets:
         if not s["file"] or not s["uuid"]:
             continue
@@ -531,34 +533,94 @@ def validate(root_input: Path) -> Report:
             expected_path, []
         ).append(s["name"])
 
-    # ── Проверка дочерних .kicad_sch ──────────────────────
     visited_files: Set[str] = set()
     _validate_child_file(
         project_dir, expected_root_prefix, report,
-        main_filename,  # родитель — корневой
-        expected_by_file, visited_files,
+        main_filename, expected_by_file, visited_files,
     )
 
-    # ── Проверка sheets[] в .kicad_pro ─────────────────────
-    # Собираем все известные UUID листов (root + все дочерние)
-    known_uuids: Set[str] = {main_root_uuid}
-    for s in root_sheets:
-        if s["uuid"]:
-            known_uuids.add(s["uuid"])
+    # ── Уровень 3: standalone-корни (tls[1:]) ─────────────
+    for entry in top_level_files[1:]:
+        fn = entry["filename"]
+        uid = entry["uuid"]
+        children = entry["children"]
 
-    # корень проекта может встречаться как элемент sheets[] с basename
+        standalone_sheets: List[Dict[str, Any]] = []
+        for nm, sub in children:
+            if nm != "sheet":
+                continue
+            s_uuid = _direct_child_string(sub, "uuid")
+            s_name = _direct_child_property(sub, "Sheetname") or "<unnamed>"
+            s_file = _direct_child_property(sub, "Sheetfile")
+            inst = _sheet_instance_paths(sub)
+            standalone_sheets.append({
+                "uuid": s_uuid, "name": s_name,
+                "file": s_file, "instances": inst,
+            })
+
+        standalone_prefix = f"/{uid}"
+        for s in standalone_sheets:
+            if not s["instances"]:
+                report.warn(
+                    fn,
+                    f"sheet '{s['name']}' has no (instances …)"
+                )
+                continue
+            for ip in s["instances"]:
+                p = ip["path"]
+                if p == standalone_prefix:
+                    continue
+                if s["uuid"] and p == f"{standalone_prefix}/{s['uuid']}":
+                    report.error(
+                        fn,
+                        f"sheet '{s['name']}': path='{p}' — should be "
+                        f"'{standalone_prefix}' "
+                        f"(remove trailing '/{s['uuid']}')"
+                    )
+                elif p.startswith(standalone_prefix + "/"):
+                    report.error(
+                        fn,
+                        f"sheet '{s['name']}': path='{p}' — should be "
+                        f"'{standalone_prefix}' (not deeper)"
+                    )
+                else:
+                    report.error(
+                        fn,
+                        f"sheet '{s['name']}': path='{p}' — should start "
+                        f"with '{standalone_prefix}'"
+                    )
+
+        expected_by_file_standalone: Dict[str, Dict[str, List[str]]] = {}
+        for s in standalone_sheets:
+            if not s["file"] or not s["uuid"]:
+                continue
+            uuid_to_name[s["uuid"]] = s["name"]
+            expected_path = f"{standalone_prefix}/{s['uuid']}"
+            expected_by_file_standalone.setdefault(
+                s["file"], {}
+            ).setdefault(expected_path, []).append(s["name"])
+
+        _validate_child_file(
+            project_dir, standalone_prefix, report,
+            fn, expected_by_file_standalone, visited_files,
+        )
+
+    # ── Уровень 4: sheets[] в .kicad_pro ──────────────────
+    known_uuids: Set[str] = set(uuid_to_name.keys())
+    for entry in tls:
+        u = entry.get("uuid")
+        if u:
+            known_uuids.add(u)
+
     _check_sheets_list(
         report, pro_path, "schematic.sheets",
         sch_sheets, known_uuids, uuid_to_name,
-        project_name, main_root_uuid,
     )
     _check_sheets_list(
         report, pro_path, "sheets (project-level)",
         proj_sheets, known_uuids, uuid_to_name,
-        project_name, main_root_uuid,
     )
 
-    # ── Имена Sheetname vs sheets[] в pro ─────────────────
     _check_sheetname_consistency(
         report, pro_path, proj_sheets, uuid_to_name,
     )
@@ -581,7 +643,10 @@ def _validate_child_file(
         visited.add(fname)
         child_path = project_dir / fname
         if not child_path.exists():
-            report.error(parent_file_name, f"referenced file not found: {fname}")
+            report.error(
+                parent_file_name,
+                f"referenced file not found: {fname}"
+            )
             continue
         try:
             cchildren = _read_root_children(child_path)
@@ -593,7 +658,6 @@ def _validate_child_file(
         symbols_seen = 0
         symbols_with_paths = 0
         missing_total: Set[str] = set()
-        extra_total: Set[str] = set()
 
         for nm, inner in cchildren:
             if nm != "symbol":
@@ -623,12 +687,12 @@ def _validate_child_file(
                     f"symbol {lib_id} (uuid {sym_uuid}) extra paths: "
                     f"{sorted(extra)}"
                 )
-                extra_total |= extra
 
         if symbols_seen > 0 and symbols_with_paths == 0:
             report.error(
                 fname,
-                f"{symbols_seen} symbol(s) found but none have (instances …)"
+                f"{symbols_seen} symbol(s) found but none have "
+                f"(instances …)"
             )
         elif symbols_seen == symbols_with_paths and not missing_total:
             report.info(
@@ -646,14 +710,11 @@ def _validate_child_file(
             s_file = _direct_child_property(inner, "Sheetfile")
             if not s_file or not s_uuid:
                 continue
-            # Ожидаемые пути для вложенного листа = пути до его родителя
-            # (то есть все контексты, в которых существует этот файл),
-            # БЕЗ добавления uuid самого вложенного листа.
+            # Ожидаемые пути для вложенного листа = пути до его
+            # родителя (все контексты, в которых существует текущий
+            # файл), БЕЗ добавления uuid самого вложенного листа.
             nested_paths_set: Dict[str, List[str]] = {}
             for parent_path in expected_set:
-                # parent_path — это контекст, в котором существует
-                # текущий файл (например, /R/S_parent).
-                # Вложенный лист виден в тех же контекстах.
                 nested_paths_set.setdefault(parent_path, [])
             nested_expected.setdefault(s_file, {})
             for p, names in nested_paths_set.items():
@@ -673,13 +734,11 @@ def _check_sheets_list(
     entries: List[Any],
     known_uuids: Set[str],
     uuid_to_name: Dict[str, str],
-    project_name: str,
-    main_root_uuid: str,
 ) -> None:
     """Проверить список sheets[] из .kicad_pro.
 
-    • все UUID должны быть известны;
-    • один uuid — одно name;
+    • все UUID должны быть известны (иначе WARN — stale-запись);
+    • один uuid — одно name (иначе ERROR);
     • одно name с разными uuid — WARN.
     """
     if not isinstance(entries, list):
@@ -689,15 +748,20 @@ def _check_sheets_list(
     uuid_to_names: Dict[str, Set[str]] = {}
     name_to_uuids: Dict[str, Set[str]] = {}
     unknown_uuids: Set[str] = set()
-    # список кортежей для дальнейшего сравнения — сохраняем порядок
 
     for entry in entries:
         if not isinstance(entry, (list, tuple)) or len(entry) < 2:
-            report.error(pro_path.name, f"{label}: malformed entry {entry!r}")
+            report.error(
+                pro_path.name,
+                f"{label}: malformed entry {entry!r}"
+            )
             continue
         u, n = entry[0], entry[1]
         if not isinstance(u, str) or not isinstance(n, str):
-            report.error(pro_path.name, f"{label}: non-string entry {entry!r}")
+            report.error(
+                pro_path.name,
+                f"{label}: non-string entry {entry!r}"
+            )
             continue
         uuid_to_names.setdefault(u, set()).add(n)
         name_to_uuids.setdefault(n, set()).add(u)
@@ -708,15 +772,12 @@ def _check_sheets_list(
         if len(names) > 1:
             report.error(
                 pro_path.name,
-                f"{label}: uuid {u} mapped to multiple names: {sorted(names)}"
+                f"{label}: uuid {u} mapped to multiple names: "
+                f"{sorted(names)}"
             )
 
     for n, uuids in name_to_uuids.items():
         if len(uuids) > 1:
-            # Разные инстансы одного файла легальны. Проверим: если все
-            # uuid кроме одного — это один и тот же файл (один uuid
-            # может быть корневым, остальные — инстансы одного Sheetfile),
-            # то это WARN, а не ERROR.
             report.warn(
                 pro_path.name,
                 f"{label}: name {n!r} used for multiple uuids: "
@@ -726,7 +787,8 @@ def _check_sheets_list(
     for u in unknown_uuids:
         report.warn(
             pro_path.name,
-            f"{label}: uuid {u} not found in any schema (stale entry?)"
+            f"{label}: uuid {u} not found in any schema "
+            f"(stale entry?)"
         )
 
 
@@ -742,7 +804,8 @@ def _check_sheetname_consistency(
     pro_names: Dict[str, Set[str]] = {}
     for entry in proj_sheets:
         if (isinstance(entry, (list, tuple)) and len(entry) >= 2
-                and isinstance(entry[0], str) and isinstance(entry[1], str)):
+                and isinstance(entry[0], str)
+                and isinstance(entry[1], str)):
             pro_names.setdefault(entry[0], set()).add(entry[1])
 
     for u, sch_name in uuid_to_name.items():
@@ -750,7 +813,8 @@ def _check_sheetname_consistency(
         if not names_in_pro:
             report.warn(
                 pro_path.name,
-                f"sheet uuid {u} (name '{sch_name}') missing in sheets[]"
+                f"sheet uuid {u} (name '{sch_name}') "
+                f"missing in sheets[]"
             )
             continue
         if sch_name not in names_in_pro:
@@ -773,15 +837,17 @@ def print_report(report: Report, verbose: bool) -> None:
     print()
     print(f"Sheets in root: {len(report.sheets)}")
     for s in report.sheets:
-        paths = ", ".join(ip["path"] for ip in s["instances"]) or "<none>"
+        paths = ", ".join(
+            ip["path"] for ip in s["instances"]
+        ) or "<none>"
         print(f"  - {s['name']:<30} uuid={s['uuid']}  file={s['file']}")
         if verbose:
             print(f"      instance path(s): {paths}")
     print()
 
     errors = [i for i in report.issues if i.severity == "ERROR"]
-    warns  = [i for i in report.issues if i.severity == "WARN"]
-    infos  = [i for i in report.issues if i.severity == "INFO"]
+    warns = [i for i in report.issues if i.severity == "WARN"]
+    infos = [i for i in report.issues if i.severity == "INFO"]
 
     if errors:
         print(f"ERRORS ({len(errors)})")
@@ -826,15 +892,18 @@ def report_to_json(report: Report) -> str:
             for i in report.issues
         ],
         "summary": {
-            "errors":   sum(1 for i in report.issues if i.severity == "ERROR"),
-            "warnings": sum(1 for i in report.issues if i.severity == "WARN"),
+            "errors": sum(
+                1 for i in report.issues if i.severity == "ERROR"),
+            "warnings": sum(
+                1 for i in report.issues if i.severity == "WARN"),
         },
     }, indent=2, ensure_ascii=False)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     p = argparse.ArgumentParser(
-        description="Validate KiCad hierarchical project (.kicad_pro + .kicad_sch)."
+        description="Validate KiCad hierarchical project "
+                    "(.kicad_pro + .kicad_sch)."
     )
     p.add_argument("root", help="Path to .kicad_pro or root .kicad_sch")
     p.add_argument("--verbose", "-v", action="store_true")

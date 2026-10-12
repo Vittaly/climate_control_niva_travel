@@ -2,7 +2,7 @@
 """Синхронизация .kicad_pro с генерируемыми .kicad_sch.
 
 Вход — Sheet-объекты (первоисточник). Модуль сам извлекает из них
-всё необходимое:
+всё необходимое в момент записи:
     * UUID, имя и имя файла — из корневого Sheet-объекта;
     * плоский список всех листов — рекурсивным обходом дерева
       SHEET_REF-компонентов от каждого корня.
@@ -30,23 +30,38 @@
 SHEET_REF-листы (в порядке обхода дерева в глубину). Дубли по
 uuid отбрасываются — первая встреченная запись сохраняется.
 
+Принцип: UUID и имя файла живут ТОЛЬКО в объекте Sheet. Нигде
+не кэшируются — читаются из объекта в момент формирования JSON
+для .kicad_pro. Никаких промежуточных кортежей с UUID, никаких
+ключей словарей из UUID.
+
 Остальные секции .kicad_pro (board, net_settings, bom_*, annotation,
 variants, erc, cvpcb, pcbnew, ...) не трогаются.
 
 Идемпотентность:
     flush() сравнивает подпись полей до/после применения состояния
     и не пишет файл, если они не изменились.
+
+Отладка:
+    Модуль логирует через стандартный logging. Чтобы видеть
+    диагностику, включите уровень INFO для логгера
+    'writer_project_file'. Ключевые строки:
+      register_root: uuid=... out_file=... page=... id=...
+      flush: pro_path=... existed=... roots=... uuids=[...]
+      flush: before==after=... top_level=... sheets_count=...
+      flush: written to ...
+      flush: skipped (no change)
 """
 from __future__ import annotations
 
 import json
 import logging
-from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple
+from typing import Any, Iterable, Iterator, List
 
 
-logger = logging.getLogger(__name__)
+from logging_setup import get_logger
+logger = get_logger(__name__)
 
 __all__ = [
     "ProjectFileSync",
@@ -54,21 +69,15 @@ __all__ = [
 ]
 
 
-# Типы записей во внутренних списках.
-RootEntry  = Tuple[str, str, str]   # (uuid, filename, name)
-SheetEntry = Tuple[str, str]        # (uuid, name)
-
-
 class ProjectFileSync:
     """Накопитель корневых Sheet-объектов + синхронизатор .kicad_pro.
 
-    UUID, имена и дерево SHEET_REF-компонентов извлекаются из
-    Sheet-объектов при flush(). Снаружи передаются только сами
-    объекты — никаких строковых UUID.
+    Хранит ТОЛЬКО ссылки на объекты Sheet. Всё остальное (uuid,
+    имя файла, имя листа, список дочерних) извлекается из объектов
+    в момент flush(). Никаких строковых UUID вне объектов.
 
-    Порядок корней сохраняется по порядку регистрации (OrderedDict).
-    Повторная регистрация того же uuid перезаписывает запись, но
-    сохраняет её исходную позицию.
+    Порядок корней сохраняется по порядку регистрации. Повторная
+    регистрация того же объекта (по идентичности) игнорируется.
     """
 
     def __init__(self, out_dir: Path, project_name: str):
@@ -76,43 +85,43 @@ class ProjectFileSync:
         self.project_name = str(project_name)
         self.pro_path = self.out_dir / f"{self.project_name}.kicad_pro"
 
-        # uuid → (root_sheet, filename)
-        self._roots: "OrderedDict[str, Tuple[Any, str]]" = OrderedDict()
+        # Список корневых Sheet-объектов. Только ссылки — никаких
+        # копий uuid/filename/name.
+        self._roots: List[Any] = []
+
+        logger.info(
+            "ProjectFileSync: out_dir=%s project_name=%r pro_path=%s",
+            self.out_dir, self.project_name, self.pro_path,
+        )
 
     # ── регистрация ─────────────────────────────────────────
 
-    def register_root(
-        self,
-        root_sheet: Any,
-        filename: Optional[str] = None,
-    ) -> None:
+    def register_root(self, root_sheet: Any) -> None:
         """Зарегистрировать корневой Sheet-объект.
 
-        Args:
-            root_sheet: Sheet-объект корня. UUID и page берутся
-                        из него.
-            filename:   имя файла, в который записан корень
-                        (может отличаться от root_sheet.out_file,
-                        если так задано в YAML). Если None —
-                        используется root_sheet.out_file.
+        Все атрибуты (uuid, out_file, page) берутся из объекта
+        в момент flush. Здесь только накапливаем ссылки.
         """
         if root_sheet is None:
+            logger.info("register_root: root_sheet is None — skipped")
             return
-        uuid_ = getattr(root_sheet, "uuid", None)
-        if not uuid_:
-            logger.warning(
-                "register_root: root sheet without uuid skipped")
+        if any(existing is root_sheet for existing in self._roots):
+            logger.info(
+                "register_root: already registered id=%r — skipped",
+                id(root_sheet),
+            )
             return
-        if filename is None:
-            filename = getattr(root_sheet, "out_file", "") or ""
-        self._roots[uuid_] = (root_sheet, filename)
+        self._roots.append(root_sheet)
+        logger.info(
+            "register_root: uuid=%r out_file=%r page=%r id=%r",
+            getattr(root_sheet, "uuid", None),
+            getattr(root_sheet, "out_file", None),
+            getattr(root_sheet, "page", None),
+            id(root_sheet),
+        )
 
     def register_roots(self, roots: Iterable[Any]) -> None:
-        """Зарегистрировать список корневых Sheet-объектов.
-
-        Корни регистрируются в порядке перечисления. Повторная
-        регистрация того же корня сохраняет исходную позицию.
-        """
+        """Зарегистрировать список корневых Sheet-объектов."""
         for root in roots:
             self.register_root(root)
 
@@ -121,6 +130,7 @@ class ProjectFileSync:
     def forget(self) -> None:
         """Очистить накопленное состояние (для нового прогона)."""
         self._roots.clear()
+        logger.info("forget: roots cleared")
 
     # ── синхронизация ───────────────────────────────────────
 
@@ -130,22 +140,40 @@ class ProjectFileSync:
         Возвращает True, если файл создан или перезаписан.
         """
         existed = self.pro_path.exists()
+
+        logger.info(
+            "flush: pro_path=%s existed=%s roots=%d uuids=%s",
+            self.pro_path, existed, len(self._roots),
+            [getattr(r, "uuid", None) for r in self._roots],
+        )
+
         try:
             data = self._load_or_create()
         except OSError as e:
-            logger.error("cannot read %s: %s", self.pro_path, e)
+            logger.error("flush: cannot read %s: %s", self.pro_path, e)
             return False
         except json.JSONDecodeError as e:
-            logger.error("invalid JSON in %s: %s", self.pro_path, e)
+            logger.error("flush: invalid JSON in %s: %s", self.pro_path, e)
             return False
 
         before = _sync_signature(data)
 
-        roots_data, sheets_data = self._collect()
-        _apply_sync(data, self.pro_path.name, roots_data, sheets_data)
+        _apply_sync(data, self.pro_path.name,
+                    self._roots, self.project_name)
 
         after = _sync_signature(data)
+
+        schematic = data.get("schematic") or {}
+        logger.info(
+            "flush: before==after=%s top_level=%s sheets_count=%d",
+            before == after,
+            schematic.get("top_level_sheets"),
+            len(schematic.get("sheets", []) or []),
+        )
+
         if existed and before == after:
+            logger.info("flush: skipped (no change) file=%s",
+                        self.pro_path)
             return False
 
         try:
@@ -153,71 +181,20 @@ class ProjectFileSync:
             with open(self.pro_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent="\t", ensure_ascii=False)
                 f.write("\n")
+            logger.info("flush: written to %s", self.pro_path)
         except OSError as e:
-            logger.error("cannot write %s: %s", self.pro_path, e)
+            logger.error("flush: cannot write %s: %s", self.pro_path, e)
             return False
 
         return True
 
-    # ── извлечение данных из Sheet-объектов ─────────────────
-
-    def _collect(self) -> Tuple[List[RootEntry], List[SheetEntry]]:
-        """Собрать roots_data и sheets_data из зарегистрированных корней.
-
-        Возвращает:
-            roots_data:  [(uuid, filename, name), ...]
-            sheets_data: [(uuid, name), ...] — плоский список всех
-                         листов, начиная с корней.
-
-        Обход дерева: от каждого корня рекурсивно по SHEET_REF-
-        компонентам. Каждый Sheet и SHEET_REF посещается один раз,
-        даже если лист инстансирован несколько раз.
-        """
-        roots_data: List[RootEntry] = []
-        sheets_data: List[SheetEntry] = []
-        seen: set = set()
-
-        # 1. Сами корни — в порядке регистрации.
-        for root_uuid, (root_sheet, filename) in self._roots.items():
-            if root_uuid in seen:
-                continue
-            seen.add(root_uuid)
-            name = getattr(root_sheet, "page", None) or self.project_name
-            roots_data.append((root_uuid, filename, name))
-            sheets_data.append((root_uuid, name))
-
-        # 2. Все SHEET_REF-компоненты во всех корнях.
-        # visited_sheets защищает от повторного обхода одного
-        # Sheet-объекта через несколько родителей (actuator_channel × 4).
-        visited_sheets: set = set()
-        for _root_uuid, (root_sheet, _filename) in self._roots.items():
-            for sheet_ref in _iter_sheet_refs(root_sheet, visited_sheets):
-                ref_uuid = getattr(sheet_ref, "uuid", None)
-                if not ref_uuid or ref_uuid in seen:
-                    continue
-                seen.add(ref_uuid)
-                ref_name = (
-                    getattr(sheet_ref, "sheet_name", None)
-                    or getattr(sheet_ref, "designator", "")
-                    or ""
-                )
-                sheets_data.append((ref_uuid, ref_name))
-
-        return roots_data, sheets_data
-
     # ── чтение / каркас ─────────────────────────────────────
 
-    def _load_or_create(self) -> Dict[str, Any]:
-        """Загрузить существующий .kicad_pro или вернуть каркас.
-
-        Отличия от старой версии:
-          * OSError (нет доступа, файл занят) пробрасывается —
-            вызывающий flush() логирует и возвращает False.
-          * JSONDecodeError пробрасывается, файл откладывается
-            в .bak, но НЕ подменяется пустым каркасом молча —
-            иначе терялись бы пользовательские настройки.
-        """
+    def _load_or_create(self) -> dict:
+        """Загрузить существующий .kicad_pro или вернуть каркас."""
         if not self.pro_path.exists():
+            logger.info("_load_or_create: creating empty skeleton for %s",
+                        self.pro_path.name)
             return _make_empty_project_data(self.pro_path.name)
 
         text = self.pro_path.read_text(encoding="utf-8")
@@ -244,12 +221,7 @@ def update_project_file(
     project_name: str,
     roots: Iterable[Any],
 ) -> bool:
-    """Одноразово обновить .kicad_pro из списка корневых Sheet-объектов.
-
-    Для каждого корня берётся uuid, page (или project_name как
-    fallback) и out_file. Имя файла корня при необходимости можно
-    переопределить через stateful-API.
-    """
+    """Одноразово обновить .kicad_pro из списка корневых Sheet-объектов."""
     sync = ProjectFileSync(out_dir, project_name)
     sync.register_roots(roots)
     return sync.flush()
@@ -262,13 +234,13 @@ def update_project_file(
 def _iter_sheet_refs(sheet: Any, visited: set) -> Iterator[Any]:
     """Рекурсивно yield'ить все SHEET_REF-компоненты дерева.
 
-    visited — множество уже обойдённых Sheet-объектов; защищает
-    от повторного спуска в один и тот же лист (multi-instance,
+    visited — множество уже обойдённых Sheet-объектов (по id),
+    защищает от повторного спуска в один лист (multi-instance,
     циклические ссылки).
     """
-    if sheet is None or sheet in visited:
+    if sheet is None or id(sheet) in visited:
         return
-    visited.add(sheet)
+    visited.add(id(sheet))
 
     for comp in getattr(sheet, "components", {}).values():
         if not _is_sheet_ref(comp):
@@ -288,8 +260,6 @@ def _is_sheet_ref(comp: Any) -> bool:
         from constants import ComponentKind
         return kind == ComponentKind.SHEET_REF
     except Exception:
-        # Fallback: у SHEET_REF есть child_sheet и sheet_file,
-        # у обычных символов — нет.
         return (
             hasattr(comp, "child_sheet")
             and hasattr(comp, "sheet_file")
@@ -301,40 +271,78 @@ def _is_sheet_ref(comp: Any) -> bool:
 # ─────────────────────────────────────────────────────────────
 
 def _apply_sync(
-    data: Dict[str, Any],
+    data: dict,
     pro_filename: str,
-    roots: List[RootEntry],
-    sheets: List[SheetEntry],
+    roots: List[Any],
+    project_name: str,
 ) -> None:
+    """Заполнить поля .kicad_pro из объектов Sheet.
+
+    roots — список корневых Sheet-объектов (ссылки).
+    Всё остальное (uuid, filename, name, дочерние) читается
+    из объектов прямо здесь, в момент формирования JSON.
+    """
     meta = data.setdefault("meta", {})
     meta["filename"] = pro_filename
 
-    # Единый полный список [uuid, name]: сначала корни, потом SHEET_REF'ы.
-    seen: set = set()
-    full: List[List[str]] = []
-    for root_uuid, _root_filename, root_name in roots:
-        if not root_uuid or root_uuid in seen:
-            continue
-        seen.add(root_uuid)
-        full.append([root_uuid, root_name])
-    for sheet_uuid, sheet_name in sheets:
-        if not sheet_uuid or sheet_uuid in seen:
-            continue
-        seen.add(sheet_uuid)
-        full.append([sheet_uuid, sheet_name])
-
     schematic = data.setdefault("schematic", {})
 
-    schematic["top_level_sheets"] = [
-        {"filename": fn, "name": nm, "uuid": u}
-        for u, fn, nm in roots
-    ]
+    # top_level_sheets — из корневых объектов.
+    top_level = []
+    for root in roots:
+        uid = getattr(root, "uuid", None)
+        if not uid:
+            logger.warning(
+                "_apply_sync: root without uuid skipped, id=%r",
+                id(root),
+            )
+            continue
+        filename = getattr(root, "out_file", "") or ""
+        name = getattr(root, "page", None) or project_name
+        top_level.append({
+            "filename": filename,
+            "name": name,
+            "uuid": uid,
+        })
+    schematic["top_level_sheets"] = top_level
 
-    schematic["sheets"] = full
+    # sheets — плоский список [uuid, name].
+    # Обход корней делается ЗДЕСЬ, на месте, без промежуточных
+    # структур. Дубли по uuid отбрасываются.
+    full: List[List[str]] = []
+    seen_uuid: set = set()
+    visited_sheets: set = set()
+
+    def _append(sheet_obj: Any, name_attr: str) -> None:
+        uid = getattr(sheet_obj, "uuid", None)
+        if not uid:
+            return
+        if uid in seen_uuid:
+            return
+        seen_uuid.add(uid)
+        name = (
+            getattr(sheet_obj, name_attr, None)
+            or getattr(sheet_obj, "page", None)
+            or getattr(sheet_obj, "designator", "")
+            or ""
+        )
+        full.append([uid, str(name)])
+
+    for root in roots:
+        _append(root, "page")
+        for ref in _iter_sheet_refs(root, visited_sheets):
+            _append(ref, "sheet_name")
+
+    
     data["sheets"] = full
 
+    logger.info(
+        "_apply_sync: top_level=%d sheets=%d",
+        len(top_level), len(full),
+    )
 
-def _sync_signature(data: Dict[str, Any]) -> Tuple[str, str, str, str]:
+
+def _sync_signature(data: dict) -> tuple:
     schematic = data.get("schematic") or {}
     meta = data.get("meta") or {}
     return (
@@ -351,11 +359,13 @@ def _backup_broken(pro_path: Path) -> None:
         if backup.exists():
             backup.unlink()
         pro_path.rename(backup)
-    except OSError:
-        pass
+        logger.warning("_backup_broken: moved %s to %s",
+                       pro_path, backup)
+    except OSError as e:
+        logger.error("_backup_broken: failed for %s: %s", pro_path, e)
 
 
-def _make_empty_project_data(filename: str) -> Dict[str, Any]:
+def _make_empty_project_data(filename: str) -> dict:
     return {
         "board": {
             "design_settings": {"defaults": {}, "rules": {}},

@@ -647,22 +647,6 @@
 		"page_layout_descr_file": "",
 		"plot_directory": "",
 		"reuse_designators": true,
-		"subpart_first_id": 65,
-		"subpart_id_separator": 0,
-		"top_level_sheets": [
-			{
-				"filename": "climate_control_niva_travel.kicad_sch",
-				"name": "climate_control_niva_travel",
-				"uuid": "44f41296-f3f1-4c90-8ab3-63dc7c8784d7"
-			},
-			{
-				"filename": "fan_driver_testbench.kicad_sch",
-				"name": "fan_driver_testbench",
-				"uuid": "6613fcf4-d931-4105-ae2d-13e5afb282cf"
-			}
-		],
-		"used_designators": "RT1,RT1101,J1-5,J101,J301,J1101,J1301-1302,LED1-48,LED1001-1042,LED1301-1306,R1-58,R101-102,R201-207,R401-403,R501-502,R601-603,R701-702,R801-803,R901-903,R1001-1014,R1101-1102,R1201-1202,R1301-1315,L1-3,L301,SW1-6,SW1301-1306,C1-32,C101-107,C301-310,C401-402,C501,C601-602,C701,C801-802,C901-902,C1201,C1301-1304,D1-7,D301-304,D501,D701,D1101,FB1,FB101,#PWR1,Q1-6,Q201-203,Q1101,U1-8,U101,U301-302,U401,U601,U801,U901,U1401",
-		"variants": [],
 		"sheets": [
 			[
 				"44f41296-f3f1-4c90-8ab3-63dc7c8784d7",
@@ -724,68 +708,84 @@
 				"9adc8212-9b63-47b1-9945-03c980fc74ba",
 				"X_ACTUATOR_CHANNEL_M4"
 			]
-		]
+		],
+		"subpart_first_id": 65,
+		"subpart_id_separator": 0,
+		"top_level_sheets": [
+			{
+				"filename": "climate_control_niva_travel.kicad_sch",
+				"name": "climate_control_niva_travel",
+				"uuid": "a20a8d43-2e18-4318-8ef3-7f434a470dab"
+			},
+			{
+				"filename": "fan_driver_testbench.kicad_sch",
+				"name": "fan_driver_testbench",
+				"uuid": "9d65f2b6-eafc-4877-87dc-8b71e3390a39"
+			}
+		],
+		"used_designators": "RT1,RT1101,RT1301,J1-5,J101-102,J301-302,J1101,J1301-1302,LED1-48,LED301-306,LED1001-1042,LED1201-1242,LED1301-1306,R1-58,R101-103,R201-207,R301-315,R401-407,R501-503,R601-603,R701-703,R801-803,R901-903,R1001-1014,R1101-1103,R1201-1214,R1301-1315,R1401-1402,L1-3,L101,L301,L801,SW1-6,SW301-306,SW1301-1306,C1-32,C101-109,C301-310,C401-402,C501-502,C601-602,C701-702,C801-810,C901-902,C1001-1002,C1101-1102,C1201,C1301-1304,C1401,D1-7,D101,D301-304,D501,D601,D701,D801-804,D901,D1101,D1301,FB1,FB101,#PWR1,Q1-6,Q101,Q201-203,Q401-403,Q1101,Q1301,U1-8,U101,U301-302,U401,U501,U601,U701,U801-802,U901,U1001,U1101,U1401,U1501",
+		"variants": []
 	},
 	"sheets": [
 		[
-			"44f41296-f3f1-4c90-8ab3-63dc7c8784d7",
+			"a20a8d43-2e18-4318-8ef3-7f434a470dab",
 			"climate_control_niva_travel"
 		],
 		[
-			"6613fcf4-d931-4105-ae2d-13e5afb282cf",
-			"fan_driver_testbench"
-		],
-		[
-			"f2b4d855-bee7-4a7f-9038-424c1bc0a8b0",
+			"595b8d41-035e-473d-8fdc-63eaba4c2891",
 			"X_POWER_SUPPLY"
 		],
 		[
-			"a8943e6f-f7b1-4fc7-9538-58ec166d77ae",
+			"38bcbdc4-bd52-45f7-97e3-a52e59df41e8",
 			"X_USER_INTERFACE"
 		],
 		[
-			"1211bfd8-d77e-4bde-9604-f52bce45bade",
+			"1469a1ed-0edc-4b26-9fa4-af555b72a5f7",
 			"X_HEATING_SENSOR"
 		],
 		[
-			"1bb3a669-b27a-4637-b147-3af585512af4",
+			"70ebd483-137c-4bff-9d27-25c0a4d00c56",
 			"X_SOLAR_SENSOR"
 		],
 		[
-			"51ce6cd3-2ea6-4996-a5fa-5227e4cfbd72",
+			"1ce541b4-973c-4a75-ab1e-7eb502d581e3",
 			"X_CONDENSATE_SENSOR"
 		],
 		[
-			"0c56e00f-3802-46c4-bc01-07b7ba3706e2",
+			"d9669148-12fe-458c-8fc8-1ebea2be6fa6",
 			"X_POWER_OUTPUTS"
 		],
 		[
-			"f87ee003-3f99-4021-84c3-f4c6b54ef8a3",
+			"0b9c7715-47ab-423b-a493-835c78427256",
 			"X_CAN_BUS"
 		],
 		[
-			"c5134a86-8893-45e0-849f-0dc227ec879c",
+			"5a5dbd74-3985-413b-929a-dbef2133c5d3",
 			"X_CABIN_SENSOR"
 		],
 		[
-			"73b331d2-ac3b-4385-8364-403d678665cc",
+			"7b4850d3-42d2-45f5-bc9d-492784f8ea6a",
 			"X_BACKLIGHT"
 		],
 		[
-			"ef57fcee-e282-4e2a-b7a1-56643442302d",
+			"fb0f2749-c662-4061-8cce-0319f035f1a8",
 			"X_ACTUATOR_CHANNEL_M1"
 		],
 		[
-			"df354cf4-e65d-4d51-8beb-74c39f4577f9",
+			"3ddf28b5-d77b-42d1-9e28-06c757bc079d",
 			"X_ACTUATOR_CHANNEL_M2"
 		],
 		[
-			"445704f4-cb37-4ac5-8284-ee80854cbd9a",
+			"e2c6e160-3bfb-4c58-8e68-e8b3df657076",
 			"X_ACTUATOR_CHANNEL_M3"
 		],
 		[
-			"9adc8212-9b63-47b1-9945-03c980fc74ba",
+			"71c49532-965c-4bbc-bb04-9de7ab700f7e",
 			"X_ACTUATOR_CHANNEL_M4"
+		],
+		[
+			"9d65f2b6-eafc-4877-87dc-8b71e3390a39",
+			"fan_driver_testbench"
 		]
 	],
 	"text_variables": {},

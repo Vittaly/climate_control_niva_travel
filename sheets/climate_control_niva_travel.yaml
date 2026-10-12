@@ -1,6 +1,6 @@
 root_page:
   project: Climate Control Niva Travel
-  version: '2.7'
+  version: '2.8'
   file: climate_control_niva_travel.kicad_sch
 
   # ─────────────────────────────────────────────────────────────────
@@ -21,8 +21,14 @@ root_page:
   #
   # Корневая страница — тоже лист. Модели её компонентов объявлены
   # в component_types[type].spice, как и на любом другом листе.
-  # Модель МК (STM32G071RBT6) генерируется per-scenario модулем
-  # mcu_model.py — её тип U1 несёт маркер auto_ports.
+  # Модель МК (STM32G071RBT6) — статический subckt в
+  # spice/lib/mcu_emulator.lib; поведение пинов задаётся
+  # сценариями через scenarios[*].params.U1.
+  #
+  # Разъём J1 к автомобилю (2×16) вынесен на эту страницу.
+  # Питающие цепи (защита от переполюсовки, стабилизаторы,
+  # фильтры, TVS) остаются на листе power_supply и связаны с J1
+  # через порты VBAT_IN (вход) и V5_SENS (выход).
   #
   # Путь к .lib — общая конвенция скриптов (spice/lib), в YAML не
   # дублируется.
@@ -49,10 +55,6 @@ root_page:
   # ссылается на сеть-порт ребёнка. Ни port_map, ни верхний блок
   # ports: в YAML больше не используются.
   #
-  # Имена портов на родителе и внутри листа могут не совпадать
-  # структурно (сеть внутри ребёнка может называться иначе), но
-  # ссылка идёт по имени сети-порта.
-  #
   # pin: — ТОЛЬКО числовой номер вывода KiCad ('1', '29', '64').
   # pinfunction: — функциональное имя (VBAT, PA13, OUT1, MOTOR_A, ...).
   # Резолв имён выполняет Component.pin_by_name() с нормализацией
@@ -66,23 +68,14 @@ root_page:
   # Модель данных о пинах МК
   #
   # Источник истины о том, какие пины U1 используются и как —
-  # секция `nets`. Отдельного `mcu_pin_map` больше нет: он дублировал
-  # данные, уже содержащиеся в nets.
+  # секция `nets`. Отдельного `mcu_pin_map` больше нет.
   #
   # Узел U1 в nets описывается полями:
   #   pinfunction — имя вывода из символа KiCad ('PA13', 'VBAT', ...).
-  #                 Используется Component.pin_by_name() для привязки.
   #   function    — короткая машинно-читаемая роль ('power_in',
   #                 'SWDIO', 'reset', 'TIM1_CH1'). Опционально.
-  #   description — человекочитаемое описание логики использования:
-  #                 зачем сигнал, куда идёт, какие ограничения.
-  #                 Не используется pipeline'ом, только для людей
-  #                 и для генерации отчётов.
-  #
-  # Связь идёт по имени вывода, а не по номеру пина: смена корпуса
-  # или ревизии чипа не требует правок (в пределах совпадающей
-  # распиновки), а сверка с официальным XML CubeMX становится
-  # тривиальной.
+  #   description — человекочитаемое описание логики использования.
+  #                 Не используется pipeline'ом.
   # ─────────────────────────────────────────────────────────────────
 
   # ─────────────────────────────────────────────────────────────────
@@ -91,8 +84,6 @@ root_page:
   # Для них нет (sheet ...) в корневой схеме и нет ссылок из nets.
   # Генерируются как отдельные .kicad_sch по своему <stem>.yaml и
   # гоняются в e2e наравне с иерархическими листами.
-  #
-  # Формат: только stem (имя файла sheets/<stem>.yaml без расширения).
   # ─────────────────────────────────────────────────────────────────
   standalone_sheets:
     - fan_driver_testbench
@@ -134,13 +125,15 @@ root_page:
   symbol_pin_map: {}
 
   component_types:
-    # Только типы компонентов корневой схемы. R/C/L — примитивы,
-    # spice-секции не требуют (кроме случаев, где value не в
-    # KiCad-нотации — тогда задаётся spice.value).
+    # R/C/L — примитивы, spice-секции не требуют
+    # (кроме случаев, где value не в KiCad-нотации — тогда
+    # задаётся spice.value).
     # Connector не моделируется.
-    # STM32G071RBT6 — единственный, кто несёт spice с auto_ports.
-    # Поля pin→net для SPICE-модели МК берутся из nets: узлы U1
-    # с pinfunction и function. Отдельного mcu_pin_map нет.
+    # STM32G071RBT6 несёт spice-секцию с 64 явными узлами
+    # (Position 1..64 из XML STM32G071R(6-8-B)Tx.xml) и ссылкой
+    # на статический subckt в spice/lib/mcu_emulator.lib.
+    # Поведение пинов задаётся сценариями (params.U1), а не
+    # генерируется per-scenario.
 
     TYPE_C_100NF:
       symbol: Device:C
@@ -178,6 +171,12 @@ root_page:
       value: SWD debug 1x04
       fields: {}
 
+    TYPE_CONN_02X16:
+      symbol: Connector_Generic:Conn_02x16_Odd_Even
+      footprint: Connector_PinHeader_2.54mm:PinHeader_2x16_P2.54mm_Horizontal
+      value: Разъём к автомобилю 2x16 (32 конт.)
+      fields: {}
+
     TYPE_R_10K:
       symbol: Device:R
       footprint: Resistor_SMD:R_0603_1608Metric
@@ -189,16 +188,117 @@ root_page:
     TYPE_STM32G071RBT6:
       lcsc_id: C432213
       value: STM32G071RBT6
+      footprint: Package_QFP:LQFP-64_10x10mm_P0.5mm
       fields: {}
       spice:
         description: |
-          Модель STM32G071RBT6 по задействованным пинам корневой схемы.
-          Генерируется make_scr/mcu_model.py: пины и их цепи берутся
-          из узлов U1 в nets (pinfunction + function).
-          Входы: 10 МΩ + 5 пФ, выходы: push-pull 40 Ω.
-          .INCLUDE spice/<scenario>_mcu.sub ставит kicad_to_spice.
-        auto_ports: nets
+          Электрическая модель STM32G071RBT6 для симуляции
+          периферийного поведения пинов.
+
+          Живёт в spice/lib/mcu_emulator.lib в виде двух subckt:
+            MCU_PIN        — поведение одного пина (примитив),
+            STM32G071RBT6  — обёртка: 64 позиционных узла,
+                             60 инстансов MCU_PIN (по одному на GPIO).
+
+          Модель НЕ знает про периферию (ADC/TIM/USART/DAC).
+          Описывает только вольт-амперное поведение пина.
+          Режим задаётся параметром MODE:
+            0  HiZ          симметричный делитель 1G/1G VDD↔VSS
+            1  ADC          10 МОм || 5 пФ на GND
+            2  вход pull-up 40 кОм к VDD
+            3  вход pull-dn 40 кОм к GND
+            4  выход high   VOH через ROUT=40 Ом
+            5  выход low    VOL через ROUT=40 Ом
+            6  PWM          VLO..VHI, FREQ, DUTY, через ROUT
+            ≠0..6           отрава: 999 В на пине.
+
+          Значения по умолчанию (все 60 GPIO в HiZ) заданы в PARAMS:
+          subckt STM32G071RBT6 внутри .lib. Сценарий перекрывает
+          только те пины, которые реально используются, через
+          scenarios[*].params.U1:
+            PA9:  out_high
+            PA10: out_low
+            PA8:  { mode: pwm, freq: 25k, duty: 0.5 }
+          Генератор разворачивает человекочитаемые алиасы в числа
+          и дописывает MODE_*=/FREQ_*=/DUTY_*=… в X-строку.
+
+          Power-пины (Position 6 VBAT, 7 VREF+, 8 VDD, 9 VSS) —
+          формальные узлы subckt без MCU_PIN. Используются как
+          vcc/gnd для 60 инстансов MCU_PIN, снаружи подключаются
+          к реальным шинам (VCC_3V3, GND, VDDA_3V3).
+
+          Порядок узлов subckt = Position 1..64 из XML
+          STM32G071R(6-8-B)Tx.xml. Менять нельзя: любая правка
+          порядка = неверная привязка пинов в XU1.
+        include: mcu_emulator.lib
         subckt: STM32G071RBT6
+        nodes:
+          # Порядок = Position 1..64. Число справа = номер пина
+          # в KiCad-символе (совпадает с физическим выводом LQFP-64).
+          PC11:  { pin: "1"  }
+          PC12:  { pin: "2"  }
+          PC13:  { pin: "3"  }
+          PC14:  { pin: "4"  }
+          PC15:  { pin: "5"  }
+          VBAT:  { pin: "6"  }
+          VREF:  { pin: "7"  }
+          VDD:   { pin: "8"  }
+          VSS:   { pin: "9"  }
+          PF0:   { pin: "10" }
+          PF1:   { pin: "11" }
+          PF2:   { pin: "12" }
+          PC0:   { pin: "13" }
+          PC1:   { pin: "14" }
+          PC2:   { pin: "15" }
+          PC3:   { pin: "16" }
+          PA0:   { pin: "17" }
+          PA1:   { pin: "18" }
+          PA2:   { pin: "19" }
+          PA3:   { pin: "20" }
+          PA4:   { pin: "21" }
+          PA5:   { pin: "22" }
+          PA6:   { pin: "23" }
+          PA7:   { pin: "24" }
+          PC4:   { pin: "25" }
+          PC5:   { pin: "26" }
+          PB0:   { pin: "27" }
+          PB1:   { pin: "28" }
+          PB2:   { pin: "29" }
+          PB10:  { pin: "30" }
+          PB11:  { pin: "31" }
+          PB12:  { pin: "32" }
+          PB13:  { pin: "33" }
+          PB14:  { pin: "34" }
+          PB15:  { pin: "35" }
+          PA8:   { pin: "36" }
+          PA9:   { pin: "37" }
+          PC6:   { pin: "38" }
+          PC7:   { pin: "39" }
+          PD8:   { pin: "40" }
+          PD9:   { pin: "41" }
+          PA10:  { pin: "42" }
+          PA11:  { pin: "43" }
+          PA12:  { pin: "44" }
+          PA13:  { pin: "45" }
+          PA14:  { pin: "46" }
+          PA15:  { pin: "47" }
+          PC8:   { pin: "48" }
+          PC9:   { pin: "49" }
+          PD0:   { pin: "50" }
+          PD1:   { pin: "51" }
+          PD2:   { pin: "52" }
+          PD3:   { pin: "53" }
+          PD4:   { pin: "54" }
+          PD5:   { pin: "55" }
+          PD6:   { pin: "56" }
+          PB3:   { pin: "57" }
+          PB4:   { pin: "58" }
+          PB5:   { pin: "59" }
+          PB6:   { pin: "60" }
+          PB7:   { pin: "61" }
+          PB8:   { pin: "62" }
+          PB9:   { pin: "63" }
+          PC10:  { pin: "64" }
 
   components:
     C10:
@@ -225,6 +325,9 @@ root_page:
     FB1:
       type: TYPE_L_FERRITE_600R_VDDA
       description: Феррит 600Ω@100MHz по питанию VDDA
+    J1:
+      type: TYPE_CONN_02X16
+      description: "Разъём к автомобилю 2x16 (32 конт.)"
     J2:
       type: TYPE_CONN01X04_SWD_DEBUG
       description: SWD-отладка 1x04
@@ -315,6 +418,30 @@ root_page:
       value_sch: actuator_channel.kicad_sch
 
   nets:
+    # ─── Питающие шины ─────────────────────────────────────────────
+    # J1 подключается к VBAT_IN (пины 1,2) и V5_SENS (пин 17);
+    # защита, фильтры и стабилизаторы живут на листе power_supply,
+    # с которым эти две сети связаны через порты.
+
+    VBAT_IN:
+      name: VBAT_IN
+      description: Входное бортовое питание +12В, J1:1,2. Порт на лист power_supply (INPUT)
+      attributes:
+        type: POWER
+        voltage_level: 12.0V
+        current_max: 15A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: J1
+        pin: '1'
+      - component: J1
+        pin: '2'
+      - component: X_POWER_SUPPLY
+        pinfunction: VBAT_IN
+
     VCC_12V:
       name: VCC_12V
       description: Силовая шина +12В после фильтра помех L1, с TVS D2 и конденсаторами
@@ -359,6 +486,26 @@ root_page:
         pinfunction: VCC_5V
       - component: X_POWER_SUPPLY
         pinfunction: VCC_5V
+
+    V5_SENS:
+      name: V5_SENS
+      description: |
+        Питание датчиков и краёв потенциометров ОС (J1:17).
+        Порт на лист power_supply (OUTPUT): на этом листе
+        стоит TVS D5 и диодная развязка D4 от внутреннего +5В.
+      attributes:
+        type: POWER
+        voltage_level: 5.0V
+        current_max: 0.1A
+        spice_simulation:
+          model_stimulus: ''
+          parasitic_r_ohm: 0.05
+          parasitic_l_h: 10n
+      nodes:
+      - component: J1
+        pin: '17'
+      - component: X_POWER_SUPPLY
+        pinfunction: V5_SENS
 
     VCC_3V3:
       name: VCC_3V3
@@ -460,6 +607,12 @@ root_page:
         pin: '2'
       - component: R2
         pin: '2'
+      - component: J1
+        pin: '3'
+      - component: J1
+        pin: '4'
+      - component: J1
+        pin: '18'
       - component: J2
         pin: '4'
       - component: U1
@@ -863,7 +1016,7 @@ root_page:
 
     NTC_HEAT_W:
       name: NTC_HEAT_W
-      description: 'Датчик патрубка отопителя: узел линии на разъёме'
+      description: 'Датчик патрубка отопителя: узел линии на разъёме J1:19'
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..3.3V
@@ -873,8 +1026,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: NTC_HEAT_W
+      - component: J1
+        pin: '19'
       - component: X_HEATING_SENSOR
         pinfunction: NTC_HEAT_W
 
@@ -900,7 +1053,7 @@ root_page:
 
     SOLAR_IN_RAW:
       name: SOLAR_IN_RAW
-      description: Вход датчика солнечной радиации (0..5В), пин J1:20
+      description: Вход датчика солнечной радиации (0..5В), J1:20
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -910,8 +1063,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: SOLAR_IN_RAW
+      - component: J1
+        pin: '20'
       - component: X_SOLAR_SENSOR
         pinfunction: SOLAR_IN_RAW
 
@@ -937,7 +1090,7 @@ root_page:
 
     COND_IN_RAW:
       name: COND_IN_RAW
-      description: Вход датчика конденсата на стекле (0..5В), пин J1:21
+      description: Вход датчика конденсата на стекле (0..5В), J1:21
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -947,8 +1100,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: COND_IN_RAW
+      - component: J1
+        pin: '21'
       - component: X_CONDENSATE_SENSOR
         pinfunction: COND_IN_RAW
 
@@ -975,7 +1128,7 @@ root_page:
     # ─── Канал заслонки 1 ──────────────────────────────────────────
     FB_M1_RAW:
       name: FB_M1_RAW
-      description: 'Заслонка 1: выход потенциометра положения (0..5В) с J1:7'
+      description: 'Заслонка 1: выход потенциометра положения (0..5В), J1:7'
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -985,8 +1138,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: FB_M1_RAW
+      - component: J1
+        pin: '7'
       - component: X_ACTUATOR_CHANNEL_M1
         pinfunction: FB_RAW
 
@@ -1048,7 +1201,7 @@ root_page:
 
     MOTOR_1_A:
       name: MOTOR_1_A
-      description: 'Заслонка 1: выход А мостового драйвера к моторедуктору'
+      description: 'Заслонка 1: выход А мостового драйвера к моторедуктору, J1:5'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1058,14 +1211,14 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_1_A
+      - component: J1
+        pin: '5'
       - component: X_ACTUATOR_CHANNEL_M1
         pinfunction: MOTOR_A
 
     MOTOR_1_B:
       name: MOTOR_1_B
-      description: 'Заслонка 1: выход B мостового драйвера к моторедуктору'
+      description: 'Заслонка 1: выход B мостового драйвера к моторедуктору, J1:6'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1075,15 +1228,15 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_1_B
+      - component: J1
+        pin: '6'
       - component: X_ACTUATOR_CHANNEL_M1
         pinfunction: MOTOR_B
 
     # ─── Канал заслонки 2 ──────────────────────────────────────────
     FB_M2_RAW:
       name: FB_M2_RAW
-      description: 'Заслонка 2: выход потенциометра положения (0..5В) с J1:10'
+      description: 'Заслонка 2: выход потенциометра положения (0..5В), J1:10'
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1093,8 +1246,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: FB_M2_RAW
+      - component: J1
+        pin: '10'
       - component: X_ACTUATOR_CHANNEL_M2
         pinfunction: FB_RAW
 
@@ -1156,7 +1309,7 @@ root_page:
 
     MOTOR_2_A:
       name: MOTOR_2_A
-      description: 'Заслонка 2: выход А мостового драйвера к моторедуктору'
+      description: 'Заслонка 2: выход А мостового драйвера к моторедуктору, J1:8'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1166,14 +1319,14 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_2_A
+      - component: J1
+        pin: '8'
       - component: X_ACTUATOR_CHANNEL_M2
         pinfunction: MOTOR_A
 
     MOTOR_2_B:
       name: MOTOR_2_B
-      description: 'Заслонка 2: выход B мостового драйвера к моторедуктору'
+      description: 'Заслонка 2: выход B мостового драйвера к моторедуктору, J1:9'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1183,15 +1336,15 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_2_B
+      - component: J1
+        pin: '9'
       - component: X_ACTUATOR_CHANNEL_M2
         pinfunction: MOTOR_B
 
     # ─── Канал заслонки 3 ──────────────────────────────────────────
     FB_M3_RAW:
       name: FB_M3_RAW
-      description: 'Заслонка 3: выход потенциометра положения (0..5В) с J1:13'
+      description: 'Заслонка 3: выход потенциометра положения (0..5В), J1:13'
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1201,8 +1354,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: FB_M3_RAW
+      - component: J1
+        pin: '13'
       - component: X_ACTUATOR_CHANNEL_M3
         pinfunction: FB_RAW
 
@@ -1264,7 +1417,7 @@ root_page:
 
     MOTOR_3_A:
       name: MOTOR_3_A
-      description: 'Заслонка 3: выход А мостового драйвера к моторедуктору'
+      description: 'Заслонка 3: выход А мостового драйвера к моторедуктору, J1:11'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1274,14 +1427,14 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_3_A
+      - component: J1
+        pin: '11'
       - component: X_ACTUATOR_CHANNEL_M3
         pinfunction: MOTOR_A
 
     MOTOR_3_B:
       name: MOTOR_3_B
-      description: 'Заслонка 3: выход B мостового драйвера к моторедуктору'
+      description: 'Заслонка 3: выход B мостового драйвера к моторедуктору, J1:12'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1291,15 +1444,15 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_3_B
+      - component: J1
+        pin: '12'
       - component: X_ACTUATOR_CHANNEL_M3
         pinfunction: MOTOR_B
 
     # ─── Канал заслонки 4 ──────────────────────────────────────────
     FB_M4_RAW:
       name: FB_M4_RAW
-      description: 'Заслонка 4: выход потенциометра положения (0..5В) с J1:16'
+      description: 'Заслонка 4: выход потенциометра положения (0..5В), J1:16'
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1309,8 +1462,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: FB_M4_RAW
+      - component: J1
+        pin: '16'
       - component: X_ACTUATOR_CHANNEL_M4
         pinfunction: FB_RAW
 
@@ -1375,7 +1528,7 @@ root_page:
 
     MOTOR_4_A:
       name: MOTOR_4_A
-      description: 'Заслонка 4: выход А мостового драйвера к моторедуктору'
+      description: 'Заслонка 4: выход А мостового драйвера к моторедуктору, J1:14'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1385,14 +1538,14 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_4_A
+      - component: J1
+        pin: '14'
       - component: X_ACTUATOR_CHANNEL_M4
         pinfunction: MOTOR_A
 
     MOTOR_4_B:
       name: MOTOR_4_B
-      description: 'Заслонка 4: выход B мостового драйвера к моторедуктору'
+      description: 'Заслонка 4: выход B мостового драйвера к моторедуктору, J1:15'
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1402,8 +1555,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: MOTOR_4_B
+      - component: J1
+        pin: '15'
       - component: X_ACTUATOR_CHANNEL_M4
         pinfunction: MOTOR_B
 
@@ -1431,8 +1584,7 @@ root_page:
 
     HEAT_FAN_PWM_CTL:
       name: HEAT_FAN_PWM_CTL
-      description: Внешний ШИМ-выход на автомобильный разъем к штатному силовому модулю
-        вентилятора
+      description: Внешний ШИМ-выход на разъём J1:23 к штатному силовому модулю вентилятора
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1442,8 +1594,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: HEAT_FAN_PWM_CTL
+      - component: J1
+        pin: '23'
       - component: X_POWER_OUTPUTS
         pinfunction: HEAT_FAN_PWM_CTL
 
@@ -1499,14 +1651,14 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: AC_REQ_OUT
+      - component: J1
+        pin: '24'
       - component: X_POWER_OUTPUTS
         pinfunction: AC_REQ_OUT
 
     ILLUM_IN_RAW:
       name: ILLUM_IN_RAW
-      description: Вход внешней подсветки прибора (+12В габаритов)
+      description: Вход внешней подсветки прибора (+12В габаритов), J1:22
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1516,8 +1668,8 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
-      - component: X_POWER_SUPPLY
-        pinfunction: ILLUM_IN_RAW
+      - component: J1
+        pin: '22'
       - component: X_USER_INTERFACE
         pinfunction: ILLUM_IN_RAW
       - component: X_BACKLIGHT
@@ -1584,7 +1736,7 @@ root_page:
 
     CANH:
       name: CANH
-      description: 'CAN: шина High (J1:25)'
+      description: 'CAN: шина High, J1:25'
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1594,14 +1746,14 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
+      - component: J1
+        pin: '25'
       - component: X_CAN_BUS
-        pinfunction: CANH
-      - component: X_POWER_SUPPLY
         pinfunction: CANH
 
     CANL:
       name: CANL
-      description: 'CAN: шина Low (J1:26)'
+      description: 'CAN: шина Low, J1:26'
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1611,7 +1763,7 @@ root_page:
           parasitic_r_ohm: 0.05
           parasitic_l_h: 10n
       nodes:
+      - component: J1
+        pin: '26'
       - component: X_CAN_BUS
-        pinfunction: CANL
-      - component: X_POWER_SUPPLY
         pinfunction: CANL
