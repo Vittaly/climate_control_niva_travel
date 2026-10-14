@@ -27,6 +27,35 @@ MCU-модель:
   * Per-scenario модель МК — spice/<scenario>_mcu.sub, генерируется
     модулем mcu_model.py. Вызов — из kicad_to_spice.build_cir.
 
+Сквозные сценарии корня:
+  Сценарии из root_page.scenarios главного YAML — отдельная группа:
+  они пересекают границы листов (от пина МК через подсхемы до
+  выводов J1). Технически это те же сценарии, что и у подсхем:
+  они читаются kicad_to_spice.py (из <ROOT_STEM>.yaml с разворотом
+  root_page:) и прогоняются run_tests.py наравне с остальными.
+  Но проверять их наличие нужно явно: без этого «зелёный» прогон
+  мог бы молча потерять всю сквозную группу, если бы что-то в
+  чтении root_page.scenarios разошлось.
+
+  Шаг 4b — специально для этого: после прогона run_tests.py мы
+  убеждаемся, что имя каждого корневого сценария встречается в
+  выводе. Если нет — код возврата ненулевой и запускается
+  диагностика:
+     * есть ли на диске spice/<scenario>.cir, его размер и заголовок;
+     * попадает ли <scenario> в stdout run_tests.py целиком;
+     * что вообще run_tests.py напечатал в первых строках сводки.
+
+Диагностика (--debug):
+  При флаге --debug вывод run_tests.py не подавляется фильтром
+  _SUPPRESS, а сохраняется в run_tests.debug.log. Дополнительно
+  печатается:
+     * список сценариев, найденных в root_page.scenarios;
+     * список .cir-файлов на диске с размерами;
+     * первые N строк сводки run_tests.py.
+
+  Без --debug диагностика тоже запускается, но только при провале
+  шага 4b (чтобы не засорять вывод зелёного прогона).
+
 Пути:
   * PROJ      — корень проекта.
   * MAIN_YAML — sheets/<ROOT_STEM>.yaml.
@@ -80,8 +109,12 @@ MCU-модель:
   0. Очистка stale * _mcu.sub.
   1. Экспорт per-file нетлистов (kicad-cli).
   2. Генерация .sub/.cir (kicad_to_spice.py) из нетлиста + YAML.
+     Сюда входят и сквозные сценарии корня — лог об их количестве
+     печатается сразу после генерации.
   3. Сверка — БЛОКИРУЮЩИЙ ШАГ (3a per-file + 3b плоская).
   4. Эмулятор Ngspice (run_tests.py) — только если шаг 3 прошёл.
+  4b. Проверка, что сквозные сценарии корня отработали.
+  4c. Диагностика при провале 4b: файлы на диске + вывод run_tests.py.
 
 Запуск:
     python3 run_e2e.py                       # полный цикл
@@ -92,9 +125,12 @@ MCU-модель:
     python3 run_e2e.py --no-net-check        # ОПАСНО: пропустить сверку
     python3 run_e2e.py --sheet power_supply  # только один stem
     python3 run_e2e.py --sheet climate_control_niva_travel   # корень
+    python3 run_e2e.py --debug               # включить полную отладку
+                                             # (сохраняет run_tests.debug.log)
 
 Код возврата: 0 если все PASS. Иначе:
-  * 1 — расхождение YAML и схемы (или ошибка конфигурации);
+  * 1 — расхождение YAML и схемы (или ошибка конфигурации), либо
+        не отработал хотя бы один сквозной сценарий корня;
   * N — число провалов тестов (если сверка прошла, но тесты упали).
 """
 import glob
@@ -111,6 +147,9 @@ _SUPPRESS = (
     "библиотечный orientation=",
 )
 
+DEBUG = False   # включается --debug; влияет на фильтрацию и дампы
+
+
 def _emit_stream(stream, text, label=None):
     tag = f"[{label}] " if label else ""
     for line in text.splitlines():
@@ -123,6 +162,7 @@ def _emit_stream(stream, text, label=None):
             stream.write(f"{tag}ERROR: {line}\n")
         else:
             stream.write(f"{tag}{line}\n")
+
 
 def _call_captured(fn, *args, label=None):
     """Вызвать fn(*args) in-process, перехватив stdout/stderr,
@@ -371,6 +411,24 @@ def _sheet_scenarios(stem):
     return data.get("scenarios") or []
 
 
+def _root_cross_scenarios():
+    """Имена сценариев из root_page.scenarios главного YAML.
+
+    Сквозные сценарии корня живут рядом с компонентами и сетями
+    корневой страницы, внутри root_page:. Это отдельная группа
+    тестов: они пересекают границы листов (от пина МК через
+    подсхемы до выводов J1), в отличие от сценариев отдельных
+    подсхем.
+
+    Возвращает список имён в порядке объявления.
+    """
+    return [
+        sc.get("name")
+        for sc in _sheet_scenarios(ROOT_STEM)
+        if sc.get("name")
+    ]
+
+
 def clean_stale_mcu_subs(stems):
     """Удалить spice/<scenario>_mcu.sub от сценариев, которых больше нет."""
     valid = set()
@@ -388,6 +446,117 @@ def clean_stale_mcu_subs(stems):
         removed += 1
         print("  удалён stale: %s" % rel(path))
     return removed
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Диагностика: что реально лежит на диске вокруг корневых сценариев
+# ─────────────────────────────────────────────────────────────────────
+
+def _diag_cross_scenarios(verbose=True):
+    """Печать состояния файлов и YAML вокруг сквозных сценариев корня.
+
+    Вызывается:
+      * всегда при --debug (verbose=True, печатает даже при OK);
+      * при провале шага 4b (verbose=True, но только провалившиеся).
+
+    Ничего не меняет на диске. Только читает и печатает.
+    """
+    names = _root_cross_scenarios()
+    if not names:
+        print("  (в root_page.scenarios нет сценариев)")
+        return
+
+    print("  --- диагностика сквозных сценариев ---")
+    print("  YAML: %s" % rel(MAIN_YAML))
+
+    # 1. Что видно в YAML.
+    print("  В root_page.scenarios: %d сценариев" % len(names))
+    print("    %s" % ", ".join(names))
+
+    # 2. Что лежит на диске.
+    print("  Файлы spice/<scenario>.cir:")
+    for name in names:
+        cir = os.path.join(SPICE, name + ".cir")
+        if not os.path.exists(cir):
+            print("    %-24s НЕТ" % name)
+            continue
+        try:
+            sz = os.path.getsize(cir)
+        except OSError:
+            sz = -1
+        try:
+            head = open(cir, encoding="utf-8").readline().rstrip("\n")
+        except OSError as e:
+            head = f"<не прочитал: {e}>"
+        print("    %-24s %6d b   %s" % (name, sz, head))
+
+    # 3. Есть ли вообще .sub корня (доказательство, что kicad_to_spice
+    #    вызывался для корня и построил субсхему).
+    root_sub = os.path.join(SPICE, ROOT_STEM + ".sub")
+    if os.path.exists(root_sub):
+        try:
+            sz = os.path.getsize(root_sub)
+        except OSError:
+            sz = -1
+        print("  spice/%s.sub: %d байт" % (ROOT_STEM, sz))
+    else:
+        print("  spice/%s.sub: НЕТ — kicad_to_spice.py для корня, "
+              "похоже, не отработал" % ROOT_STEM)
+
+    # 4. Быстрый обзор, что вообще есть в spice/ из .cir корня.
+    #    (Если имена сценариев в YAML разошлись с именами файлов —
+    #    это сразу видно.)
+    all_cir = sorted(glob.glob(os.path.join(SPICE, "*.cir")))
+    print("  Всего .cir в spice/: %d" % len(all_cir))
+    if verbose and all_cir:
+        for p in all_cir:
+            print("    %s" % rel(p))
+    print("  --- /диагностика ---")
+
+
+def _diag_run_tests_output(stdout, stderr):
+    """Печать фрагментов вывода run_tests.py для отладки 4b.
+
+    Ищем строки, где упоминается любое из имён сквозных сценариев,
+    а также любые строки с 'MISSING', 'PASS', 'FAIL'. Это позволяет
+    отличить «run_tests.py вообще не знает про сценарий» от
+    «знает, но упал внутри».
+    """
+    names = _root_cross_scenarios()
+    print("  --- диагностика run_tests.py ---")
+
+    if not stdout:
+        print("  stdout пуст")
+    else:
+        print("  Первые 40 строк stdout:")
+        for line in stdout.splitlines()[:40]:
+            print("    | " + line)
+
+    print("  Строки с именами сквозных сценариев:")
+    found_any = False
+    for line in stdout.splitlines():
+        for name in names:
+            if name in line:
+                print("    | " + line)
+                found_any = True
+                break
+    if not found_any:
+        print("    (ни одного упоминания)")
+
+    print("  Строки с 'MISSING' / 'PASS' / 'FAIL':")
+    found_any = False
+    for line in stdout.splitlines():
+        if re.search(r"\b(MISSING|PASS|FAIL)\b", line):
+            print("    | " + line)
+            found_any = True
+    if not found_any:
+        print("    (нет)")
+
+    if stderr:
+        print("  stderr (первые 40 строк):")
+        for line in stderr.splitlines()[:40]:
+            print("    | " + line)
+    print("  --- /диагностика ---")
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -842,6 +1011,7 @@ def parse_args(argv):
     opts = {
         "gen": False, "run": False, "check": False,
         "net_check_only": False, "no_net_check": False,
+        "debug": False,
         "sheet": None,
     }
     i = 0
@@ -857,6 +1027,8 @@ def parse_args(argv):
             opts["net_check_only"] = True
         elif a == "--no-net-check":
             opts["no_net_check"] = True
+        elif a == "--debug":
+            opts["debug"] = True
         elif a == "--sheet" and i + 1 < len(argv):
             opts["sheet"] = argv[i + 1]
             i += 1
@@ -867,7 +1039,9 @@ def parse_args(argv):
 
 
 def main():
+    global DEBUG
     opts = parse_args(sys.argv[1:])
+    DEBUG = bool(opts["debug"])
 
     os.makedirs(SPICE, exist_ok=True)
     os.makedirs(LIB_DIR, exist_ok=True)
@@ -919,7 +1093,7 @@ def main():
         print("== 2. Генерация .sub/.cir (kicad_to_spice.py) ==")
         print("     (внутри — mcu_model.generate_scenario для MCU-сценариев)")
         for stem, net in netfiles.items():
-            yml, sch, err = resolve_stem(stem)   # ← sch больше не отбрасываем
+            yml, sch, err = resolve_stem(stem)
             if err:
                 print("  %-32s %s — пропускаю" % (stem, err))
                 continue
@@ -929,6 +1103,19 @@ def main():
             rc = run(cmd, label=stem)
             print("  %-32s net=%-28s yaml=%-40s rc=%d (портов: %d)"
                   % (stem, rel(net), rel(yml), rc, len(ports)))
+
+        root_cross = _root_cross_scenarios()
+        if root_cross:
+            print("     Сквозные сценарии корня (%d): %s"
+                  % (len(root_cross), ", ".join(root_cross)))
+        else:
+            print("     Сквозных сценариев корня нет")
+
+        # Диагностика по .cir на диске для корневых сценариев — сразу
+        # после шага 2, чтобы при --debug было видно, дошли ли файлы
+        # до места, где их будет искать run_tests.py.
+        if DEBUG:
+            _diag_cross_scenarios(verbose=False)
 
         if opts["gen"]:
             print("\nГотово: .sub/.cir сгенерированы "
@@ -968,9 +1155,6 @@ def main():
                 any_diff = True
                 continue
 
-            # Карта нормализации строится по .kicad_sch, который
-            # экспортировался. Не по YAML и не по Project — по факту
-            # файла на диске.
             reverse_map = build_reverse_refdes_maps_from_sch(sch)
 
             diffs = check_netlist_vs_yaml(
@@ -993,7 +1177,6 @@ def main():
             print("    нет листьев для per-file сверки")
 
         # ── 3b. Плоская сверка корней ──
-        # Запускается при полном прогоне или при явном --sheet ROOT_STEM.
         do_flat_check = (
             opts["sheet"] is None or opts["sheet"] == ROOT_STEM
         )
@@ -1028,15 +1211,83 @@ def main():
     print("== 4. Эмулятор Ngspice + проверка (run_tests.py) ==")
     r = subprocess.run([PY, os.path.join(PROJ, "run_tests.py")],
                        cwd=PROJ, capture_output=True, text=True)
-    if r.stdout:
-        sys.stdout.write(r.stdout)
-    if r.stderr:
-        sys.stderr.write(r.stderr)
+
+    # Полный вывод сохраняем в файл — он доступен для разбора
+    # независимо от --debug.
+    try:
+        with open(os.path.join(PROJ, "run_tests.debug.log"),
+                  "w", encoding="utf-8") as f:
+            f.write("===== STDOUT =====\n")
+            f.write(r.stdout or "")
+            f.write("\n===== STDERR =====\n")
+            f.write(r.stderr or "")
+    except OSError:
+        pass
+
+    if DEBUG:
+        # Без фильтрации — как есть.
+        if r.stdout:
+            sys.stdout.write(r.stdout)
+        if r.stderr:
+            sys.stderr.write(r.stderr)
+    else:
+        if r.stdout:
+            _emit_stream(sys.stdout, r.stdout)
+        if r.stderr:
+            _emit_stream(sys.stderr, r.stderr)
+
     m = re.search(r"Итого PASS:\s*(\d+)/(\d+)", r.stdout)
     if not m:
         print("Не удалось получить сводку run_tests.py (код %d)." % r.returncode)
+        print("Полный вывод: %s" % rel(os.path.join(PROJ, "run_tests.debug.log")))
         return 1
     passed, total = int(m.group(1)), int(m.group(2))
+
+    # ─── Шаг 4b: проверка, что сквозные сценарии корня отработали ──
+    root_cross = _root_cross_scenarios()
+    if root_cross:
+        print("== 4b. Сквозные сценарии корня (от пина МК до J1) ==")
+        missing = []
+        for name in root_cross:
+            # Ищем упоминание имени сценария в выводе run_tests.py.
+            # Формат вывода run_tests.py может отличаться, поэтому
+            # ловим по границе слова — этого достаточно, чтобы
+            # отличить «отработал» от «тихо пропущен».
+            if not re.search(r"\b" + re.escape(name) + r"\b", r.stdout):
+                missing.append(name)
+        if missing:
+            print("  !! Не отработали сквозные сценарии корня:")
+            for name in missing:
+                print("       %s" % name)
+
+            print()
+            print("== 4c. Диагностика ==")
+            _diag_cross_scenarios(verbose=True)
+            print()
+            _diag_run_tests_output(r.stdout, r.stderr)
+
+            print()
+            print("  Полный вывод run_tests.py сохранён: %s"
+                  % rel(os.path.join(PROJ, "run_tests.debug.log")))
+            print("  Возможные причины (по итогам диагностики выше):")
+            print("    * spice/<scenario>.cir отсутствует — kicad_to_spice.py")
+            print("      не сгенерировал сценарий; смотрите вывод шага 2 для")
+            print("      %s (rc и stderr)." % ROOT_STEM)
+            print("    * .cir есть, но run_tests.py его не читает — тогда в")
+            print("      диагностике run_tests.py НЕТ упоминаний этих имён.")
+            print("      Смотрите, как run_tests.py формирует список сценариев:")
+            print("      возможно, он не разворачивает root_page.scenarios.")
+            print("    * .cir есть, имя упоминается, но статус FAIL/MISSING —")
+            print("      тогда причина в самом сценарии (deck, params.U1, ")
+            print("      отсутствующая модель). Точную причину даст")
+            print("      run_tests.debug.log.")
+            print("    * Плановый SKIP-CROSS (базовые сценарии не прошли) —")
+            print("      это НЕ провал 4b; имя всё равно встречается в выводе,")
+            print("      и сюда мы не попадаем. Если вы здесь и видите SKIP-CROSS")
+            print("      в stdout — значит, шаг 4b ловит другой набор имён.")
+            return 1
+        print("  Все %d сквозных сценариев корня отработали." % len(root_cross))
+
     return total - passed
 
 

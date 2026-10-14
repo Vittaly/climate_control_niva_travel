@@ -46,14 +46,19 @@ root_page:
   #
   # Порт листа — это сеть ВНУТРИ листа с флагом is_hierarchical_port:
   # true. Имя порта = имя сети. Направление (для размещения на левом
-  # или правом краю) задаётся полем port_direction: OUTPUT; по
-  # умолчанию — INPUT. Оба поля объявляются в sheets/<stem>.yaml.
+  # или правом краю bbox листа на родителе) задаётся полем
+  # port_direction: OUTPUT; по умолчанию — INPUT. Оба поля
+  # объявляются в sheets/<stem>.yaml.
   #
   # На родительской странице порт используется как узел обычной
   # сети, через pinfunction: <имя_порта>. Связь «порт ребёнка ↔
   # корневая сеть» выводится по имени: pinfunction у sheet-узла
   # ссылается на сеть-порт ребёнка. Ни port_map, ни верхний блок
   # ports: в YAML больше не используются.
+  #
+  # Порты корневой страницы нужны, когда корень включается как
+  # вложенный лист (X_DUT в climate_control_testbench.yaml): тогда
+  # каждый порт превращается в пин sheet-символа на родителе.
   #
   # pin: — ТОЛЬКО числовой номер вывода KiCad ('1', '29', '64').
   # pinfunction: — функциональное имя (VBAT, PA13, OUT1, MOTOR_A, ...).
@@ -84,6 +89,10 @@ root_page:
   # Для них нет (sheet ...) в корневой схеме и нет ссылок из nets.
   # Генерируются как отдельные .kicad_sch по своему <stem>.yaml и
   # гоняются в e2e наравне с иерархическими листами.
+  #
+  # climate_control_testbench — сквозной тестовый стенд: поднимает
+  # основную схему как вложенный X_DUT и обвязывает её внешним
+  # миром (моторы заслонок, потенциометры ОС, NTC, CAN-терминатор).
   # ─────────────────────────────────────────────────────────────────
   standalone_sheets:
     - fan_driver_testbench
@@ -418,6 +427,24 @@ root_page:
       value_sch: actuator_channel.kicad_sch
 
   nets:
+    # ─────────────────────────────────────────────────────────────────
+    # Порты корневой страницы
+    #
+    # Сети ниже несут флаг is_hierarchical_port: true. Это значит:
+    #   * они объявлены как порты корневого листа;
+    #   * когда корень включён как вложенный лист (X_DUT в
+    #     climate_control_testbench.yaml), у sheet-символа X_DUT
+    #     появляется пин с именем этой сети;
+    #   * port_direction задаёт сторону пина на bbox листа:
+    #       INPUT  — левый край (внешний сигнал входит в DUT),
+    #       OUTPUT — правый край (DUT выдаёт сигнал наружу).
+    #
+    # Набор портов = распиновка J1 (разъём к автомобилю). Всё
+    # остальное (VCC_12V, VCC_5V, VCC_3V3, VDDA_3V3, M1_IN1..M4_IN2,
+    # FB_M1..FB_M4, SWDIO/SWCLK/NRST, CAN_TX/RX и т.п.) — внутренние
+    # связи и портами не объявляются.
+    # ─────────────────────────────────────────────────────────────────
+
     # ─── Питающие шины ─────────────────────────────────────────────
     # J1 подключается к VBAT_IN (пины 1,2) и V5_SENS (пин 17);
     # защита, фильтры и стабилизаторы живут на листе power_supply,
@@ -425,7 +452,9 @@ root_page:
 
     VBAT_IN:
       name: VBAT_IN
-      description: Входное бортовое питание +12В, J1:1,2. Порт на лист power_supply (INPUT)
+      description: Входное бортовое питание +12В, J1:1,2. Порт корневой страницы (INPUT).
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: POWER
         voltage_level: 12.0V
@@ -493,6 +522,10 @@ root_page:
         Питание датчиков и краёв потенциометров ОС (J1:17).
         Порт на лист power_supply (OUTPUT): на этом листе
         стоит TVS D5 и диодная развязка D4 от внутреннего +5В.
+        Также порт корневой страницы (OUTPUT) — при включении
+        корня как X_DUT во внешний стенд эта шина идёт наружу.
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: POWER
         voltage_level: 5.0V
@@ -581,7 +614,12 @@ root_page:
 
     GND:
       name: GND
-      description: Общий провод (кузов автомобиля)
+      description: |
+        Общий провод (кузов автомобиля). Порт корневой страницы
+        (INPUT) — при включении корня как X_DUT во внешний стенд
+        соединяется с общей шиной стенда.
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: GND
         voltage_level: 0V
@@ -1016,7 +1054,11 @@ root_page:
 
     NTC_HEAT_W:
       name: NTC_HEAT_W
-      description: 'Датчик патрубка отопителя: узел линии на разъёме J1:19'
+      description: |
+        Датчик патрубка отопителя: узел линии на разъёме J1:19.
+        Порт корневой страницы (INPUT) — датчик внешний.
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..3.3V
@@ -1053,7 +1095,11 @@ root_page:
 
     SOLAR_IN_RAW:
       name: SOLAR_IN_RAW
-      description: Вход датчика солнечной радиации (0..5В), J1:20
+      description: |
+        Вход датчика солнечной радиации (0..5В), J1:20.
+        Порт корневой страницы (INPUT).
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1090,7 +1136,11 @@ root_page:
 
     COND_IN_RAW:
       name: COND_IN_RAW
-      description: Вход датчика конденсата на стекле (0..5В), J1:21
+      description: |
+        Вход датчика конденсата на стекле (0..5В), J1:21.
+        Порт корневой страницы (INPUT).
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1128,7 +1178,11 @@ root_page:
     # ─── Канал заслонки 1 ──────────────────────────────────────────
     FB_M1_RAW:
       name: FB_M1_RAW
-      description: 'Заслонка 1: выход потенциометра положения (0..5В), J1:7'
+      description: |
+        Заслонка 1: выход потенциометра положения (0..5В), J1:7.
+        Порт корневой страницы (INPUT) — потенциометр внешний.
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1201,7 +1255,11 @@ root_page:
 
     MOTOR_1_A:
       name: MOTOR_1_A
-      description: 'Заслонка 1: выход А мостового драйвера к моторедуктору, J1:5'
+      description: |
+        Заслонка 1: выход А мостового драйвера к моторедуктору, J1:5.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1218,7 +1276,11 @@ root_page:
 
     MOTOR_1_B:
       name: MOTOR_1_B
-      description: 'Заслонка 1: выход B мостового драйвера к моторедуктору, J1:6'
+      description: |
+        Заслонка 1: выход B мостового драйвера к моторедуктору, J1:6.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1236,7 +1298,11 @@ root_page:
     # ─── Канал заслонки 2 ──────────────────────────────────────────
     FB_M2_RAW:
       name: FB_M2_RAW
-      description: 'Заслонка 2: выход потенциометра положения (0..5В), J1:10'
+      description: |
+        Заслонка 2: выход потенциометра положения (0..5В), J1:10.
+        Порт корневой страницы (INPUT).
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1309,7 +1375,11 @@ root_page:
 
     MOTOR_2_A:
       name: MOTOR_2_A
-      description: 'Заслонка 2: выход А мостового драйвера к моторедуктору, J1:8'
+      description: |
+        Заслонка 2: выход А мостового драйвера к моторедуктору, J1:8.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1326,7 +1396,11 @@ root_page:
 
     MOTOR_2_B:
       name: MOTOR_2_B
-      description: 'Заслонка 2: выход B мостового драйвера к моторедуктору, J1:9'
+      description: |
+        Заслонка 2: выход B мостового драйвера к моторедуктору, J1:9.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1344,7 +1418,11 @@ root_page:
     # ─── Канал заслонки 3 ──────────────────────────────────────────
     FB_M3_RAW:
       name: FB_M3_RAW
-      description: 'Заслонка 3: выход потенциометра положения (0..5В), J1:13'
+      description: |
+        Заслонка 3: выход потенциометра положения (0..5В), J1:13.
+        Порт корневой страницы (INPUT).
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1417,7 +1495,11 @@ root_page:
 
     MOTOR_3_A:
       name: MOTOR_3_A
-      description: 'Заслонка 3: выход А мостового драйвера к моторедуктору, J1:11'
+      description: |
+        Заслонка 3: выход А мостового драйвера к моторедуктору, J1:11.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1434,7 +1516,11 @@ root_page:
 
     MOTOR_3_B:
       name: MOTOR_3_B
-      description: 'Заслонка 3: выход B мостового драйвера к моторедуктору, J1:12'
+      description: |
+        Заслонка 3: выход B мостового драйвера к моторедуктору, J1:12.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1452,7 +1538,11 @@ root_page:
     # ─── Канал заслонки 4 ──────────────────────────────────────────
     FB_M4_RAW:
       name: FB_M4_RAW
-      description: 'Заслонка 4: выход потенциометра положения (0..5В), J1:16'
+      description: |
+        Заслонка 4: выход потенциометра положения (0..5В), J1:16.
+        Порт корневой страницы (INPUT).
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: ANALOG_SIGNAL
         voltage_level: 0..5.0V
@@ -1528,7 +1618,11 @@ root_page:
 
     MOTOR_4_A:
       name: MOTOR_4_A
-      description: 'Заслонка 4: выход А мостового драйвера к моторедуктору, J1:14'
+      description: |
+        Заслонка 4: выход А мостового драйвера к моторедуктору, J1:14.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1545,7 +1639,11 @@ root_page:
 
     MOTOR_4_B:
       name: MOTOR_4_B
-      description: 'Заслонка 4: выход B мостового драйвера к моторедуктору, J1:15'
+      description: |
+        Заслонка 4: выход B мостового драйвера к моторедуктору, J1:15.
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1584,7 +1682,11 @@ root_page:
 
     HEAT_FAN_PWM_CTL:
       name: HEAT_FAN_PWM_CTL
-      description: Внешний ШИМ-выход на разъём J1:23 к штатному силовому модулю вентилятора
+      description: |
+        Внешний ШИМ-выход на разъём J1:23 к штатному силовому модулю
+        вентилятора. Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: PWM_POWER
         voltage_level: 0..12.0V
@@ -1641,7 +1743,11 @@ root_page:
 
     AC_REQ_OUT:
       name: AC_REQ_OUT
-      description: Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя)
+      description: |
+        Линия запроса кондиционера +12В к J1:24 (вход ЭБУ двигателя).
+        Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1658,7 +1764,11 @@ root_page:
 
     ILLUM_IN_RAW:
       name: ILLUM_IN_RAW
-      description: Вход внешней подсветки прибора (+12В габаритов), J1:22
+      description: |
+        Вход внешней подсветки прибора (+12В габаритов), J1:22.
+        Порт корневой страницы (INPUT).
+      is_hierarchical_port: true
+      port_direction: INPUT
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1736,7 +1846,10 @@ root_page:
 
     CANH:
       name: CANH
-      description: 'CAN: шина High, J1:25'
+      description: |
+        CAN: шина High, J1:25. Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1753,7 +1866,10 @@ root_page:
 
     CANL:
       name: CANL
-      description: 'CAN: шина Low, J1:26'
+      description: |
+        CAN: шина Low, J1:26. Порт корневой страницы (OUTPUT).
+      is_hierarchical_port: true
+      port_direction: OUTPUT
       attributes:
         type: DIGITAL_SIGNAL
         voltage_level: 3.3V
@@ -1767,3 +1883,544 @@ root_page:
         pin: '26'
       - component: X_CAN_BUS
         pinfunction: CANL
+
+    # ═════════════════════════════════════════════════════════════════
+  # СКВОЗНЫЕ СЦЕНАРИИ: от пина МК до внешнего разъёма J1
+  #
+  # В отличие от автономных сценариев на подсхемах (они видят только
+  # свою подсхему), эти сценарии пересекают границы листов. Поведение
+  # МК задаётся через params.U1; путь идёт по цепочке
+  #
+  #   пин U1 → корневая сеть → порт X_* → внутренние узлы подсхемы →
+  #   выходной порт X_* → корневая сеть → пин J1
+  #
+  # Внешние элементы (моторы, NTC, терминаторы) на .kicad_sch
+  # отсутствуют — это часть автомобильной проводки, подключается
+  # в deck'е сценария.
+  #
+  # Соответствие портов J1 корневым сетям — в j1_pinout выше.
+  #
+  # Карта тестируемых путей:
+  #   PA9/PA10   → M1_IN1/M1_IN2   → X_ACTUATOR_CHANNEL_M1 → MOTOR_1_A/B (J1:5/6)
+  #   PA11/PA12  → M2_IN1/M2_IN2   → X_ACTUATOR_CHANNEL_M2 → MOTOR_2_A/B (J1:8/9)
+  #   PB5/PB6    → M3_IN1/M3_IN2   → X_ACTUATOR_CHANNEL_M3 → MOTOR_3_A/B (J1:11/12)
+  #   PB7/PC13   → M4_IN1/M4_IN2   → X_ACTUATOR_CHANNEL_M4 → MOTOR_4_A/B (J1:14/15)
+  #   PA3        ← NTC_HEAT        ← X_HEATING_SENSOR      ← NTC_HEAT_W (J1:19)
+  #   PA4        ← SOLAR_ADC       ← X_SOLAR_SENSOR        ← SOLAR_IN_RAW (J1:20)
+  #   PA5        ← COND_ADC        ← X_CONDENSATE_SENSOR   ← COND_IN_RAW (J1:21)
+  #   PA0        ← TEMP_SET_ADC    ← X_USER_INTERFACE      ← внешний потенциометр
+  #   PA1        ← FAN_SEL_ADC     ← X_USER_INTERFACE      ← внешний галлетник
+  #   PC0        ← ILLUM_SENSE     ← X_USER_INTERFACE      ← ILLUM_IN_RAW (J1:22)
+  #   PA8        → FAN_PWM_CTL     → X_POWER_OUTPUTS       → HEAT_FAN_PWM_CTL (J1:23)
+  #   PB2        → AC_CTL          → X_POWER_OUTPUTS       → AC_REQ_OUT (J1:24)
+  #   PB8/PB9    ↔ CAN_RX/CAN_TX   ↔ X_CAN_BUS             ↔ CANH/CANL (J1:25/26)
+  # ═════════════════════════════════════════════════════════════════
+
+  scenarios:
+
+    # ─── Питание: VBAT_IN → J1 → X_POWER_SUPPLY → шины ─────────────
+    - name: CC_PWR_UP
+      description: |
+        Включение питания: бортовые 14,4В на VBAT_IN (J1:1,2).
+        Путь: VBAT_IN → D1 → L1 → VCC_12V → U6 → VCC_5V → U7 → VCC_3V3.
+        МК в HiZ, шины устанавливаются.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+            description: "Бортовая сеть +14,4В"
+      params:
+        U1:
+          PA0: adc
+          PA1: adc
+          PA2: adc
+          PA3: adc
+          PA4: adc
+          PA5: adc
+      checks:
+        - { node: v(VCC_12V), min: 13.9, max: 14.2,
+            description: "VCC_12V после D1 (падение на шоттки 0,2…0,5В)" }
+        - { node: v(VCC_5V),  min: 4.75, max: 5.25,
+            description: "VCC_5V = 5В (выход U6)" }
+        - { node: v(VCC_3V3), min: 3.20, max: 3.40,
+            description: "VCC_3V3 = 3,3В (выход U7)" }
+        - { node: v(V5_SENS), min: 4.55, max: 5.05,
+            description: "V5_SENS ≈ 5В − Vf(D4)" }
+
+    - name: CC_PWR_REVERSE
+      description: |
+        Аварийная переполюсовка: −14В на VBAT_IN.
+        D1 в обратном включении блокирует, шины в 0.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: -14.0
+      checks:
+        - { node: v(VCC_12V), min: -1.0, max: 1.0,
+            description: "VCC_12V = 0: D1 заперт" }
+        - { node: v(VCC_5V),  min: -1.0, max: 1.0,
+            description: "VCC_5V = 0: нет входа у U6" }
+        - { node: v(VCC_3V3), min: -1.0, max: 1.0,
+            description: "VCC_3V3 = 0: нет входа у U7" }
+
+    # ─── Датчики: внешний сигнал → J1 → подсхема → АЦП МК ───────────
+    - name: CC_SENS_HEAT_COLD
+      description: |
+        Сквозной путь: внешний NTC патрубка при 0°C →
+        J1:19 → NTC_HEAT_W → X_HEATING_SENSOR (R25, C25, R26) →
+        NTC_HEAT → вход PA3.
+        R_NTC(0°C) ≈ 27,2к, делитель с R25=10к → ≈ 2,45В.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - subckt:
+            ref: XRT_HEAT
+            include: ntc_models.lib
+            subckt: NTC_10K_3435
+            nodes:
+              A: NTC_HEAT_W
+              B: "0"
+            params:
+              T: 0
+            description: "Внешний NTC патрубка при 0°C"
+      params:
+        U1:
+          PA3: adc
+      checks:
+        - { node: v(NTC_HEAT_W), min: 2.30, max: 2.55,
+            description: "NTC_HEAT_W (J1:19) ≈ 2,45В" }
+        - { node: v(NTC_HEAT),   min: 2.30, max: 2.55,
+            description: "вход PA3 ≈ 2,45В (через R26 нет тока)" }
+
+    - name: CC_SENS_HEAT_HOT
+      description: |
+        Тот же путь, NTC прогрет до 60°C (горячий патрубок).
+        R_NTC ≈ 2,98к → вход АЦП ≈ 0,76В.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - subckt:
+            ref: XRT_HEAT
+            include: ntc_models.lib
+            subckt: NTC_10K_3435
+            nodes:
+              A: NTC_HEAT_W
+              B: "0"
+            params:
+              T: 60
+      params:
+        U1:
+          PA3: adc
+      checks:
+        - { node: v(NTC_HEAT), min: 0.70, max: 0.82,
+            description: "вход PA3 ≈ 0,76В (горячий патрубок)" }
+
+    - name: CC_SENS_SOLAR_BRIGHT
+      description: |
+        Датчик солнечной радиации: 5В на SOLAR_IN_RAW (J1:20).
+        X_SOLAR_SENSOR: R27/R28 = 10к/20к, K = 2/3.
+        Вход PA4 ≈ 3,33В.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - source:
+            ref: V_SOLAR
+            net: SOLAR_IN_RAW
+            type: dc
+            value: 5.0
+            description: "Яркое солнце"
+      params:
+        U1:
+          PA4: adc
+      checks:
+        - { node: v(SOLAR_ADC), min: 3.20, max: 3.45,
+            description: "вход PA4 ≈ 3,33В (K = 2/3, D29 закрыт)" }
+
+    - name: CC_SENS_COND_WET
+      description: |
+        Датчик конденсата: 5В на COND_IN_RAW (J1:21).
+        X_CONDENSATE_SENSOR: делитель 10к/20к.
+        Вход PA5 ≈ 3,33В.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - source:
+            ref: V_COND
+            net: COND_IN_RAW
+            type: dc
+            value: 5.0
+      params:
+        U1:
+          PA5: adc
+      checks:
+        - { node: v(COND_ADC), min: 3.20, max: 3.45,
+            description: "вход PA5 ≈ 3,33В (мокрое стекло)" }
+
+
+    - name: CC_SENS_ILLUM_ON
+      description: |
+        Габариты включены: 12В на ILLUM_IN_RAW (J1:22).
+        X_USER_INTERFACE: R39/R40 = 47к/10к, K ≈ 0,175.
+        ILLUM_SENSE ≈ 2,11В → вход PC0.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - source:
+            ref: V_ILLUM
+            net: ILLUM_IN_RAW
+            type: dc
+            value: 12.0
+      params:
+        U1:
+          PC0: adc
+      checks:
+        - { node: v(ILLUM_SENSE), min: 1.95, max: 2.25,
+            description: "ILLUM_SENSE ≈ 2,11В" }
+
+    # ─── Моторы: МК → драйвер заслонки → мотор ────────────────────
+    - name: CC_MOTOR_M1_FWD
+      description: |
+        Сквозной путь: U1.PA9 = H, PA10 = L →
+        M1_IN1/M1_IN2 → X_ACTUATOR_CHANNEL_M1 → DRV8871 →
+        MOTOR_1_A/MOTOR_1_B (J1:5/6) → внешний мотор.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - motor:
+            ref: XM1
+            include: motor_model.lib
+            subckt: DC_MOTOR
+            nodes:
+              INP:   MOTOR_1_A
+              INN:   MOTOR_1_B
+              SPEED: SPEED_M1
+            params:
+              R_arm:      30
+              L_arm:      50m
+              Ke:         40
+              Kt:         0.05
+              C_inertia:  5e-4
+              R_friction: 200
+            description: "Внешний мотор заслонки 1"
+      params:
+        U1:
+          PA9:  out_high
+          PA10: out_low
+      checks:
+        - { node: v(MOTOR_1_A), min: 10.0, max: 14.0,
+            description: "MOTOR_1_A (J1:5) под напряжением (прямое)" }
+        - { node: v(MOTOR_1_B), min: 0.0, max: 1.5,
+            description: "MOTOR_1_B (J1:6) прижат к GND" }
+
+    - name: CC_MOTOR_M1_REV
+      description: |
+        Обратное вращение: U1.PA9 = L, PA10 = H.
+        MOTOR_1_B под напряжением, MOTOR_1_A прижат к GND.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - motor:
+            ref: XM1
+            include: motor_model.lib
+            subckt: DC_MOTOR
+            nodes:
+              INP:   MOTOR_1_A
+              INN:   MOTOR_1_B
+              SPEED: SPEED_M1
+            params:
+              R_arm:      30
+              L_arm:      50m
+              Ke:         40
+              Kt:         0.05
+              C_inertia:  5e-4
+              R_friction: 200
+      params:
+        U1:
+          PA9:  out_low
+          PA10: out_high
+      checks:
+        - { node: v(MOTOR_1_A), min: 0.0, max: 1.5,
+            description: "MOTOR_1_A прижат к GND" }
+        - { node: v(MOTOR_1_B), min: 10.0, max: 14.0,
+            description: "MOTOR_1_B под напряжением (реверс)" }
+
+    - name: CC_MOTOR_ALL_DAMPERS
+      description: |
+        Все 4 заслонки одновременно: 1 и 3 прямо, 2 и 4 обратно.
+        Проверяем 6 моторных выводов J1.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - motor:
+            ref: XM1
+            include: motor_model.lib
+            subckt: DC_MOTOR
+            nodes: { INP: MOTOR_1_A, INN: MOTOR_1_B, SPEED: SPEED_M1 }
+            params: { R_arm: 30, L_arm: 50m, Ke: 40, Kt: 0.05, C_inertia: 5e-4, R_friction: 200 }
+        - motor:
+            ref: XM2
+            include: motor_model.lib
+            subckt: DC_MOTOR
+            nodes: { INP: MOTOR_2_A, INN: MOTOR_2_B, SPEED: SPEED_M2 }
+            params: { R_arm: 30, L_arm: 50m, Ke: 40, Kt: 0.05, C_inertia: 5e-4, R_friction: 200 }
+        - motor:
+            ref: XM3
+            include: motor_model.lib
+            subckt: DC_MOTOR
+            nodes: { INP: MOTOR_3_A, INN: MOTOR_3_B, SPEED: SPEED_M3 }
+            params: { R_arm: 30, L_arm: 50m, Ke: 40, Kt: 0.05, C_inertia: 5e-4, R_friction: 200 }
+        - motor:
+            ref: XM4
+            include: motor_model.lib
+            subckt: DC_MOTOR
+            nodes: { INP: MOTOR_4_A, INN: MOTOR_4_B, SPEED: SPEED_M4 }
+            params: { R_arm: 30, L_arm: 50m, Ke: 40, Kt: 0.05, C_inertia: 2e-3, R_friction: 500 }
+      params:
+        U1:
+          PA9:  out_high
+          PA10: out_low
+          PA11: out_low
+          PA12: out_high
+          PB5:  out_high
+          PB6:  out_low
+          PB7:  out_low
+          PC13: out_high
+      checks:
+        - { node: v(MOTOR_1_A), min: 10.0, max: 14.0, description: "M1 прямое" }
+        - { node: v(MOTOR_1_B), min: 0.0,  max: 1.5,  description: "M1 на GND" }
+        - { node: v(MOTOR_2_A), min: 0.0,  max: 1.5,  description: "M2 реверс, A на GND" }
+        - { node: v(MOTOR_2_B), min: 10.0, max: 14.0, description: "M2 реверс, B под Vcc" }
+        - { node: v(MOTOR_3_A), min: 10.0, max: 14.0, description: "M3 прямое" }
+        - { node: v(MOTOR_4_B), min: 10.0, max: 14.0, description: "M4 реверс, B под Vcc" }
+
+    # ─── ШИМ вентилятора и запрос кондиционера ────────────────────
+    - name: CC_FAN_PWM_LOW
+      description: |
+        U1.PA8 = H → FAN_PWM_CTL → X_POWER_OUTPUTS (Q1 открыт) →
+        HEAT_FAN_PWM_CTL (J1:23) = L (инверсия).
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+      params:
+        U1:
+          PA8: out_high
+      checks:
+        - { node: v(HEAT_FAN_PWM_CTL), min: 0.0, max: 1.0,
+            description: "HEAT_FAN_PWM_CTL ≈ 0 (Q1 открыт, инверсия)" }
+
+    - name: CC_FAN_PWM_HIGH
+      description: |
+        U1.PA8 = L → Q1 закрыт → R14 подтягивает HEAT_FAN_PWM_CTL
+        к VCC_12V (J1:23).
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+      params:
+        U1:
+          PA8: out_low
+      checks:
+        - { node: v(HEAT_FAN_PWM_CTL), min: 13.0, max: 14.5,
+            description: "HEAT_FAN_PWM_CTL ≈ 14В (Q1 закрыт)" }
+
+    - name: CC_AC_REQ_ON
+      description: |
+        U1.PB2 = H → AC_CTL → X_POWER_OUTPUTS (Q3→Q4) →
+        AC_REQ_OUT (J1:24) ≈ 12В. ЭБУ (10к) видит запрос.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - resistor:
+            ref: R_ECU
+            net_pos: AC_REQ_OUT
+            net_neg: "0"
+            value: 10k
+            description: "Вход ЭБУ двигателя"
+      params:
+        U1:
+          PB2: out_high
+      checks:
+        - { node: v(AC_REQ_OUT), min: 12.0, max: 14.0,
+            description: "AC_REQ_OUT ≈ 12В (запрос кондиционера)" }
+
+    - name: CC_AC_REQ_OFF
+      description: |
+        U1.PB2 = L → Q3 закрыт → Q4 заперт → AC_REQ_OUT = 0.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - resistor:
+            ref: R_ECU
+            net_pos: AC_REQ_OUT
+            net_neg: "0"
+            value: 10k
+      params:
+        U1:
+          PB2: out_low
+      checks:
+        - { node: v(AC_REQ_OUT), min: 0.0, max: 0.5,
+            description: "AC_REQ_OUT = 0 (нет запроса)" }
+
+    # ─── CAN ───────────────────────────────────────────────────────
+    - name: CC_CAN_TX_DOMINANT
+      description: |
+        U1.PB9 = L → CAN_TX → X_CAN_BUS (MCP2562) →
+        CANH/CANL (J1:25/26). Доминанта: Vdiff ≈ 2В.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - resistor:
+            ref: R_TERM
+            net_pos: CANH
+            net_neg: CANL
+            value: 60
+            description: "Два терминатора 120 Ом (внешние)"
+      params:
+        U1:
+          PB9: out_low
+          PB8: adc
+      control: |
+        let vdiff = v(CANH) - v(CANL)
+        print vdiff
+      checks:
+        - { node: vdiff, min: 1.5, max: 3.0,
+            description: "Vdiff(CANH−CANL) ≈ 2В (доминант)" }
+
+    - name: CC_CAN_TX_RECESSIVE
+      description: |
+        U1.PB9 = H → CAN_TX высокий → рецессив шины. Vdiff ≈ 0.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - resistor:
+            ref: R_TERM
+            net_pos: CANH
+            net_neg: CANL
+            value: 60
+      params:
+        U1:
+          PB9: out_high
+          PB8: adc
+      control: |
+        let vdiff = v(CANH) - v(CANL)
+        print vdiff
+      checks:
+        - { node: vdiff, min: -0.2, max: 0.2,
+            description: "Vdiff ≈ 0 (рецессив)" }
+
+    # ─── Полный сквозной цикл ─────────────────────────────────────
+    - name: CC_FULL_STARTUP
+      description: |
+        Полный цикл климат-контроля одной рабочей точкой:
+          1) питание подано на VBAT_IN;
+          2) все шины установились;
+          3) МК читает датчики (АЦП-пины в ADC-режиме);
+          4) МК открывает заслонку 1 (прямое);
+          5) МК удерживает ШИМ вентилятора в высоком уровне;
+          6) МК запрашивает кондиционер.
+      analysis: op
+      deck:
+        - source:
+            ref: V_BAT
+            net: VBAT_IN
+            type: dc
+            value: 14.4
+        - motor:
+            ref: XM1
+            include: motor_model.lib
+            subckt: DC_MOTOR
+            nodes: { INP: MOTOR_1_A, INN: MOTOR_1_B, SPEED: SPEED_M1 }
+            params: { R_arm: 30, L_arm: 50m, Ke: 40, Kt: 0.05, C_inertia: 5e-4, R_friction: 200 }
+        - resistor:
+            ref: R_ECU
+            net_pos: AC_REQ_OUT
+            net_neg: "0"
+            value: 10k
+      params:
+        U1:
+          PA0: adc
+          PA1: adc
+          PA2: adc
+          PA3: adc
+          PA4: adc
+          PA5: adc
+          PA6: adc
+          PA7: adc
+          PB0: adc
+          PB1: adc
+          PA9:  out_high
+          PA10: out_low
+          PA8:  out_low
+          PB2:  out_high
+      checks:
+        - { node: v(VCC_3V3), min: 3.20, max: 3.40,
+            description: "питание МК установилось" }
+        - { node: v(V5_SENS), min: 4.55, max: 5.05,
+            description: "шина +5В датчиков поднята" }
+        - { node: v(MOTOR_1_A), min: 10.0, max: 14.0,
+            description: "заслонка 1 открывается" }
+        - { node: v(HEAT_FAN_PWM_CTL), min: 13.0, max: 14.5,
+            description: "ШИМ вентилятора в высоком уровне" }
+        - { node: v(AC_REQ_OUT), min: 12.0, max: 14.0,
+            description: "запрос кондиционера подан на J1:24" }

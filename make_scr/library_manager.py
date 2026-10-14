@@ -42,6 +42,22 @@ JLC2KiCadLib.JLC2KiCadLib.add_component(component_id, args).
     Footprint НЕ входит в контракт: символ без footprint в схеме
     допустим. Отсутствие footprint — только warning в лог.
 
+Независимость от страниц:
+    LibraryManager ничего не знает про Sheet'ы и дерево. Его предмет —
+    отображение type_name → (symbol, footprint) в projectLib.
+    tdef, приходящий снаружи (из Sheet._load_components), — это
+    НОСИТЕЛЬ, куда менеджер проецирует уже известный результат;
+    источник истины — внутренние карты _resolved_symbol /
+    _resolved_footprint.
+
+    Один и тот же тип может встретиться в нескольких местах дерева
+    (несколько Sheet'ов, разные корни проекта, повторная загрузка
+    того же YAML). В каждом новом tdef поля symbol/footprint пустые,
+    и без кэша значений повторный вызов ensure_type упирался бы
+    в «symbol не установлен». Кэш по type_name это устраняет:
+    первый вызов резолвит и запоминает, каждый следующий — только
+    проецирует результат в свой tdef.
+
 Формат .kicad_sym (JLC2KiCadLib):
     Символы пишутся с отступом в 2 пробела:
         (kicad_symbol_lib …
@@ -55,7 +71,7 @@ from __future__ import annotations
 import argparse
 import re
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from constants import LibTableKind
 from logging_setup import get_logger
@@ -102,6 +118,14 @@ class LibraryManager:
 
         self._resolved: Set[str] = set()
 
+        # Результаты резолва по type_name. Авторитетный источник
+        # истины для LibraryManager: «какой symbol/footprint в
+        # projectLib соответствует этому типу». tdef, приходящий
+        # снаружи, — только носитель, куда мы проецируем уже
+        # известное. Менеджер про страницы ничего не знает.
+        self._resolved_symbol: Dict[str, str] = {}
+        self._resolved_footprint: Dict[str, str] = {}
+
         log.info(
             "LibraryManager: project_root=%s libs_root=%s "
             "sym_file=%s fp_dir=%s",
@@ -121,15 +145,23 @@ class LibraryManager:
     def ensure_type(self, type_name: str, tdef: dict) -> Optional[Path]:
         """Гарантирует наличие symbol и footprint для типа.
 
-        Возвращает Path к .kicad_sym, если symbol установлен (был
-        установлен ранее, найден в существующем файле, или только что
-        сгенерирован). Этот путь нужен Sheet._load_components для
-        вызова self.source.register_library(lib_path) — без него
-        KiCadSource не знает о библиотеке projectLib.
+        LibraryManager не знает и не должен знать про страницы.
+        Его состояние — отображение type_name → (symbol, footprint)
+        в projectLib. tdef приходит от вызывающей стороны (Sheet)
+        и служит только носителем: сюда мы проецируем результат,
+        чтобы вызывающий код (Component.from_yaml → KiCadSource)
+        видел актуальные symbol/footprint.
+
+        Повторный вызов с тем же type_name (тот же YAML загружен
+        как корень и как вложенный лист, тип встречается в двух
+        разных листах и т.п.) НЕ пересчитывает ничего: результат
+        переносится из кэша в новый tdef.
 
         Контракт:
-            * tdef["symbol"] после возврата установлен;
-            * если symbol установить не удалось — RuntimeError.
+            * после успешного возврата tdef["symbol"] установлен;
+            * если symbol не удалось получить — RuntimeError;
+            * возвращаемое значение — Path к .kicad_sym, если файл
+              существует (нужен Sheet для регистрации в KiCadSource).
 
         Returns:
             Path к .kicad_sym, если файл существует. None — только
@@ -137,17 +169,36 @@ class LibraryManager:
             нет (аномалия: пользователь задал symbol явно, а файла
             нет — тогда регистрировать нечего).
         """
+        # ─── 0. tdef мог принести уже готовые значения ───
+        # Если пользователь задал symbol/footprint явно в YAML —
+        # запоминаем их, чтобы следующий tdef (свежий YAML того же
+        # файла) получил то же без повторной работы. setdefault:
+        # значения из кэша авторитетнее, чем из повторно читаемого
+        # YAML — первый вызов уже разобрался.
+        if tdef.get("symbol"):
+            self._resolved_symbol.setdefault(type_name, tdef["symbol"])
+        if tdef.get("footprint"):
+            self._resolved_footprint.setdefault(type_name, tdef["footprint"])
+
+        # ─── 1. Тип уже резолвлен — проецируем результат в tdef ───
         if type_name in self._resolved:
+            sym = self._resolved_symbol.get(type_name)
+            fp = self._resolved_footprint.get(type_name)
+            if sym:
+                tdef["symbol"] = sym
+            if fp:
+                tdef["footprint"] = fp
             if not tdef.get("symbol"):
                 raise RuntimeError(
-                    f"LibraryManager: ensure_type для {type_name} "
-                    f"вызван повторно, но symbol не установлен. "
-                    f"Первый вызов завершился с ошибкой — см. лог выше."
+                    f"LibraryManager: {type_name} уже резолвился, "
+                    f"но symbol в кэше отсутствует. Первый вызов "
+                    f"завершился с ошибкой — см. лог выше."
                 )
-            # symbol уже установлен — вернуть путь для регистрации.
             return self.sym_file if self.sym_file.exists() else None
+
         self._resolved.add(type_name)
 
+        # ─── 2. Первый вызов для этого типа ───
         lcsc_id = tdef.get("lcsc_id")
         if not lcsc_id:
             if not tdef.get("symbol"):
@@ -155,8 +206,10 @@ class LibraryManager:
                     f"LibraryManager: {type_name} — нет lcsc_id и нет "
                     f"symbol. Не могу сгенерировать или найти символ."
                 )
-            # Пользователь задал symbol явно, lcsc_id нет.
-            # Регистрировать нечего, но символ уже прописан.
+            # symbol уже пришёл снаружи — запомнили в п.0.
+            self._resolved_symbol[type_name] = tdef["symbol"]
+            if tdef.get("footprint"):
+                self._resolved_footprint[type_name] = tdef["footprint"]
             return self.sym_file if self.sym_file.exists() else None
 
         has_symbol = bool(tdef.get("symbol"))
@@ -167,9 +220,8 @@ class LibraryManager:
                 "пропуск",
                 type_name, lcsc_id,
             )
-            # ВАЖНО: возвращаем путь, чтобы Sheet зарегистрировал
-            # библиотеку в KiCadSource. Иначе символ прописан,
-            # а get_pins по нему упадёт с KeyError.
+            self._resolved_symbol[type_name] = tdef["symbol"]
+            self._resolved_footprint[type_name] = tdef["footprint"]
             return self.sym_file if self.sym_file.exists() else None
 
         log.info(
@@ -190,6 +242,7 @@ class LibraryManager:
                 name = self._find_symbol_name(self.sym_file, lcsc_id)
                 if name:
                     tdef["symbol"] = f"{self.lib_name}:{name}"
+                    self._resolved_symbol[type_name] = tdef["symbol"]
                     has_symbol = True
                     log.info(
                         "LibraryManager: %s (lcsc_id=%s): символ найден — "
@@ -215,6 +268,7 @@ class LibraryManager:
                 name = self._find_footprint_name(self.fp_dir, lcsc_id)
                 if name:
                     tdef["footprint"] = f"{self.lib_name}:{name}"
+                    self._resolved_footprint[type_name] = tdef["footprint"]
                     has_footprint = True
                     log.info(
                         "LibraryManager: %s (lcsc_id=%s): footprint найден — "
@@ -247,6 +301,7 @@ class LibraryManager:
             name = self._find_symbol_name(self.sym_file, lcsc_id)
             if name:
                 tdef["symbol"] = f"{self.lib_name}:{name}"
+                self._resolved_symbol[type_name] = tdef["symbol"]
                 has_symbol = True
                 log.info(
                     "LibraryManager: %s (lcsc_id=%s): символ найден "
@@ -269,6 +324,7 @@ class LibraryManager:
             name = self._find_footprint_name(self.fp_dir, lcsc_id)
             if name:
                 tdef["footprint"] = f"{self.lib_name}:{name}"
+                self._resolved_footprint[type_name] = tdef["footprint"]
                 has_footprint = True
                 log.info(
                     "LibraryManager: %s (lcsc_id=%s): footprint найден "

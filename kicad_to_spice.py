@@ -5,29 +5,61 @@ kicad_to_spice.py — генерация Ngspice-тестов из нетлис�
 
 Источник данных (единственный):
   * нетлист KiCad (pin-маппинг, состав компонентов, Sim.* properties);
-  * <stem>.yaml → scenarios (deck, checks, analysis, overrides);
-  * корневой YAML (<ROOT_STEM>.yaml) → nets, component_types
-    (нужны только для MCU: auto_ports и список портов).
+  * <stem>.yaml → scenarios (deck, checks, analysis, overrides, params.U1);
+  * корневой YAML (<ROOT_STEM>.yaml) → nets, component_types.
+
+Сценарии читаются так:
+  * если в YAML есть root_page: — берём <root_page>.scenarios;
+  * иначе — <top>.scenarios.
+
+.sub и .cir — разделение ролей:
+
+  * spice/<stem>.sub — «что такое лист». Содержит только структуру:
+    элементы, узлы, X-ссылки на модели по имени. Никаких PARAMS:
+    в header — если у X-компонента есть параметры (например, 60
+    MODE_* у MCU), они пишутся явными значениями прямо в X-строке.
+
+  * spice/<scenario>_<stem>.sub — копия общего .sub для конкретного
+    сценария, где значения параметров заменены на те, что заданы
+    в этом сценарии (overrides: или params.U1:). Генерируется
+    только если у сценария есть такие overrides.
+
+  * spice/<scenario>.cir — тест. Инклюдит per-scenario .sub, если
+    он существует (для сценариев с overrides), иначе общий .sub.
+    Никаких overrides в X<stem> — все значения уже в .sub.
+
+  Смысл разделения:
+    - .sub не знает ни про какие сценарии. Он описывает лист.
+    - per-scenario .sub — артефакт конкретного теста, лежит рядом
+      с .cir для удобства отладки.
+    - .cir тонкий: INCLUDE + deck + .op/.tran.
+
+Почему параметры MCU в явном виде, а не через формальные PARAMS::
+
+  Раньше XU1 внутри .sub писал MODE_PB2={U1_MODE_PB2}, а header
+  .subckt корня объявлял 60 формальных U1_MODE_*, и .cir
+  переопределял их на X-строке X<stem>. Работало, но:
+
+    * header .sub раздувался на 60 имён, которые нужны только
+      на уровне теста, а не на уровне листа;
+    * XU1 в общем .sub содержал отсылки, которые надо было
+      сводить с header'ом;
+    * overrides в .cir были разбросаны по X-строке инстанса.
+
+  Теперь: параметры X-компонента пишутся явными значениями.
+  Для сценариев без override'ов — это дефолт из Sim.Params
+  (для MCU — из .lib, заполняется _fill_sim_params_from_lib).
+  Для сценариев с override'ами — под каждый генерируется свой .sub.
 
 SPICE-модели компонентов БЕРУТСЯ ИЗ НЕТЛИСТА — как properties
 символа, которые записал writer при генерации .kicad_sch.
-kicad-cli выгружает их двумя разными формами:
+kicad-cli выгружает их двумя формами:
 
-    (property
-        (name "Sim.Device")
-        (value "X"))
+    (property (name "Sim.Device") (value "X"))
+    (field    (name "Sim.Device") "X")
 
-    (field
-        (name "Sim.Device") "X")
-
-Парсер нетлиста читает обе. Поля:
-
-    Sim.Device   R/C/L/D/Q/M/X — ярус элемента в SPICE.
-    Sim.Name     имя .subckt (для X-инстанса).
-    Sim.Library  ${KIPRJMOD}/spice/lib/x.lib (для X-инстанса).
-    Sim.Pins     pin=port, в порядке портов .SUBCKT (для X).
-    Sim.Params   R=10k / L=1u / IS=1e-5 N=1.04 / T=25 R25=10k (для R/C/L/D/Q/M/X).
-    Sim.Model    имя .model-записи (для D/Q/M).
+Парсер нетлиста читает обе. Поля: Sim.Device, Sim.Name, Sim.Library,
+Sim.Pins, Sim.Params, Sim.Model.
 
 Синтаксис X-строк: ПОЗИЦИОННЫЙ (spice-стандарт).
     Ngspice принимает узлы X-инстанса только позиционно, в порядке
@@ -35,55 +67,26 @@ kicad-cli выгружает их двумя разными формами:
 
         XU1 IN1 IN2 MOTOR_A MOTOR_B VCC_12V GND DRV8871
 
-    Никаких 'port=node' — это расширение других симуляторов, не
-    Ngspice. Порядок портов берётся из .SUBCKT <Name> в Sim.Library
-    (файл .lib читается через _port_order_from_lib). Узлы —
-    из Sim.Pins (pin=port) + net_of(ref, pin).
-
-Параметры subckt:
-    У X-компонента Sim.Params содержит параметры .SUBCKT в формате
-    "name=default name2=default2 …" (объединение spice.params и
-    required_params из YAML). В X-строке эти параметры передаются
-    ОТСЫЛКАМИ на формальные параметры родительской субсхемы:
-    "name={<ref>_<name>} name2={<ref>_<name2>}". Сами формальные
-    параметры объявляются в header .subckt (см. build_subckt).
-    Значения приходят из overrides сценария через X<stem>.
-    Никакие конкретные значения в X-строке не пишутся — их место
-    занимают отсылки; иначе Ngspice видит "0 formal but 1 actual params".
-
-Что остаётся из YAML:
-  * deck / checks / analysis / overrides в сценариях;
-  * nets корня — для MCU (pinfunction U1 ↔ net_name);
-  * component_types корня — только чтобы найти типы с auto_ports
-    (STM32G071RBT6), для которых .subckt генерируется per-scenario
-    через mcu_model.py.
+    Порядок портов берётся из .SUBCKT <Name> в Sim.Library
+    (через _port_order_from_lib). Узлы — из Sim.Pins (pin=port)
+    плюс net_of(ref, pin).
 
 Refdes-пространства (per-page vs project):
-  .kicad_sch листа хранит ДВЕ системы имён:
-    * (property "Reference" "X")      — YAML-канонические имена листа;
-    * (instances … (reference "Y"))   — проектные имена в конкретных
-                                        instance-путях.
-  kicad-cli при per-file экспорте подставляет в нетлист одно из
-  instances. Генератор .sub/.cir работает с YAML листа, поэтому
-  refdes нетлиста приводится в YAML-пространство ЭТОЙ страницы —
-  через --sch и build_reverse_refdes_maps_from_sch().
-
-  Для корня карта вырождается в тождество. Механизм локален для
-  per-page пути: это не «глобальная нормализация», а «перевод имён
-  одной страницы в её собственное YAML-пространство».
+  .kicad_sch листа хранит ДВЕ системы имён — YAML-канонические
+  (property "Reference") и проектные в instance-путях. Генератор
+  работает с YAML листа, поэтому refdes нетлиста приводятся к
+  YAML-пространству через build_reverse_refdes_maps_from_sch().
 
 Выходные файлы:
-  * spice/<stem>.sub          — подсхема листа;
-  * spice/<scenario>.cir      — по одному на scenarios[i];
-  * spice/<scenario>_mcu.sub  — per-scenario модель МК (mcu_model.py).
+  * spice/<stem>.sub                  — общая подсхема листа;
+  * spice/<scenario>_<stem>.sub       — per-scenario (если есть overrides);
+  * spice/<scenario>.cir              — тест;
+  * spice/<scenario>_mcu.sub          — per-scenario МК (mcu_model.py,
+                                        только для MCU в deck).
 
 Запуск:
     python3 kicad_to_spice.py <netlist.net> <stem> --yaml <path> \
             [--sch <path>] [port1 ... portN]
-
-    --sch — путь к .kicad_sch, из которого экспортирован нетлист.
-            Если задан — refdes нетлиста нормализуются в YAML-пространство
-            страницы. Если не задан — refdes используются как есть.
 """
 import os
 import re
@@ -127,14 +130,24 @@ MAIN_YAML = os.path.join(YAML_DIR, f"{ROOT_STEM}.yaml")
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Загрузка корневого YAML
+# Загрузка YAML с авторазворотом root_page:
 # ─────────────────────────────────────────────────────────────────────
+
+def _unwrap_root(doc):
+    """Вернуть содержимое страницы независимо от формы YAML."""
+    if isinstance(doc, dict) and "root_page" in doc:
+        return doc.get("root_page") or {}
+    return doc or {}
+
 
 def load_main():
     doc = yaml.safe_load(open(MAIN_YAML, encoding="utf-8")) or {}
-    if isinstance(doc, dict) and "root_page" in doc:
-        return doc.get("root_page") or {}
-    return doc
+    return _unwrap_root(doc)
+
+
+def load_sheet(yaml_path):
+    doc = yaml.safe_load(open(yaml_path, encoding="utf-8")) or {}
+    return _unwrap_root(doc)
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -142,14 +155,7 @@ def load_main():
 # ─────────────────────────────────────────────────────────────────────
 
 def build_reverse_refdes_maps_from_sch(sch_path):
-    """{instance_ref: top_ref} для одного .kicad_sch.
-
-    Для каждого символа-экземпляра находит top-level Reference и все
-    reference из (instances …). Возвращает {Y: X}.
-
-    Для корня карта вырождается в тождество (top-level = instances =
-    project refdes), поэтому вызов безопасен и не меняет поведение.
-    """
+    """{instance_ref: top_ref} для одного .kicad_sch."""
     if not sch_path or not os.path.exists(sch_path):
         return {}
     try:
@@ -181,12 +187,7 @@ def build_reverse_refdes_maps_from_sch(sch_path):
 
 
 def _apply_reverse_map(comps, nets, rmap):
-    """Привести refdes нетлиста в YAML-пространство страницы.
-
-    rmap = {instance_ref: top_ref}. Если карта пуста — структуры
-    возвращаются как есть. Узел, чей refdes не попал в карту,
-    остаётся без изменений — данные не теряются.
-    """
+    """Привести refdes нетлиста в YAML-пространство страницы."""
     if not rmap:
         return comps, nets
 
@@ -200,8 +201,35 @@ def _apply_reverse_map(comps, nets, rmap):
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Помощники Sim.*
+# Чтение .lib: единый разбор logical lines
 # ─────────────────────────────────────────────────────────────────────
+
+def _read_lib_logical(path: str) -> str:
+    """Прочитать .lib и склеить SPICE continuation lines ('+' в начале)."""
+    try:
+        raw = open(path, encoding="utf-8", errors="ignore").read()
+    except OSError:
+        return ""
+    logical: list[str] = []
+    for line in raw.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("+"):
+            if logical:
+                logical[-1] = logical[-1] + " " + stripped[1:].strip()
+            continue
+        logical.append(line)
+    return "\n".join(logical)
+
+
+def _find_subckt_header(text: str, subckt_name: str):
+    """Хвост строки .SUBCKT <subckt_name> … из текста."""
+    pat = re.compile(
+        r'^\s*\.SUBCKT\s+' + re.escape(subckt_name) + r'[ \t]+([^\n]+)',
+        re.IGNORECASE | re.MULTILINE,
+    )
+    m = pat.search(text)
+    return m.group(1) if m else None
+
 
 def _parse_sim_pins(s: str):
     """'3=IN1 2=IN2 6=OUT1' → [('3','IN1'), ('2','IN2'), ('6','OUT1')].
@@ -223,15 +251,7 @@ _PORT_ORDER_CACHE = {}
 
 
 def _port_order_from_lib(lib_path: str, subckt_name: str):
-    """Порядок портов .SUBCKT <subckt_name> из .lib-файла.
-
-    Читает файл, ищет строку:
-        .SUBCKT <subckt_name> <p1> <p2> <p3> …
-    и возвращает список портов [p1, p2, p3, …]. Хвост PARAMS: …
-    отбрасывается. Кэш — файл в рамках прогона не меняется.
-
-    Возвращает None, если файл недоступен или .SUBCKT не найден.
-    """
+    """Порядок портов .SUBCKT <subckt_name> из .lib."""
     key = (lib_path, subckt_name)
     if key in _PORT_ORDER_CACHE:
         return _PORT_ORDER_CACHE[key]
@@ -241,39 +261,78 @@ def _port_order_from_lib(lib_path: str, subckt_name: str):
         _PORT_ORDER_CACHE[key] = None
         return None
 
-    try:
-        text = open(path, encoding="utf-8", errors="ignore").read()
-    except OSError:
+    text = _read_lib_logical(path)
+    tail = _find_subckt_header(text, subckt_name)
+    if tail is None:
         _PORT_ORDER_CACHE[key] = None
         return None
 
-    pat = re.compile(
-        r'^\s*\.SUBCKT\s+' + re.escape(subckt_name) + r'\s+([^\n]+)',
-        re.IGNORECASE | re.MULTILINE,
-    )
-    m = pat.search(text)
-    if not m:
-        _PORT_ORDER_CACHE[key] = None
-        return None
-
-    tail = m.group(1)
     if re.search(r'\bPARAMS:', tail, re.IGNORECASE):
         tail = re.split(r'\bPARAMS:', tail, maxsplit=1,
                         flags=re.IGNORECASE)[0]
-    ports = tail.split()
+    ports = [p for p in tail.split() if p != "+"]
     _PORT_ORDER_CACHE[key] = ports
     return ports
 
 
-def _model_type_for(dev: str) -> str:
-    """SPICE-тип для .model-директивы по Sim.Device.
+_PARAMS_FROM_LIB_CACHE = {}
 
-    D  → D      (диод, стабилитрон)
-    Z  → D      (зенер — тоже диод)
-    Q  → NPN    (BJT; при PNP — надо явно задавать)
-    M  → NMOS   (MOSFET)
-    J  → NJF    (JFET)
+
+def _params_from_lib(lib_path: str, subckt_name: str):
+    """Список (name, default) из хвоста PARAMS: в .SUBCKT <name>."""
+    key = (lib_path, subckt_name)
+    if key in _PARAMS_FROM_LIB_CACHE:
+        return _PARAMS_FROM_LIB_CACHE[key]
+
+    path = _expand_include(lib_path)
+    if not path or not os.path.exists(path):
+        _PARAMS_FROM_LIB_CACHE[key] = None
+        return None
+
+    text = _read_lib_logical(path)
+    tail = _find_subckt_header(text, subckt_name)
+    if tail is None:
+        _PARAMS_FROM_LIB_CACHE[key] = None
+        return None
+
+    pm = re.search(r'\bPARAMS:\s*(.+)$', tail, re.IGNORECASE)
+    if not pm:
+        _PARAMS_FROM_LIB_CACHE[key] = None
+        return None
+
+    out = []
+    for tok in pm.group(1).split():
+        if "=" in tok:
+            n, d = tok.split("=", 1)
+            out.append((n.strip(), d.strip()))
+    _PARAMS_FROM_LIB_CACHE[key] = out
+    return out
+
+
+def _fill_sim_params_from_lib(comps):
+    """Дописать Sim.Params X-компонентам из .lib, если он пуст.
+
+    Нужно, чтобы у U1 был полный список MODE_* (60 имён) с дефолтами
+    к моменту spice_el: он пишет их явными значениями в X-строку.
+    Источник истины — .lib, схема остаётся чистой.
     """
+    for ref, comp in comps.items():
+        sim = comp.get("sim") or {}
+        if sim.get("Sim.Device") != "X":
+            continue
+        if (sim.get("Sim.Params") or "").strip():
+            continue
+        lib = (sim.get("Sim.Library") or "").strip()
+        sub = sim.get("Sim.Name")
+        if not lib or not sub:
+            continue
+        plist = _params_from_lib(lib, sub)
+        if plist:
+            sim["Sim.Params"] = " ".join(f"{n}={d}" for n, d in plist)
+
+
+def _model_type_for(dev: str) -> str:
+    """SPICE-тип для .model-директивы по Sim.Device."""
     return {
         "D": "D", "Z": "D",
         "Q": "NPN",
@@ -283,12 +342,7 @@ def _model_type_for(dev: str) -> str:
 
 
 def _expand_include(name: str) -> str:
-    """Развернуть Sim.Library в путь для .include.
-
-    ${KIPRJMOD}/spice/lib/x.lib → /path/to/PROJ/spice/lib/x.lib.
-    Относительные имена без ${KIPRJMOD} трактуются как имена внутри
-    spice/lib/. Абсолютные пути возвращаются как есть.
-    """
+    """Развернуть Sim.Library в путь для .include."""
     if not name:
         return ""
     if name.startswith("${KIPRJMOD}/"):
@@ -313,23 +367,7 @@ def _norm_pinfunc(fn):
 
 
 def parse_netlist(text):
-    """Возвращает (comps, nets).
-
-    comps[ref] = {
-        "value": str,          # top-level (value "...")
-        "lib":   str,          # libsource.lib
-        "part":  str,          # libsource.part
-        "sim":   dict,         # все Sim.Xxx → value (property или field)
-    }
-
-    nets[name] = [(ref, pin, pinfunction_or_None), ...]
-
-    Sim.* — источник SPICE-модели компонента. Пишет их writer
-    в .kicad_sch; kicad-cli выгружает двумя формами:
-        (property (name "Sim.Xxx") (value "Y"))
-        (field (name "Sim.Xxx") "Y")
-    Читаем обе; при совпадении property имеет приоритет.
-    """
+    """Возвращает (comps, nets)."""
     comps = {}
 
     for m in re.finditer(
@@ -350,18 +388,12 @@ def parse_netlist(text):
         part = lm.group(2) if lm else ""
 
         sim = {}
-
-        # Формат 1: (property (name "Sim.Xxx") (value "Y"))
         for pm in re.finditer(
             r'\(property\s+\(name\s+"(Sim\.[^"]+)"\)\s+'
             r'\(value\s+"([^"]*)"\)',
             block,
         ):
             sim[pm.group(1)] = pm.group(2)
-
-        # Формат 2: (field (name "Sim.Xxx") "Y")
-        # kicad-cli выгружает так properties, добавленные через
-        # add_properties(hidden=True). setdefault — property приоритетнее.
         for fm in re.finditer(
             r'\(field\s+\(name\s+"(Sim\.[^"]+)"\)\s+"([^"]*)"',
             block,
@@ -398,10 +430,7 @@ def parse_netlist(text):
 
 
 def net_of(nets, ref, key, by="pin"):
-    """Имя сети, на которой сидит пин (или pinfunction) компонента.
-
-    Возвращает имя сети как есть, либо None.
-    """
+    """Имя сети, на которой сидит пин (или pinfunction) компонента."""
     for nm, nds in nets.items():
         for nd in nds:
             if nd[0] != ref:
@@ -418,12 +447,7 @@ def cname(nm):
 
 
 def parse_val(v, ref="?"):
-    """Разбор value из KiCad-нотации (10k, 1u, 100n) → SPICE.
-
-    Используется как fallback для R/C/L/D/Q/M, когда Sim.Params
-    в схеме не задан (компонент добавлен в KiCad GUI вручную, или
-    старый .kicad_sch без Sim.*).
-    """
+    """Разбор value из KiCad-нотации (10k, 1u, 100n) → SPICE."""
     s = str(v).strip().replace(",", ".")
     s = re.sub(r"[А-Яа-яЁё].*$", "", s).strip()
     m = re.match(r"([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*"
@@ -441,19 +465,14 @@ def parse_val(v, ref="?"):
 # ─────────────────────────────────────────────────────────────────────
 
 def _element_ref(prefix: str, ref: str) -> str:
-    """X-префикс для X-инстанса и т.п.
-
-    SPICE требует, чтобы имя элемента начиналось с буквы типа
-    (R, C, L, D, Q, M, X). Если designator уже с этой буквы —
-    оставляем как есть.
-    """
+    """X-префикс для X-инстанса и т.п."""
     if ref and ref[0].upper() == prefix.upper():
         return ref
     return prefix + ref
 
 
 # ─────────────────────────────────────────────────────────────────────
-# MCU: модели, порты, stimulus — только для МК (auto_ports)
+# MCU: модели, порты, stimulus, трансляция params.U1
 # ─────────────────────────────────────────────────────────────────────
 
 def _mcu_model_names(main_cfg):
@@ -472,12 +491,7 @@ def _mcu_model_names(main_cfg):
 
 
 def _mcu_instances(sc, main_cfg):
-    """Подсхемы-MCU в deck сценария.
-
-    Возвращает список body-словарей entry["subckt"] тех, чей
-    model попал в _mcu_model_names. Для них generate_scenario
-    делает свежий <scenario>_mcu.sub.
-    """
+    """Подсхемы-MCU в deck сценария."""
     names = _mcu_model_names(main_cfg)
     result = []
     for entry in sc.get("deck", []):
@@ -504,12 +518,7 @@ def _mcu_sig_by_net(main_cfg: dict) -> dict:
 
 
 def _mcu_args(main_cfg, connect, ref="XU1"):
-    """Аргументы X-строки для инстанса МК.
-
-    Порядок — как в mcu_model.mcu_ports(main_cfg). Для каждого порта
-    берём узел из connect: сначала по имени порта, потом по pinfunction.
-    Не указанное — сам порт. GND → 0.
-    """
+    """Аргументы X-строки для инстанса МК (для MCU в deck)."""
     ports = mcu_model.mcu_ports(main_cfg)
     sig_by_net = _mcu_sig_by_net(main_cfg)
     valid_keys = set(ports) | {s for s in sig_by_net.values() if s}
@@ -547,15 +556,69 @@ def _validate_mcu_state(sc):
         )
 
 
+# Алиасы значений MODE для пинов MCU.
+_MCU_MODE_ALIASES = {
+    "hiz": "0", "hi_z": "0", "z": "0",
+    "adc": "1", "analog": "1",
+    "pullup": "2", "pull_up": "2", "pu": "2",
+    "pulldn": "3", "pulldown": "3", "pull_dn": "3", "pull_down": "3", "pd": "3",
+    "out_high": "4", "high": "4", "h": "4",
+    "out_low": "5", "low": "5", "l": "5",
+    "pwm": "6",
+}
+
+
+def _mcu_pin_alias_to_mode(val):
+    """params.U1.<pin> → (mode_str, [(suffix, value), …])."""
+    if isinstance(val, bool):
+        raise ValueError(f"unknown MCU pin mode: {val!r}")
+    if isinstance(val, int):
+        return str(val), []
+    if isinstance(val, dict):
+        inner = val.get("mode")
+        extra = []
+        if inner == "pwm" or str(inner).lower() == "pwm":
+            if "freq" in val:
+                extra.append(("FREQ", val["freq"]))
+            if "duty" in val:
+                extra.append(("DUTY", val["duty"]))
+            return "6", extra
+        mode_str, sub_extra = _mcu_pin_alias_to_mode(inner)
+        return mode_str, sub_extra + extra
+
+    key = str(val).strip().lower()
+    if key in _MCU_MODE_ALIASES:
+        return _MCU_MODE_ALIASES[key], []
+    if key.isdigit():
+        return key, []
+    raise ValueError(
+        f"unknown MCU pin mode: {val!r}. Допустимо: "
+        f"hiz/adc/pullup/pulldn/out_high/out_low/pwm "
+        f"(или число 0..6), либо {{mode: pwm, freq: …, duty: …}}."
+    )
+
+
+def _mcu_overrides_from_params(sc):
+    """overrides для U1 из sc.params.U1 → {U1: {MODE_<pin>: …}}."""
+    u1_params = (sc.get("params") or {}).get("U1") or {}
+    if not u1_params:
+        return {}
+
+    out = {}
+    for pin, val in u1_params.items():
+        mode, extra = _mcu_pin_alias_to_mode(val)
+        out[f"MODE_{pin}"] = mode
+        for suffix, v in extra:
+            out[f"{suffix}_{pin}"] = v
+    return {"U1": out}
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Генерация элементов .sub
 # ─────────────────────────────────────────────────────────────────────
 
 def _legacy_device(part: str):
-    """Угадать Sim.Device по libsource.part, если Sim.Device пуст.
-
-    Для компонентов, добавленных в KiCad GUI без Sim.* (legacy).
-    """
+    """Угадать Sim.Device по libsource.part, если Sim.Device пуст."""
     if part in ("R", "C", "L"):
         return part
     if part in ("D", "D_Schottky", "D_Zener", "LED"):
@@ -568,11 +631,7 @@ def _legacy_device(part: str):
 
 
 def _param_tokens(params: str):
-    """'T=25 R25=10k BETA=3435' → [('T','25'), ('R25','10k'), ('BETA','3435')].
-
-    Параметры без '=' (объявлены, но дефолт пуст) возвращаются
-    как (name, None).
-    """
+    """'T=25 R25=10k' → [('T','25'), ('R25','10k')]. Без '=' → (name, None)."""
     out = []
     for tok in (params or "").split():
         if "=" in tok:
@@ -583,31 +642,16 @@ def _param_tokens(params: str):
     return out
 
 
-def spice_el(ref, comp, nets):
+def spice_el(ref, comp, nets, xinst_overrides=None):
     """SPICE-строка одного компонента.
 
-    Источник — Sim.* properties из нетлиста (fallback на libsource.part
-    для legacy). Разбор по Sim.Device:
-
-        X       → X_<ref> <node1> <node2> … <Name> [<param refs>]
-                  узлы позиционно, в порядке портов .SUBCKT <Name>;
-                  узлы — из Sim.Pins (pin=port) + net_of(ref, pin).
-                  Параметры — отсылки <name>={<ref>_<name>};
-                  формальные параметры объявлены в header .subckt
-                  (см. build_subckt), значения приходят из
-                  X<stem> через overrides в .cir.
-                  Sim.Library пуст → per-scenario модель (МК),
-                  в .sub листа не пишем.
-
-        R/C/L   → <ref> <node1> <node2> <value>
-                  value — из Sim.Params (R=10k → 10k), fallback value.
-
-        D / Z   → D<ref> <a> <k> <Model>
-        Q       → Q<ref> <c> <b> <e> <Model>
-        M       → M<ref> <d> <g> <s> <s> <Model>
-
-        (пусто) → комментарий, компонент не моделируется
+    xinst_overrides — {ref: {param: value}} — карта значений для
+    X-компонентов. Применяется при генерации per-scenario .sub:
+    для параметра, найденного в карте, пишется явное значение вместо
+    дефолта из Sim.Params. Для общего .sub карта пуста — все
+    параметры пишутся со своими дефолтами.
     """
+    overrides = (xinst_overrides or {}).get(ref) or {}
     sim = comp.get("sim") or {}
     part = comp.get("part") or ""
     value = comp.get("value") or ""
@@ -628,21 +672,18 @@ def spice_el(ref, comp, nets):
 
         lib = (sim.get("Sim.Library") or "").strip()
         if not lib:
-            # Per-scenario модель (МК): генерация в .cir через mcu_model.
             return (f"* {ref}: {name} — модель per-scenario "
                     f"(инстанс добавляется в .cir)")
 
-        pins_list = _parse_sim_pins(pins_str)   # [(pin, port), …]
+        pins_list = _parse_sim_pins(pins_str)
         if not pins_list:
             raise ValueError(
                 f"{ref}: Sim.Device=X, но Sim.Pins пуст — "
                 f"не могу подставить узлы"
             )
 
-        # Порядок портов — из .SUBCKT <name> в lib.
         port_order = _port_order_from_lib(lib, name)
 
-        # port → node
         port_to_node = {}
         for pin_num, port in pins_list:
             net = net_of(nets, ref, pin_num, by="pin")
@@ -660,18 +701,24 @@ def spice_el(ref, comp, nets):
                     )
                 args.append(node)
         else:
-            # .lib недоступен — используем порядок Sim.Pins как есть.
             args = [port_to_node[port] for _, port in pins_list]
 
         xref = _element_ref("X", ref)
         line = f'{xref} {" ".join(args)} {name}'
 
-        # Параметры — отсылки на формальные параметры родительской
-        # субсхемы: T={RT1_T} R25={RT1_R25} …
-        # Формальные параметры объявлены в header .subckt (build_subckt),
-        # значения подставлены снаружи через X<stem> (overrides в .cir).
-        for pname, _pval in _param_tokens(params):
-            line += f" {pname}={{{ref}_{pname}}}"
+        # Параметры X-инстанса — явными значениями.
+        # Приоритет: override сценария > дефолт из Sim.Params.
+        # Никаких {ref_param}-отсылок и PARAMS: в header — так .sub
+        # остаётся чистым, а per-scenario .sub подставляет значения.
+        for pname, pdefault in _param_tokens(params):
+            actual = overrides.get(pname)
+            if actual is not None:
+                line += f" {pname}={actual}"
+            elif pdefault is not None:
+                line += f" {pname}={pdefault}"
+            # pdefault is None и нет override — параметр без значения
+            # просто не передаётся (модель возьмёт свой внутренний дефолт).
+
         return line
 
     # ─── .model: диод / стабилитрон ───
@@ -734,24 +781,9 @@ def spice_el(ref, comp, nets):
 
     return f'* {ref}: {part} ({value}) — не моделируется'
 
+
 def collect_model_defs_from_comps(comps):
-    """Уникальные .model-директивы из Sim.* компонентов.
-
-    Для каждого D/Z/Q/M с непустым Sim.Model собирается строка
-    .model. Формат Sim.Params от component.py — "TYPE(params)":
-    тип модели (NPN/PNP/NMOS/PMOS/D/VDMOS/…) уже в строке, взят
-    из YAML model_def. Здесь тип НЕ перезаписывается: жёсткий
-    _model_type_for превратил бы PNP в NPN.
-
-    Возможные формы Sim.Params:
-
-        "NPN(IS=1e-14 BF=200 VAF=100)"  ← тип + параметры (штатная)
-        "IS=1e-14 BF=200 VAF=100"        ← только параметры (legacy,
-                                           тип через _model_type_for)
-        ""                                ← пусто (только .model NAME T())
-
-    Уникальность по тексту строки — дубликаты не пишутся.
-    """
+    """Уникальные .model-директивы из Sim.* компонентов."""
     defs, seen = [], set()
     for _ref, comp in comps.items():
         sim = comp.get("sim") or {}
@@ -768,15 +800,11 @@ def collect_model_defs_from_comps(comps):
         params = (sim.get("Sim.Params") or "").strip()
 
         if params and "(" in params:
-            # Уже "TYPE(params)" — как есть.
-            # MMBT3906 → PNP(...), BSS138 → NMOS(...), SS54 → D(...).
             line = f".model {model} {params}"
         elif params:
-            # Только параметры — тип из _model_type_for.
             mtype = _model_type_for(dev)
             line = f".model {model} {mtype}({params})"
         else:
-            # Ничего нет — дефолтный тип с пустыми параметрами.
             mtype = _model_type_for(dev)
             line = f".model {model} {mtype}()"
 
@@ -785,19 +813,9 @@ def collect_model_defs_from_comps(comps):
             seen.add(line)
     return defs
 
-def collect_includes_from_comps(comps, sc, sheet_yaml, main_cfg):
-    """Файлы для .include.
 
-    Источники:
-      * Sim.Library у X-компонентов (X через Sim.*);
-      * include: в deck сценария;
-      * sheet_yaml.spice.includes (legacy);
-      * component_types[type].spice.include (legacy — subckt через
-        component_types, например mc78m05, ntc_10k_3435);
-      * main_cfg.component_types[type].spice.include (legacy, корневой);
-      * sheet_yaml.spice.models[*].include (legacy);
-      * main_cfg.spice.models[*].include (legacy, корневой).
-    """
+def collect_includes_from_comps(comps, sc, sheet_yaml, main_cfg):
+    """Файлы для .include."""
     includes, seen = [], set()
 
     def add(name):
@@ -809,35 +827,28 @@ def collect_includes_from_comps(comps, sc, sheet_yaml, main_cfg):
         includes.append(p)
         seen.add(p)
 
-    # 1. Sim.Library у X-компонентов
     for _ref, comp in comps.items():
         sim = comp.get("sim") or {}
         if sim.get("Sim.Device") == "X":
             add(sim.get("Sim.Library"))
 
-    # 2. deck сценария
     for entry in (sc.get("deck") or []):
         for _kind, body in entry.items():
             add(body.get("include"))
 
-    # 3. sheet_yaml.spice.includes
     for inc in (sheet_yaml.get("spice") or {}).get("includes", []) or []:
         add(inc)
 
-    # 4. component_types[type].spice.include (лист)
     for _tn, ctype in (sheet_yaml.get("component_types") or {}).items():
         add((ctype.get("spice") or {}).get("include"))
 
-    # 4b. component_types[type].spice.include (корневой)
     for _tn, ctype in (main_cfg.get("component_types") or {}).items():
         add((ctype.get("spice") or {}).get("include"))
 
-    # 5. sheet_yaml.spice.models[*].include
     for _n, m in _sheet_models(sheet_yaml).items():
         if isinstance(m, dict):
             add(m.get("include"))
 
-    # 6. main_cfg.spice.models[*].include
     for _n, m in _root_models(main_cfg).items():
         if isinstance(m, dict):
             add(m.get("include"))
@@ -845,50 +856,24 @@ def collect_includes_from_comps(comps, sc, sheet_yaml, main_cfg):
     return includes
 
 
-def _collect_subckt_header_params(comps):
-    """Собрать формальные параметры субсхемы листа.
+def build_subckt(stem, comps, nets, ports, xinst_overrides=None):
+    """Собрать .subckt <stem> <ports> … .ends.
 
-    Для каждого X-компонента берём Sim.Params ("name=default …") и
-    формируем формальный параметр <ref>_<name>=<default>.
+    Без PARAMS: в header. Все параметры X-компонентов пишутся явными
+    значениями прямо в их X-строках (см. spice_el). Значения —
+    либо дефолт из Sim.Params (для общего .sub), либо переопределены
+    картой xinst_overrides (для per-scenario .sub).
 
-    Возвращает список токенов для header:
-        ['RT1_T=25', 'RT1_R25=10k', 'RT1_BETA=3435']
-    """
-    out = []
-    for ref in sorted(comps):
-        sim = comps[ref].get("sim") or {}
-        if sim.get("Sim.Device") != "X":
-            continue
-        params = (sim.get("Sim.Params") or "").strip()
-        if not params:
-            continue
-        for pname, pval in _param_tokens(params):
-            if pval is None:
-                out.append(f"{ref}_{pname}")
-            else:
-                out.append(f"{ref}_{pname}={pval}")
-    return out
-
-
-def build_subckt(stem, comps, nets, ports):
-    """Собрать .subckt <stem> <ports> [PARAMS: …] … .ends.
-
-    Header получает PARAMS: … — формальные параметры, унаследованные
-    от параметров внутренних X-компонентов (см.
-    _collect_subckt_header_params). X-строки ссылаются на эти
-    формальные параметры через {<ref>_<name>}; конкретные значения
-    приходят снаружи, через X<stem> в .cir (overrides сценария).
+    Такой .sub — чистое описание структуры листа: сеть, имена
+    компонентов, ссылки на модели. Никаких формальных параметров
+    «на будущее» от возможных сценариев.
     """
     lines = [f"* {stem} — субсхема из нетлиста KiCad"]
-
-    header = f".subckt {stem} {' '.join(ports)}"
-    header_params = _collect_subckt_header_params(comps)
-    if header_params:
-        header += " PARAMS: " + " ".join(header_params)
-    lines.append(header)
-
+    lines.append(f".subckt {stem} {' '.join(ports)}")
     for ref in sorted(comps):
-        lines.append("  " + spice_el(ref, comps[ref], nets))
+        lines.append("  " + spice_el(
+            ref, comps[ref], nets, xinst_overrides=xinst_overrides,
+        ))
     lines.append(f".ends {stem}")
     return lines
 
@@ -915,12 +900,7 @@ def emit_source(body):
 
 
 def _emit_subckt_body(body, sheet_yaml, main_cfg, ref):
-    """X-инстанс для motor / subckt в deck.
-
-    Для inline (nodes) — просто X <nodes> <subckt>.
-    Для model: <имя МК> — через _mcu_args.
-    Для legacy model: <имя> — через sheet_yaml.spice.models.
-    """
+    """X-инстанс для motor / subckt в deck."""
     if body.get("subckt") and body.get("nodes"):
         nodes = body["nodes"]
         args = [str(nodes[k]) for k in nodes]
@@ -946,10 +926,14 @@ def _emit_subckt_body(body, sheet_yaml, main_cfg, ref):
 
 
 def emit_deck_entry(entry, sheet_yaml, main_cfg):
+    """Эмит одной записи deck."""
     lines = []
     for kind, body in entry.items():
-        ref = body.get("ref", "?")
-        desc = body.get("description", "")
+        if kind == "control":
+            continue
+
+        ref = body.get("ref", "?") if isinstance(body, dict) else "?"
+        desc = body.get("description", "") if isinstance(body, dict) else ""
         if desc:
             lines.append(f"* {ref}: {desc.strip().splitlines()[0]}")
 
@@ -1030,8 +1014,52 @@ def _model_kind(m):
 
 
 # ─────────────────────────────────────────────────────────────────────
+# Overrides для per-scenario .sub
+# ─────────────────────────────────────────────────────────────────────
+
+def collect_xinst_overrides(sc):
+    """{ref: {param: value}} — значения параметров X-компонентов
+    для конкретного сценария.
+
+    Источники:
+      * sc.overrides — явные пары ref → {param: value};
+      * sc.params.U1 — трансляция в U1 → {MODE_<pin>: …,
+                       FREQ_<pin>: …, DUTY_<pin>: …}.
+
+    Явные sc.overrides приоритетнее — если пользователь задал
+    U1.MODE_PB2 руками, params.U1.PB2 то же поле не перепишет.
+    """
+    ovr = {}
+    for ref, params in (sc.get("overrides") or {}).items():
+        ovr[ref] = dict(params)
+
+    auto = _mcu_overrides_from_params(sc)
+    for ref, params in auto.items():
+        dst = ovr.setdefault(ref, {})
+        for k, v in params.items():
+            dst.setdefault(k, v)
+
+    return ovr
+
+
+# ─────────────────────────────────────────────────────────────────────
 # Сборка .cir
 # ─────────────────────────────────────────────────────────────────────
+
+def _sub_include_name(sc, stem):
+    """Имя файла .sub для инклюда в .cir.
+
+    Если для сценария сгенерирован per-scenario .sub
+    (<scenario>_<stem>.sub) — берём его. Иначе — общий <stem>.sub.
+
+    Проверка по факту файла на диске: main() генерирует все .sub
+    до запуска build_cir.
+    """
+    per_path = os.path.join(PROJ, "spice", f"{sc['name']}_{stem}.sub")
+    if os.path.exists(per_path):
+        return f"{sc['name']}_{stem}.sub"
+    return f"{stem}.sub"
+
 
 def build_cir(stem, sc, sheet_yaml, main_cfg, ports, comps):
     lines = [f"* Ngspice тест: {stem} / {sc['name']}"]
@@ -1058,12 +1086,15 @@ def build_cir(stem, sc, sheet_yaml, main_cfg, ports, comps):
     for inc in collect_includes_from_comps(comps, sc, sheet_yaml, main_cfg):
         lines.append(f".INCLUDE {inc}")
 
-    # .model-директивы (собраны из Sim.* компонентов)
+    # .model-директивы
     for md in collect_model_defs_from_comps(comps):
         lines.append(md)
 
-    # Сама субсхема листа
-    lines.append(f".INCLUDE spice/{stem}.sub")
+    # Субсхема листа: per-scenario, если для сценария есть overrides,
+    # иначе — общий <stem>.sub. Никаких PARAMS: в .sub и никаких
+    # overrides на X<stem> — значения уже внутри .sub.
+    sub_name = _sub_include_name(sc, stem)
+    lines.append(f".INCLUDE spice/{sub_name}")
     lines.append("")
     lines.append("* Порты: " + " ".join(ports))
     lines.append("")
@@ -1071,20 +1102,10 @@ def build_cir(stem, sc, sheet_yaml, main_cfg, ports, comps):
     # Deck сценария
     lines += emit_deck(sc.get("deck"), sheet_yaml, main_cfg)
 
-    # Инстанс субсхемы листа (позиционно).
-    # Параметры через overrides: RT1_T=25 и т.п. — перекрывают
-    # формальные параметры из header .subckt листа.
+    # Инстанс субсхемы листа (позиционно). Без overrides — они
+    # внутри .sub.
     cargs = " ".join("0" if p == "GND" else p for p in ports)
     xinst = f"X{stem} {cargs} {stem}"
-
-    ovr = sc.get("overrides") or {}
-    if ovr:
-        pstr = []
-        for ref, params in ovr.items():
-            for pname, pval in params.items():
-                pstr.append(f"{ref}_{pname}={pval}")
-        if pstr:
-            xinst += " " + " ".join(pstr)
     lines.append(xinst)
     lines.append("")
 
@@ -1095,11 +1116,30 @@ def build_cir(stem, sc, sheet_yaml, main_cfg, ports, comps):
     if an == "op":
         lines.append(".op")
     elif an == "tran":
+        if "tran" not in sc:
+            raise ValueError(
+                f"scenario {sc['name']!r}: analysis=tran, но ключ "
+                f"'tran' не задан (например, tran: \"1m 200m\")"
+            )
         lines.append(".tran " + sc["tran"])
     elif an == "ac":
+        if "ac" not in sc:
+            raise ValueError(
+                f"scenario {sc['name']!r}: analysis=ac, но ключ "
+                f"'ac' не задан"
+            )
         lines.append(".ac " + sc["ac"])
     elif an == "dc":
+        if "dc" not in sc:
+            raise ValueError(
+                f"scenario {sc['name']!r}: analysis=dc, но ключ "
+                f"'dc' не задан"
+            )
         lines.append(".dc " + sc["dc"])
+    else:
+        raise ValueError(
+            f"scenario {sc['name']!r}: неизвестный analysis={an!r}"
+        )
 
     lines.append(".control")
     lines.append("run")
@@ -1155,7 +1195,10 @@ def main():
     os.makedirs(os.path.join(PROJ, "spice"), exist_ok=True)
 
     main_cfg = load_main()
-    sheet_yaml = yaml.safe_load(open(yaml_path, encoding="utf-8")) or {}
+    try:
+        sheet_yaml = load_sheet(yaml_path)
+    except Exception as e:
+        sys.exit(f"kicad_to_spice.py: не смог прочитать {yaml_path}: {e}")
 
     names = [s.get("name") for s in (sheet_yaml.get("scenarios") or [])]
     dups = {n for n in names if names.count(n) > 1}
@@ -1170,6 +1213,12 @@ def main():
     if rmap:
         comps, nets = _apply_reverse_map(comps, nets, rmap)
 
+    # Заполнить Sim.Params у X-компонентов из .lib — чтобы spice_el
+    # знал полный список параметров (у MCU это 60 MODE_*).
+    _fill_sim_params_from_lib(comps)
+
+    # ─── 1. Общий <stem>.sub ───
+    # Без PARAMS: в header. Параметры X-компонентов — явные дефолты.
     try:
         sub_lines = build_subckt(stem, comps, nets, ports)
     except ValueError as e:
@@ -1179,6 +1228,29 @@ def main():
         f.write("\n".join(sub_lines) + "\n")
 
     scenarios = sheet_yaml.get("scenarios") or []
+
+    # ─── 2. Per-scenario <scenario>_<stem>.sub ───
+    # Для сценариев с overrides/params.U1 — копия общего .sub,
+    # где значения параметров заменены на выбранные тестом.
+    per_sub_written = 0
+    for sc in scenarios:
+        xovr = collect_xinst_overrides(sc)
+        if not xovr:
+            continue
+        try:
+            per_lines = build_subckt(stem, comps, nets, ports,
+                                     xinst_overrides=xovr)
+        except ValueError as e:
+            print(f"ERROR: {stem}/{sc.get('name')}: per-scenario .sub: {e}",
+                  file=sys.stderr)
+            continue
+        per_path = os.path.join(PROJ, "spice",
+                                f"{sc['name']}_{stem}.sub")
+        with open(per_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(per_lines) + "\n")
+        per_sub_written += 1
+
+    # ─── 3. Сценарии: заглушка или .cir ───
     if not scenarios:
         stub = [
             f"* Ngspice тест: {stem} (заглушка)",
@@ -1189,18 +1261,30 @@ def main():
         with open(os.path.join(PROJ, "spice", f"{stem}.cir"),
                   "w", encoding="utf-8") as f:
             f.write("\n".join(stub) + "\n")
-    else:
-        for sc in scenarios:
-            try:
-                cir_lines = build_cir(stem, sc, sheet_yaml, main_cfg,
-                                      ports, comps)
-            except (ValueError, RuntimeError) as e:
-                sys.exit(f"ERROR: {stem}/{sc.get('name')}: {e}")
-            with open(os.path.join(PROJ, "spice", f"{sc['name']}.cir"),
-                      "w", encoding="utf-8") as f:
-                f.write("\n".join(cir_lines) + "\n")
+        print("OK -> spice/%s.sub + 0 сценариев (заглушка)" % stem)
+        return
 
-    print("OK -> spice/%s.sub + %d сценариев" % (stem, len(scenarios)))
+    errors = []
+    written = []
+    for sc in scenarios:
+        sc_name = sc.get("name") or "?"
+        try:
+            cir_lines = build_cir(stem, sc, sheet_yaml, main_cfg,
+                                  ports, comps)
+        except (ValueError, RuntimeError) as e:
+            errors.append((sc_name, str(e)))
+            continue
+        out_path = os.path.join(PROJ, "spice", f"{sc_name}.cir")
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(cir_lines) + "\n")
+        written.append(sc_name)
+
+    print("OK -> spice/%s.sub + %d/%d сценариев (per-scenario: %d)"
+          % (stem, len(written), len(scenarios), per_sub_written))
+    if errors:
+        for name, err in errors:
+            print(f"ERROR: {stem}/{name}: {err}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
